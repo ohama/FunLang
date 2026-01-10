@@ -2,11 +2,43 @@
 
 ## Current Status
 
-- **Phase**: Phase 4 Complete → Phase 5 Ready
-- **Tests**: 206 passed
+- **Phase**: Phase 5 Complete → Phase 6 Ready
+- **Tests**: 254 passed
 - **Last Session**: 2026-01-10
 
 ## Recent Sessions
+
+### 2026-01-10 22:40 (Session: f6789012)
+
+**주요 변경 사항:**
+- Phase 5: Type System 완료 (254 tests, +48 type tests)
+- Types.fs: Type, TypeScheme, Substitution 정의
+- Unification.fs: Unification 알고리즘 (occurs check 포함)
+- TypeInfer.fs: Algorithm W 구현 (모든 표현식 지원)
+- TypeTests.fs: 48개 타입 추론 테스트
+
+**시도한 실험:**
+- inferMatch: List.map → fold로 변경 (substitution threading)
+- TypeHelpers.counter: mutable → ThreadLocal로 변경
+
+**배운 점:**
+- inferMatch에서 패턴 케이스 순차 처리 필요 (substitution 공유)
+- 병렬 테스트 시 mutable counter는 ThreadLocal 사용 필수
+- Let-polymorphism: generalize → instantiate 패턴
+
+**Key Decisions:**
+- ThreadLocal<int>로 타입 변수 카운터 관리 (병렬 테스트 안전)
+- inferMatch에서 fold로 substitution threading
+- 2개의 버그 해결 후 문서화 (docs/issues/resolved/)
+
+**Resolved Issues:**
+- issue-001: OccursCheck error in recursive list function
+- issue-002: Infinite loop in parallel test execution
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-10 20:05 (Session: c3d4e5f6)
 
@@ -91,16 +123,17 @@
 
 ## Accumulated Knowledge
 
+### Type System Implementation
+- Algorithm W: 표현식별 추론 → substitution 합성 → 최종 타입
+- inferMatch: 패턴 케이스 순차 처리로 substitution threading 필수
+- TypeHelpers.counter: ThreadLocal 사용 (병렬 테스트 안전)
+- Let-polymorphism: generalize(env, τ) → instantiate(scheme)
+
 ### Session & Context Management
 - AI 컨텍스트는 대화 단위로 관리됨
 - `/endsession` → 새 대화 시작 → `/startsession` 워크플로우
 - HISTORY.md에 세션 간 컨텍스트 핸드오프 저장
 - 세션 엔트리: 주요 변경, 시도한 실험, 배운 점, Key Decisions
-
-### HISTORY.md 크기 관리
-- Recent Sessions: 최근 5개만 유지 (오래된 것 삭제)
-- Accumulated Knowledge: Phase 완료 시 통합/정리
-- 아카이브: `docs/history/YYYY-MM.md`로 월별 백업
 
 ### Build/Parser Tips
 - FsLexYacc --module 플래그로 모듈명 지정 필수
@@ -126,4 +159,5 @@
 - Phase 1.2: Indentation-Based Syntax - COMPLETE
 - Phase 2 + 3: Functions & Data Structures - COMPLETE
 - Phase 4: Pattern Matching - COMPLETE
-- Phase 5: Type System - PENDING
+- Phase 5: Type System - COMPLETE
+- Phase 6: User-Defined Types - PENDING
