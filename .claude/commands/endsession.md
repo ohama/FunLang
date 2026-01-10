@@ -164,36 +164,54 @@ Resolved this session (1):
 ======================
 ```
 
-### docs/issues/ 파일 업데이트
+### docs/issues/ 파일 관리
 
-이슈는 두 개의 파일로 분리 저장:
+각 이슈는 개별 파일로 저장:
 
-| 파일 | 내용 |
-|------|------|
-| `docs/issues/unresolved.md` | 현재 미해결 이슈 |
-| `docs/issues/resolved.md` | 해결된 이슈 히스토리 |
+```
+docs/issues/
+├── unresolved/
+│   └── issue-XXX.md   (미해결 이슈)
+└── resolved/
+    └── issue-XXX.md   (해결된 이슈)
+```
 
-**이슈 생성 시**: `docs/issues/unresolved.md`에 추가
+**이슈 생성 시**: `docs/issues/unresolved/issue-XXX.md` 파일 생성
 
 ```markdown
-### issue-005: Parser fails on nested match expressions
+# issue-005: Parser fails on nested match expressions
+
+- **Status**: unresolved
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 19:00
 - **Session**: a1b2c3d4
+
+## Description
+
+{이슈 설명}
 ```
 
 **이슈 해결 시**:
-1. `docs/issues/unresolved.md`에서 해당 이슈 제거
-2. `docs/issues/resolved.md`에 추가:
+1. `docs/issues/unresolved/issue-XXX.md` 파일을 `docs/issues/resolved/`로 이동
+2. Resolution 정보 추가:
 
 ```markdown
-### issue-001: Parser conflict with NEWLINE token
+# issue-001: Parser conflict with NEWLINE token
+
+- **Status**: resolved
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 18:30
 - **Resolved**: 2026-01-10 19:05
-- **Resolution**: Added nl_opt rule for optional NEWLINE
+
+## Description
+
+{이슈 설명}
+
+## Resolution
+
+Added nl_opt rule for optional NEWLINE.
 ```
 
 ## Session State Schema

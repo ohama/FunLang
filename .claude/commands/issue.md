@@ -170,60 +170,74 @@ Resolution: Added nl_opt rule for optional NEWLINE
 
 ### Issue History (docs/issues/)
 
-이슈는 두 개의 파일로 분리 저장:
+각 이슈는 개별 파일로 저장:
 
-| 파일 | 내용 |
-|------|------|
-| `docs/issues/unresolved.md` | 현재 미해결 이슈 |
-| `docs/issues/resolved.md` | 해결된 이슈 히스토리 |
+```
+docs/issues/
+├── unresolved/
+│   ├── issue-001.md
+│   ├── issue-002.md
+│   └── ...
+└── resolved/
+    ├── issue-000.md
+    └── ...
+```
 
-#### docs/issues/unresolved.md
+#### Unresolved Issue 파일 형식
+
+`docs/issues/unresolved/issue-005.md`:
 
 ```markdown
-# Unresolved Issues
+# issue-005: Parser fails on nested match expressions
 
-현재 해결되지 않은 이슈 목록입니다.
-
----
-
-### issue-005: Parser fails on nested match expressions
+- **Status**: unresolved
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 19:00
 - **Session**: a1b2c3d4
 
----
+## Description
 
-**Total: 1**
+Parser fails when handling nested match expressions.
+
+## Notes
+
+- Related to pattern matching implementation
+- Might need grammar changes
 ```
 
-#### docs/issues/resolved.md
+#### Resolved Issue 파일 형식
+
+`docs/issues/resolved/issue-001.md`:
 
 ```markdown
-# Resolved Issues
+# issue-001: Parser conflict with NEWLINE token
 
-해결된 이슈 히스토리입니다.
-
----
-
-### issue-001: Parser conflict with NEWLINE token
+- **Status**: resolved
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 18:30
 - **Resolved**: 2026-01-10 19:05
-- **Resolution**: Added nl_opt rule for optional NEWLINE
+- **Session Created**: a1b2c3d4
+- **Session Resolved**: b2c3d4e5
 
----
+## Description
 
-**Total: 1**
+Parser conflict when NEWLINE appears after IN keyword.
+
+## Resolution
+
+Added nl_opt rule for optional NEWLINE after IN, THEN, ELSE, ARROW.
 ```
 
-### 이슈 상태 변경 시 파일 업데이트
+### 이슈 상태 변경 시 파일 이동
 
-1. **이슈 생성 시**: `docs/issues/unresolved.md`에 추가
+1. **이슈 생성 시**:
+   - `docs/issues/unresolved/issue-XXX.md` 파일 생성
+
 2. **이슈 해결 시**:
-   - `docs/issues/unresolved.md`에서 제거
-   - `docs/issues/resolved.md`에 추가 (resolution 포함)
+   - `docs/issues/unresolved/issue-XXX.md` → `docs/issues/resolved/issue-XXX.md` 이동
+   - Resolution 정보 추가
 
 ## Integration with Session Commands
 

@@ -121,8 +121,8 @@ See .claude/DEBUGGING.md for full guide.
 .claude/DEBUGGING.md         - Debugging guide
 CLAUDE.md                    - Development guidelines
 README.md                    - Project overview
-docs/issues/unresolved.md    - Unresolved issues
-docs/issues/resolved.md      - Resolved issues history
+docs/issues/unresolved/      - Unresolved issue files
+docs/issues/resolved/        - Resolved issue files
 ```
 
 ## Output
@@ -188,6 +188,6 @@ If no unresolved issues exist, skip this section entirely.
 /issue show <id>    # Show issue details
 ```
 
-See `docs/issues/` for issue history:
-- `docs/issues/unresolved.md` - 미해결 이슈
-- `docs/issues/resolved.md` - 해결된 이슈
+See `docs/issues/` for issue files:
+- `docs/issues/unresolved/` - 미해결 이슈 (이슈당 1파일)
+- `docs/issues/resolved/` - 해결된 이슈 (이슈당 1파일)
