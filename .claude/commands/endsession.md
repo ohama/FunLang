@@ -165,8 +165,39 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 | 섹션 | 업데이트 방식 |
 |------|---------------|
 | Current Status | 매 세션 **덮어쓰기** |
-| Recent Sessions | 새 세션을 **맨 위에 추가** (최근 5개 유지) |
-| Accumulated Knowledge | 새 발견 시 **추가** (삭제 안함) |
+| Recent Sessions | 새 세션을 **맨 위에 추가** (최근 5개 유지, 초과분 삭제) |
+| Accumulated Knowledge | 새 발견 시 **추가**, Phase 완료 시 **통합/정리** |
+
+### 크기 관리 규칙
+
+HISTORY.md가 너무 커지지 않도록 관리:
+
+| 항목 | 제한 | 초과 시 처리 |
+|------|------|--------------|
+| Recent Sessions | 최대 5개 | 오래된 세션 삭제 |
+| Accumulated Knowledge | Phase당 10개 항목 | 통합/요약 |
+| 전체 파일 | ~500줄 | 월별 아카이브 |
+
+**월별 아카이브:**
+- 파일이 너무 커지면 `docs/history/YYYY-MM.md`로 이동
+- HISTORY.md에는 최근 내용만 유지
+- 아카이브 예: `docs/history/2026-01.md`
+
+**Accumulated Knowledge 정리 시점:**
+1. Phase 완료 시
+2. 같은 주제 항목이 5개 이상일 때
+3. 중복/구식 정보 발견 시
+
+**정리 방법:**
+```
+Before:
+- FsLexYacc --module 플래그 필요
+- FsLexYacc --unicode 플래그 필요
+- Parser.fs가 Lexer.fs보다 먼저 컴파일
+
+After (통합):
+- FsLexYacc: --module, --unicode 필수; Parser.fs → Lexer.fs 순서
+```
 
 ### 저장할 컨텍스트
 
