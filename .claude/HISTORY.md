@@ -3,10 +3,66 @@
 ## Current Status
 
 - **Phase**: Phase 7 In Progress
-- **Tests**: 307 passed
+- **Tests**: 320 passed
 - **Last Session**: 2026-01-11
 
 ## Recent Sessions
+
+### 2026-01-11 07:21 (Session: p6789012)
+
+**주요 변경 사항:**
+- Multiline if-then-else 파싱 버그 수정
+- Parser.fsy: ELSE 앞에 nl_opt 추가하여 줄바꿈 허용
+- demos/013-tree-sort.fun 추가: Tree 'a 타입으로 BST 정렬 구현
+- 테스트: 319 → 320 (+1 tree-sort demo)
+- 2개 이슈 발견 및 기록 (issue-004, issue-005)
+
+**시도한 실험:**
+- Multiline let rec 체인: 5개 이상에서 파싱 실패 발견
+- 주석 처리: 렉서에서 미지원 확인
+- 단일 라인 형식으로 복잡한 함수 체인 해결
+
+**배운 점:**
+- Parser grammar에서 optional NEWLINE 위치가 중요
+- 5+ multiline let rec 체인은 indentation 처리 문제로 실패
+- 주석은 렉서에서 처리 안됨 (테스트에서 제거 후 파싱)
+
+**Key Decisions:**
+- Multiline if-then-else 지원을 위해 parser grammar 수정
+- Tree sort는 단일 라인 형식으로 작성 (파서 제약 우회)
+- 발견된 이슈 즉시 기록 (issue-004, issue-005)
+
+**Unresolved Issues:**
+- issue-004: 주석 (`--`) 렉서 미지원
+- issue-005: 5+ multiline let rec 체인 파싱 실패
+
+---
+
+### 2026-01-11 02:04 (Session: o5678901)
+
+**주요 변경 사항:**
+- File-based demo tests 구현
+- demos/ 디렉토리 생성 (12개 .fun 파일)
+- DemoTests.fs: 자동 파일 탐색 및 테스트 실행
+- 테스트: 307 → 319 (+12 demo tests)
+
+**시도한 실험:**
+- Multiline if-then-else in demo files → parse error
+- Single-line format으로 변경하여 해결
+
+**배운 점:**
+- `-- Expected: <value>` 헤더로 예상 결과 지정
+- demos/ 디렉토리에 .fun 파일 추가하면 자동 테스트 탐색
+- Multiline expressions는 아직 parser 제약 있음
+
+**Key Decisions:**
+- Demo file format: `-- Expected:` 헤더 사용
+- 자동 파일 탐색으로 새 테스트 추가 용이
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-11 01:56 (Session: n4567890)
 
@@ -334,6 +390,16 @@
 - EBlock이 마지막 표현식 값 반환
 - 괄호 내 들여쓰기 무시 (Python처럼)
 
+### Multiline Expression Support
+- Parser grammar에서 nl_opt로 optional NEWLINE 처리
+- if-then-else: `IF expr THEN nl_opt expr nl_opt ELSE nl_opt expr`
+- match: `match_cases_start`에서 NEWLINE 허용
+
+### Known Parser Limitations
+- 주석 (`--`): 렉서에서 미지원, DemoTests에서 제거 후 파싱
+- 5+ multiline let rec 체인: indentation 처리 문제로 파싱 실패
+- 우회: 단일 라인 형식 사용
+
 ### Phase Completion History
 - Phase 0: Infrastructure Setup - COMPLETE
 - Phase 1: Core Expressions - COMPLETE
@@ -342,4 +408,4 @@
 - Phase 4: Pattern Matching - COMPLETE
 - Phase 5: Type System - COMPLETE
 - Phase 6: User-Defined Types - COMPLETE (297 tests)
-- Phase 7: Advanced Features - IN PROGRESS (302 tests, constructor patterns done)
+- Phase 7: Advanced Features - IN PROGRESS (320 tests, constructor patterns + tree sort done)
