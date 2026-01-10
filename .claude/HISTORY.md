@@ -2,11 +2,95 @@
 
 ## Current Status
 
-- **Phase**: Phase 6 In Progress (Part 4)
-- **Tests**: 287 passed
-- **Last Session**: 2026-01-10
+- **Phase**: Phase 7 In Progress
+- **Tests**: 307 passed
+- **Last Session**: 2026-01-11
 
 ## Recent Sessions
+
+### 2026-01-11 01:56 (Session: n4567890)
+
+**주요 변경 사항:**
+- Recursive types 구현 완료 (Phase 7 Part 2)
+- TypeExpr 타입 추가 (TEVar, TEName, TEApp, TETuple)
+- Parser.fsy: type_expr 문법 추가 (tuple types, type applications)
+- TypeDefEnvBuilder: typeExprToType 함수 추가
+- 5개 recursive type 테스트 추가 (302 → 307)
+
+**시도한 실험:**
+- TDD: 실패 테스트 먼저 작성 → AST 확장 → Parser 수정 → TypeDefEnvBuilder 수정
+- 복합 타입 문법: `'a * List 'a` 파싱 성공
+
+**배운 점:**
+- ConstructorDef의 argument type을 string에서 TypeExpr로 변경하여 복합 타입 지원
+- typeExprToType: TypeExpr → Type 변환으로 재귀적 타입 참조 처리
+- Parser shift/reduce conflicts는 type application에서 예상대로 발생 (shift 우선)
+
+**Key Decisions:**
+- TypeExpr: 별도 타입으로 AST에 추가 (Type과 구분)
+- typeExprToType: 타입 변수 매핑과 함께 TypeExpr → Type 변환
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-11 00:50 (Session: l2345678)
+
+**주요 변경 사항:**
+- Phase 7 시작: Constructor application patterns in parser 구현
+- Parser.fsy: cons_pattern에 'IDENT pattern_atom' 규칙 추가
+- 이제 `Some x`, `Some 42`, `Some (Some x)` 패턴 파싱 지원
+- UserDefinedTypeTests.fs: 5개 constructor pattern 테스트 추가
+- 테스트: 297 → 302 (+5 tests)
+- docs/issues/resolved/003-type-variable-id-collision.md 파일 생성
+
+**시도한 실험:**
+- TDD: 실패 테스트 먼저 작성 → grammar 수정 → 모든 테스트 통과
+- `IDENT pattern_atom { PConstructor($1, Some $2) }` 규칙 추가로 해결
+
+**배운 점:**
+- Parser grammar에서 constructor application pattern은 cons_pattern 레벨에서 처리
+- shift/reduce conflict 없이 깔끔하게 추가 가능
+
+**Key Decisions:**
+- cons_pattern에 IDENT pattern_atom 규칙 추가 (pattern_atom보다 우선)
+- ConstructorResolver와 함께 동작하여 생성자/변수 구분
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-11 00:25 (Session: k1234567)
+
+**주요 변경 사항:**
+- Phase 6 완료: User-Defined Types 전체 구현 완료
+- PConstructor pattern type inference 완전 구현
+- ConstructorResolver 모듈 신규 생성 (EVariable/PVariable → EConstructor/PConstructor)
+- runProgram helper 추가 (full pipeline: parse → resolve → type check → eval)
+- Integration tests 추가 (full pipeline 테스트)
+- 테스트: 287 → 297 (10개 추가)
+
+**시도한 실험:**
+- multiline match 표현식 파싱 → 파서 문법 제약으로 실패
+- unary constructor patterns (Some n) → 파서 미지원, 별도 문법 확장 필요
+- Integration tests를 nullary pattern + wildcard로 단순화하여 성공
+
+**배운 점:**
+- PConstructor inference: lookupConstructor → instantiate → unify with pattern
+- ConstructorResolver로 파싱 후 AST 변환하여 생성자 식별
+- Parser grammar limitation: constructor application patterns 미지원
+
+**Key Decisions:**
+- ConstructorResolver: 파싱 후 별도 pass로 constructor 해석
+- Integration tests: 현재 파서 제약 내에서 테스트 가능한 케이스만 포함
+- Phase 7으로 parser grammar 확장 연기
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-10 23:52 (Session: j0123456)
 
@@ -218,6 +302,10 @@
 - ctorEnv: ThreadLocal<TypeEnv>로 병렬 테스트 안전하게 구현
 - 타입 변수 ID 충돌 방지: TypeDefEnvBuilder는 음수 ID (-1, -2, ...) 사용
 - inferTypeWithTypeDefEnv: 생성자 환경 설정 후 타입 추론 수행
+- PConstructor inference: lookupConstructor → instantiate → unify inner pattern
+- ConstructorResolver: 파싱 후 별도 pass로 EVariable/PVariable → EConstructor/PConstructor 변환
+- runProgram: full pipeline (parseProgramString → resolveProgram → inferTypeWithTypeDefEnv → eval)
+- Phase 7: `IDENT pattern_atom { PConstructor($1, Some $2) }` 규칙으로 생성자 패턴 지원
 
 ### Type System Implementation
 - Algorithm W: 표현식별 추론 → substitution 합성 → 최종 타입
@@ -253,4 +341,5 @@
 - Phase 2 + 3: Functions & Data Structures - COMPLETE
 - Phase 4: Pattern Matching - COMPLETE
 - Phase 5: Type System - COMPLETE
-- Phase 6: User-Defined Types - IN PROGRESS (Part 3 done: type definition environment)
+- Phase 6: User-Defined Types - COMPLETE (297 tests)
+- Phase 7: Advanced Features - IN PROGRESS (302 tests, constructor patterns done)

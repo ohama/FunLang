@@ -87,20 +87,33 @@ type Value =
 and Env = Map<string, Value>
 
 // =============================================================================
+// Type Expressions (for constructor argument types)
+// =============================================================================
+
+/// Type expression in constructor definitions
+/// Used to represent compound types like 'a * List 'a
+type TypeExpr =
+    | TEVar of string                    // 'a, 'b, etc.
+    | TEName of string                   // int, bool, etc.
+    | TEApp of string * TypeExpr list    // List 'a, Option int, etc.
+    | TETuple of TypeExpr list           // 'a * 'b, etc.
+
+// =============================================================================
 // Type Definitions (User-Defined Types)
 // =============================================================================
 
-/// Constructor definition: (name, optional argument type name)
-/// e.g., ("Some", Some "a") for Some of 'a
+/// Constructor definition: (name, optional argument type expression)
+/// e.g., ("Some", Some (TEVar "a")) for Some of 'a
 ///       ("None", None) for None
-type ConstructorDef = string * string option
+///       ("Cons", Some (TETuple [TEVar "a"; TEApp ("List", [TEVar "a"])])) for Cons of 'a * List 'a
+type ConstructorDef = string * TypeExpr option
 
 /// Type definition (discriminated union)
 /// e.g., type Option 'a = None | Some of 'a
 type TypeDef = {
     Name: string              // "Option"
     TypeParams: string list   // ["a"]
-    Constructors: ConstructorDef list  // [("None", None); ("Some", Some "a")]
+    Constructors: ConstructorDef list  // [("None", None); ("Some", Some (TEVar "a"))]
 }
 
 /// Program = type definitions + main expression

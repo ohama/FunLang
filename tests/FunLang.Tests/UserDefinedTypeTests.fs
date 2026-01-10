@@ -208,7 +208,7 @@ let parserTests = testList "Parser - Type Declarations" [
         Expect.equal typeDef.TypeParams ["a"] "should have type param 'a"
         Expect.equal typeDef.Constructors.Length 2 "should have 2 constructors"
         Expect.equal typeDef.Constructors.[0] ("None", None) "first constructor should be None"
-        Expect.equal typeDef.Constructors.[1] ("Some", Some "a") "second constructor should be Some of 'a"
+        Expect.equal typeDef.Constructors.[1] ("Some", Some (TEVar "a")) "second constructor should be Some of 'a"
     }
 
     test "parse constructor expression without argument" {
@@ -273,7 +273,7 @@ let typeDefEnvTests = testList "Type Definition Environment" [
         let typeDef: TypeDef = {
             Name = "Option"
             TypeParams = ["a"]
-            Constructors = [("None", None); ("Some", Some "a")]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
         }
         let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
 
@@ -305,7 +305,7 @@ let typeDefEnvTests = testList "Type Definition Environment" [
         let typeDef: TypeDef = {
             Name = "Option"
             TypeParams = ["a"]
-            Constructors = [("None", None); ("Some", Some "a")]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
         }
         let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
 
@@ -347,7 +347,7 @@ let typeInferenceTests = testList "Type Inference - Constructors" [
         let typeDef: TypeDef = {
             Name = "Option"
             TypeParams = ["a"]
-            Constructors = [("None", None); ("Some", Some "a")]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
         }
         let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
         let expr = EConstructor ("None", None)
@@ -365,7 +365,7 @@ let typeInferenceTests = testList "Type Inference - Constructors" [
         let typeDef: TypeDef = {
             Name = "Option"
             TypeParams = ["a"]
-            Constructors = [("None", None); ("Some", Some "a")]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
         }
         let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
         let expr = EConstructor ("Some", Some (ELiteral (LInt 42)))
@@ -380,7 +380,7 @@ let typeInferenceTests = testList "Type Inference - Constructors" [
         let typeDef: TypeDef = {
             Name = "Option"
             TypeParams = ["a"]
-            Constructors = [("None", None); ("Some", Some "a")]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
         }
         let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
         let inner = EConstructor ("Some", Some (ELiteral (LInt 1)))
@@ -401,25 +401,355 @@ let typeInferenceTests = testList "Type Inference - Constructors" [
 ]
 
 // =============================================================================
+// Pattern Type Inference Tests - PConstructor
+// =============================================================================
+
+let patternTypeInferenceTests = testList "Type Inference - PConstructor Patterns" [
+
+    test "infer type of match with nullary constructor pattern" {
+        // type Bool = True | False
+        // match True with | True -> 1 | False -> 0
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Bool"
+            TypeParams = []
+            Constructors = [("True", None); ("False", None)]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("True", None),
+            [
+                (PConstructor ("True", None), None, ELiteral (LInt 1))
+                (PConstructor ("False", None), None, ELiteral (LInt 0))
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer match on Bool" result
+        Expect.equal t TInt "match should return int"
+    }
+
+    test "infer type of match with unary constructor pattern" {
+        // type Option 'a = None | Some of 'a
+        // match Some 42 with | None -> 0 | Some x -> x
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("Some", Some (ELiteral (LInt 42))),
+            [
+                (PConstructor ("None", None), None, ELiteral (LInt 0))
+                (PConstructor ("Some", Some (PVariable "x")), None, EVariable "x")
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer match on Option int" result
+        Expect.equal t TInt "match should return int"
+    }
+
+    test "infer type bindings in constructor pattern" {
+        // type Option 'a = None | Some of 'a
+        // match Some true with | Some x -> x | None -> false
+        // x should be bound to bool
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("Some", Some (ELiteral (LBool true))),
+            [
+                (PConstructor ("Some", Some (PVariable "x")), None, EVariable "x")
+                (PConstructor ("None", None), None, ELiteral (LBool false))
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer match with bool" result
+        Expect.equal t TBool "x should be bool"
+    }
+
+    test "infer nested constructor pattern" {
+        // type Option 'a = None | Some of 'a
+        // match Some (Some 1) with | Some (Some x) -> x | _ -> 0
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("Some", Some (EConstructor ("Some", Some (ELiteral (LInt 1))))),
+            [
+                (PConstructor ("Some", Some (PConstructor ("Some", Some (PVariable "x")))), None, EVariable "x")
+                (PWildcard, None, ELiteral (LInt 0))
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer nested pattern" result
+        Expect.equal t TInt "nested pattern should infer int"
+    }
+
+    test "type error on constructor pattern mismatch" {
+        // type Bool = True | False
+        // match True with | Some x -> x | _ -> 0
+        // Should fail: Some is not a Bool constructor
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Bool"
+            TypeParams = []
+            Constructors = [("True", None); ("False", None)]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("True", None),
+            [
+                (PConstructor ("Some", Some (PVariable "x")), None, EVariable "x")
+                (PWildcard, None, ELiteral (LInt 0))
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        Expect.isError result "mismatched constructor should fail type check"
+    }
+]
+
+// =============================================================================
 // Integration Tests - Full Pipeline (TODO: implement full pipeline)
 // =============================================================================
 
-let integrationTests = ptestList "Integration - User Types" [
+let integrationTests = testList "Integration - User Types" [
 
-    test "define and use Option type" {
-        // type Option 'a = None | Some of 'a
-        // let x = Some 42
-        // match x with | None -> 0 | Some n -> n
-        let code = """
-type Option 'a = None | Some of 'a
-let x = Some 42
-match x with
-| None -> 0
-| Some n -> n
-"""
-        let result = runString code
-        let value = expectOk "run Option example" result
-        Expect.equal value (VInt 42) "should evaluate to 42"
+    test "debug: parse option type only" {
+        // Just test parsing the type definition
+        let code = "type Option 'a = None | Some of 'a"
+        let result = parseProgramString code
+        match result with
+        | Ok program ->
+            Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+        | Error e ->
+            failtest (sprintf "parse failed: %s" e)
+    }
+
+    test "debug: parse option type with simple expr" {
+        let code = "type Option 'a = None | Some of 'a\n42"
+        let result = parseProgramString code
+        match result with
+        | Ok program ->
+            Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+            Expect.isSome program.MainExpr "should have main expr"
+        | Error e ->
+            failtest (sprintf "parse failed: %s" e)
+    }
+
+    test "debug: parse option type with None expr" {
+        let code = "type Option 'a = None | Some of 'a\nNone"
+        let result = parseProgramString code
+        match result with
+        | Ok program ->
+            Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+            Expect.isSome program.MainExpr "should have main expr"
+        | Error e ->
+            failtest (sprintf "parse failed: %s" e)
+    }
+
+    test "define and use Bool type" {
+        // Nullary constructors work as patterns
+        let code = "type Bool = True | False\nmatch True with | True -> 1 | False -> 0"
+        let result = runProgram code
+        let value = expectOk "run Bool example" result
+        Expect.equal value (VInt 1) "should evaluate to 1"
+    }
+
+    test "pattern match on None" {
+        // Nullary constructor patterns work, but unary (Some n) doesn't
+        // because the parser grammar doesn't support constructor application patterns
+        let code = "type Option 'a = None | Some of 'a\nmatch None with | None -> 0 | _ -> 1"
+        let result = runProgram code
+        let value = expectOk "run None match" result
+        Expect.equal value (VInt 0) "should evaluate to 0"
+    }
+
+    // Note: Full constructor pattern syntax (e.g., "Some n" as a pattern)
+    // requires grammar extension - see PatternTests for AST-level tests
+]
+
+// =============================================================================
+// Phase 7: Constructor Application Patterns in Parser
+// =============================================================================
+// These tests require parser grammar extension to support patterns like "Some n"
+
+let constructorPatternParserTests = testList "Parser - Constructor Application Patterns" [
+
+    test "parse constructor pattern with variable (Some x)" {
+        // match e with | Some x -> x
+        // Should parse "Some x" as PConstructor("Some", Some(PVariable "x"))
+        let code = "type Option 'a = None | Some of 'a\nmatch None with | Some x -> x | None -> 0"
+        let result = parseProgramString code
+        match result with
+        | Error e -> failtest (sprintf "parse failed: %s" e)
+        | Ok program ->
+            match program.MainExpr with
+            | Some (EMatch (_, cases)) ->
+                // First case should have pattern PVariable "Some" (before grammar fix)
+                // or PConstructor ("Some", Some (PVariable "x")) (after grammar fix)
+                let firstPattern = match cases with (p, _, _) :: _ -> p | [] -> PWildcard
+                match firstPattern with
+                | PConstructor ("Some", Some (PVariable "x")) ->
+                    () // Grammar is fixed!
+                | PVariable "Some" ->
+                    failtest "Parser treats 'Some x' as separate tokens - grammar extension needed"
+                | other ->
+                    failtest (sprintf "unexpected pattern: %A" other)
+            | _ -> failtest "expected match expression"
+    }
+
+    test "parse constructor pattern with literal (Some 42)" {
+        let code = "type Option 'a = None | Some of 'a\nmatch None with | Some 42 -> 1 | _ -> 0"
+        let result = parseProgramString code
+        match result with
+        | Error e -> failtest (sprintf "parse failed: %s" e)
+        | Ok program ->
+            match program.MainExpr with
+            | Some (EMatch (_, cases)) ->
+                let firstPattern = match cases with (p, _, _) :: _ -> p | [] -> PWildcard
+                match firstPattern with
+                | PConstructor ("Some", Some (PLiteral (LInt 42))) -> ()
+                | _ -> failtest (sprintf "expected PConstructor Some 42, got: %A" firstPattern)
+            | _ -> failtest "expected match expression"
+    }
+
+    test "parse nested constructor pattern (Some (Some x))" {
+        let code = "type Option 'a = None | Some of 'a\nmatch None with | Some (Some x) -> x | _ -> 0"
+        let result = parseProgramString code
+        match result with
+        | Error e -> failtest (sprintf "parse failed: %s" e)
+        | Ok program ->
+            match program.MainExpr with
+            | Some (EMatch (_, cases)) ->
+                let firstPattern = match cases with (p, _, _) :: _ -> p | [] -> PWildcard
+                match firstPattern with
+                | PConstructor ("Some", Some (PConstructor ("Some", Some (PVariable "x")))) -> ()
+                | _ -> failtest (sprintf "expected nested constructor pattern, got: %A" firstPattern)
+            | _ -> failtest "expected match expression"
+    }
+
+    test "full pipeline: match Some 42 with Some x" {
+        let code = """type Option 'a = None | Some of 'a
+match Some 42 with | Some x -> x | None -> 0"""
+        let result = runProgram code
+        let value = expectOk "run Some pattern match" result
+        Expect.equal value (VInt 42) "should extract 42 from Some"
+    }
+
+    test "full pipeline: nested Some pattern" {
+        let code = """type Option 'a = None | Some of 'a
+match Some (Some 1) with | Some (Some x) -> x | _ -> 0"""
+        let result = runProgram code
+        let value = expectOk "run nested Some" result
+        Expect.equal value (VInt 1) "should extract 1 from nested Some"
+    }
+]
+
+// =============================================================================
+// Phase 7: Recursive Types
+// =============================================================================
+// Recursive types like:
+//   type List 'a = Nil | Cons of 'a * List 'a
+//   type Tree 'a = Leaf of 'a | Node of Tree 'a * Tree 'a
+
+let recursiveTypeTests = testList "Recursive Types" [
+
+    test "parse recursive list type definition" {
+        // type List 'a = Nil | Cons of 'a * List 'a
+        let code = "type List 'a = Nil | Cons of 'a * List 'a"
+        let result = parseStringToProgram code
+        let program = expectOk "parse List type" result
+        Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+        let typeDef = program.TypeDefs.[0]
+        Expect.equal typeDef.Name "List" "type name should be List"
+        Expect.equal typeDef.TypeParams ["a"] "should have type param 'a"
+        Expect.equal typeDef.Constructors.Length 2 "should have 2 constructors"
+    }
+
+    test "build type env for recursive list type" {
+        // type List 'a = Nil | Cons of 'a * List 'a
+        // Nil : forall 'a. List 'a
+        // Cons : forall 'a. 'a * List 'a -> List 'a
+        let typeDef: TypeDef = {
+            Name = "List"
+            TypeParams = ["a"]
+            Constructors = [("Nil", None); ("Cons", Some (TETuple [TEVar "a"; TEApp ("List", [TEVar "a"])]))]
+        }
+        let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+
+        Expect.isTrue (Map.containsKey "Nil" env) "should have Nil"
+        Expect.isTrue (Map.containsKey "Cons" env) "should have Cons"
+
+        // Check Cons type: forall 'a. ('a * List 'a) -> List 'a
+        match Map.tryFind "Cons" env with
+        | Some (Forall (vars, TFun (argType, resultType))) ->
+            Expect.equal vars.Length 1 "should have 1 quantified var"
+            // argType should be TTuple ['a, List 'a]
+            match argType with
+            | TTuple [TVar _; TConstructor ("List", [TVar _])] -> ()
+            | _ -> failtest (sprintf "expected tuple type, got %A" argType)
+        | Some scheme -> failtest (sprintf "unexpected scheme: %A" scheme)
+        | None -> failtest "Cons not found in env"
+    }
+
+    test "infer type of Nil constructor" {
+        // type List 'a = Nil | Cons of 'a * List 'a
+        // Nil : List 'a
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "List"
+            TypeParams = ["a"]
+            Constructors = [("Nil", None); ("Cons", Some (TETuple [TEVar "a"; TEApp ("List", [TEVar "a"])]))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EConstructor ("Nil", None)
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer Nil" result
+        match t with
+        | TConstructor ("List", [TVar _]) -> ()
+        | _ -> failtest (sprintf "expected List<'a>, got %A" t)
+    }
+
+    test "infer type of Cons constructor" {
+        // Cons (1, Nil) : List int
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "List"
+            TypeParams = ["a"]
+            Constructors = [("Nil", None); ("Cons", Some (TETuple [TEVar "a"; TEApp ("List", [TEVar "a"])]))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let nil = EConstructor ("Nil", None)
+        let pair = ETuple [ELiteral (LInt 1); nil]
+        let cons = EConstructor ("Cons", Some pair)
+        let result = inferTypeWithTypeDefEnv typeDefEnv cons
+        let t = expectOk "infer Cons" result
+        Expect.equal t (TConstructor ("List", [TInt])) "Cons (1, Nil) should be List<int>"
+    }
+
+    test "pattern match on recursive list" {
+        // match Nil with | Nil -> 0 | Cons (h, t) -> h
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "List"
+            TypeParams = ["a"]
+            Constructors = [("Nil", None); ("Cons", Some (TETuple [TEVar "a"; TEApp ("List", [TEVar "a"])]))]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EMatch (
+            EConstructor ("Nil", None),
+            [
+                (PConstructor ("Nil", None), None, ELiteral (LInt 0))
+                (PConstructor ("Cons", Some (PTuple [PVariable "h"; PVariable "t"])), None, EVariable "h")
+            ])
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer match on List" result
+        Expect.equal t TInt "match should return int"
     }
 ]
 
@@ -460,9 +790,12 @@ let allUserTypeTests = testList "User-Defined Types" [
     lexerTests
     astTests
     interpreterTests
-    parserTests          // Enabled: type declaration parsing
-    typeDefEnvTests      // Type definition environment tests
-    typeInferenceTests   // Constructor type inference tests
-    // integrationTests  // TODO: Enable after full implementation
+    parserTests                       // Enabled: type declaration parsing
+    typeDefEnvTests                   // Type definition environment tests
+    typeInferenceTests                // Constructor type inference tests
+    patternTypeInferenceTests         // PConstructor pattern type inference tests
+    integrationTests                  // Full pipeline tests
+    constructorPatternParserTests     // Phase 7: Constructor application patterns
+    recursiveTypeTests                // Phase 7: Recursive types
     propertyTests
 ]

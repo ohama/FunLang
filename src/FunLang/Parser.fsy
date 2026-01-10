@@ -134,8 +134,41 @@ constructor_list:
 
 constructor_def:
     | IDENT                             { ($1, None) }
-    | IDENT OF TYPEVAR                  { ($1, Some $3) }
-    | IDENT OF IDENT                    { ($1, Some $3) }
+    | IDENT OF type_expr                { ($1, Some $3) }
+;
+
+// =============================================================================
+// Type Expressions (for constructor argument types)
+// =============================================================================
+
+// Tuple types have lower precedence: 'a * 'b * 'c
+type_expr:
+    | type_app_expr STAR type_tuple_rest   { TETuple($1 :: $3) }
+    | type_app_expr                        { $1 }
+;
+
+type_tuple_rest:
+    | type_app_expr                        { [$1] }
+    | type_app_expr STAR type_tuple_rest   { $1 :: $3 }
+;
+
+// Type application: List 'a, Option int
+type_app_expr:
+    | IDENT type_arg_list                  { TEApp($1, $2) }
+    | type_atom                            { $1 }
+;
+
+// Type arguments (one or more type atoms)
+type_arg_list:
+    | type_atom                            { [$1] }
+    | type_atom type_arg_list              { $1 :: $2 }
+;
+
+// Atomic types: 'a, int, (type_expr)
+type_atom:
+    | TYPEVAR                              { TEVar $1 }
+    | IDENT                                { TEName $1 }
+    | LPAREN type_expr RPAREN              { $2 }
 ;
 
 expr:
@@ -181,6 +214,7 @@ pattern:
 ;
 
 cons_pattern:
+    | IDENT pattern_atom                      { PConstructor($1, Some $2) }
     | pattern_atom DOUBLECOLON cons_pattern   { PCons($1, $3) }
     | pattern_atom                            { $1 }
 ;

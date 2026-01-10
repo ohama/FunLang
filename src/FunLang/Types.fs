@@ -264,6 +264,34 @@ type InferResult = Result<Substitution * Type, TypeError>
 module TypeDefEnvBuilder =
     open FunLang.Ast
 
+    /// Convert a TypeExpr to a Type, using the given type variable mapping
+    let rec typeExprToType (typeVarMap: Map<string, TypeVar>) (te: TypeExpr) : Type =
+        match te with
+        | TEVar name ->
+            // Type variable: 'a -> TVar (lookup from map)
+            match Map.tryFind name typeVarMap with
+            | Some v -> TVar v
+            | None -> TVar 0  // Shouldn't happen if type definition is valid
+
+        | TEName name ->
+            // Primitive type name or nullary type constructor
+            match name with
+            | "int" -> TInt
+            | "bool" -> TBool
+            | "string" -> TString
+            | "unit" -> TUnit
+            | _ -> TConstructor (name, [])
+
+        | TEApp (name, args) ->
+            // Type application: List 'a, Option int
+            let argTypes = args |> List.map (typeExprToType typeVarMap)
+            TConstructor (name, argTypes)
+
+        | TETuple exprs ->
+            // Tuple type: 'a * 'b
+            let elemTypes = exprs |> List.map (typeExprToType typeVarMap)
+            TTuple elemTypes
+
     /// Build constructor type from a type definition
     /// For `type Option 'a = None | Some of 'a`:
     /// - None : forall 'a. Option 'a
@@ -272,7 +300,7 @@ module TypeDefEnvBuilder =
         (typeName: string)
         (typeParams: string list)
         (typeVarMap: Map<string, TypeVar>)
-        (constructorName: string, argTypeOpt: string option)
+        (constructorName: string, argTypeOpt: TypeExpr option)
         : string * TypeScheme =
 
         // Build the result type: TypeName<'a1, 'a2, ...>
@@ -285,12 +313,10 @@ module TypeDefEnvBuilder =
             | None ->
                 // Nullary constructor: None : Option 'a
                 resultType
-            | Some argTypeName ->
+            | Some typeExpr ->
                 // Unary constructor: Some : 'a -> Option 'a
-                let argType =
-                    match Map.tryFind argTypeName typeVarMap with
-                    | Some v -> TVar v
-                    | None -> TConstructor (argTypeName, [])  // Could be another type name
+                // or Cons : 'a * List 'a -> List 'a
+                let argType = typeExprToType typeVarMap typeExpr
                 TFun (argType, resultType)
 
         // Quantified variables

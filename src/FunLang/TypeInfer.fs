@@ -327,10 +327,32 @@ and inferPattern (pattern: Pattern) : TypeResult<Map<string, Type> * Type> =
             return (mergedBindings, TypeHelpers.apply s τ2)
         }
 
-    | PConstructor (_, _) ->
-        // TODO: Phase 6 - User-defined types
-        let α = TypeHelpers.freshTypeVar ()
-        Ok (Map.empty, α)
+    | PConstructor (name, argPatOpt) ->
+        match lookupConstructor name with
+        | None ->
+            // Unknown constructor - return error
+            Error (TypeError.unboundVar name None)
+        | Some scheme ->
+            // Instantiate the constructor's type scheme
+            let ctorType = TypeHelpers.instantiate scheme
+            match argPatOpt, ctorType with
+            // Constructor expects argument but none provided in pattern
+            | None, TFun _ ->
+                Error (TypeError.arityMismatch 1 0 None)
+            // Nullary constructor pattern: None, True, etc.
+            | None, resultType ->
+                Ok (Map.empty, resultType)
+            // Unary constructor pattern: Some x, Cons h t, etc.
+            | Some argPat, TFun (argType, resultType) ->
+                result {
+                    let! (innerBindings, τInner) = inferPattern argPat
+                    let! s = unify τInner argType
+                    let bindings = Map.map (fun _ t -> TypeHelpers.apply s t) innerBindings
+                    return (bindings, TypeHelpers.apply s resultType)
+                }
+            // Constructor doesn't expect argument but pattern has one
+            | Some _, _ ->
+                Error (TypeError.arityMismatch 0 1 None)
 
 /// Infer type of match expression
 and inferMatch (env: TypeEnv) (scrutinee: Expr) (cases: (Pattern * Expr option * Expr) list) : InferResult =

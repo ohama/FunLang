@@ -50,6 +50,7 @@
     <Compile Include="Lexer.fs" />
     <Compile Include="Indentation.fs" />
     <Compile Include="ParserWrapper.fs" />
+    <Compile Include="ConstructorResolver.fs" />
     <Compile Include="Interpreter.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
