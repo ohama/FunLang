@@ -2,13 +2,40 @@
 
 ## Current Status
 
-- **Phase**: Phase 4 Complete + Issue Management System
+- **Phase**: Phase 4 Complete + Session Management System
 - **Tests**: 206 passed
 - **Last Session**: 2026-01-10
 
 ## Recent Sessions
 
-### 2026-01-10 (Session: a1b2c3d4)
+### 2026-01-10 19:47 (Session: b2c3d4e5)
+
+**주요 변경 사항:**
+- Context Handoff 시스템 구현 (HISTORY.md ↔ session commands)
+- startsession: HISTORY.md에서 컨텍스트 복원
+- endsession: HISTORY.md에 컨텍스트 저장, 리셋 워크플로우 문서화
+- HISTORY.md 크기 관리 규칙 추가
+
+**시도한 실험:**
+- 사용자 질문 방식 → 자동 판단 방식으로 변경 (startsession, endsession 모두)
+- HISTORY.md 구조: Current Status / Recent Sessions / Accumulated Knowledge
+
+**배운 점:**
+- AI 컨텍스트는 대화 단위로 관리됨 (새 대화 = 리셋)
+- HISTORY.md를 통한 세션 간 핸드오프가 효과적
+- 파일 크기 관리 필요: Recent Sessions 5개, 월별 아카이브
+
+**Key Decisions:**
+- 컨텍스트 리셋 워크플로우: /endsession → 새 대화 → /startsession
+- HISTORY.md 최대 ~500줄, 초과시 docs/history/로 아카이브
+- Accumulated Knowledge는 Phase 완료 시 통합/정리
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-10 19:22 (Session: a1b2c3d4)
 
 **주요 변경 사항:**
 - Phase 4: Pattern Matching 완료 (206 tests)
