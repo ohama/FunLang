@@ -257,100 +257,16 @@ After (통합):
 
 세션 종료 시 이슈 상태를 **컨텍스트에서 자동 판단**합니다. (사용자에게 질문하지 않음)
 
-**관련 명령어:** `/issue` - 이슈 조회/추가/해결
-
-### 자동 판단 기준
-
-세션 컨텍스트를 분석하여 다음을 확인:
-
-| 확인 사항 | 판단 기준 |
-|-----------|-----------|
-| 빌드 실패 | 세션 중 `dotnet build` 실패 여부 |
-| 테스트 실패 | 세션 중 `dotnet test` 실패 여부 |
-| 미해결 문제 | 대화 중 해결되지 않은 에러/버그 언급 |
-| 해결된 이슈 | 기존 unresolved 이슈가 해결됨 |
+> **상세 가이드:** `.claude/ISSUES.md` 참조
 
 ### 자동 처리 로직
 
-```
-1. 세션 컨텍스트 분석
-   ↓
-2. 빌드/테스트 실패가 있었는가?
-   - 있었다면: 이슈로 기록되었는지 확인
-   - 기록 안됨: state.json에 이슈 추가
-   ↓
-3. 기존 unresolved 이슈 중 해결된 것?
-   - 있다면: resolved로 이동
-   ↓
+1. 세션 컨텍스트에서 빌드/테스트 실패 여부 확인
+2. 미기록 이슈 발견 시 자동 생성
+3. 해결된 이슈 자동 감지 및 상태 업데이트
 4. Session Summary에 이슈 현황 표시
-```
-
-### 이슈 미기록 시 자동 생성
-
-세션 중 실패가 있었지만 이슈가 기록되지 않은 경우, endsession 시점에 자동 생성:
-
-```json
-{
-  "id": "issue-XXX",
-  "description": "[Auto] 빌드/테스트 실패 발생",
-  "summary": "세션 중 발생한 미기록 이슈",
-  "priority": "medium",
-  "context": "endsession auto-detected"
-}
-```
-
-### 이슈 기록 위치
-
-1. **`.claude/session/state.json`**: 현재 이슈 상태 (실시간)
-2. **`docs/issues/unresolved/`**: 미해결 이슈 파일 (이슈당 1파일)
-3. **`docs/issues/resolved/`**: 해결된 이슈 파일 (이슈당 1파일)
-
-### ⚠️ 필수 이슈 기록
-
-세션 중 빌드/테스트 실패가 있었다면 반드시 이슈가 기록되어야 합니다:
-
-| 상황 | 필수 행동 |
-|------|-----------|
-| 빌드 실패 발생 | `/issue add "빌드 에러: ..."` |
-| 테스트 실패 발생 | `/issue add "테스트 실패: ..."` |
-| 이슈 해결됨 | `/issue resolve <id>` |
-
-**체크**: endsession 전에 모든 실패가 이슈로 기록되었는지 확인!
-
-### 이슈 기록 형식 (state.json)
-
-```json
-{
-  "issues": {
-    "unresolved": [
-      {
-        "id": "issue-001",
-        "createdAt": "ISO timestamp",
-        "description": "이슈 설명",
-        "context": "관련 파일/함수",
-        "priority": "high|medium|low",
-        "sessionCreated": "session-id"
-      }
-    ],
-    "resolved": [
-      {
-        "id": "issue-001",
-        "createdAt": "ISO timestamp",
-        "resolvedAt": "ISO timestamp",
-        "description": "이슈 설명",
-        "resolution": "해결 방법",
-        "sessionCreated": "session-id",
-        "sessionResolved": "session-id"
-      }
-    ],
-    "nextId": 2
-  }
-}
-```
 
 ### Session Issues Display (endsession 시)
-
-이번 세션에서 생성/해결된 이슈를 표시:
 
 ```
 === Session Issues ===
@@ -364,56 +280,6 @@ Resolved this session (1):
   → Added nl_opt rule for optional NEWLINE
 
 ======================
-```
-
-### docs/issues/ 파일 관리
-
-각 이슈는 개별 파일로 저장:
-
-```
-docs/issues/
-├── unresolved/
-│   └── issue-XXX.md   (미해결 이슈)
-└── resolved/
-    └── issue-XXX.md   (해결된 이슈)
-```
-
-**이슈 생성 시**: `docs/issues/unresolved/issue-XXX.md` 파일 생성
-
-```markdown
-# issue-005: Parser fails on nested match expressions
-
-- **Status**: unresolved
-- **Priority**: high
-- **Context**: src/FunLang/Parser.fsy
-- **Created**: 2026-01-10 19:00
-- **Session**: a1b2c3d4
-
-## Description
-
-{이슈 설명}
-```
-
-**이슈 해결 시**:
-1. `docs/issues/unresolved/issue-XXX.md` 파일을 `docs/issues/resolved/`로 이동
-2. Resolution 정보 추가:
-
-```markdown
-# issue-001: Parser conflict with NEWLINE token
-
-- **Status**: resolved
-- **Priority**: high
-- **Context**: src/FunLang/Parser.fsy
-- **Created**: 2026-01-10 18:30
-- **Resolved**: 2026-01-10 19:05
-
-## Description
-
-{이슈 설명}
-
-## Resolution
-
-Added nl_opt rule for optional NEWLINE.
 ```
 
 ## Session State Schema

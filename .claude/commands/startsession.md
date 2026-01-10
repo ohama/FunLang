@@ -271,21 +271,9 @@ Use `/issue resolve <id>` to mark as resolved
 
 If no unresolved issues exist, skip this section entirely.
 
-### Issue Management Commands
+### Issue Management
 
-```
-/issue              # Show all unresolved issues
-/issue unresolved   # Show all unresolved issues (summary)
-/issue resolved     # Show all resolved issues (summary)
-/issue all          # Show all issues (resolved + unresolved)
-/issue add <desc>   # Add new issue
-/issue resolve <id> # Mark issue as resolved
-/issue show <id>    # Show issue details
-```
-
-**이슈 파일 위치:**
-- `docs/issues/unresolved/issue-XXX.md` - 미해결 이슈
-- `docs/issues/resolved/issue-XXX.md` - 해결된 이슈
+> **상세 가이드:** `.claude/ISSUES.md` 참조
 
 **필수 이슈 기록:**
 - 빌드 실패 → `/issue add "빌드 에러: ..."`

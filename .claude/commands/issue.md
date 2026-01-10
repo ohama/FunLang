@@ -2,6 +2,8 @@
 
 Manage project issues (bugs, blockers, todos for later).
 
+> **중앙 문서:** `.claude/ISSUES.md` - 이슈 관리 시스템의 전체 가이드
+
 ## Usage
 
 ```
