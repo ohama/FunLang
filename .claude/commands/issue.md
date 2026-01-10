@@ -168,24 +168,43 @@ Resolution: Added nl_opt rule for optional NEWLINE
 }
 ```
 
-### Issue History (`docs/issues.md`)
+### Issue History (docs/issues/)
 
-Persistent record of all issues:
+이슈는 두 개의 파일로 분리 저장:
+
+| 파일 | 내용 |
+|------|------|
+| `docs/issues/unresolved.md` | 현재 미해결 이슈 |
+| `docs/issues/resolved.md` | 해결된 이슈 히스토리 |
+
+#### docs/issues/unresolved.md
 
 ```markdown
-# Issue History
+# Unresolved Issues
 
-## Unresolved
+현재 해결되지 않은 이슈 목록입니다.
+
+---
 
 ### issue-005: Parser fails on nested match expressions
-- **Priority**: medium
+- **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 19:00
 - **Session**: a1b2c3d4
 
 ---
 
-## Resolved
+**Total: 1**
+```
+
+#### docs/issues/resolved.md
+
+```markdown
+# Resolved Issues
+
+해결된 이슈 히스토리입니다.
+
+---
 
 ### issue-001: Parser conflict with NEWLINE token
 - **Priority**: high
@@ -195,7 +214,16 @@ Persistent record of all issues:
 - **Resolution**: Added nl_opt rule for optional NEWLINE
 
 ---
+
+**Total: 1**
 ```
+
+### 이슈 상태 변경 시 파일 업데이트
+
+1. **이슈 생성 시**: `docs/issues/unresolved.md`에 추가
+2. **이슈 해결 시**:
+   - `docs/issues/unresolved.md`에서 제거
+   - `docs/issues/resolved.md`에 추가 (resolution 포함)
 
 ## Integration with Session Commands
 

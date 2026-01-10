@@ -117,11 +117,12 @@ See .claude/DEBUGGING.md for full guide.
 ### Key Files
 
 ```
-.claude/PLAN.md       - Implementation plan
-.claude/DEBUGGING.md  - Debugging guide
-CLAUDE.md             - Development guidelines
-README.md             - Project overview
-docs/issues.md        - Issue history
+.claude/PLAN.md              - Implementation plan
+.claude/DEBUGGING.md         - Debugging guide
+CLAUDE.md                    - Development guidelines
+README.md                    - Project overview
+docs/issues/unresolved.md    - Unresolved issues
+docs/issues/resolved.md      - Resolved issues history
 ```
 
 ## Output
@@ -187,4 +188,6 @@ If no unresolved issues exist, skip this section entirely.
 /issue show <id>    # Show issue details
 ```
 
-See `docs/issues.md` for full issue history.
+See `docs/issues/` for issue history:
+- `docs/issues/unresolved.md` - 미해결 이슈
+- `docs/issues/resolved.md` - 해결된 이슈

@@ -164,23 +164,30 @@ Resolved this session (1):
 ======================
 ```
 
-### docs/issues.md 업데이트
+### docs/issues/ 파일 업데이트
 
-이슈 생성/해결 시 `docs/issues.md` 파일도 함께 업데이트:
+이슈는 두 개의 파일로 분리 저장:
+
+| 파일 | 내용 |
+|------|------|
+| `docs/issues/unresolved.md` | 현재 미해결 이슈 |
+| `docs/issues/resolved.md` | 해결된 이슈 히스토리 |
+
+**이슈 생성 시**: `docs/issues/unresolved.md`에 추가
 
 ```markdown
-## Unresolved
-
 ### issue-005: Parser fails on nested match expressions
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
 - **Created**: 2026-01-10 19:00
 - **Session**: a1b2c3d4
+```
 
----
+**이슈 해결 시**:
+1. `docs/issues/unresolved.md`에서 해당 이슈 제거
+2. `docs/issues/resolved.md`에 추가:
 
-## Resolved
-
+```markdown
 ### issue-001: Parser conflict with NEWLINE token
 - **Priority**: high
 - **Context**: src/FunLang/Parser.fsy
