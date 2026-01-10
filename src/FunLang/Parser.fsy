@@ -97,13 +97,19 @@ prog:
 ;
 
 expr:
-    | LET IDENT EQ expr IN expr         { ELet($2, $4, $6) }
-    | LET REC IDENT EQ expr IN expr     { ELetRec($3, $5, $7) }
-    | IF expr THEN expr ELSE expr       { EIf($2, $4, $6) }
-    | FUN IDENT ARROW expr              { ELambda($2, $4) }
-    | MATCH expr WITH match_cases_start  { EMatch($2, $4) }
-    | block                             { $1 }
-    | cons_expr                         { $1 }
+    | LET IDENT EQ expr IN nl_opt expr         { ELet($2, $4, $7) }
+    | LET REC IDENT EQ expr IN nl_opt expr     { ELetRec($3, $5, $8) }
+    | IF expr THEN nl_opt expr ELSE nl_opt expr { EIf($2, $5, $8) }
+    | FUN IDENT ARROW nl_opt expr              { ELambda($2, $5) }
+    | MATCH expr WITH match_cases_start        { EMatch($2, $4) }
+    | block                                    { $1 }
+    | cons_expr                                { $1 }
+;
+
+// Optional NEWLINE (for multiline expressions)
+nl_opt:
+    | /* empty */                       { () }
+    | NEWLINE                           { () }
 ;
 
 // =============================================================================
@@ -118,8 +124,8 @@ match_cases:
 ;
 
 match_case:
-    | PIPE pattern ARROW expr                   { ($2, None, $4) }
-    | PIPE pattern WHEN expr ARROW expr         { ($2, Some $4, $6) }
+    | PIPE pattern ARROW nl_opt expr                   { ($2, None, $5) }
+    | PIPE pattern WHEN expr ARROW nl_opt expr         { ($2, Some $4, $7) }
 ;
 
 // Handle NEWLINE before first PIPE (for indented match)

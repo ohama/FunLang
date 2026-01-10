@@ -269,6 +269,57 @@ let practicalTests = testList "Practical Examples" [
 ]
 
 // =============================================================================
+// Multiline Pattern Matching Tests
+// =============================================================================
+
+let multilineTests = testList "Multiline Pattern Matching" [
+    test "multiline match expression" {
+        let code = """match 1 with
+| 0 -> 0
+| 1 -> 1
+| _ -> 2"""
+        eval code |> shouldEqual (Some (VInt 1))
+    }
+
+    test "match after let in with newline" {
+        let code = """let x = 2 in
+match x with
+| 0 -> 0
+| _ -> x"""
+        eval code |> shouldEqual (Some (VInt 2))
+    }
+
+    test "multiline if-then-else" {
+        let code = """if true then
+    42
+else
+    0"""
+        eval code |> shouldEqual (Some (VInt 42))
+    }
+
+    test "multiline function with match" {
+        let code = """let rec len = fun xs ->
+    match xs with
+    | [] -> 0
+    | _ :: t -> 1 + len t
+in len [1; 2; 3]"""
+        eval code |> shouldEqual (Some (VInt 3))
+    }
+
+    test "nested multiline expressions" {
+        let code = """let x =
+    if true then
+        match 1 with
+        | 1 -> 10
+        | _ -> 0
+    else
+        0
+in x"""
+        eval code |> shouldEqual (Some (VInt 10))
+    }
+]
+
+// =============================================================================
 // Property-Based Tests
 // =============================================================================
 
@@ -306,5 +357,6 @@ let tests = testList "Pattern Matching" [
     consTests
     guardTests
     practicalTests
+    multilineTests
     propertyTests
 ]
