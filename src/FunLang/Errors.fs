@@ -127,7 +127,7 @@ let formatErrorWithSource (source: string) (err: FunLangError) : string =
 // Result Type Aliases
 // =============================================================================
 
-type LexResult = Result<Token list, FunLangError>
+// Note: LexResult is defined in ParserWrapper.fs (after Parser.fs compiles)
 type ParseResult = Result<Expr, FunLangError>
 type EvalResult = Result<Value, FunLangError>
 

@@ -8,6 +8,9 @@ open FunLang.GeneratedParser
 /// Re-export token type for external use
 type Token = token
 
+/// Lex result type alias
+type LexResult = Result<Token list, FunLangError>
+
 // =============================================================================
 // Raw Tokenization (without indentation processing)
 // =============================================================================

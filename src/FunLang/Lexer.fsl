@@ -10,7 +10,7 @@ open FunLang.GeneratedParser
 
 let lexeme = LexBuffer<_>.LexemeString
 
-let keywords = 
+let keywords =
     Map.ofList [
         "let", LET
         "rec", REC
@@ -31,6 +31,9 @@ let keywords =
         "false", FALSE
     ]
 
+// Extract type variable name (everything after the quote)
+let typeVarName (s: string) = s.Substring(1)
+
 let identOrKeyword s =
     match Map.tryFind s keywords with
     | Some token -> token
@@ -48,6 +51,7 @@ rule token = parse
     | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
     | digit+            { INT (int (lexeme lexbuf)) }
     | '"'               { STRING (stringToken "" lexbuf) }
+    | '\'' ['a'-'z']+   { TYPEVAR (typeVarName (lexeme lexbuf)) }
     | alpha alphanum*   { identOrKeyword (lexeme lexbuf) }
     | '+'               { PLUS }
     | '-'               { MINUS }

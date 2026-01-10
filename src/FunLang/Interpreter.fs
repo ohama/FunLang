@@ -16,6 +16,7 @@ let private typeOf = function
     | VList _ -> "list"
     | VClosure _ -> "function"
     | VRecClosure _ -> "function"
+    | VConstructed (name, _) -> name
 
 // =============================================================================
 // Binary Operations
@@ -146,8 +147,13 @@ let rec matchPattern (pattern: Pattern) (value: Value) : Map<string, Value> opti
     | PCons _, VList [] -> None  // Empty list doesn't match cons pattern
     | PCons _, _ -> None
 
-    // Constructor pattern (not yet used but defined in AST)
-    | PConstructor _, _ -> None
+    // Constructor pattern matching
+    | PConstructor (pname, None), VConstructed (vname, None) when pname = vname ->
+        Some Map.empty
+    | PConstructor (pname, Some argPat), VConstructed (vname, Some argVal) when pname = vname ->
+        matchPattern argPat argVal
+    | PConstructor _, VConstructed _ -> None  // Constructor name mismatch or arity mismatch
+    | PConstructor _, _ -> None  // Not a constructor value
 
 // =============================================================================
 // Evaluator
@@ -306,3 +312,11 @@ let rec eval (env: Env) (expr: Expr) : EvalResult =
                             | Ok (VBool false) -> tryCase rest  // Guard failed, try next case
                             | Ok v -> Error (Error.runtime (sprintf "Guard must be bool, got %s" (typeOf v)) None)
             tryCase cases
+
+    // Constructor expression
+    | EConstructor (name, None) ->
+        Ok (VConstructed (name, None))
+    | EConstructor (name, Some argExpr) ->
+        match eval env argExpr with
+        | Error e -> Error e
+        | Ok argVal -> Ok (VConstructed (name, Some argVal))

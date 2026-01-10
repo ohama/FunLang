@@ -204,6 +204,22 @@ let rec infer (env: TypeEnv) (expr: Expr) : InferResult =
     | EMatch (scrutinee, cases) ->
         inferMatch env scrutinee cases
 
+    // -------------------------------------------------------------------------
+    // Constructor: user-defined type constructor
+    // TODO: Implement proper type inference with type environment
+    // -------------------------------------------------------------------------
+    | EConstructor (name, argOpt) ->
+        // For now, return a fresh type variable (no type checking)
+        // Proper implementation requires type definition environment
+        let α = TypeHelpers.freshTypeVar ()
+        match argOpt with
+        | None -> Ok (Map.empty, α)
+        | Some arg ->
+            result {
+                let! (s, _) = infer env arg
+                return (s, TypeHelpers.apply s α)
+            }
+
 /// Infer types for a list of expressions, threading substitutions
 and inferList (env: TypeEnv) (exprs: Expr list) : TypeResult<Substitution * Type list> =
     match exprs with

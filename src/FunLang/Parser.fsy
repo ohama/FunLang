@@ -50,6 +50,7 @@ let rec blockToExpr (items: BlockItem list) : Expr =
 %token <bool> BOOL
 %token <string> STRING
 %token <string> IDENT
+%token <string> TYPEVAR
 
 // Keywords
 %token LET REC IN

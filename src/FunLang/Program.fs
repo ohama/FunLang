@@ -21,6 +21,8 @@ let rec formatValue = function
     | VList vs -> vs |> List.map formatValue |> String.concat "; " |> sprintf "[%s]"
     | VClosure _ -> "<function>"
     | VRecClosure _ -> "<function>"
+    | VConstructed (name, None) -> name
+    | VConstructed (name, Some v) -> sprintf "%s %s" name (formatValue v)
 
 /// Run the interpreter on input
 let run (opts: RunOptions) (input: string) =
