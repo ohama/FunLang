@@ -32,12 +32,18 @@
 
   <!--
     Compile Order (F# 필수 / 순서 변경 금지!)
-    Parser.fs가 Lexer.fs보다 먼저 컴파일되어야 함
+    - Types.fs: Ast.fs 다음 (Position 타입 사용)
+    - Unification.fs: Types.fs 다음
+    - TypeInfer.fs: Unification.fs 다음
+    - Parser.fs가 Lexer.fs보다 먼저 컴파일되어야 함
     (Lexer가 Parser에서 정의된 token 타입 사용)
   -->
   <ItemGroup>
     <Compile Include="Ast.fs" />
     <Compile Include="Errors.fs" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Unification.fs" />
+    <Compile Include="TypeInfer.fs" />
     <Compile Include="Logging.fs" />
     <Compile Include="Options.fs" />
     <Compile Include="Parser.fs" />

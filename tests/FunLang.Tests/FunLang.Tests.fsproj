@@ -22,6 +22,7 @@
     <Compile Include="InterpreterTests.fs" />
     <Compile Include="IndentationTests.fs" />
     <Compile Include="PatternTests.fs" />
+    <Compile Include="TypeTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

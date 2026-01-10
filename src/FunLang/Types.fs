@@ -1,0 +1,249 @@
+module FunLang.Types
+
+open FunLang.Ast
+
+// =============================================================================
+// Type Definitions
+// =============================================================================
+
+/// Type variable ID
+type TypeVar = int
+
+/// Monotype (단형 타입)
+type Type =
+    | TInt
+    | TBool
+    | TString
+    | TUnit
+    | TVar of TypeVar              // 타입 변수 α, β, ...
+    | TFun of Type * Type          // τ₁ → τ₂
+    | TList of Type                // list τ
+    | TTuple of Type list          // (τ₁, τ₂, ...)
+
+/// Type Scheme (다형 타입) - ∀α₁...αₙ. τ
+type TypeScheme = Forall of TypeVar list * Type
+
+/// Type Environment: 변수명 → TypeScheme
+type TypeEnv = Map<string, TypeScheme>
+
+/// Substitution: 타입 변수 → 타입
+type Substitution = Map<TypeVar, Type>
+
+// =============================================================================
+// Type Error Definitions
+// =============================================================================
+
+type TypeErrorKind =
+    | UnboundVariable of string
+    | TypeMismatch of expected: Type * actual: Type
+    | OccursCheck of TypeVar * Type
+    | ArityMismatch of expected: int * actual: int
+    | NotAFunction of Type
+    | PatternTypeMismatch of expected: Type * actual: Type
+
+type TypeError = {
+    Kind: TypeErrorKind
+    Message: string
+    Position: Position option
+    Hint: string option
+}
+
+// =============================================================================
+// Type Error Creation Helpers
+// =============================================================================
+
+module TypeError =
+    let unboundVar name pos =
+        { Kind = UnboundVariable name
+          Message = sprintf "Unbound variable: %s" name
+          Position = pos
+          Hint = Some "Did you mean to define it?" }
+
+    let mismatch expected actual pos =
+        { Kind = TypeMismatch (expected, actual)
+          Message = "Type mismatch"
+          Position = pos
+          Hint = None }
+
+    let occursCheck v t pos =
+        { Kind = OccursCheck (v, t)
+          Message = sprintf "Infinite type: type variable occurs in its own definition"
+          Position = pos
+          Hint = Some "Cannot construct infinite type" }
+
+    let notAFunction t pos =
+        { Kind = NotAFunction t
+          Message = "Not a function"
+          Position = pos
+          Hint = Some "Cannot apply arguments to non-function" }
+
+    let arityMismatch expected actual pos =
+        { Kind = ArityMismatch (expected, actual)
+          Message = sprintf "Wrong number of arguments: expected %d, got %d" expected actual
+          Position = pos
+          Hint = None }
+
+    let patternMismatch expected actual pos =
+        { Kind = PatternTypeMismatch (expected, actual)
+          Message = "Pattern type mismatch"
+          Position = pos
+          Hint = None }
+
+// =============================================================================
+// Type Helper Functions
+// =============================================================================
+
+module TypeHelpers =
+    /// Fresh type variable 생성 (thread-local counter for parallel test safety)
+    let private counter = new System.Threading.ThreadLocal<int>(fun () -> 0)
+
+    let freshTypeVar () : Type =
+        counter.Value <- counter.Value + 1
+        TVar counter.Value
+
+    let resetCounter () =
+        counter.Value <- 0
+
+    let getCounter () = counter.Value
+
+    // -------------------------------------------------------------------------
+    // Substitution Operations
+    // -------------------------------------------------------------------------
+
+    /// Apply substitution to a type
+    let rec apply (s: Substitution) (t: Type) : Type =
+        match t with
+        | TInt | TBool | TString | TUnit -> t
+        | TVar v ->
+            match Map.tryFind v s with
+            | Some t' -> apply s t'  // Transitive application
+            | None -> t
+        | TFun (t1, t2) -> TFun (apply s t1, apply s t2)
+        | TList t1 -> TList (apply s t1)
+        | TTuple ts -> TTuple (List.map (apply s) ts)
+
+    /// Compose two substitutions: (s1 ∘ s2)(t) = s1(s2(t))
+    let compose (s1: Substitution) (s2: Substitution) : Substitution =
+        let s2' = Map.map (fun _ t -> apply s1 t) s2
+        Map.fold (fun acc k v -> Map.add k v acc) s2' s1
+
+    // -------------------------------------------------------------------------
+    // Free Type Variables
+    // -------------------------------------------------------------------------
+
+    /// Get free type variables of a type
+    let rec freeTypeVars (t: Type) : Set<TypeVar> =
+        match t with
+        | TInt | TBool | TString | TUnit -> Set.empty
+        | TVar v -> Set.singleton v
+        | TFun (t1, t2) -> Set.union (freeTypeVars t1) (freeTypeVars t2)
+        | TList t1 -> freeTypeVars t1
+        | TTuple ts -> ts |> List.map freeTypeVars |> Set.unionMany
+
+    /// Get free type variables of a type scheme
+    let freeTypeVarsScheme (Forall (vars, t)) : Set<TypeVar> =
+        Set.difference (freeTypeVars t) (Set.ofList vars)
+
+    /// Get free type variables of a type environment
+    let freeTypeVarsEnv (env: TypeEnv) : Set<TypeVar> =
+        env |> Map.toSeq |> Seq.map (snd >> freeTypeVarsScheme) |> Set.unionMany
+
+    // -------------------------------------------------------------------------
+    // Generalization & Instantiation
+    // -------------------------------------------------------------------------
+
+    /// Generalize a type to a type scheme
+    /// Quantifies type variables that are free in the type but not in the environment
+    let generalize (env: TypeEnv) (t: Type) : TypeScheme =
+        let envFV = freeTypeVarsEnv env
+        let tFV = freeTypeVars t
+        let vars = Set.difference tFV envFV |> Set.toList
+        Forall (vars, t)
+
+    /// Instantiate a type scheme with fresh type variables
+    let instantiate (Forall (vars, t)) : Type =
+        if List.isEmpty vars then t
+        else
+            let subst = vars |> List.map (fun v -> (v, freshTypeVar ())) |> Map.ofList
+            apply subst t
+
+    // -------------------------------------------------------------------------
+    // Apply Substitution to Environment
+    // -------------------------------------------------------------------------
+
+    /// Apply substitution to a type scheme
+    let applyScheme (s: Substitution) (Forall (vars, t)) : TypeScheme =
+        // Don't substitute quantified variables
+        let s' = Map.filter (fun k _ -> not (List.contains k vars)) s
+        Forall (vars, apply s' t)
+
+    /// Apply substitution to a type environment
+    let applyEnv (s: Substitution) (env: TypeEnv) : TypeEnv =
+        Map.map (fun _ scheme -> applyScheme s scheme) env
+
+// =============================================================================
+// Type Formatting
+// =============================================================================
+
+let rec formatType (t: Type) : string =
+    match t with
+    | TInt -> "int"
+    | TBool -> "bool"
+    | TString -> "string"
+    | TUnit -> "unit"
+    | TVar v -> sprintf "'a%d" v
+    | TFun (t1, t2) ->
+        let left =
+            match t1 with
+            | TFun _ -> sprintf "(%s)" (formatType t1)
+            | _ -> formatType t1
+        sprintf "%s -> %s" left (formatType t2)
+    | TList t1 -> sprintf "%s list" (formatType t1)
+    | TTuple ts ->
+        ts |> List.map formatType |> String.concat " * " |> sprintf "(%s)"
+
+let formatTypeScheme (Forall (vars, t)) : string =
+    if List.isEmpty vars then
+        formatType t
+    else
+        let varStr = vars |> List.map (sprintf "'a%d") |> String.concat " "
+        sprintf "forall %s. %s" varStr (formatType t)
+
+let formatTypeError (err: TypeError) : string =
+    let main =
+        match err.Kind with
+        | UnboundVariable name ->
+            sprintf "Unbound variable '%s'" name
+        | TypeMismatch (expected, actual) ->
+            sprintf "Type mismatch\n  Expected: %s\n  Actual: %s"
+                (formatType expected) (formatType actual)
+        | OccursCheck (v, t) ->
+            sprintf "Infinite type: 'a%d = %s" v (formatType t)
+        | ArityMismatch (expected, actual) ->
+            sprintf "Wrong number of arguments\n  Expected: %d\n  Actual: %d"
+                expected actual
+        | NotAFunction t ->
+            sprintf "Not a function: %s\n  Cannot apply arguments to non-function"
+                (formatType t)
+        | PatternTypeMismatch (expected, actual) ->
+            sprintf "Pattern type mismatch\n  Pattern expects: %s\n  Actual: %s"
+                (formatType expected) (formatType actual)
+
+    let position =
+        match err.Position with
+        | Some pos -> sprintf " at line %d, column %d" pos.Line pos.Column
+        | None -> ""
+
+    let hint =
+        match err.Hint with
+        | Some h -> sprintf "\n  Hint: %s" h
+        | None -> ""
+
+    sprintf "Type Error%s: %s%s" position main hint
+
+// =============================================================================
+// Result Type Alias
+// =============================================================================
+
+type TypeResult<'a> = Result<'a, TypeError>
+type InferResult = Result<Substitution * Type, TypeError>
