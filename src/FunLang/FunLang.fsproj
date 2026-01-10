@@ -42,6 +42,7 @@
     <Compile Include="Options.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
+    <Compile Include="Indentation.fs" />
     <Compile Include="ParserWrapper.fs" />
     <Compile Include="Interpreter.fs" />
     <Compile Include="Program.fs" />

@@ -1,5 +1,48 @@
 %{
 open FunLang.Ast
+
+// =============================================================================
+// Block Item Types and Transformation
+// =============================================================================
+
+/// Intermediate representation for block items before transformation
+type BlockItem =
+    | BILet of string * Expr       // let x = e (block-local, no IN)
+    | BILetRec of string * Expr    // let rec f = e (block-local, no IN)
+    | BIExpr of Expr               // standalone expression
+
+/// Transform a list of block items into a single nested expression
+/// [BILet("x", 10); BILet("y", 20); BIExpr(x+y)]
+/// → ELet("x", 10, ELet("y", 20, x+y))
+let rec blockToExpr (items: BlockItem list) : Expr =
+    match items with
+    | [] ->
+        // Empty block returns unit
+        ELiteral LUnit
+
+    | [BIExpr e] ->
+        // Single expression - just return it
+        e
+
+    | [BILet(name, value)] ->
+        // Single binding with no following expression - body is unit
+        ELet(name, value, ELiteral LUnit)
+
+    | [BILetRec(name, value)] ->
+        ELetRec(name, value, ELiteral LUnit)
+
+    | BIExpr e :: rest ->
+        // Expression for side effects, then continue
+        // Use wildcard binding to sequence: let _ = e in rest
+        ELet("_", e, blockToExpr rest)
+
+    | BILet(name, value) :: rest ->
+        // Binding scopes over the rest
+        ELet(name, value, blockToExpr rest)
+
+    | BILetRec(name, value) :: rest ->
+        ELetRec(name, value, blockToExpr rest)
+
 %}
 
 // Tokens with values
@@ -30,6 +73,7 @@ open FunLang.Ast
 
 // Special
 %token EOF
+%token NEWLINE INDENT DEDENT
 
 // Precedence (lowest to highest)
 %right ARROW
@@ -57,8 +101,39 @@ expr:
     | LET REC IDENT EQ expr IN expr     { ELetRec($3, $5, $7) }
     | IF expr THEN expr ELSE expr       { EIf($2, $4, $6) }
     | FUN IDENT ARROW expr              { ELambda($2, $4) }
+    | block                             { $1 }
     | cons_expr                         { $1 }
 ;
+
+// =============================================================================
+// Indentation-based block
+// =============================================================================
+
+// A block is an indented sequence of block items
+// Transformed to nested let expressions
+block:
+    | INDENT block_body DEDENT          { blockToExpr $2 }
+;
+
+// Block item: either a local binding (no IN) or an expression
+// Key insight: no conflict because Follow(block_item) = {NEWLINE, DEDENT}
+// which doesn't include IN, so the parser knows:
+//   - see IN → it's an expr with LET...IN...
+//   - see NEWLINE/DEDENT → it's a block-local binding
+block_item:
+    | LET IDENT EQ expr                 { BILet($2, $4) }
+    | LET REC IDENT EQ expr             { BILetRec($3, $5) }
+    | expr                              { BIExpr $1 }
+;
+
+block_body:
+    | block_item                        { [$1] }
+    | block_item NEWLINE block_body     { $1 :: $3 }
+;
+
+// =============================================================================
+// Expression hierarchy
+// =============================================================================
 
 cons_expr:
     | or_expr DOUBLECOLON cons_expr     { ECons($1, $3) }

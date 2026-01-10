@@ -4,36 +4,53 @@ open FSharp.Text.Lexing
 open FunLang.Ast
 open FunLang.Errors
 open FunLang.GeneratedParser
-open FunLang.GeneratedLexer
 
 /// Re-export token type for external use
 type Token = token
 
-/// Tokenize a string into a list of tokens
-let tokenize (input: string) : Result<Token list, FunLangError> =
+// =============================================================================
+// Raw Tokenization (without indentation processing)
+// =============================================================================
+
+/// Tokenize with position information (raw, no indentation processing)
+let tokenizeRawWithPositions (input: string) : Result<(Token * Position) list, FunLangError> =
     try
         let lexbuf = LexBuffer<char>.FromString(input)
         let rec loop acc =
             let tok = FunLang.GeneratedLexer.token lexbuf
+            // Capture StartPos AFTER tokenizing - this gives the actual start of the matched token
+            let startPos = lexbuf.StartPos
+            let pos = { Line = startPos.Line + 1; Column = startPos.Column + 1; File = None }
             match tok with
-            | EOF -> Ok (List.rev (EOF :: acc))
-            | _ -> loop (tok :: acc)
+            | EOF -> Ok (List.rev ((EOF, pos) :: acc))
+            | _ -> loop ((tok, pos) :: acc)
         loop []
     with
     | ex ->
         let pos = { Line = 1; Column = 1; File = None }
         Error (Error.lexerMsg ex.Message pos)
 
-/// Parse a string directly
-let parseString (input: string) : Result<Expr, string> =
-    try
-        let lexbuf = LexBuffer<char>.FromString(input)
-        let result = prog token lexbuf
-        Ok result
-    with
-    | ex -> Error ex.Message
+/// Tokenize without indentation processing (raw tokens)
+let tokenizeRaw (input: string) : Result<Token list, FunLangError> =
+    tokenizeRawWithPositions input
+    |> Result.map (List.map fst)
 
-/// Create a lexer function from a token list (for compatibility)
+// =============================================================================
+// Tokenization with Indentation Processing
+// =============================================================================
+
+/// Tokenize with indentation processing (INDENT/DEDENT/NEWLINE tokens inserted)
+let tokenize (input: string) : Result<Token list, FunLangError> =
+    match tokenizeRawWithPositions input with
+    | Error e -> Error e
+    | Ok tokensWithPos ->
+        Indentation.processIndentation tokensWithPos
+
+// =============================================================================
+// Parsing
+// =============================================================================
+
+/// Create a lexer function from a token list
 let private makeListLexer (tokens: Token list ref) : (LexBuffer<char> -> token) =
     fun _ ->
         match !tokens with
@@ -42,7 +59,7 @@ let private makeListLexer (tokens: Token list ref) : (LexBuffer<char> -> token) 
             tokens := rest
             t
 
-/// Parse from a token list (for compatibility with existing API)
+/// Parse from a token list
 let parse (tokens: Token list) : Result<Expr, string> =
     try
         let tokensRef = ref tokens
@@ -53,5 +70,16 @@ let parse (tokens: Token list) : Result<Expr, string> =
     with
     | ex -> Error ex.Message
 
+/// Parse a string directly (tokenize + parse)
+let parseString (input: string) : Result<Expr, string> =
+    match tokenize input with
+    | Error e -> Error e.Message
+    | Ok tokens -> parse tokens
+
+// =============================================================================
+// Compatibility Module
+// =============================================================================
+
 module Lexer =
     let tokenize = tokenize
+    let tokenizeRaw = tokenizeRaw

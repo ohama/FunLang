@@ -45,7 +45,7 @@ let newline = '\n'
 
 rule token = parse
     | whitespace+       { token lexbuf }
-    | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; token lexbuf }
+    | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
     | digit+            { INT (int (lexeme lexbuf)) }
     | '"'               { STRING (stringToken "" lexbuf) }
     | alpha alphanum*   { identOrKeyword (lexeme lexbuf) }
