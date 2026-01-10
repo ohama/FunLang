@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,10 +6,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Argu" Version="6.2.5" />
     <PackageReference Include="FsLexYacc" Version="11.3.0" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
-  <!-- FsLexYacc build configuration -->
+  <!-- Compile order matters in F# -->
+  <ItemGroup>
+    <Compile Include="Ast.fs" />
+    <Compile Include="Errors.fs" />
+    <Compile Include="Logging.fs" />
+    <Compile Include="Options.fs" />
+    <Compile Include="Lexer.fs" />
+    <Compile Include="Interpreter.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <!-- FsLexYacc files - disabled for now, will enable later -->
+  <!--
   <ItemGroup>
     <FsYacc Include="Parser.fsy">
       <Module>Parser</Module>
@@ -18,18 +34,6 @@
       <Module>Lexer</Module>
     </FsLex>
   </ItemGroup>
-
-  <!-- Compile order matters in F# -->
-  <ItemGroup>
-    <Compile Include="Ast.fs" />
-    <Compile Include="Parser.fs">
-      <Link>Parser.fs</Link>
-    </Compile>
-    <Compile Include="Lexer.fs">
-      <Link>Lexer.fs</Link>
-    </Compile>
-    <Compile Include="Interpreter.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+  -->
 
 </Project>
