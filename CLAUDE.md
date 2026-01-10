@@ -4,7 +4,13 @@ This file provides guidance to Claude Code when working with this F# project.
 
 ## Project Overview
 
-This is an F# project using .NET.
+**FunLang** is a multi-paradigm functional programming language interpreter written in F#.
+
+- **Language Style**: F#/Scala inspired (functional + imperative)
+- **Type System**: Static typing with Hindley-Milner type inference
+- **Parser**: FsLexYacc (lexer/parser generator)
+
+See `.claude/PLAN.md` for the detailed implementation plan.
 
 ## Build & Run Commands
 
@@ -31,17 +37,21 @@ dotnet publish -c Release
 ## Project Structure
 
 ```
-├── src/                    # Source code
-│   └── ProjectName/        # Main project
-│       ├── Program.fs      # Entry point
-│       └── *.fs            # F# source files
-├── tests/                  # Test projects
-│   └── ProjectName.Tests/
-│       └── Tests.fs
-├── *.fsproj                # F# project file
-├── *.sln                   # Solution file
-└── .config/                # .NET tool configuration
+├── src/FunLang/
+│   ├── Ast.fs              # AST type definitions
+│   ├── Parser.fsy          # Parser grammar (FsYacc)
+│   ├── Lexer.fsl           # Lexer rules (FsLex)
+│   ├── Interpreter.fs      # Evaluator
+│   ├── Program.fs          # Entry point
+│   └── FunLang.fsproj      # Project file
+├── .claude/
+│   ├── PLAN.md             # Implementation plan
+│   └── session/            # Session state
+└── CLAUDE.md               # This file
 ```
+
+**Compilation Order** (F# requires explicit ordering):
+`Ast.fs` → `Parser.fsy` → `Lexer.fsl` → `Interpreter.fs` → `Program.fs`
 
 ## F# Coding Conventions
 
