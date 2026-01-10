@@ -12,12 +12,12 @@ End the current work session and save state for later resumption.
    - Any issues encountered
    - Debugging commands used
    - Error patterns discovered
-3. **Ask about issues** (see Issue Tracking section below):
-   - Ask if there are any unresolved issues to record
-   - Ask if any previously unresolved issues were resolved
-   - Record issue status changes
-4. Ask user for any notes or context to save
-5. Update `.claude/session/state.json` with:
+3. **Auto-detect issues from session context** (DO NOT ask user):
+   - Check if any build failures occurred → should have been recorded as issues
+   - Check if any test failures occurred → should have been recorded as issues
+   - Check conversation context for unresolved problems
+   - Verify issues were properly recorded during the session
+4. Update `.claude/session/state.json` with:
    - Current phase progress
    - Work in progress
    - Completed tasks
@@ -91,24 +91,49 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 ## Issue Tracking
 
-세션 종료 시 이슈 상태를 확인하고 기록합니다.
+세션 종료 시 이슈 상태를 **컨텍스트에서 자동 판단**합니다. (사용자에게 질문하지 않음)
 
 **관련 명령어:** `/issue` - 이슈 조회/추가/해결
 
-### 질문 순서
+### 자동 판단 기준
 
-1. **Unresolved Issues 확인:**
-   ```
-   이번 세션에서 해결되지 않은 이슈가 있나요?
-   (버그, 막힌 부분, 나중에 확인할 사항 등)
-   ```
-   - 있으면 `/issue add` 로 추가하거나 직접 state.json에 기록
+세션 컨텍스트를 분석하여 다음을 확인:
 
-2. **Resolved Issues 확인:**
-   ```
-   이전에 기록된 unresolved issue 중 해결된 것이 있나요?
-   ```
-   - 있으면 `/issue resolve <id>` 로 해결 처리
+| 확인 사항 | 판단 기준 |
+|-----------|-----------|
+| 빌드 실패 | 세션 중 `dotnet build` 실패 여부 |
+| 테스트 실패 | 세션 중 `dotnet test` 실패 여부 |
+| 미해결 문제 | 대화 중 해결되지 않은 에러/버그 언급 |
+| 해결된 이슈 | 기존 unresolved 이슈가 해결됨 |
+
+### 자동 처리 로직
+
+```
+1. 세션 컨텍스트 분석
+   ↓
+2. 빌드/테스트 실패가 있었는가?
+   - 있었다면: 이슈로 기록되었는지 확인
+   - 기록 안됨: state.json에 이슈 추가
+   ↓
+3. 기존 unresolved 이슈 중 해결된 것?
+   - 있다면: resolved로 이동
+   ↓
+4. Session Summary에 이슈 현황 표시
+```
+
+### 이슈 미기록 시 자동 생성
+
+세션 중 실패가 있었지만 이슈가 기록되지 않은 경우, endsession 시점에 자동 생성:
+
+```json
+{
+  "id": "issue-XXX",
+  "description": "[Auto] 빌드/테스트 실패 발생",
+  "summary": "세션 중 발생한 미기록 이슈",
+  "priority": "medium",
+  "context": "endsession auto-detected"
+}
+```
 
 ### 이슈 기록 위치
 
@@ -330,22 +355,21 @@ Notes for Next Session:
 
 ## Checklist Before Ending
 
-Remind user to verify:
+자동 확인 (사용자 질문 없음):
 
 ```
-[ ] All tests pass? (dotnet test)
-[ ] Build succeeds? (dotnet build)
-[ ] Changes committed? (git status)
+[Auto] All tests pass? (dotnet test)
+[Auto] Build succeeds? (dotnet build)
+[Auto] Changes committed? (git status)
+[Auto] Issues auto-detected from context
 [ ] Debugging notes saved?
 [ ] Next steps documented?
-[ ] ⚠️ All build/test failures recorded as issues?
-[ ] ⚠️ Resolved issues marked with /issue resolve?
 ```
 
-**이슈 확인 질문:**
-1. "이번 세션에서 빌드/테스트 실패가 있었나요?"
-2. "해결되지 않은 이슈가 있나요?"
-3. "기존 이슈 중 해결된 것이 있나요?"
+**자동 이슈 감지:**
+- 세션 컨텍스트에서 빌드/테스트 실패 여부 확인
+- 미기록 이슈 발견 시 자동 생성
+- 해결된 이슈 자동 감지 및 상태 업데이트
 
 ## Key Files Reference
 
