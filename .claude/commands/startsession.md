@@ -1,30 +1,45 @@
 # Start Session
 
-Start a new work session and load session state with project context.
+Start a new work session and restore context from previous sessions.
 
 ## Steps
 
-1. Check if `.claude/session/state.json` exists
-2. If exists, read and display the saved session state:
-   - Current goal/phase
-   - Work in progress
-   - Notes and context
-   - Last modified timestamp
-   - Development guidelines reminder
-3. If no saved state exists, **auto-initialize new session** (DO NOT ask user):
-   - Read `.claude/PLAN.md` to determine current phase
-   - Set currentGoal from PLAN.md or use default "Build the FunLang interpreter"
-   - Initialize empty session state with sensible defaults
-4. Save session start time to `.claude/session/state.json`
-5. Display important project context:
+1. **Read context files** (컨텍스트 복원):
+   - `.claude/HISTORY.md` - 이전 세션 히스토리 및 축적된 지식
+   - `.claude/PLAN.md` - 구현 계획 및 현재 phase
+   - `.claude/session/state.json` - 마지막 세션 상태 (있다면)
+
+2. **Restore accumulated knowledge** from HISTORY.md:
+   - Recent session summaries (최근 세션 요약)
+   - Key decisions made (중요한 결정사항)
+   - Discovered patterns & tips (발견한 패턴/팁)
+   - Common pitfalls to avoid (피해야 할 실수)
+
+3. **Determine current phase** from PLAN.md:
+   - Current phase and progress
+   - Next phase items
+   - Remaining work
+
+4. **Auto-initialize session state** (DO NOT ask user):
+   - If state.json exists: restore previous state
+   - If not: initialize from HISTORY.md and PLAN.md
+   - Set currentGoal from context or use default
+   - Generate new session ID
+
+5. **Save session start time** to `.claude/session/state.json`
+
+6. **Display session context**:
+   - Previous session summary (from HISTORY.md)
    - Current phase from PLAN.md
    - TDD/FsCheck requirements reminder
    - Available debugging options
-6. **Display next steps prominently** (from `nextPhase` in state.json):
+
+7. **Display next steps prominently** (from `nextPhase`):
    - Show the next phase name
    - List all items to be implemented
    - Highlight the first actionable item
-7. **Display unresolved issues** (if any exist):
+
+8. **Display unresolved issues** (if any exist):
    - Show count and list of unresolved issues
    - Include priority and context for each
    - Remind user these need attention
@@ -125,7 +140,9 @@ See .claude/DEBUGGING.md for full guide.
 ### Key Files
 
 ```
-.claude/PLAN.md              - Implementation plan
+.claude/HISTORY.md           - Session history & accumulated knowledge (READ FIRST)
+.claude/PLAN.md              - Implementation plan & current phase
+.claude/session/state.json   - Last session state
 .claude/DEBUGGING.md         - Debugging guide
 CLAUDE.md                    - Development guidelines
 README.md                    - Project overview
@@ -133,17 +150,85 @@ docs/issues/unresolved/      - Unresolved issue files
 docs/issues/resolved/        - Resolved issue files
 ```
 
+## Context Restoration from HISTORY.md
+
+세션 시작 시 `.claude/HISTORY.md`에서 다음 정보를 읽어 컨텍스트를 복원합니다.
+
+### 읽어야 할 섹션
+
+| 섹션 | 용도 |
+|------|------|
+| Current Status | 현재 phase, 테스트 상태 파악 |
+| Recent Sessions | 최근 작업 내용 확인 |
+| Accumulated Knowledge | 축적된 팁/패턴/결정 복원 |
+
+### 컨텍스트 복원 순서
+
+```
+1. .claude/HISTORY.md 읽기
+   ↓
+2. Current Status에서 현재 상태 파악
+   ↓
+3. Recent Sessions에서 최근 작업 확인
+   ↓
+4. Accumulated Knowledge 내재화
+   - Build/Parser Tips
+   - Common Pitfalls
+   - Architecture Decisions
+   ↓
+5. .claude/PLAN.md 읽기
+   ↓
+6. 현재 phase와 다음 할 일 파악
+   ↓
+7. state.json 읽기 (있다면)
+   ↓
+8. 새 세션 초기화
+```
+
+### Previous Session Display
+
+HISTORY.md에서 가장 최근 세션 정보를 표시:
+
+```
+=== Previous Session ===
+
+Date: 2026-01-10
+Session: a1b2c3d4
+
+Completed:
+- Issue 관리 시스템 구현
+- /issue command 추가
+
+Key Decisions:
+- endsession에서 사용자 질문 없이 자동 판단
+
+Unresolved Issues:
+- (없음)
+
+========================
+```
+
+### HISTORY.md가 없는 경우
+
+첫 세션이거나 HISTORY.md가 없으면:
+1. PLAN.md에서 Phase 0 시작
+2. 기본 목표: "Build the FunLang interpreter"
+3. 빈 HISTORY.md 생성 (endsession에서 채워짐)
+
 ## Output
 
 Report the session status with:
-1. Session ID and timestamps
-2. Current phase and goal
-3. Work in progress
-4. TDD reminder
-5. Debugging options summary
-6. **Next Steps section** (important!)
-7. **Unresolved Issues section** (if any exist)
-8. Ready to work message
+1. **Context restored from** (HISTORY.md, PLAN.md)
+2. **Previous session summary** (from HISTORY.md)
+3. Session ID and timestamps
+4. Current phase and goal
+5. Accumulated knowledge reminder (key tips/patterns)
+6. Work in progress
+7. TDD reminder
+8. Debugging options summary
+9. **Next Steps section** (important!)
+10. **Unresolved Issues section** (if any exist)
+11. Ready to work message
 
 ### Next Steps Display Format
 

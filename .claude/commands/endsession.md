@@ -25,6 +25,7 @@ End the current work session and save state for later resumption.
    - Debugging notes
    - **Issues (unresolved/resolved)**
    - Session end timestamp
+5. **Update `.claude/HISTORY.md`** (context handoff for next session)
 6. **Save session prompts to file** (see below)
 7. Generate session summary report
 8. Confirm session saved successfully
@@ -88,6 +89,127 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 3. 파일 저장 후 `lastPromptLoggedAt`을 현재 시간으로 업데이트
 
 **파일 경로:** `docs/prompt/` 디렉토리에 저장 (없으면 생성)
+
+## Context Handoff to HISTORY.md (필수)
+
+세션 종료 시 **다음 세션을 위한 컨텍스트**를 `.claude/HISTORY.md`에 저장합니다.
+
+### 목적
+
+- 세션 간 컨텍스트 연속성 유지
+- AI 컨텍스트 리셋 후에도 프로젝트 히스토리 복원
+- 중요한 결정/발견/패턴을 영구 기록
+
+### HISTORY.md 구조
+
+```markdown
+# FunLang Development History
+
+## Current Status
+
+- **Phase**: Phase 4 Complete
+- **Tests**: 206 passed
+- **Last Session**: 2026-01-10
+
+## Recent Sessions
+
+### 2026-01-10 (Session: abc123)
+
+**Completed:**
+- Phase 4: Pattern Matching 완료
+- Issue 관리 시스템 구현
+
+**Key Decisions:**
+- Pattern guard 실패 시 다음 케이스로 이동 (에러 아님)
+- 이슈는 개별 파일로 저장 (docs/issues/)
+
+**Discovered Patterns:**
+- FsLexYacc: --unicode 플래그 필수
+- Multiline: nl_opt rule 사용
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-09 (Session: xyz789)
+
+**Completed:**
+- ...
+
+---
+
+## Accumulated Knowledge
+
+### Build/Parser Tips
+- FsLexYacc --module 플래그로 모듈명 지정
+- Parser.fs가 Lexer.fs보다 먼저 컴파일되어야 함
+
+### Common Pitfalls
+- FsCheck에서 음수 테스트 시 NonNegativeInt 사용
+- Exception 금지: Result/Option으로 에러 전파
+
+### Architecture Decisions
+- Post-lexer indentation processing (Python 스타일)
+- EBlock이 마지막 표현식 값 반환
+```
+
+### 업데이트 규칙
+
+| 섹션 | 업데이트 방식 |
+|------|---------------|
+| Current Status | 매 세션 **덮어쓰기** |
+| Recent Sessions | 새 세션을 **맨 위에 추가** (최근 5개 유지) |
+| Accumulated Knowledge | 새 발견 시 **추가** (삭제 안함) |
+
+### 저장할 컨텍스트
+
+세션에서 다음 정보를 추출하여 기록:
+
+1. **Completed Tasks**: 이번 세션에서 완료한 작업
+2. **Key Decisions**: 중요한 설계/구현 결정
+3. **Discovered Patterns**: 발견한 패턴, 팁, 워크어라운드
+4. **Unresolved Issues**: 미해결 이슈 (있다면)
+5. **Debugging Notes**: 디버깅 중 발견한 유용한 정보
+
+### 구현 방법
+
+```
+1. 세션 컨텍스트에서 중요 정보 추출
+   ↓
+2. .claude/HISTORY.md 읽기 (없으면 생성)
+   ↓
+3. Current Status 섹션 업데이트
+   ↓
+4. Recent Sessions에 새 엔트리 추가 (맨 위)
+   ↓
+5. 오래된 세션 엔트리 정리 (5개 초과 시 삭제)
+   ↓
+6. Accumulated Knowledge에 새 발견 추가
+   ↓
+7. 파일 저장
+```
+
+### 예시: 세션 엔트리 추가
+
+```markdown
+### 2026-01-10 (Session: a1b2c3d4)
+
+**Completed:**
+- Issue 관리 시스템 구현
+- /issue command 추가
+- startsession/endsession에 이슈 표시
+
+**Key Decisions:**
+- endsession에서 사용자 질문 없이 자동 판단
+- 이슈는 docs/issues/에 개별 파일로 저장
+
+**Discovered Patterns:**
+- (없음)
+
+**Unresolved Issues:**
+- (없음)
+```
 
 ## Issue Tracking
 
@@ -375,10 +497,13 @@ Notes for Next Session:
 
 ```
 .claude/PLAN.md              - Check phase progress
+.claude/HISTORY.md           - Session history & accumulated knowledge
 .claude/DEBUGGING.md         - Reference debugging guide
+.claude/session/state.json   - Current session state
 CLAUDE.md                    - Development guidelines
 docs/issues/unresolved/      - Unresolved issue files
 docs/issues/resolved/        - Resolved issue files
+docs/prompt/                 - Session prompt logs
 ```
 
 ## Output
@@ -392,5 +517,6 @@ Confirm that session state has been saved including:
 6. Debugging notes
 7. **Issues status** (unresolved count, resolved this session)
 8. Notes for next session
-9. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
-10. Restoration command: `/startsession`
+9. **HISTORY.md updated** (context handoff)
+10. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
+11. Restoration command: `/startsession`
