@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsLexYacc" Version="11.3.0" />
+  </ItemGroup>
+
+  <!-- FsLexYacc build configuration -->
+  <ItemGroup>
+    <FsYacc Include="Parser.fsy">
+      <Module>Parser</Module>
+    </FsYacc>
+    <FsLex Include="Lexer.fsl">
+      <Module>Lexer</Module>
+    </FsLex>
+  </ItemGroup>
+
+  <!-- Compile order matters in F# -->
+  <ItemGroup>
+    <Compile Include="Ast.fs" />
+    <Compile Include="Parser.fs">
+      <Link>Parser.fs</Link>
+    </Compile>
+    <Compile Include="Lexer.fs">
+      <Link>Lexer.fs</Link>
+    </Compile>
+    <Compile Include="Interpreter.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>

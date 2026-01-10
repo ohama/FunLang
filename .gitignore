@@ -1,0 +1,42 @@
+# .NET build outputs
+bin/
+obj/
+out/
+
+# IDE files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# F# specific
+*.fsproj.user
+.ionide/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+publish/
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+
+# Test results
+TestResults/
+*.trx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+logs/
