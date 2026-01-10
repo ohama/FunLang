@@ -1,6 +1,8 @@
 # End Session
 
-End the current work session and save state for later resumption.
+End the current work session, save context, and prepare for context reset.
+
+**Important**: After `/endsession`, start a **new conversation** to reset context, then use `/startsession` to restore.
 
 ## Steps
 
@@ -515,6 +517,31 @@ docs/issues/resolved/        - Resolved issue files
 docs/prompt/                 - Session prompt logs
 ```
 
+## Context Reset Workflow
+
+```
+/endsession
+    ↓
+[컨텍스트 저장됨]
+- HISTORY.md 업데이트
+- state.json 저장
+- prompt log 저장
+    ↓
+[새 대화 시작] ← 여기서 컨텍스트 리셋됨
+    ↓
+/startsession
+    ↓
+[컨텍스트 복원됨]
+- HISTORY.md에서 읽기
+- PLAN.md에서 읽기
+- state.json에서 읽기
+```
+
+**왜 새 대화가 필요한가?**
+- AI 컨텍스트는 대화 단위로 관리됨
+- 같은 대화 내에서는 이전 내용이 계속 유지됨
+- 새 대화 = 깨끗한 컨텍스트 + HISTORY.md에서 복원
+
 ## Output
 
 Confirm that session state has been saved including:
@@ -528,4 +555,4 @@ Confirm that session state has been saved including:
 8. Notes for next session
 9. **HISTORY.md updated** (context handoff)
 10. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
-11. Restoration command: `/startsession`
+11. **Context reset instruction**: "새 대화를 시작한 후 `/startsession` 실행"
