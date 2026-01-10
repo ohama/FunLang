@@ -14,7 +14,9 @@ out/
 *.fsproj.user
 .ionide/
 
-# FsLexYacc generated interface files
+# FsLexYacc generated files
+src/FunLang/Parser.fs
+src/FunLang/Lexer.fs
 *.fsi
 
 # Build results
