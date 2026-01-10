@@ -20,8 +20,44 @@ End the current work session and save state for later resumption.
    - Important notes and context
    - Debugging notes
    - Session end timestamp
-5. Generate session summary report
-6. Confirm session saved successfully
+5. **Save session prompts to file** (see below)
+6. Generate session summary report
+7. Confirm session saved successfully
+
+## Session Prompt Logging (필수)
+
+**세션 중 모든 사용자 프롬프트를 기록:**
+
+1. 현재 시간으로 파일명 생성: `docs/prompt/YYYY-MM-DD_HH-MM.md`
+2. 세션 시작(startsession)부터 종료(endsession)까지의 모든 사용자 메시지 수집
+3. 다음 형식으로 저장:
+
+```markdown
+# Session Prompts: YYYY-MM-DD HH:MM
+
+Session ID: {sessionId}
+Started: {startedAt}
+Ended: {endedAt}
+
+---
+
+## Prompts
+
+1. {첫 번째 사용자 프롬프트}
+
+2. {두 번째 사용자 프롬프트}
+
+3. ...
+
+---
+
+## Summary
+
+- Total prompts: {개수}
+- Main topics: {주요 주제들}
+```
+
+**파일 경로:** `docs/prompt/` 디렉토리에 저장 (없으면 생성)
 
 ## Session State Schema
 
@@ -122,4 +158,5 @@ Confirm that session state has been saved including:
 5. Test status
 6. Debugging notes
 7. Notes for next session
-8. Restoration command: `/startsession`
+8. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
+9. Restoration command: `/startsession`
