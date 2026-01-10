@@ -14,6 +14,9 @@ out/
 *.fsproj.user
 .ionide/
 
+# FsLexYacc generated interface files
+*.fsi
+
 # Build results
 [Dd]ebug/
 [Rr]elease/
