@@ -27,6 +27,7 @@ Start a new work session and load session state with project context.
   "sessionId": "uuid",
   "startedAt": "ISO timestamp",
   "lastUpdatedAt": "ISO timestamp",
+  "lastPromptLoggedAt": "ISO timestamp",
   "currentGoal": "User's main objective",
   "currentPhase": "Phase 0|1|1.2|1.5|2|3|4|5|6",
   "planFile": ".claude/PLAN.md",

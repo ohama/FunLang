@@ -26,18 +26,28 @@ End the current work session and save state for later resumption.
 
 ## Session Prompt Logging (필수)
 
-**세션 중 모든 사용자 프롬프트를 기록:**
+**endsession 실행 시점 기준으로 프롬프트 기록:**
 
-1. 현재 시간으로 파일명 생성: `docs/prompt/YYYY-MM-DD_HH-MM.md`
-2. 세션 시작(startsession)부터 종료(endsession)까지의 모든 사용자 메시지 수집
-3. 다음 형식으로 저장:
+### 기록 범위
+
+| 시나리오 | 기록 범위 |
+|----------|-----------|
+| `startsession → endsession` | startsession 이후 ~ endsession 까지 |
+| `endsession → endsession` | 이전 endsession 이후 ~ 현재 endsession 까지 |
+| `startsession → endsession → endsession` | 두 번째 endsession은 첫 번째 endsession 이후부터 기록 |
+
+### 파일명 규칙
+
+- **현재 endsession 시점의 시간 사용**
+- 형식: `docs/prompt/YYYY-MM-DD_HH-MM.md`
+- 예: `docs/prompt/2026-01-10_18-30.md`
+
+### 저장 형식
 
 ```markdown
 # Session Prompts: YYYY-MM-DD HH:MM
 
-Session ID: {sessionId}
-Started: {startedAt}
-Ended: {endedAt}
+Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 ---
 
@@ -57,6 +67,12 @@ Ended: {endedAt}
 - Main topics: {주요 주제들}
 ```
 
+### 구현 방법
+
+1. `.claude/session/state.json`에서 `lastPromptLoggedAt` 필드 확인
+2. 해당 시점 이후의 모든 사용자 메시지 수집
+3. 파일 저장 후 `lastPromptLoggedAt`을 현재 시간으로 업데이트
+
 **파일 경로:** `docs/prompt/` 디렉토리에 저장 (없으면 생성)
 
 ## Session State Schema
@@ -67,6 +83,7 @@ Ended: {endedAt}
   "startedAt": "ISO timestamp",
   "endedAt": "ISO timestamp",
   "lastUpdatedAt": "ISO timestamp",
+  "lastPromptLoggedAt": "ISO timestamp",
   "currentGoal": "User's main objective",
   "currentPhase": "Phase 0|1|1.2|1.5|2|3|4|5|6",
   "phaseProgress": {
