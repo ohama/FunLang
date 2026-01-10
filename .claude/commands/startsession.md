@@ -83,6 +83,11 @@ Start a new work session and load session state with project context.
 ### Development Guidelines (Required)
 
 ```
+[Issue Tracking - 필수]
+빌드 실패 → /issue add "빌드 에러: ..."
+테스트 실패 → /issue add "테스트 실패: ..."
+해결 시 → /issue resolve <id>
+
 [TDD Required]
 1. RED   : Write failing test first
 2. GREEN : Minimum code to pass
@@ -92,6 +97,8 @@ Start a new work session and load session state with project context.
 - Property-based testing, not simple examples
 - Test algebraic properties, roundtrips, invariants
 ```
+
+⚠️ **이슈 기록 의무**: 빌드/테스트 실패 시 반드시 이슈를 기록해야 합니다!
 
 ### Available Debugging Options
 
@@ -182,12 +189,19 @@ If no unresolved issues exist, skip this section entirely.
 
 ```
 /issue              # Show all unresolved issues
+/issue unresolved   # Show all unresolved issues (summary)
+/issue resolved     # Show all resolved issues (summary)
 /issue all          # Show all issues (resolved + unresolved)
 /issue add <desc>   # Add new issue
 /issue resolve <id> # Mark issue as resolved
 /issue show <id>    # Show issue details
 ```
 
-See `docs/issues/` for issue files:
-- `docs/issues/unresolved/` - 미해결 이슈 (이슈당 1파일)
-- `docs/issues/resolved/` - 해결된 이슈 (이슈당 1파일)
+**이슈 파일 위치:**
+- `docs/issues/unresolved/issue-XXX.md` - 미해결 이슈
+- `docs/issues/resolved/issue-XXX.md` - 해결된 이슈
+
+**필수 이슈 기록:**
+- 빌드 실패 → `/issue add "빌드 에러: ..."`
+- 테스트 실패 → `/issue add "테스트 실패: ..."`
+- 해결 완료 → `/issue resolve <id>`

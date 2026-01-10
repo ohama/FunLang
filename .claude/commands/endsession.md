@@ -113,7 +113,20 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 ### 이슈 기록 위치
 
 1. **`.claude/session/state.json`**: 현재 이슈 상태 (실시간)
-2. **`docs/issues.md`**: 이슈 히스토리 (영구 기록, git 추적)
+2. **`docs/issues/unresolved/`**: 미해결 이슈 파일 (이슈당 1파일)
+3. **`docs/issues/resolved/`**: 해결된 이슈 파일 (이슈당 1파일)
+
+### ⚠️ 필수 이슈 기록
+
+세션 중 빌드/테스트 실패가 있었다면 반드시 이슈가 기록되어야 합니다:
+
+| 상황 | 필수 행동 |
+|------|-----------|
+| 빌드 실패 발생 | `/issue add "빌드 에러: ..."` |
+| 테스트 실패 발생 | `/issue add "테스트 실패: ..."` |
+| 이슈 해결됨 | `/issue resolve <id>` |
+
+**체크**: endsession 전에 모든 실패가 이슈로 기록되었는지 확인!
 
 ### 이슈 기록 형식 (state.json)
 
@@ -325,14 +338,23 @@ Remind user to verify:
 [ ] Changes committed? (git status)
 [ ] Debugging notes saved?
 [ ] Next steps documented?
+[ ] ⚠️ All build/test failures recorded as issues?
+[ ] ⚠️ Resolved issues marked with /issue resolve?
 ```
+
+**이슈 확인 질문:**
+1. "이번 세션에서 빌드/테스트 실패가 있었나요?"
+2. "해결되지 않은 이슈가 있나요?"
+3. "기존 이슈 중 해결된 것이 있나요?"
 
 ## Key Files Reference
 
 ```
-.claude/PLAN.md       - Check phase progress
-.claude/DEBUGGING.md  - Reference debugging guide
-CLAUDE.md             - Development guidelines
+.claude/PLAN.md              - Check phase progress
+.claude/DEBUGGING.md         - Reference debugging guide
+CLAUDE.md                    - Development guidelines
+docs/issues/unresolved/      - Unresolved issue files
+docs/issues/resolved/        - Resolved issue files
 ```
 
 ## Output
