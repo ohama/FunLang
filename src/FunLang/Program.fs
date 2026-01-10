@@ -3,7 +3,6 @@ module FunLang.Program
 open System
 open Argu
 open FunLang.Ast
-open FunLang.Lexer
 open FunLang.Parser
 open FunLang.Interpreter
 open FunLang.Errors

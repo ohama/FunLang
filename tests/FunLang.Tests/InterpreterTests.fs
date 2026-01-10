@@ -3,7 +3,6 @@ module FunLang.Tests.InterpreterTests
 open Expecto
 open FsCheck
 open FunLang.Ast
-open FunLang.Lexer
 open FunLang.Parser
 open FunLang.Interpreter
 
@@ -295,6 +294,165 @@ let errorTests = testList "Error Cases" [
 ]
 
 // =============================================================================
+// Unit Tests - Lambda and Application
+// =============================================================================
+
+let lambdaTests = testList "Lambda and Application" [
+    test "identity function" {
+        expectValue (VInt 42) "(fun x -> x) 42"
+    }
+
+    test "constant function" {
+        expectValue (VInt 1) "(fun x -> 1) 99"
+    }
+
+    test "lambda with arithmetic" {
+        expectValue (VInt 10) "(fun x -> x + 1) 9"
+    }
+
+    test "curried function" {
+        expectValue (VInt 5) "(fun x -> fun y -> x + y) 2 3"
+    }
+
+    test "function in let binding" {
+        expectValue (VInt 8) "let double = fun x -> x * 2 in double 4"
+    }
+
+    test "closure captures environment" {
+        expectValue (VInt 15) "let x = 10 in let addX = fun y -> x + y in addX 5"
+    }
+
+    test "higher-order function" {
+        expectValue (VInt 9) "let apply = fun f -> fun x -> f x in let sq = fun n -> n * n in apply sq 3"
+    }
+]
+
+// =============================================================================
+// Unit Tests - Let Rec
+// =============================================================================
+
+let letRecTests = testList "Let Rec" [
+    test "simple recursive function" {
+        expectValue (VInt 120) "let rec fact = fun n -> if n == 0 then 1 else n * fact (n - 1) in fact 5"
+    }
+
+    test "recursive countdown" {
+        expectValue (VInt 0) "let rec countdown = fun n -> if n == 0 then 0 else countdown (n - 1) in countdown 10"
+    }
+
+    test "fibonacci" {
+        expectValue (VInt 55) "let rec fib = fun n -> if n < 2 then n else fib (n - 1) + fib (n - 2) in fib 10"
+    }
+]
+
+// =============================================================================
+// Unit Tests - Tuples
+// =============================================================================
+
+let tupleTests = testList "Tuples" [
+    test "pair of integers" {
+        expectValue (VTuple [VInt 1; VInt 2]) "(1, 2)"
+    }
+
+    test "triple" {
+        expectValue (VTuple [VInt 1; VInt 2; VInt 3]) "(1, 2, 3)"
+    }
+
+    test "tuple with expressions" {
+        expectValue (VTuple [VInt 3; VInt 10; VBool true]) "(1 + 2, 5 * 2, true)"
+    }
+
+    test "nested tuple" {
+        expectValue (VTuple [VTuple [VInt 1; VInt 2]; VInt 3]) "((1, 2), 3)"
+    }
+
+    test "tuple with variables" {
+        expectValue (VTuple [VInt 10; VInt 20]) "let x = 10 in let y = 20 in (x, y)"
+    }
+]
+
+// =============================================================================
+// Unit Tests - Lists
+// =============================================================================
+
+let listTests = testList "Lists" [
+    test "empty list" {
+        expectValue (VList []) "[]"
+    }
+
+    test "singleton list" {
+        expectValue (VList [VInt 1]) "[1]"
+    }
+
+    test "list of integers" {
+        expectValue (VList [VInt 1; VInt 2; VInt 3]) "[1; 2; 3]"
+    }
+
+    test "list with expressions" {
+        expectValue (VList [VInt 3; VInt 6; VInt 9]) "[1 + 2; 2 * 3; 3 * 3]"
+    }
+
+    test "nested list" {
+        expectValue (VList [VList [VInt 1]; VList [VInt 2; VInt 3]]) "[[1]; [2; 3]]"
+    }
+
+    test "list of booleans" {
+        expectValue (VList [VBool true; VBool false; VBool true]) "[true; false; true]"
+    }
+]
+
+// =============================================================================
+// Unit Tests - Cons
+// =============================================================================
+
+let consTests = testList "Cons" [
+    test "cons to empty list" {
+        expectValue (VList [VInt 1]) "1 :: []"
+    }
+
+    test "cons chain" {
+        expectValue (VList [VInt 1; VInt 2; VInt 3]) "1 :: 2 :: 3 :: []"
+    }
+
+    test "cons to existing list" {
+        expectValue (VList [VInt 0; VInt 1; VInt 2]) "0 :: [1; 2]"
+    }
+
+    test "cons with expression" {
+        expectValue (VList [VInt 6; VInt 1]) "(2 * 3) :: [1]"
+    }
+]
+
+// =============================================================================
+// Property Tests for New Features
+// =============================================================================
+
+let newFeaturePropertyTests = testList "New Feature Properties" [
+    testProperty "identity function returns input" <| fun (n: NonNegativeInt) ->
+        match run (sprintf "(fun x -> x) %d" n.Get) with
+        | Ok (VInt v) -> v = n.Get
+        | _ -> false
+
+    testProperty "cons prepends to list" <| fun (n: NonNegativeInt) ->
+        let code = sprintf "%d :: []" n.Get
+        match run code with
+        | Ok (VList [VInt v]) -> v = n.Get
+        | _ -> false
+
+    testProperty "tuple preserves order" <| fun (a: NonNegativeInt) (b: NonNegativeInt) ->
+        let code = sprintf "(%d, %d)" a.Get b.Get
+        match run code with
+        | Ok (VTuple [VInt x; VInt y]) -> x = a.Get && y = b.Get
+        | _ -> false
+
+    testProperty "list preserves elements" <| fun (a: NonNegativeInt) (b: NonNegativeInt) (c: NonNegativeInt) ->
+        let code = sprintf "[%d; %d; %d]" a.Get b.Get c.Get
+        match run code with
+        | Ok (VList [VInt x; VInt y; VInt z]) -> x = a.Get && y = b.Get && z = c.Get
+        | _ -> false
+]
+
+// =============================================================================
 // All Tests
 // =============================================================================
 
@@ -308,4 +466,10 @@ let tests = testList "Interpreter" [
     ifTests
     booleanTests
     errorTests
+    lambdaTests
+    letRecTests
+    tupleTests
+    listTests
+    consTests
+    newFeaturePropertyTests
 ]

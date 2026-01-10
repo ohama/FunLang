@@ -1,0 +1,82 @@
+{
+open FSharp.Text.Lexing
+open FunLang.GeneratedParser
+
+let lexeme = LexBuffer<_>.LexemeString
+
+let keywords = 
+    Map.ofList [
+        "let", LET
+        "rec", REC
+        "in", IN
+        "if", IF
+        "then", THEN
+        "else", ELSE
+        "fun", FUN
+        "match", MATCH
+        "with", WITH
+        "when", WHEN
+        "type", TYPE
+        "of", OF
+        "and", AND_KW
+        "or", OR_KW
+        "not", NOT_KW
+        "true", TRUE
+        "false", FALSE
+    ]
+
+let identOrKeyword s =
+    match Map.tryFind s keywords with
+    | Some token -> token
+    | None -> IDENT s
+}
+
+let digit = ['0'-'9']
+let alpha = ['a'-'z' 'A'-'Z' '_']
+let alphanum = alpha | digit
+let whitespace = [' ' '\t' '\r']
+let newline = '\n'
+
+rule token = parse
+    | whitespace+       { token lexbuf }
+    | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; token lexbuf }
+    | digit+            { INT (int (lexeme lexbuf)) }
+    | '"'               { STRING (stringToken "" lexbuf) }
+    | alpha alphanum*   { identOrKeyword (lexeme lexbuf) }
+    | '+'               { PLUS }
+    | '-'               { MINUS }
+    | '*'               { STAR }
+    | '/'               { SLASH }
+    | '%'               { PERCENT }
+    | '('               { LPAREN }
+    | ')'               { RPAREN }
+    | '['               { LBRACKET }
+    | ']'               { RBRACKET }
+    | ','               { COMMA }
+    | ';'               { SEMICOLON }
+    | ':'               { COLON }
+    | "::"              { DOUBLECOLON }
+    | "->"              { ARROW }
+    | '|'               { PIPE }
+    | '_'               { UNDERSCORE }
+    | "<="              { LTE }
+    | ">="              { GTE }
+    | "<>"              { NEQ }
+    | "!="              { NEQ }
+    | "=="              { EQ }
+    | '='               { EQ }
+    | '<'               { LT }
+    | '>'               { GT }
+    | eof               { EOF }
+    | _                 { failwithf "Unexpected character: %s" (lexeme lexbuf) }
+
+and stringToken acc = parse
+    | '"'               { acc }
+    | "\\n"             { stringToken (acc + "\n") lexbuf }
+    | "\\t"             { stringToken (acc + "\t") lexbuf }
+    | "\\r"             { stringToken (acc + "\r") lexbuf }
+    | "\\\""            { stringToken (acc + "\"") lexbuf }
+    | "\\\\"            { stringToken (acc + "\\") lexbuf }
+    | [^ '"' '\\']+     { stringToken (acc + lexeme lexbuf) lexbuf }
+    | eof               { failwith "Unterminated string" }
+    | _                 { stringToken (acc + lexeme lexbuf) lexbuf }

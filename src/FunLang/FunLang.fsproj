@@ -13,28 +13,27 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
+  <!-- FsLexYacc: Parser must be generated before Lexer -->
+  <ItemGroup>
+    <FsYacc Include="Parser.fsy">
+      <OtherFlags>--module FunLang.GeneratedParser</OtherFlags>
+    </FsYacc>
+    <FsLex Include="Lexer.fsl">
+      <OtherFlags>--module FunLang.GeneratedLexer --unicode</OtherFlags>
+    </FsLex>
+  </ItemGroup>
+
   <!-- Compile order matters in F# -->
   <ItemGroup>
     <Compile Include="Ast.fs" />
     <Compile Include="Errors.fs" />
     <Compile Include="Logging.fs" />
     <Compile Include="Options.fs" />
-    <Compile Include="Lexer.fs" />
     <Compile Include="Parser.fs" />
+    <Compile Include="Lexer.fs" />
+    <Compile Include="ParserWrapper.fs" />
     <Compile Include="Interpreter.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
-  <!-- FsLexYacc files - disabled for now, will enable later -->
-  <!--
-  <ItemGroup>
-    <FsYacc Include="Parser.fsy">
-      <Module>Parser</Module>
-    </FsYacc>
-    <FsLex Include="Lexer.fsl">
-      <Module>Lexer</Module>
-    </FsLex>
-  </ItemGroup>
-  -->
 
 </Project>

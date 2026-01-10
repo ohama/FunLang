@@ -105,12 +105,20 @@ Token       ::= INT integer
 program     ::= expr
 
 expr        ::= let_expr
+              | let_rec_expr
               | if_expr
-              | or_expr
+              | lambda_expr
+              | cons_expr
 
 let_expr    ::= 'let' IDENT '=' expr 'in' expr
 
+let_rec_expr ::= 'let' 'rec' IDENT '=' expr 'in' expr
+
 if_expr     ::= 'if' expr 'then' expr 'else' expr
+
+lambda_expr ::= 'fun' IDENT '->' expr
+
+cons_expr   ::= or_expr ('::' cons_expr)?     (* right-associative *)
 
 or_expr     ::= and_expr ('or' and_expr)*
 
@@ -126,32 +134,25 @@ mul_expr    ::= unary_expr (('*' | '/' | '%') unary_expr)*
 
 unary_expr  ::= '-' unary_expr
               | 'not' unary_expr
-              | primary
+              | apply_expr
 
-primary     ::= INT
+apply_expr  ::= atom atom*                    (* left-associative *)
+
+atom        ::= INT
               | BOOL
               | STRING
               | IDENT
-              | '(' expr ')'
+              | '(' ')'                       (* unit *)
+              | '(' expr ')'                  (* parenthesized *)
+              | '(' expr ',' expr (',' expr)* ')'  (* tuple *)
+              | '[' ']'                       (* empty list *)
+              | '[' expr (';' expr)* ']'      (* list *)
 ```
 
-### AST Nodes (Defined but not all parsed yet)
+### Not Yet Implemented
 
 ```ebnf
-(* These are in the AST but not yet fully parsed *)
-
-lambda_expr ::= 'fun' IDENT '->' expr
-
-apply_expr  ::= primary primary+
-
-let_rec     ::= 'let' 'rec' IDENT '=' expr 'in' expr
-
-tuple_expr  ::= '(' expr ',' expr (',' expr)* ')'
-
-list_expr   ::= '[' ']'
-              | '[' expr (';' expr)* ']'
-
-cons_expr   ::= expr '::' expr
+(* Pattern matching - AST defined but parser returns error *)
 
 match_expr  ::= 'match' expr 'with' match_cases
 
@@ -216,19 +217,20 @@ not true and false        (* = (not true) and false = false *)
 | Boolean ops (`and` `or` `not`) | ✅ | ✅ | ✅ | ✅ |
 | Unary negation (`-`) | ✅ | ✅ | ✅ | ✅ |
 | Let binding | ✅ | ✅ | ✅ | ✅ |
+| Recursive let (`let rec`) | ✅ | ✅ | ✅ | ✅ |
 | If-then-else | ✅ | ✅ | ✅ | ✅ |
+| Lambda (`fun x -> e`) | ✅ | ✅ | ✅ | ✅ |
+| Function application | ✅ | ✅ | ✅ | ✅ |
+| Tuples | ✅ | ✅ | ✅ | ✅ |
+| Lists | ✅ | ✅ | ✅ | ✅ |
+| Cons (`::`) | ✅ | ✅ | ✅ | ✅ |
+| Unit `()` | ✅ | ✅ | ✅ | ✅ |
 | Parentheses | ✅ | ✅ | ✅ | ✅ |
 
-### 🔶 Partially Implemented (AST/Interpreter only)
+### 🔶 Partially Implemented
 
 | Feature | Lexer | Parser | Interpreter | Tests |
 |---------|-------|--------|-------------|-------|
-| Lambda (`fun x -> e`) | ✅ | ❌ | ✅ | ❌ |
-| Function application | ✅ | ❌ | ✅ | ❌ |
-| Recursive let (`let rec`) | ✅ | ❌ | ✅ | ❌ |
-| Tuples | ✅ | ❌ | ✅ | ❌ |
-| Lists | ✅ | ❌ | ✅ | ❌ |
-| Cons (`::`) | ✅ | ❌ | ✅ | ❌ |
 | Block expressions | ✅ | ❌ | ✅ | ❌ |
 
 ### ❌ Not Yet Implemented
@@ -272,42 +274,65 @@ let x = 1 in let y = 2 in x + y   (* => 3 *)
 if true then 1 else 2        (* => 1 *)
 if 5 < 10 then 10 else 5     (* => 10 *)
 
-(* Nested expressions *)
-let x = 10 in
-  if x > 5 then
-    x * 2
-  else
-    x                        (* => 20 *)
-```
-
-### Planned Syntax (Not Yet Parsed)
-
-```funlang
 (* Lambda expressions *)
-fun x -> x + 1
-fun x -> fun y -> x + y
+fun x -> x + 1               (* => <function> *)
+(fun x -> x) 42              (* => 42 *)
+(fun x -> fun y -> x + y) 2 3  (* => 5 *)
 
 (* Function application *)
-let double = fun x -> x * 2 in double 21
+let double = fun x -> x * 2 in double 21  (* => 42 *)
+let apply = fun f -> fun x -> f x in
+  let sq = fun n -> n * n in
+  apply sq 3                 (* => 9 *)
+
+(* Closures *)
+let x = 10 in
+  let addX = fun y -> x + y in
+  addX 5                     (* => 15 *)
 
 (* Recursive functions *)
 let rec factorial = fun n ->
   if n == 0 then 1
   else n * factorial (n - 1)
-in factorial 5
+in factorial 5               (* => 120 *)
+
+let rec fib = fun n ->
+  if n < 2 then n
+  else fib (n - 1) + fib (n - 2)
+in fib 10                    (* => 55 *)
 
 (* Tuples *)
-(1, 2, 3)
-let pair = (10, 20) in pair
+(1, 2, 3)                    (* => (1, 2, 3) *)
+((1, 2), 3)                  (* => ((1, 2), 3) *)
+let pair = (10, 20) in pair  (* => (10, 20) *)
 
 (* Lists *)
-[1; 2; 3]
-1 :: 2 :: 3 :: []
+[]                           (* => [] *)
+[1; 2; 3]                    (* => [1; 2; 3] *)
+[[1]; [2; 3]]                (* => [[1]; [2; 3]] *)
 
+(* Cons operator *)
+1 :: []                      (* => [1] *)
+1 :: 2 :: 3 :: []            (* => [1; 2; 3] *)
+0 :: [1; 2]                  (* => [0; 1; 2] *)
+
+(* Unit *)
+()                           (* => () *)
+```
+
+### Planned Syntax (Not Yet Implemented)
+
+```funlang
 (* Pattern matching *)
 match xs with
 | [] -> 0
 | x :: rest -> x + sum rest
+
+(* Indentation-based blocks *)
+let result =
+    let x = 10
+    let y = 20
+    x + y
 ```
 
 ---
@@ -381,3 +406,4 @@ type Value =
 | Version | Features |
 |---------|----------|
 | 0.1.0 | Phase 0 + Phase 1: Lexer, Parser, Interpreter for core expressions |
+| 0.2.0 | Phase 2 + Phase 3: Lambda, function application, let rec, tuples, lists, cons |

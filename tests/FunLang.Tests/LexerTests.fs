@@ -3,7 +3,8 @@ module FunLang.Tests.LexerTests
 open Expecto
 open FsCheck
 open FunLang.Ast
-open FunLang.Lexer
+open FunLang.Parser
+open FunLang.GeneratedParser
 
 // =============================================================================
 // Property-Based Tests (Required)
@@ -37,11 +38,11 @@ let propertyTests = testList "Lexer Properties" [
 // =============================================================================
 
 let unitTests = testList "Lexer Unit Tests" [
-    test "empty input returns empty token list" {
+    test "empty input returns EOF only" {
         let result = tokenize ""
         Expect.isOk result "should succeed"
         match result with
-        | Ok tokens -> Expect.equal tokens [] "should be empty"
+        | Ok tokens -> Expect.equal tokens [EOF] "should be EOF only"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -50,7 +51,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [INT 42] "should be single INT token"
+            Expect.equal tokens [INT 42; EOF] "should be INT and EOF"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -59,7 +60,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [INT 42] "should be single INT token"
+            Expect.equal tokens [INT 42; EOF] "should be INT and EOF"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -68,7 +69,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [INT 1; PLUS; INT 2] "should be three tokens"
+            Expect.equal tokens [INT 1; PLUS; INT 2; EOF] "should include EOF"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -77,7 +78,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [LET; IDENT "x"; EQ; INT 42; IN; IDENT "x"; PLUS; INT 1] "correct tokens"
+            Expect.equal tokens [LET; IDENT "x"; EQ; INT 42; IN; IDENT "x"; PLUS; INT 1; EOF] "correct tokens"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -86,7 +87,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [LET; REC; IF; THEN; ELSE; FUN; MATCH; WITH] "keywords recognized"
+            Expect.equal tokens [LET; REC; IF; THEN; ELSE; FUN; MATCH; WITH; EOF] "keywords recognized"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -95,7 +96,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [PLUS; MINUS; STAR; SLASH; LT; GT; LTE; GTE; EQ; NEQ] "operators recognized"
+            Expect.equal tokens [PLUS; MINUS; STAR; SLASH; LT; GT; LTE; GTE; EQ; NEQ; EOF] "operators recognized"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -104,7 +105,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [FUN; IDENT "x"; ARROW; IDENT "x"] "arrow recognized"
+            Expect.equal tokens [FUN; IDENT "x"; ARROW; IDENT "x"; EOF] "arrow recognized"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -113,7 +114,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [STRING "hello world"] "string recognized"
+            Expect.equal tokens [STRING "hello world"; EOF] "string recognized"
         | Error _ -> failtest "unexpected error"
     }
 
@@ -122,7 +123,7 @@ let unitTests = testList "Lexer Unit Tests" [
         Expect.isOk result "should succeed"
         match result with
         | Ok tokens ->
-            Expect.equal tokens [BOOL true; BOOL false] "booleans recognized"
+            Expect.equal tokens [TRUE; FALSE; EOF] "booleans recognized"
         | Error _ -> failtest "unexpected error"
     }
 ]
