@@ -300,10 +300,11 @@ module TypeDefEnvBuilder =
 
     /// Build type environment from a single type definition
     let buildFromTypeDef (typeDef: TypeDef) : Map<string, TypeScheme> =
-        // Create fresh type variables for each type parameter
+        // Create type variables using negative IDs to avoid collision with freshTypeVar()
+        // freshTypeVar() generates 1, 2, 3, ... so we use -1, -2, -3, ...
         let typeVarMap =
             typeDef.TypeParams
-            |> List.mapi (fun i p -> (p, i + 1))  // Use simple incrementing IDs
+            |> List.mapi (fun i p -> (p, -(i + 1)))  // Use negative IDs: -1, -2, -3, ...
             |> Map.ofList
 
         // Build constructor schemes

@@ -29,6 +29,18 @@ let builtinUnaryOpType (op: UnaryOp) : Type * Type =
 // Algorithm W - Core Type Inference
 // =============================================================================
 
+/// Constructor type environment (for user-defined types)
+/// Maps constructor names to their type schemes
+/// Uses ThreadLocal for parallel test safety
+let private ctorEnv = new System.Threading.ThreadLocal<TypeEnv>(fun () -> Map.empty)
+
+/// Set the constructor type environment
+let setConstructorEnv (env: TypeEnv) = ctorEnv.Value <- env
+
+/// Get constructor type from environment
+let private lookupConstructor (name: string) : TypeScheme option =
+    Map.tryFind name ctorEnv.Value
+
 /// Infer the type of an expression
 /// Returns (Substitution, Type) on success
 let rec infer (env: TypeEnv) (expr: Expr) : InferResult =
@@ -206,19 +218,33 @@ let rec infer (env: TypeEnv) (expr: Expr) : InferResult =
 
     // -------------------------------------------------------------------------
     // Constructor: user-defined type constructor
-    // TODO: Implement proper type inference with type environment
     // -------------------------------------------------------------------------
     | EConstructor (name, argOpt) ->
-        // For now, return a fresh type variable (no type checking)
-        // Proper implementation requires type definition environment
-        let α = TypeHelpers.freshTypeVar ()
-        match argOpt with
-        | None -> Ok (Map.empty, α)
-        | Some arg ->
-            result {
-                let! (s, _) = infer env arg
-                return (s, TypeHelpers.apply s α)
-            }
+        match lookupConstructor name with
+        | None ->
+            // Unknown constructor - return error
+            Error (TypeError.unboundVar name None)
+        | Some scheme ->
+            // Instantiate the constructor's type scheme
+            let ctorType = TypeHelpers.instantiate scheme
+            match argOpt, ctorType with
+            // Constructor expects argument but none provided
+            | None, TFun _ ->
+                Error (TypeError.arityMismatch 1 0 None)
+            // Nullary constructor: True : Bool, None : Option 'a
+            | None, resultType ->
+                Ok (Map.empty, resultType)
+            // Unary constructor: Some : 'a -> Option 'a
+            | Some arg, TFun (argType, resultType) ->
+                result {
+                    let! (s1, τArg) = infer env arg
+                    let! s2 = unify τArg (TypeHelpers.apply s1 argType)
+                    let finalSubst = TypeHelpers.compose s2 s1
+                    return (finalSubst, TypeHelpers.apply finalSubst resultType)
+                }
+            // Constructor doesn't expect argument but one provided
+            | Some _, _ ->
+                Error (TypeError.arityMismatch 0 1 None)
 
 /// Infer types for a list of expressions, threading substitutions
 and inferList (env: TypeEnv) (exprs: Expr list) : TypeResult<Substitution * Type list> =
@@ -395,5 +421,15 @@ let inferType (expr: Expr) : TypeResult<Type> =
 let inferTypeWithEnv (env: TypeEnv) (expr: Expr) : TypeResult<Type> =
     result {
         let! (subst, t) = infer env expr
+        return TypeHelpers.apply subst t
+    }
+
+/// Infer type with a given type definition environment (for user-defined types)
+/// The typeDefEnv maps constructor names to their type schemes
+let inferTypeWithTypeDefEnv (typeDefEnv: TypeEnv) (expr: Expr) : TypeResult<Type> =
+    TypeHelpers.resetCounter ()
+    setConstructorEnv typeDefEnv
+    result {
+        let! (subst, t) = infer Map.empty expr
         return TypeHelpers.apply subst t
     }

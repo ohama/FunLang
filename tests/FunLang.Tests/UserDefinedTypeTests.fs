@@ -322,25 +322,81 @@ let typeDefEnvTests = testList "Type Definition Environment" [
 // Type Inference Tests - Constructors
 // =============================================================================
 
-let typeInferenceTests = ptestList "Type Inference - Constructors" [
+let typeInferenceTests = testList "Type Inference - Constructors" [
 
-    test "infer type of constructor without argument" {
-        // Assuming Option type is defined
-        // None : Option 'a
+    test "infer type of nullary constructor (Bool)" {
+        // type Bool = True | False
+        // True : Bool
         TypeHelpers.resetCounter ()
-        let expr = EConstructor ("None", None)
-        let result = inferType expr
-        Expect.isOk result "should infer type of None"
+        let typeDef: TypeDef = {
+            Name = "Bool"
+            TypeParams = []
+            Constructors = [("True", None); ("False", None)]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EConstructor ("True", None)
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer True" result
+        Expect.equal t (TConstructor ("Bool", [])) "True should have type Bool"
     }
 
-    test "infer type of constructor with argument" {
+    test "infer type of nullary constructor (Option None)" {
+        // type Option 'a = None | Some of 'a
+        // None : Option 'a (polymorphic)
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some "a")]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let expr = EConstructor ("None", None)
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        let t = expectOk "infer None" result
+        match t with
+        | TConstructor ("Option", [TVar _]) -> ()  // Option 'a with fresh var
+        | _ -> failtest (sprintf "expected Option<'a>, got %A" t)
+    }
+
+    test "infer type of unary constructor (Some 42)" {
+        // type Option 'a = None | Some of 'a
         // Some 42 : Option int
         TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some "a")]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
         let expr = EConstructor ("Some", Some (ELiteral (LInt 42)))
-        let result = inferType expr
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
         let t = expectOk "infer Some 42" result
-        // Should be something like TConstructor ("Option", [TInt])
-        ()
+        Expect.equal t (TConstructor ("Option", [TInt])) "Some 42 should have type Option<int>"
+    }
+
+    test "infer type of nested constructor (Some (Some 1))" {
+        // Some (Some 1) : Option (Option int)
+        TypeHelpers.resetCounter ()
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some "a")]
+        }
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+        let inner = EConstructor ("Some", Some (ELiteral (LInt 1)))
+        let outer = EConstructor ("Some", Some inner)
+        let result = inferTypeWithTypeDefEnv typeDefEnv outer
+        let t = expectOk "infer Some (Some 1)" result
+        Expect.equal t (TConstructor ("Option", [TConstructor ("Option", [TInt])])) "nested Option"
+    }
+
+    test "unknown constructor returns error" {
+        // Unknown constructor should fail
+        TypeHelpers.resetCounter ()
+        let typeDefEnv = Map.empty  // No types defined
+        let expr = EConstructor ("Unknown", None)
+        let result = inferTypeWithTypeDefEnv typeDefEnv expr
+        Expect.isError result "unknown constructor should fail"
     }
 ]
 
@@ -406,7 +462,7 @@ let allUserTypeTests = testList "User-Defined Types" [
     interpreterTests
     parserTests          // Enabled: type declaration parsing
     typeDefEnvTests      // Type definition environment tests
-    // typeInferenceTests // TODO: Enable after implementing full type inference
+    typeInferenceTests   // Constructor type inference tests
     // integrationTests  // TODO: Enable after full implementation
     propertyTests
 ]

@@ -2,11 +2,42 @@
 
 ## Current Status
 
-- **Phase**: Phase 6 In Progress (Part 3)
-- **Tests**: 282 passed
+- **Phase**: Phase 6 In Progress (Part 4)
+- **Tests**: 287 passed
 - **Last Session**: 2026-01-10
 
 ## Recent Sessions
+
+### 2026-01-10 23:52 (Session: j0123456)
+
+**주요 변경 사항:**
+- Phase 6 Part 4: Constructor type inference 구현
+- TypeInfer.fs: setConstructorEnv, lookupConstructor, inferTypeWithTypeDefEnv 추가
+- ctorEnv를 ThreadLocal<TypeEnv>로 구현 (병렬 테스트 안전)
+- TypeDefEnvBuilder: 음수 ID (-1, -2, ...) 사용하여 타입 변수 충돌 방지
+- 5개 constructor type inference 테스트 추가 (287 total)
+
+**시도한 실험:**
+- mutable ctorEnv 사용 → 병렬 테스트에서 실패 (경쟁 조건)
+- ThreadLocal<TypeEnv>로 변경 → 성공
+
+**배운 점:**
+- 타입 스킴 ID와 freshTypeVar() ID가 충돌하면 apply 함수에서 무한 루프
+- 음수 ID로 분리하여 충돌 방지 (freshTypeVar는 양수만 생성)
+- 병렬 테스트 환경에서 mutable state는 ThreadLocal 필수
+
+**Key Decisions:**
+- ctorEnv: ThreadLocal<TypeEnv> (병렬 테스트 안전)
+- TypeDefEnvBuilder: 음수 ID 사용 (-1, -2, -3, ...)
+- inferTypeWithTypeDefEnv: 생성자 환경 설정 후 타입 추론
+
+**Resolved Issues:**
+- issue-003: Infinite loop in type inference due to type variable ID collision
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-10 23:19 (Session: i9012345)
 
@@ -184,6 +215,9 @@
 - TConstructor of string * Type list: 사용자 정의 타입 (Option int 등)
 - TypeDefEnvBuilder: TypeDef list → TypeEnv (생성자 타입 스킴 변환)
 - 생성자 스킴: `None : forall 'a. Option<'a>`, `Some : forall 'a. 'a -> Option<'a>`
+- ctorEnv: ThreadLocal<TypeEnv>로 병렬 테스트 안전하게 구현
+- 타입 변수 ID 충돌 방지: TypeDefEnvBuilder는 음수 ID (-1, -2, ...) 사용
+- inferTypeWithTypeDefEnv: 생성자 환경 설정 후 타입 추론 수행
 
 ### Type System Implementation
 - Algorithm W: 표현식별 추론 → substitution 합성 → 최종 타입
