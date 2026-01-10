@@ -235,6 +235,89 @@ FunLang 프로젝트 의존성:
 - **Serilog**: Structured logging
 - **Argu**: CLI argument parsing
 
+---
+
+## ⚠️ FsLexYacc 설정 원칙
+
+### 필수 설정 (.fsproj)
+
+```xml
+<!-- FsYacc: --module 플래그로 모듈명 지정 (OtherFlags 사용 필수) -->
+<FsYacc Include="Parser.fsy">
+  <OtherFlags>--module FunLang.GeneratedParser</OtherFlags>
+</FsYacc>
+
+<!-- FsLex: --unicode 플래그 필수 (char-based lexing) -->
+<FsLex Include="Lexer.fsl">
+  <OtherFlags>--module FunLang.GeneratedLexer --unicode</OtherFlags>
+</FsLex>
+```
+
+### 컴파일 순서 (중요!)
+
+```xml
+<!-- Parser.fs가 Lexer.fs보다 먼저 컴파일되어야 함 -->
+<!-- (Lexer가 Parser의 token 타입 사용) -->
+<ItemGroup>
+  <Compile Include="Parser.fs" />   <!-- 1. Parser 먼저 -->
+  <Compile Include="Lexer.fs" />    <!-- 2. Lexer 나중 -->
+  ...
+</ItemGroup>
+```
+
+### Lexer.fsl 헤더 규칙
+
+```fsl
+{
+// ❌ 금지: --module 플래그 사용시 헤더에 module 선언 금지
+// module FunLang.GeneratedLexer  <- 이거 쓰면 안됨!
+
+// ✅ 필수: open 문만 사용
+open FSharp.Text.Lexing
+open FunLang.GeneratedParser
+...
+}
+```
+
+### 생성 파일 (.gitignore 필수)
+
+```gitignore
+# FsLexYacc 자동 생성 파일 - 절대 commit 금지
+src/FunLang/Parser.fs
+src/FunLang/Lexer.fs
+*.fsi
+```
+
+상세 이슈: `docs/build-issues.md` 참조
+
+---
+
+## ⚠️ FsCheck 테스트 주의사항
+
+### 음수 테스트 금지
+
+```fsharp
+// ❌ 문제: 음수는 MINUS INT로 파싱됨
+// "(fun x -> x) -1" → "(fun x -> x) - 1" (뺄셈으로 해석)
+testProperty "identity" <| fun (n: int) ->  // -1 입력시 실패!
+
+// ✅ 해결: NonNegativeInt 사용
+testProperty "identity" <| fun (n: NonNegativeInt) ->
+    let input = $"(fun x -> x) {n.Get}"
+    ...
+```
+
+### Null 입력 처리
+
+```fsharp
+// FsCheck가 null 문자열 생성할 수 있음 - 반드시 처리
+let tokenize (input: string) =
+    if isNull input then Error (Error.lexerMsg "null input" pos)
+    else ...
+```
+
+상세 이슈: `docs/build-issues.md` 참조
+
 ## ⚠️ Error Handling: Exception 금지
 
 ### 핵심 원칙
