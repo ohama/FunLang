@@ -93,6 +93,8 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 세션 종료 시 이슈 상태를 확인하고 기록합니다.
 
+**관련 명령어:** `/issue` - 이슈 조회/추가/해결
+
 ### 질문 순서
 
 1. **Unresolved Issues 확인:**
@@ -100,13 +102,20 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
    이번 세션에서 해결되지 않은 이슈가 있나요?
    (버그, 막힌 부분, 나중에 확인할 사항 등)
    ```
+   - 있으면 `/issue add` 로 추가하거나 직접 state.json에 기록
 
 2. **Resolved Issues 확인:**
    ```
    이전에 기록된 unresolved issue 중 해결된 것이 있나요?
    ```
+   - 있으면 `/issue resolve <id>` 로 해결 처리
 
-### 이슈 기록 형식
+### 이슈 기록 위치
+
+1. **`.claude/session/state.json`**: 현재 이슈 상태 (실시간)
+2. **`docs/issues.md`**: 이슈 히스토리 (영구 기록, git 추적)
+
+### 이슈 기록 형식 (state.json)
 
 ```json
 {
@@ -117,7 +126,8 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
         "createdAt": "ISO timestamp",
         "description": "이슈 설명",
         "context": "관련 파일/함수",
-        "priority": "high|medium|low"
+        "priority": "high|medium|low",
+        "sessionCreated": "session-id"
       }
     ],
     "resolved": [
@@ -126,23 +136,57 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
         "createdAt": "ISO timestamp",
         "resolvedAt": "ISO timestamp",
         "description": "이슈 설명",
-        "resolution": "해결 방법"
+        "resolution": "해결 방법",
+        "sessionCreated": "session-id",
+        "sessionResolved": "session-id"
       }
-    ]
+    ],
+    "nextId": 2
   }
 }
 ```
 
-### 이슈 표시 (startsession 시)
+### Session Issues Display (endsession 시)
 
-다음 세션 시작 시 unresolved issues가 있으면 표시:
+이번 세션에서 생성/해결된 이슈를 표시:
 
 ```
-=== Unresolved Issues ===
-1. [high] Parser conflict with NEWLINE token (issue-001)
-   Context: src/FunLang/Parser.fsy
-2. [medium] Performance issue in large lists (issue-002)
-=========================
+=== Session Issues ===
+
+Created this session (2):
+  [high] issue-005: Parser fails on nested match (unresolved)
+  [low] issue-006: Add documentation for patterns (unresolved)
+
+Resolved this session (1):
+  issue-001: Parser conflict with NEWLINE token
+  → Added nl_opt rule for optional NEWLINE
+
+======================
+```
+
+### docs/issues.md 업데이트
+
+이슈 생성/해결 시 `docs/issues.md` 파일도 함께 업데이트:
+
+```markdown
+## Unresolved
+
+### issue-005: Parser fails on nested match expressions
+- **Priority**: high
+- **Context**: src/FunLang/Parser.fsy
+- **Created**: 2026-01-10 19:00
+- **Session**: a1b2c3d4
+
+---
+
+## Resolved
+
+### issue-001: Parser conflict with NEWLINE token
+- **Priority**: high
+- **Context**: src/FunLang/Parser.fsy
+- **Created**: 2026-01-10 18:30
+- **Resolved**: 2026-01-10 19:05
+- **Resolution**: Added nl_opt rule for optional NEWLINE
 ```
 
 ## Session State Schema

@@ -121,6 +121,7 @@ See .claude/DEBUGGING.md for full guide.
 .claude/DEBUGGING.md  - Debugging guide
 CLAUDE.md             - Development guidelines
 README.md             - Project overview
+docs/issues.md        - Issue history
 ```
 
 ## Output
@@ -161,16 +162,29 @@ If there are unresolved issues, display them prominently:
 ```
 === Unresolved Issues ({count}) ===
 
-1. [high] Parser conflict with NEWLINE token
+1. [high] issue-001: Parser conflict with NEWLINE token
    Context: src/FunLang/Parser.fsy
    Created: 2026-01-10
 
-2. [medium] Performance issue in large lists
+2. [medium] issue-002: Performance issue in large lists
    Context: src/FunLang/Interpreter.fs
    Created: 2026-01-09
 
-These issues need attention!
+Use `/issue` to manage issues
+Use `/issue resolve <id>` to mark as resolved
 ==============================
 ```
 
 If no unresolved issues exist, skip this section entirely.
+
+### Issue Management Commands
+
+```
+/issue              # Show all unresolved issues
+/issue all          # Show all issues (resolved + unresolved)
+/issue add <desc>   # Add new issue
+/issue resolve <id> # Mark issue as resolved
+/issue show <id>    # Show issue details
+```
+
+See `docs/issues.md` for full issue history.
