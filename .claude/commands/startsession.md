@@ -19,6 +19,14 @@ Start a new work session and load session state with project context.
    - Current phase from PLAN.md
    - TDD/FsCheck requirements reminder
    - Available debugging options
+6. **Display next steps prominently** (from `nextPhase` in state.json):
+   - Show the next phase name
+   - List all items to be implemented
+   - Highlight the first actionable item
+7. **Display unresolved issues** (if any exist):
+   - Show count and list of unresolved issues
+   - Include priority and context for each
+   - Remind user these need attention
 
 ## Session State Schema
 
@@ -30,6 +38,15 @@ Start a new work session and load session state with project context.
   "lastPromptLoggedAt": "ISO timestamp",
   "currentGoal": "User's main objective",
   "currentPhase": "Phase 0|1|1.2|1.5|2|3|4|5|6",
+  "phaseProgress": {
+    "phase": "current phase description",
+    "completedItems": ["items done in this phase"],
+    "remainingItems": ["items left to do"]
+  },
+  "nextPhase": {
+    "phase": "Phase X: Name",
+    "items": ["item 1", "item 2", "..."]
+  },
   "planFile": ".claude/PLAN.md",
   "workInProgress": ["list of ongoing tasks"],
   "notes": ["important context and notes"],
@@ -37,9 +54,27 @@ Start a new work session and load session state with project context.
   "devGuidelines": {
     "tdd": true,
     "propertyBasedTesting": true,
-    "testFramework": "FsCheck + xUnit"
+    "testFramework": "Expecto + FsCheck"
   },
-  "debuggingNotes": ["any debugging observations"]
+  "debuggingNotes": ["any debugging observations"],
+  "issues": {
+    "unresolved": [
+      {
+        "id": "issue-001",
+        "createdAt": "ISO timestamp",
+        "description": "description",
+        "context": "file/function",
+        "priority": "high|medium|low"
+      }
+    ],
+    "resolved": []
+  },
+  "testStatus": {
+    "lastRun": "ISO timestamp",
+    "passed": 0,
+    "failed": 0,
+    "summary": "X tests passed"
+  }
 }
 ```
 
@@ -96,4 +131,46 @@ Report the session status with:
 3. Work in progress
 4. TDD reminder
 5. Debugging options summary
-6. Ready to work message
+6. **Next Steps section** (important!)
+7. **Unresolved Issues section** (if any exist)
+8. Ready to work message
+
+### Next Steps Display Format
+
+```
+=== Next Steps ===
+
+Phase: {nextPhase.phase}
+
+To Do:
+  1. {nextPhase.items[0]} <- Start here
+  2. {nextPhase.items[1]}
+  3. {nextPhase.items[2]}
+  ...
+
+Suggested command: "Phase 5 시작하자" or specific item
+==================
+```
+
+This section should be displayed prominently so the user knows exactly what to work on next.
+
+### Unresolved Issues Display Format
+
+If there are unresolved issues, display them prominently:
+
+```
+=== Unresolved Issues ({count}) ===
+
+1. [high] Parser conflict with NEWLINE token
+   Context: src/FunLang/Parser.fsy
+   Created: 2026-01-10
+
+2. [medium] Performance issue in large lists
+   Context: src/FunLang/Interpreter.fs
+   Created: 2026-01-09
+
+These issues need attention!
+==============================
+```
+
+If no unresolved issues exist, skip this section entirely.

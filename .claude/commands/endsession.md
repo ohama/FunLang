@@ -12,17 +12,22 @@ End the current work session and save state for later resumption.
    - Any issues encountered
    - Debugging commands used
    - Error patterns discovered
-3. Ask user for any notes or context to save
-4. Update `.claude/session/state.json` with:
+3. **Ask about issues** (see Issue Tracking section below):
+   - Ask if there are any unresolved issues to record
+   - Ask if any previously unresolved issues were resolved
+   - Record issue status changes
+4. Ask user for any notes or context to save
+5. Update `.claude/session/state.json` with:
    - Current phase progress
    - Work in progress
    - Completed tasks
    - Important notes and context
    - Debugging notes
+   - **Issues (unresolved/resolved)**
    - Session end timestamp
-5. **Save session prompts to file** (see below)
-6. Generate session summary report
-7. Confirm session saved successfully
+6. **Save session prompts to file** (see below)
+7. Generate session summary report
+8. Confirm session saved successfully
 
 ## Session Prompt Logging (필수)
 
@@ -84,6 +89,62 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 **파일 경로:** `docs/prompt/` 디렉토리에 저장 (없으면 생성)
 
+## Issue Tracking
+
+세션 종료 시 이슈 상태를 확인하고 기록합니다.
+
+### 질문 순서
+
+1. **Unresolved Issues 확인:**
+   ```
+   이번 세션에서 해결되지 않은 이슈가 있나요?
+   (버그, 막힌 부분, 나중에 확인할 사항 등)
+   ```
+
+2. **Resolved Issues 확인:**
+   ```
+   이전에 기록된 unresolved issue 중 해결된 것이 있나요?
+   ```
+
+### 이슈 기록 형식
+
+```json
+{
+  "issues": {
+    "unresolved": [
+      {
+        "id": "issue-001",
+        "createdAt": "ISO timestamp",
+        "description": "이슈 설명",
+        "context": "관련 파일/함수",
+        "priority": "high|medium|low"
+      }
+    ],
+    "resolved": [
+      {
+        "id": "issue-001",
+        "createdAt": "ISO timestamp",
+        "resolvedAt": "ISO timestamp",
+        "description": "이슈 설명",
+        "resolution": "해결 방법"
+      }
+    ]
+  }
+}
+```
+
+### 이슈 표시 (startsession 시)
+
+다음 세션 시작 시 unresolved issues가 있으면 표시:
+
+```
+=== Unresolved Issues ===
+1. [high] Parser conflict with NEWLINE token (issue-001)
+   Context: src/FunLang/Parser.fsy
+2. [medium] Performance issue in large lists (issue-002)
+=========================
+```
+
 ## Session State Schema
 
 ```json
@@ -100,6 +161,10 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
     "completedItems": ["items done in this phase"],
     "remainingItems": ["items left to do"]
   },
+  "nextPhase": {
+    "phase": "Phase X: Name",
+    "items": ["item 1", "item 2"]
+  },
   "planFile": ".claude/PLAN.md",
   "workInProgress": ["list of ongoing tasks"],
   "notes": ["important context and notes"],
@@ -107,14 +172,35 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
   "devGuidelines": {
     "tdd": true,
     "propertyBasedTesting": true,
-    "testFramework": "FsCheck + xUnit"
+    "testFramework": "Expecto + FsCheck"
   },
   "debuggingNotes": [
     "debugging observations from this session"
   ],
+  "issues": {
+    "unresolved": [
+      {
+        "id": "issue-001",
+        "createdAt": "ISO timestamp",
+        "description": "description",
+        "context": "file/function",
+        "priority": "high|medium|low"
+      }
+    ],
+    "resolved": [
+      {
+        "id": "issue-001",
+        "createdAt": "ISO timestamp",
+        "resolvedAt": "ISO timestamp",
+        "description": "description",
+        "resolution": "how it was fixed"
+      }
+    ]
+  },
   "testStatus": {
     "lastRun": "ISO timestamp",
-    "passed": true,
+    "passed": 0,
+    "failed": 0,
     "summary": "X tests passed"
   }
 }
@@ -146,6 +232,12 @@ Test Status: {passed/failed} ({summary})
 Debugging Notes:
 - {note1}
 - {note2}
+
+Issues:
+  Unresolved: {count}
+  - [priority] {description} ({id})
+  Resolved this session: {count}
+  - {description} → {resolution}
 
 Notes for Next Session:
 - {note1}
@@ -183,6 +275,7 @@ Confirm that session state has been saved including:
 4. Work in progress
 5. Test status
 6. Debugging notes
-7. Notes for next session
-8. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
-9. Restoration command: `/startsession`
+7. **Issues status** (unresolved count, resolved this session)
+8. Notes for next session
+9. **Prompt log file path** (docs/prompt/YYYY-MM-DD_HH-MM.md)
+10. Restoration command: `/startsession`
