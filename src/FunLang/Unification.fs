@@ -53,6 +53,17 @@ let rec unify (t1: Type) (t2: Type) : TypeResult<Substitution> =
     | TTuple ts1, TTuple ts2 ->
         Error (TypeError.arityMismatch (List.length ts1) (List.length ts2) None)
 
+    // User-defined constructor types (same name, same arity)
+    | TConstructor (name1, ts1), TConstructor (name2, ts2) when name1 = name2 && List.length ts1 = List.length ts2 ->
+        unifyList ts1 ts2
+
+    // User-defined constructor types (different name or arity)
+    | TConstructor (name1, ts1), TConstructor (name2, ts2) ->
+        if name1 <> name2 then
+            Error (TypeError.mismatch t1 t2 None)
+        else
+            Error (TypeError.arityMismatch (List.length ts1) (List.length ts2) None)
+
     // Type mismatch
     | _ ->
         Error (TypeError.mismatch t1 t2 None)

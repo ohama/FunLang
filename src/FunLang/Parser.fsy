@@ -89,12 +89,53 @@ let rec blockToExpr (items: BlockItem list) : Expr =
 
 // Start symbol
 %start prog
-%type <Expr> prog
+%type <Program> prog
 
 %%
 
 prog:
-    | expr EOF                          { $1 }
+    | program EOF                       { $1 }
+;
+
+// =============================================================================
+// Program: type definitions + main expression
+// =============================================================================
+
+program:
+    | expr                                  { { TypeDefs = []; MainExpr = Some $1 } }
+    | type_def_or_list expr                 { { TypeDefs = $1; MainExpr = Some $2 } }
+    | type_def_or_list                      { { TypeDefs = $1; MainExpr = None } }
+;
+
+// Type definition list - handles optional trailing NEWLINE
+type_def_or_list:
+    | type_def                              { [$1] }
+    | type_def NEWLINE                      { [$1] }
+    | type_def NEWLINE type_def_or_list     { $1 :: $3 }
+;
+
+// =============================================================================
+// Type Definitions
+// =============================================================================
+
+type_def:
+    | TYPE IDENT type_params EQ constructor_list  { { Name = $2; TypeParams = $3; Constructors = $5 } }
+;
+
+type_params:
+    | /* empty */                       { [] }
+    | type_params TYPEVAR               { $1 @ [$2] }
+;
+
+constructor_list:
+    | constructor_def                           { [$1] }
+    | constructor_def PIPE constructor_list     { $1 :: $3 }
+;
+
+constructor_def:
+    | IDENT                             { ($1, None) }
+    | IDENT OF TYPEVAR                  { ($1, Some $3) }
+    | IDENT OF IDENT                    { ($1, Some $3) }
 ;
 
 expr:

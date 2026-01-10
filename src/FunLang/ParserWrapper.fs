@@ -62,8 +62,8 @@ let private makeListLexer (tokens: Token list ref) : (LexBuffer<char> -> token) 
             tokens := rest
             t
 
-/// Parse from a token list
-let parse (tokens: Token list) : Result<Expr, string> =
+/// Parse from a token list - returns full Program
+let parseProgram (tokens: Token list) : Result<Program, string> =
     try
         let tokensRef = ref tokens
         let dummyLexbuf = LexBuffer<char>.FromString("")
@@ -73,7 +73,21 @@ let parse (tokens: Token list) : Result<Expr, string> =
     with
     | ex -> Error ex.Message
 
-/// Parse a string directly (tokenize + parse)
+/// Parse from a token list - extracts main expression for backward compatibility
+let parse (tokens: Token list) : Result<Expr, string> =
+    parseProgram tokens
+    |> Result.bind (fun program ->
+        match program.MainExpr with
+        | Some expr -> Ok expr
+        | None -> Error "No main expression in program")
+
+/// Parse a string to Program (tokenize + parse)
+let parseProgramString (input: string) : Result<Program, string> =
+    match tokenize input with
+    | Error e -> Error e.Message
+    | Ok tokens -> parseProgram tokens
+
+/// Parse a string directly (tokenize + parse) - extracts main expression
 let parseString (input: string) : Result<Expr, string> =
     match tokenize input with
     | Error e -> Error e.Message

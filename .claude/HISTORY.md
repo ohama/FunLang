@@ -2,11 +2,67 @@
 
 ## Current Status
 
-- **Phase**: Phase 6 In Progress
-- **Tests**: 272 passed
+- **Phase**: Phase 6 In Progress (Part 3)
+- **Tests**: 282 passed
 - **Last Session**: 2026-01-10
 
 ## Recent Sessions
+
+### 2026-01-10 23:19 (Session: i9012345)
+
+**주요 변경 사항:**
+- Phase 6 Part 3: Type definition environment 구현
+- TConstructor 타입 추가 (Types.fs)
+- TypeDefEnvBuilder 모듈 구현
+- Unification.fs에 TConstructor 통합 추가
+- 6개 type definition environment 테스트 추가 (282 total)
+
+**시도한 실험:**
+- TypeDef에서 생성자 타입 스킴 자동 생성 → 성공
+
+**배운 점:**
+- 생성자 타입: nullary → `TypeName`, unary → `'a -> TypeName<'a>`
+- TConstructor 통합: 같은 이름 + 같은 arity만 통합 가능
+- TypeDefEnvBuilder로 TypeDef list → TypeEnv 변환
+
+**Key Decisions:**
+- TConstructor of string * Type list 형태
+- TypeDefEnvBuilder.buildTypeDefEnv: TypeDef list → TypeEnv
+- 생성자 스킴: `None : forall 'a. Option<'a>`, `Some : forall 'a. 'a -> Option<'a>`
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-10 23:08 (Session: h8901234)
+
+**주요 변경 사항:**
+- Phase 6 Part 2: Type Declaration 파싱 구현
+- TypeDef, ConstructorDef, Program 타입 추가 (Ast.fs)
+- Parser.fsy: type declaration grammar 추가
+- ParserWrapper.fs: parseProgram, parseProgramString 함수 추가
+- 4개 parser tests 활성화 및 통과 (276 total)
+
+**시도한 실험:**
+- type_def_list에 NEWLINE 요구 → EOF 전 NEWLINE 없을 때 파싱 실패
+- type_def_or_list로 변경하여 optional trailing NEWLINE 처리
+
+**배운 점:**
+- FsYacc grammar에서 optional trailing delimiter 처리 방법
+- Program vs Expr 분리로 backward compatibility 유지
+- parseString은 main expression 추출, parseProgram은 전체 프로그램
+
+**Key Decisions:**
+- Program = { TypeDefs: TypeDef list; MainExpr: Expr option }
+- prog 규칙이 Program 반환 (Expr 대신)
+- parseString은 backward compatible (MainExpr 추출)
+- Constructor expressions는 현재 EVariable/EApply로 파싱 (추후 개선)
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-10 22:58 (Session: g7890123)
 
@@ -121,6 +177,13 @@
 - VConstructed: 런타임 값 (name, optional value)
 - PConstructor: 패턴 매칭에서 생성자 분해
 - 컴파일 순서: 타입 별칭은 정의된 후 참조 가능
+- TypeDef: { Name; TypeParams; Constructors }
+- Program: { TypeDefs; MainExpr option }
+- type declaration syntax: `type Option 'a = None | Some of 'a`
+- parseProgram: 전체 프로그램 파싱, parseString: main expression만 추출
+- TConstructor of string * Type list: 사용자 정의 타입 (Option int 등)
+- TypeDefEnvBuilder: TypeDef list → TypeEnv (생성자 타입 스킴 변환)
+- 생성자 스킴: `None : forall 'a. Option<'a>`, `Some : forall 'a. 'a -> Option<'a>`
 
 ### Type System Implementation
 - Algorithm W: 표현식별 추론 → substitution 합성 → 최종 타입
@@ -156,4 +219,4 @@
 - Phase 2 + 3: Functions & Data Structures - COMPLETE
 - Phase 4: Pattern Matching - COMPLETE
 - Phase 5: Type System - COMPLETE
-- Phase 6: User-Defined Types - IN PROGRESS (Part 1 done)
+- Phase 6: User-Defined Types - IN PROGRESS (Part 3 done: type definition environment)

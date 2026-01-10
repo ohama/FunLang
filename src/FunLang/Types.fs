@@ -19,6 +19,7 @@ type Type =
     | TFun of Type * Type          // τ₁ → τ₂
     | TList of Type                // list τ
     | TTuple of Type list          // (τ₁, τ₂, ...)
+    | TConstructor of string * Type list  // 사용자 정의 타입: Option int, List bool, etc.
 
 /// Type Scheme (다형 타입) - ∀α₁...αₙ. τ
 type TypeScheme = Forall of TypeVar list * Type
@@ -121,6 +122,7 @@ module TypeHelpers =
         | TFun (t1, t2) -> TFun (apply s t1, apply s t2)
         | TList t1 -> TList (apply s t1)
         | TTuple ts -> TTuple (List.map (apply s) ts)
+        | TConstructor (name, ts) -> TConstructor (name, List.map (apply s) ts)
 
     /// Compose two substitutions: (s1 ∘ s2)(t) = s1(s2(t))
     let compose (s1: Substitution) (s2: Substitution) : Substitution =
@@ -139,6 +141,7 @@ module TypeHelpers =
         | TFun (t1, t2) -> Set.union (freeTypeVars t1) (freeTypeVars t2)
         | TList t1 -> freeTypeVars t1
         | TTuple ts -> ts |> List.map freeTypeVars |> Set.unionMany
+        | TConstructor (_, ts) -> ts |> List.map freeTypeVars |> Set.unionMany
 
     /// Get free type variables of a type scheme
     let freeTypeVarsScheme (Forall (vars, t)) : Set<TypeVar> =
@@ -201,6 +204,10 @@ let rec formatType (t: Type) : string =
     | TList t1 -> sprintf "%s list" (formatType t1)
     | TTuple ts ->
         ts |> List.map formatType |> String.concat " * " |> sprintf "(%s)"
+    | TConstructor (name, []) -> name
+    | TConstructor (name, ts) ->
+        let args = ts |> List.map formatType |> String.concat ", "
+        sprintf "%s<%s>" name args
 
 let formatTypeScheme (Forall (vars, t)) : string =
     if List.isEmpty vars then
@@ -247,3 +254,65 @@ let formatTypeError (err: TypeError) : string =
 
 type TypeResult<'a> = Result<'a, TypeError>
 type InferResult = Result<Substitution * Type, TypeError>
+
+// =============================================================================
+// Type Definition Environment Builder
+// =============================================================================
+
+/// Build a type environment from type definitions
+/// Maps constructor names to their type schemes
+module TypeDefEnvBuilder =
+    open FunLang.Ast
+
+    /// Build constructor type from a type definition
+    /// For `type Option 'a = None | Some of 'a`:
+    /// - None : forall 'a. Option 'a
+    /// - Some : forall 'a. 'a -> Option 'a
+    let buildConstructorType
+        (typeName: string)
+        (typeParams: string list)
+        (typeVarMap: Map<string, TypeVar>)
+        (constructorName: string, argTypeOpt: string option)
+        : string * TypeScheme =
+
+        // Build the result type: TypeName<'a1, 'a2, ...>
+        let resultTypeArgs = typeParams |> List.map (fun p -> TVar (Map.find p typeVarMap))
+        let resultType = TConstructor (typeName, resultTypeArgs)
+
+        // Build the constructor type
+        let constructorType =
+            match argTypeOpt with
+            | None ->
+                // Nullary constructor: None : Option 'a
+                resultType
+            | Some argTypeName ->
+                // Unary constructor: Some : 'a -> Option 'a
+                let argType =
+                    match Map.tryFind argTypeName typeVarMap with
+                    | Some v -> TVar v
+                    | None -> TConstructor (argTypeName, [])  // Could be another type name
+                TFun (argType, resultType)
+
+        // Quantified variables
+        let quantifiedVars = typeParams |> List.map (fun p -> Map.find p typeVarMap)
+
+        (constructorName, Forall (quantifiedVars, constructorType))
+
+    /// Build type environment from a single type definition
+    let buildFromTypeDef (typeDef: TypeDef) : Map<string, TypeScheme> =
+        // Create fresh type variables for each type parameter
+        let typeVarMap =
+            typeDef.TypeParams
+            |> List.mapi (fun i p -> (p, i + 1))  // Use simple incrementing IDs
+            |> Map.ofList
+
+        // Build constructor schemes
+        typeDef.Constructors
+        |> List.map (buildConstructorType typeDef.Name typeDef.TypeParams typeVarMap)
+        |> Map.ofList
+
+    /// Build type environment from multiple type definitions
+    let buildTypeDefEnv (typeDefs: TypeDef list) : TypeEnv =
+        typeDefs
+        |> List.map buildFromTypeDef
+        |> List.fold (fun acc env -> Map.fold (fun a k v -> Map.add k v a) acc env) Map.empty

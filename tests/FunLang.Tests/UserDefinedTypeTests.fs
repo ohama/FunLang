@@ -183,18 +183,32 @@ let interpreterTests = testList "Interpreter - Constructors" [
 // Parser Tests - Type Declarations (TODO: implement parsing)
 // =============================================================================
 
-let parserTests = ptestList "Parser - Type Declarations" [
+let parserTests = testList "Parser - Type Declarations" [
 
     test "parse simple type declaration" {
         // type Bool = True | False
-        let result = parseStringToAst "type Bool = True | False"
-        Expect.isOk result "should parse type declaration"
+        let result = parseStringToProgram "type Bool = True | False"
+        let program = expectOk "parse type Bool" result
+        Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+        let typeDef = program.TypeDefs.[0]
+        Expect.equal typeDef.Name "Bool" "type name should be Bool"
+        Expect.equal typeDef.TypeParams [] "should have no type params"
+        Expect.equal typeDef.Constructors.Length 2 "should have 2 constructors"
+        Expect.equal typeDef.Constructors.[0] ("True", None) "first constructor should be True"
+        Expect.equal typeDef.Constructors.[1] ("False", None) "second constructor should be False"
     }
 
     test "parse type declaration with type parameter" {
         // type Option 'a = None | Some of 'a
-        let result = parseStringToAst "type Option 'a = None | Some of 'a"
-        Expect.isOk result "should parse polymorphic type"
+        let result = parseStringToProgram "type Option 'a = None | Some of 'a"
+        let program = expectOk "parse type Option" result
+        Expect.equal program.TypeDefs.Length 1 "should have 1 type def"
+        let typeDef = program.TypeDefs.[0]
+        Expect.equal typeDef.Name "Option" "type name should be Option"
+        Expect.equal typeDef.TypeParams ["a"] "should have type param 'a"
+        Expect.equal typeDef.Constructors.Length 2 "should have 2 constructors"
+        Expect.equal typeDef.Constructors.[0] ("None", None) "first constructor should be None"
+        Expect.equal typeDef.Constructors.[1] ("Some", Some "a") "second constructor should be Some of 'a"
     }
 
     test "parse constructor expression without argument" {
@@ -219,7 +233,93 @@ let parserTests = ptestList "Parser - Type Declarations" [
 ]
 
 // =============================================================================
-// Type Inference Tests - Constructors (TODO: implement type checking)
+// Type Definition Environment Tests
+// =============================================================================
+
+let typeDefEnvTests = testList "Type Definition Environment" [
+
+    test "create TConstructor type" {
+        // TConstructor ("Option", [TInt]) represents Option int
+        let optionInt = TConstructor ("Option", [TInt])
+        match optionInt with
+        | TConstructor ("Option", [TInt]) -> ()
+        | _ -> failtest "should be TConstructor Option int"
+    }
+
+    test "create polymorphic TConstructor" {
+        // TConstructor ("Option", [TVar 1]) represents Option 'a
+        let optionA = TConstructor ("Option", [TVar 1])
+        match optionA with
+        | TConstructor ("Option", [TVar 1]) -> ()
+        | _ -> failtest "should be TConstructor Option 'a1"
+    }
+
+    test "buildTypeDefEnv creates constructor schemes" {
+        // type Bool = True | False
+        let typeDef: TypeDef = {
+            Name = "Bool"
+            TypeParams = []
+            Constructors = [("True", None); ("False", None)]
+        }
+        let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+
+        // True : Bool, False : Bool
+        Expect.isTrue (Map.containsKey "True" env) "should have True"
+        Expect.isTrue (Map.containsKey "False" env) "should have False"
+    }
+
+    test "buildTypeDefEnv with type parameter" {
+        // type Option 'a = None | Some of 'a
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some "a")]
+        }
+        let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+
+        // None : forall 'a. Option 'a
+        // Some : forall 'a. 'a -> Option 'a
+        Expect.isTrue (Map.containsKey "None" env) "should have None"
+        Expect.isTrue (Map.containsKey "Some" env) "should have Some"
+    }
+
+    test "constructor type lookup for nullary constructor" {
+        // type Bool = True | False
+        // True should have type Bool
+        let typeDef: TypeDef = {
+            Name = "Bool"
+            TypeParams = []
+            Constructors = [("True", None); ("False", None)]
+        }
+        let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+
+        match Map.tryFind "True" env with
+        | Some (Forall ([], TConstructor ("Bool", []))) -> ()
+        | Some scheme -> failtest (sprintf "unexpected scheme: %A" scheme)
+        | None -> failtest "True not found in env"
+    }
+
+    test "constructor type lookup for unary constructor" {
+        // type Option 'a = None | Some of 'a
+        // Some should have type forall 'a. 'a -> Option 'a
+        let typeDef: TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some "a")]
+        }
+        let env = TypeDefEnvBuilder.buildTypeDefEnv [typeDef]
+
+        match Map.tryFind "Some" env with
+        | Some (Forall (vars, TFun (TVar argVar, TConstructor ("Option", [TVar resultVar])))) ->
+            Expect.equal vars.Length 1 "should have 1 quantified var"
+            Expect.equal argVar resultVar "argument and result type var should match"
+        | Some scheme -> failtest (sprintf "unexpected scheme: %A" scheme)
+        | None -> failtest "Some not found in env"
+    }
+]
+
+// =============================================================================
+// Type Inference Tests - Constructors
 // =============================================================================
 
 let typeInferenceTests = ptestList "Type Inference - Constructors" [
@@ -303,9 +403,10 @@ let propertyTests = testList "Properties - User Types" [
 let allUserTypeTests = testList "User-Defined Types" [
     lexerTests
     astTests
-    interpreterTests     // Enable after implementing interpreter
-    // parserTests       // TODO: Enable after implementing parser
-    // typeInferenceTests // TODO: Enable after implementing type inference
+    interpreterTests
+    parserTests          // Enabled: type declaration parsing
+    typeDefEnvTests      // Type definition environment tests
+    // typeInferenceTests // TODO: Enable after implementing full type inference
     // integrationTests  // TODO: Enable after full implementation
     propertyTests
 ]

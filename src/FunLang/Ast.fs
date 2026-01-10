@@ -85,3 +85,26 @@ type Value =
     | VConstructed of string * Value option  // Constructor name and optional argument value
 
 and Env = Map<string, Value>
+
+// =============================================================================
+// Type Definitions (User-Defined Types)
+// =============================================================================
+
+/// Constructor definition: (name, optional argument type name)
+/// e.g., ("Some", Some "a") for Some of 'a
+///       ("None", None) for None
+type ConstructorDef = string * string option
+
+/// Type definition (discriminated union)
+/// e.g., type Option 'a = None | Some of 'a
+type TypeDef = {
+    Name: string              // "Option"
+    TypeParams: string list   // ["a"]
+    Constructors: ConstructorDef list  // [("None", None); ("Some", Some "a")]
+}
+
+/// Program = type definitions + main expression
+type Program = {
+    TypeDefs: TypeDef list
+    MainExpr: Expr option
+}
