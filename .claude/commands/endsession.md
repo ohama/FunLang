@@ -115,17 +115,21 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 ### 2026-01-10 (Session: abc123)
 
-**Completed:**
-- Phase 4: Pattern Matching 완료
+**주요 변경 사항:**
+- Phase 4: Pattern Matching 완료 (206 tests)
 - Issue 관리 시스템 구현
+
+**시도한 실험:**
+- Issue 저장: 단일 파일 → 개별 파일 구조로 변경
+- Pattern guard: 에러 대신 다음 케이스로 이동
+
+**배운 점:**
+- FsLexYacc: --unicode 플래그 필수
+- Multiline: nl_opt rule 사용
 
 **Key Decisions:**
 - Pattern guard 실패 시 다음 케이스로 이동 (에러 아님)
 - 이슈는 개별 파일로 저장 (docs/issues/)
-
-**Discovered Patterns:**
-- FsLexYacc: --unicode 플래그 필수
-- Multiline: nl_opt rule 사용
 
 **Unresolved Issues:**
 - (없음)
@@ -134,7 +138,7 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 ### 2026-01-09 (Session: xyz789)
 
-**Completed:**
+**주요 변경 사항:**
 - ...
 
 ---
@@ -166,11 +170,11 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 
 세션에서 다음 정보를 추출하여 기록:
 
-1. **Completed Tasks**: 이번 세션에서 완료한 작업
-2. **Key Decisions**: 중요한 설계/구현 결정
-3. **Discovered Patterns**: 발견한 패턴, 팁, 워크어라운드
-4. **Unresolved Issues**: 미해결 이슈 (있다면)
-5. **Debugging Notes**: 디버깅 중 발견한 유용한 정보
+1. **주요 변경 사항**: 이번 세션에서 완료한 작업, 구현한 기능
+2. **시도한 실험**: 시도한 접근법, 실패한 방법, 대안 탐색
+3. **배운 점**: 세션에서 얻은 인사이트, 발견한 패턴
+4. **Key Decisions**: 중요한 설계/구현 결정
+5. **Unresolved Issues**: 미해결 이슈 (있다면)
 
 ### 구현 방법
 
@@ -195,17 +199,22 @@ Period: {이전 endsession/startsession 시간} ~ {현재 endsession 시간}
 ```markdown
 ### 2026-01-10 (Session: a1b2c3d4)
 
-**Completed:**
-- Issue 관리 시스템 구현
-- /issue command 추가
+**주요 변경 사항:**
+- Issue 관리 시스템 구현 (/issue command)
 - startsession/endsession에 이슈 표시
+- Context handoff 시스템 (HISTORY.md)
+
+**시도한 실험:**
+- Issue 저장: 단일 파일 → 개별 파일 구조로 변경
+- Session commands: 사용자 질문 → 자동 판단으로 변경
+
+**배운 점:**
+- 사용자 질문 최소화가 UX 개선에 효과적
+- 개별 파일 저장이 추적/이동에 용이
 
 **Key Decisions:**
 - endsession에서 사용자 질문 없이 자동 판단
 - 이슈는 docs/issues/에 개별 파일로 저장
-
-**Discovered Patterns:**
-- (없음)
 
 **Unresolved Issues:**
 - (없음)
