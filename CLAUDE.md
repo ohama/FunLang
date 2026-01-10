@@ -17,6 +17,31 @@ See `.claude/PLAN.md` for the detailed implementation plan.
 
 ## ⚠️ CRITICAL: Development Guidelines
 
+### Issue Tracking - 필수
+
+**빌드/테스트 실패 시 반드시 이슈 기록:**
+
+```
+빌드 실패 → /issue add "빌드 에러: [에러 내용]"
+테스트 실패 → /issue add "테스트 실패: [테스트명]"
+해결 시 → /issue resolve <id>
+```
+
+**이슈 관리 명령어:**
+```
+/issue                  # 미해결 이슈 보기
+/issue add <desc>       # 이슈 추가
+/issue resolve <id>     # 이슈 해결
+/issue unresolved       # 미해결 이슈 전체 (요약)
+/issue resolved         # 해결된 이슈 전체 (요약)
+```
+
+**이슈 저장 위치:**
+- `docs/issues/unresolved/` - 미해결 이슈 (이슈당 1파일)
+- `docs/issues/resolved/` - 해결된 이슈 (이슈당 1파일)
+
+⚠️ **중요**: 이슈를 기록하지 않으면 같은 문제를 반복할 수 있습니다!
+
 ### TDD (Test-Driven Development) - 필수
 
 **모든 기능은 반드시 TDD로 개발:**
