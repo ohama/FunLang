@@ -17,6 +17,53 @@ See `.claude/PLAN.md` for the detailed implementation plan.
 
 ## ⚠️ CRITICAL: Development Guidelines
 
+### Session & Context Management - 필수
+
+**세션 관리 명령어:**
+```
+/startsession    # 세션 시작 (컨텍스트 복원)
+/endsession      # 세션 종료 (컨텍스트 저장)
+```
+
+**컨텍스트 리셋 워크플로우:**
+```
+/endsession          ← 컨텍스트를 파일에 저장
+    ↓
+[새 대화 시작]        ← AI 컨텍스트 리셋됨
+    ↓
+/startsession        ← HISTORY.md에서 컨텍스트 복원
+```
+
+**컨텍스트 저장 위치:**
+- `.claude/HISTORY.md` - 세션 히스토리 & 축적된 지식
+- `.claude/session/state.json` - 현재 세션 상태
+- `.claude/PLAN.md` - 구현 계획 & 현재 phase
+
+**HISTORY.md 세션 엔트리 형식:**
+```markdown
+### YYYY-MM-DD (Session: id)
+
+**주요 변경 사항:**
+- 완료한 작업, 구현한 기능
+
+**시도한 실험:**
+- 시도한 접근법, 실패한 방법
+
+**배운 점:**
+- 인사이트, 발견한 패턴
+
+**Key Decisions:**
+- 중요한 결정
+
+**Unresolved Issues:**
+- 미해결 이슈
+```
+
+⚠️ **중요**:
+- AI 컨텍스트는 대화 단위로 관리됨
+- 새 대화 시작 = 컨텍스트 리셋
+- `/startsession`이 HISTORY.md에서 필요한 컨텍스트 복원
+
 ### Issue Tracking - 필수
 
 **빌드/테스트 실패 시 반드시 이슈 기록:**
@@ -135,7 +182,11 @@ dotnet publish -c Release
 │   └── FunLang.Tests.fsproj
 ├── .claude/
 │   ├── PLAN.md             # Implementation plan
-│   └── session/            # Session state
+│   ├── HISTORY.md          # Session history & accumulated knowledge
+│   └── session/            # Session state (state.json)
+├── docs/
+│   ├── issues/             # Issue tracking (unresolved/, resolved/)
+│   └── prompt/             # Session prompt logs
 └── CLAUDE.md               # This file
 ```
 

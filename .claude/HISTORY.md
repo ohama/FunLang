@@ -38,6 +38,13 @@
 
 ## Accumulated Knowledge
 
+### Session & Context Management
+- AI 컨텍스트는 대화 단위로 관리됨
+- `/endsession` → 새 대화 시작 → `/startsession` 워크플로우
+- HISTORY.md에 세션 간 컨텍스트 핸드오프 저장
+- 세션 엔트리: 주요 변경, 시도한 실험, 배운 점, Key Decisions
+- Accumulated Knowledge는 삭제 안함 (계속 추가만)
+
 ### Build/Parser Tips
 - FsLexYacc --module 플래그로 모듈명 지정 필수
 - FsLexYacc --unicode 플래그 필수 (char-based lexing)
