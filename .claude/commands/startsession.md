@@ -11,9 +11,10 @@ Start a new work session and load session state with project context.
    - Notes and context
    - Last modified timestamp
    - Development guidelines reminder
-3. If no saved state exists, create a new session:
-   - Ask user for the current goal/task
-   - Initialize empty session state
+3. If no saved state exists, **auto-initialize new session** (DO NOT ask user):
+   - Read `.claude/PLAN.md` to determine current phase
+   - Set currentGoal from PLAN.md or use default "Build the FunLang interpreter"
+   - Initialize empty session state with sensible defaults
 4. Save session start time to `.claude/session/state.json`
 5. Display important project context:
    - Current phase from PLAN.md
