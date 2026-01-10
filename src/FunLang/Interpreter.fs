@@ -77,6 +77,79 @@ let private evalUnaryOp op operand =
     | Not, _ -> Error (Error.runtime (sprintf "Cannot 'not' %s" (typeOf operand)) None)
 
 // =============================================================================
+// Pattern Matching
+// =============================================================================
+
+/// Try to match a value against a pattern
+/// Returns Some(bindings) on success, None on failure
+let rec matchPattern (pattern: Pattern) (value: Value) : Map<string, Value> option =
+    match pattern, value with
+    // Wildcard matches anything, no bindings
+    | PWildcard, _ -> Some Map.empty
+
+    // Variable binds the value
+    | PVariable name, v -> Some (Map.ofList [(name, v)])
+
+    // Literal patterns
+    | PLiteral (LInt n), VInt m when n = m -> Some Map.empty
+    | PLiteral (LBool b), VBool c when b = c -> Some Map.empty
+    | PLiteral (LString s), VString t when s = t -> Some Map.empty
+    | PLiteral LUnit, VUnit -> Some Map.empty
+    | PLiteral _, _ -> None
+
+    // Tuple pattern
+    | PTuple patterns, VTuple values when List.length patterns = List.length values ->
+        let rec matchAll pats vals acc =
+            match pats, vals with
+            | [], [] -> Some acc
+            | p :: ps, v :: vs ->
+                match matchPattern p v with
+                | None -> None
+                | Some bindings ->
+                    // Merge bindings
+                    let acc' = Map.fold (fun m k v -> Map.add k v m) acc bindings
+                    matchAll ps vs acc'
+            | _ -> None
+        matchAll patterns values Map.empty
+    | PTuple _, _ -> None
+
+    // Empty list pattern
+    | PList [], VList [] -> Some Map.empty
+    | PList [], VList _ -> None
+
+    // List pattern with elements
+    | PList patterns, VList values when List.length patterns = List.length values ->
+        let rec matchAll pats vals acc =
+            match pats, vals with
+            | [], [] -> Some acc
+            | p :: ps, v :: vs ->
+                match matchPattern p v with
+                | None -> None
+                | Some bindings ->
+                    let acc' = Map.fold (fun m k v -> Map.add k v m) acc bindings
+                    matchAll ps vs acc'
+            | _ -> None
+        matchAll patterns values Map.empty
+    | PList _, _ -> None
+
+    // Cons pattern (h :: t)
+    | PCons (headPat, tailPat), VList (h :: t) ->
+        match matchPattern headPat h with
+        | None -> None
+        | Some headBindings ->
+            match matchPattern tailPat (VList t) with
+            | None -> None
+            | Some tailBindings ->
+                // Merge bindings
+                let merged = Map.fold (fun m k v -> Map.add k v m) headBindings tailBindings
+                Some merged
+    | PCons _, VList [] -> None  // Empty list doesn't match cons pattern
+    | PCons _, _ -> None
+
+    // Constructor pattern (not yet used but defined in AST)
+    | PConstructor _, _ -> None
+
+// =============================================================================
 // Evaluator
 // =============================================================================
 
@@ -208,6 +281,28 @@ let rec eval (env: Env) (expr: Expr) : EvalResult =
                 | Ok v -> evalBlock rest v
         evalBlock exprs VUnit
 
-    // Match expression (placeholder - will implement in Phase 4)
-    | EMatch _ ->
-        Error (Error.runtime "Pattern matching not yet implemented" None)
+    // Match expression
+    | EMatch (scrutinee, cases) ->
+        match eval env scrutinee with
+        | Error e -> Error e
+        | Ok value ->
+            // Try each case in order
+            let rec tryCase cases =
+                match cases with
+                | [] -> Error (Error.runtime "No pattern matched" None)
+                | (pattern, guard, body) :: rest ->
+                    match matchPattern pattern value with
+                    | None -> tryCase rest
+                    | Some bindings ->
+                        // Extend environment with pattern bindings
+                        let env' = Map.fold (fun m k v -> Map.add k v m) env bindings
+                        // Check guard if present
+                        match guard with
+                        | None -> eval env' body
+                        | Some guardExpr ->
+                            match eval env' guardExpr with
+                            | Error e -> Error e
+                            | Ok (VBool true) -> eval env' body
+                            | Ok (VBool false) -> tryCase rest  // Guard failed, try next case
+                            | Ok v -> Error (Error.runtime (sprintf "Guard must be bool, got %s" (typeOf v)) None)
+            tryCase cases

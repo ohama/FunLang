@@ -101,8 +101,64 @@ expr:
     | LET REC IDENT EQ expr IN expr     { ELetRec($3, $5, $7) }
     | IF expr THEN expr ELSE expr       { EIf($2, $4, $6) }
     | FUN IDENT ARROW expr              { ELambda($2, $4) }
+    | MATCH expr WITH match_cases_start  { EMatch($2, $4) }
     | block                             { $1 }
     | cons_expr                         { $1 }
+;
+
+// =============================================================================
+// Pattern Matching
+// =============================================================================
+
+// Handle optional NEWLINE between match cases (for indented match expressions)
+match_cases:
+    | match_case                            { [$1] }
+    | match_case match_cases                { $1 :: $2 }
+    | match_case NEWLINE match_cases        { $1 :: $3 }
+;
+
+match_case:
+    | PIPE pattern ARROW expr                   { ($2, None, $4) }
+    | PIPE pattern WHEN expr ARROW expr         { ($2, Some $4, $6) }
+;
+
+// Handle NEWLINE before first PIPE (for indented match)
+match_cases_start:
+    | match_cases                           { $1 }
+    | NEWLINE match_cases                   { $2 }
+;
+
+pattern:
+    | cons_pattern                      { $1 }
+;
+
+cons_pattern:
+    | pattern_atom DOUBLECOLON cons_pattern   { PCons($1, $3) }
+    | pattern_atom                            { $1 }
+;
+
+pattern_atom:
+    | UNDERSCORE                        { PWildcard }
+    | IDENT                             { PVariable $1 }
+    | INT                               { PLiteral(LInt $1) }
+    | TRUE                              { PLiteral(LBool true) }
+    | FALSE                             { PLiteral(LBool false) }
+    | STRING                            { PLiteral(LString $1) }
+    | LPAREN RPAREN                     { PLiteral LUnit }
+    | LPAREN pattern RPAREN             { $2 }
+    | LPAREN pattern COMMA pattern_tuple_rest RPAREN { PTuple($2 :: $4) }
+    | LBRACKET RBRACKET                 { PList [] }
+    | LBRACKET pattern_list RBRACKET    { PList $2 }
+;
+
+pattern_tuple_rest:
+    | pattern                           { [$1] }
+    | pattern COMMA pattern_tuple_rest  { $1 :: $3 }
+;
+
+pattern_list:
+    | pattern                           { [$1] }
+    | pattern SEMICOLON pattern_list    { $1 :: $3 }
 ;
 
 // =============================================================================
