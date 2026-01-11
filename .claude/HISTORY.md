@@ -8,6 +8,26 @@
 
 ## Recent Sessions
 
+### 2026-01-11 23:15 (Session: f4567890)
+
+**주요 변경 사항:**
+- Let-In Expression 설계 문서 작성 (`docs/design/let-in-expression.md`)
+
+**문서 내용:**
+- One-line vs Multi-line let 문법 비교
+- Parser 구분 방식 (lookahead: `in` vs `NEWLINE/DEDENT`)
+- AST 변환 과정 (BlockItem → nested ELet)
+- 스코프 규칙 및 다른 언어와 비교
+- Best practices
+
+**Key Decisions:**
+- 문서화 작업 (구현 변경 없음)
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
 ### 2026-01-11 21:32 (Session: e3456789)
 
 **주요 변경 사항:**
