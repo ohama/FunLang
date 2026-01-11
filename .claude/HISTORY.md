@@ -8,6 +8,27 @@
 
 ## Recent Sessions
 
+### 2026-01-12 05:53 (Session: l1234567)
+
+**주요 변경 사항:**
+- Multiline type definition 문법 지원 추가 (Parser.fsy)
+  - 기존: `type Option 'a = None | Some of 'a`
+  - 추가: `type Option 'a = | None | Some of 'a` (INDENT/DEDENT 사용)
+- 테스트 파일 015, 016을 multiline format으로 변환
+
+**배운 점:**
+- Lexer가 `=` 후 줄바꿈 시 NEWLINE 없이 바로 INDENT 생성
+- `piped_constructor_list` rule로 leading PIPE 처리
+
+**Key Decisions:**
+- Multiline format은 반드시 leading PIPE 필요 (`| None`)
+- Inline format은 기존대로 leading PIPE 없이 사용
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
 ### 2026-01-12 05:30 (Session: k0123456)
 
 **주요 변경 사항:**
@@ -94,13 +115,6 @@
 
 ---
 
-### 2026-01-11 22:08 (Session: g5678901)
-
-**주요 변경 사항:**
-- Error message file-based test 강화 작업 계획
-
----
-
 ## Accumulated Knowledge
 
 ### Phase 7: Advanced Features (2026-01-12)
@@ -108,6 +122,7 @@
 - Nested patterns 지원: `Some (Some x)`
 - Recursive Types: `type List 'a = Nil | Cons of 'a * List 'a`
 - 타입 변수 문법: `'a` (single quote 필수)
+- Multiline type definition: `type T = | A | B` (INDENT 블록 내 leading PIPE)
 
 ### Lexer Error Position Fix (2026-01-12)
 - `lexbuf`는 반드시 `try` 블록 **밖**에 정의해야 함

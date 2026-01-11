@@ -1,6 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-type List 'a = Nil | Cons of 'a * List 'a
+type List 'a =
+  | Nil
+  | Cons of 'a * List 'a
 
 let rec map = fun f -> fun xs ->
   match xs with

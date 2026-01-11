@@ -1,6 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-type Option 'a = None | Some of 'a
+type Option 'a =
+  | None
+  | Some of 'a
 
 let check = fun opt ->
   match opt with

@@ -238,7 +238,8 @@ type_def_or_list:
 // =============================================================================
 
 type_def:
-    | TYPE IDENT type_params EQ constructor_list  { { Name = $2; TypeParams = $3; Constructors = $5 } }
+    | TYPE IDENT type_params EQ constructor_list                      { { Name = $2; TypeParams = $3; Constructors = $5 } }
+    | TYPE IDENT type_params EQ INDENT piped_constructor_list DEDENT  { { Name = $2; TypeParams = $3; Constructors = $6 } }
 ;
 
 type_params:
@@ -246,9 +247,16 @@ type_params:
     | type_params TYPEVAR               { $1 @ [$2] }
 ;
 
+// Inline constructor list (no leading PIPE): None | Some of 'a
 constructor_list:
     | constructor_def                           { [$1] }
     | constructor_def PIPE constructor_list     { $1 :: $3 }
+;
+
+// Multiline constructor list (with leading PIPE): | None | Some of 'a
+piped_constructor_list:
+    | PIPE constructor_def                                    { [$2] }
+    | PIPE constructor_def NEWLINE piped_constructor_list     { $2 :: $4 }
 ;
 
 constructor_def:
