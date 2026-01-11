@@ -11,8 +11,21 @@ open FunLang.TypeInfer
 open FunLang.Errors
 open FunLang.Logging
 open FunLang.Options
+open FunLang.ErrorFormatter
+
+module Diag = FunLang.Diagnostic
 
 let version = "0.1.0"
+
+/// Display a FunLangError using Rust-style formatting
+let displayError (source: string) (err: FunLangError) : unit =
+    let diag = Diag.Diagnostic.fromFunLangError err
+    eprintfn "%s" (format source defaultConfig diag)
+
+/// Display a TypeError using Rust-style formatting
+let displayTypeError (source: string) (err: TypeError) : unit =
+    let diag = Diag.Diagnostic.fromTypeError err
+    eprintfn "%s" (format source defaultConfig diag)
 
 /// Format a value for display
 let rec formatValue = function
@@ -38,7 +51,7 @@ let runExpr (opts: RunOptions) (input: string) =
     match tokenize input with
     | Error e ->
         logError Lexer e.Message
-        printfn "%s" (formatError e)
+        displayError input e
         1
     | Ok tokens ->
         logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
@@ -55,7 +68,7 @@ let runExpr (opts: RunOptions) (input: string) =
         match parse tokens with
         | Error e ->
             logError Parser e
-            printfn "Parse error: %s" e
+            eprintfn "Parse error: %s" e
             1
         | Ok ast ->
             logInfo Parser "Parsing complete"
@@ -72,7 +85,7 @@ let runExpr (opts: RunOptions) (input: string) =
             match eval Map.empty ast with
             | Error e ->
                 logError Eval e.Message
-                printfn "%s" (formatError e)
+                displayError input e
                 1
             | Ok value ->
                 logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
@@ -86,7 +99,7 @@ let runProgram (opts: RunOptions) (input: string) =
     match tokenize input with
     | Error e ->
         logError Lexer e.Message
-        printfn "%s" (formatError e)
+        displayError input e
         1
     | Ok tokens ->
         logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
@@ -103,7 +116,7 @@ let runProgram (opts: RunOptions) (input: string) =
         match parseProgram tokens with
         | Error e ->
             logError Parser e
-            printfn "Parse error: %s" e
+            eprintfn "Parse error: %s" e
             1
         | Ok program ->
             logInfo Parser (sprintf "Parsing complete: %d type definitions" (List.length program.TypeDefs))
@@ -113,7 +126,7 @@ let runProgram (opts: RunOptions) (input: string) =
 
             match resolved.MainExpr with
             | None ->
-                printfn "Error: No main expression in program"
+                eprintfn "Error: No main expression in program"
                 1
             | Some ast ->
                 if opts.ShowAst then
@@ -132,7 +145,7 @@ let runProgram (opts: RunOptions) (input: string) =
                 match inferTypeWithTypeDefEnv typeDefEnv ast with
                 | Error e ->
                     logError TypeCheck (formatTypeError e)
-                    printfn "Type error: %s" (formatTypeError e)
+                    displayTypeError input e
                     1
                 | Ok inferredType ->
                     logInfo TypeCheck (sprintf "Type inference complete: %s" (formatType inferredType))
@@ -147,7 +160,7 @@ let runProgram (opts: RunOptions) (input: string) =
                     match eval Map.empty ast with
                     | Error e ->
                         logError Eval e.Message
-                        printfn "%s" (formatError e)
+                        displayError input e
                         1
                     | Ok value ->
                         logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
@@ -197,33 +210,33 @@ FunLang REPL Commands:
             let expr = input.Substring 8
             match tokenize expr with
             | Ok tokens -> tokens |> List.iter (printfn "  %A")
-            | Error e -> printfn "Error: %s" e.Message
+            | Error e -> displayError expr e
             loop env
         | input when input.StartsWith ":ast " ->
             let expr = input.Substring 5
             match tokenize expr with
-            | Error e -> printfn "Lexer error: %s" e.Message
+            | Error e -> displayError expr e
             | Ok tokens ->
                 match parse tokens with
                 | Ok ast -> printfn "  %A" ast
-                | Error e -> printfn "Parse error: %s" e
+                | Error e -> eprintfn "Parse error: %s" e
             loop env
         | "" ->
             loop env
         | input ->
             match tokenize input with
             | Error e ->
-                printfn "Lexer error: %s" e.Message
+                displayError input e
                 loop env
             | Ok tokens ->
                 match parse tokens with
                 | Error e ->
-                    printfn "Parse error: %s" e
+                    eprintfn "Parse error: %s" e
                     loop env
                 | Ok ast ->
                     match eval env ast with
                     | Error e ->
-                        printfn "Error: %s" e.Message
+                        displayError input e
                         loop env
                     | Ok value ->
                         printfn "%s" (formatValue value)
@@ -261,7 +274,7 @@ let main argv =
                     let content = IO.File.ReadAllText path
                     run opts content
                 else
-                    printfn "Error: File not found: %s" path
+                    eprintfn "Error: File not found: %s" path
                     1
 
             | ExpressionInput expr ->
@@ -282,5 +295,5 @@ let main argv =
         printfn "%s" e.Message
         1
     | e ->
-        printfn "Unexpected error: %s" e.Message
+        eprintfn "Unexpected error: %s" e.Message
         1
