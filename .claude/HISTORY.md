@@ -8,6 +8,27 @@
 
 ## Recent Sessions
 
+### 2026-01-11 14:06 (Session: s9012345)
+
+**주요 변경 사항:**
+- SESSION_MANAGEMENT.md 생성: vibe-coding 디렉토리에 세션 관리 가이드 작성
+- 세션 워크플로우 문서화: startsession/endsession/clear 순서
+- 중간 저장 패턴 문서화: 같은 대화에서 여러 번 endsession 가능
+
+**배운 점:**
+- endsession은 저장만 수행 (컨텍스트 리셋 안함)
+- clear 또는 새 대화로 컨텍스트 리셋
+- 올바른 순서: 저장(endsession) → 리셋(clear) → 복원(startsession)
+
+**Key Decisions:**
+- 세션 관리 문서는 FunLang 외부(vibe-coding)에 배치
+- 여러 프로젝트에서 공통 참조 가능
+
+**Unresolved Issues:**
+- issue-004: 주석 (`--`) 렉서 미지원
+
+---
+
 ### 2026-01-11 13:54 (Session: r8901234)
 
 **주요 변경 사항:**
@@ -78,15 +99,6 @@
 
 ---
 
-### 2026-01-11 01:56 (Session: n4567890)
-
-**주요 변경 사항:**
-- Recursive types 구현 완료 (Phase 7 Part 2)
-- TypeExpr 타입 추가 (TEVar, TEName, TEApp, TETuple)
-- 5개 recursive type 테스트 추가 (302 → 307)
-
----
-
 ## Accumulated Knowledge
 
 ### Parser Multiline Handling
@@ -99,6 +111,8 @@
 - startsession: 읽기 전용 (HISTORY.md, PLAN.md, state.json, issues 파일)
 - endsession: 쓰기 수행 (state.json, HISTORY.md, prompt log)
 - unresolved issues: docs/issues/unresolved/*.md 파일 직접 읽어서 표시
+- 중간 저장 가능: endsession 여러 번 호출해도 컨텍스트 유지
+- 워크플로우: 저장(endsession) → 리셋(clear/새대화) → 복원(startsession)
 
 ### Type System Implementation
 - Algorithm W: 표현식별 추론 → substitution 합성 → 최종 타입
