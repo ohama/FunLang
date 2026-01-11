@@ -8,6 +8,20 @@
 
 ## Recent Sessions
 
+### 2026-01-11 14:15 (Session: t0123456)
+
+**주요 변경 사항:**
+- (없음 - 짧은 세션)
+
+**시도한 작업:**
+- Changelog generator skill 추가 시도 (GitHub에서 SKILL.md 가져오기)
+- 사용자에 의해 중단됨
+
+**Unresolved Issues:**
+- issue-004: 주석 (`--`) 렉서 미지원
+
+---
+
 ### 2026-01-11 14:06 (Session: s9012345)
 
 **주요 변경 사항:**
@@ -37,25 +51,13 @@
 - ParserTests.fs: 3개 회귀 테스트 추가
 - 테스트: 320 → 323 (+3)
 
-**시도한 실험:**
-- FSI로 토큰 스트림 직접 디버깅
-- 2개 multiline let rec 체인부터 실패 확인 (issue 설명과 다름)
-- 원인: `in` 앞에 NEWLINE 토큰 허용 안됨
-
 **배운 점:**
 - Indentation processor가 `in` 앞에 NEWLINE 생성
 - Parser grammar에서 `IN` 앞에 `nl_opt` 필요
 - 토큰 스트림 디버깅으로 문제 원인 빠르게 파악 가능
 
-**Key Decisions:**
-- LET/LET REC 규칙 모두 `nl_opt IN nl_opt` 패턴 사용
-- Issue-005를 resolved로 이동
-
 **Resolved Issues:**
 - issue-005: Multiline let rec 체인 파싱 에러 → `nl_opt` 추가로 해결
-
-**Unresolved Issues:**
-- issue-004: 주석 (`--`) 렉서 미지원
 
 ---
 
@@ -64,16 +66,6 @@
 **주요 변경 사항:**
 - startsession.md 수정: 읽기 전용으로 변경 (파일 쓰기 제거)
 - startsession.md에 unresolved issues 읽기/표시 기능 강화
-- Step 1에 `docs/issues/unresolved/*.md` 읽기 추가
-- 컨텍스트 복원 순서에 이슈 파일 읽기 단계 추가
-
-**Key Decisions:**
-- startsession: 파일 읽기만 수행 (쓰기 없음)
-- unresolved issues는 실제 파일 내용을 읽어 표시
-
-**Unresolved Issues:**
-- issue-004: 주석 (`--`) 렉서 미지원
-- issue-005: 5+ multiline let rec 체인 파싱 실패
 
 ---
 
@@ -83,19 +75,6 @@
 - Multiline if-then-else 파싱 버그 수정
 - demos/013-tree-sort.fun 추가: Tree 'a 타입으로 BST 정렬 구현
 - 2개 이슈 발견 및 기록 (issue-004, issue-005)
-
-**Unresolved Issues:**
-- issue-004: 주석 (`--`) 렉서 미지원
-- issue-005: 5+ multiline let rec 체인 파싱 실패
-
----
-
-### 2026-01-11 02:04 (Session: o5678901)
-
-**주요 변경 사항:**
-- File-based demo tests 구현
-- demos/ 디렉토리 생성 (12개 .fun 파일)
-- 테스트: 307 → 319 (+12 demo tests)
 
 ---
 

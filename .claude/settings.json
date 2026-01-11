@@ -8,5 +8,6 @@
       "Bash(cat:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledPlugins": {}
 }
