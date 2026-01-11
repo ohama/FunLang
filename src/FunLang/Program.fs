@@ -241,7 +241,7 @@ FunLang REPL Commands:
                     | Ok value ->
                         printfn "%s" (formatValue value)
                         // For let bindings at top level, add to environment
-                        match ast with
+                        match ast.Node with
                         | ELet (name, _, _) ->
                             loop (Map.add name value env)
                         | _ ->

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Compile Include="TestHelpers.fs" />
+    <Compile Include="LocatedTests.fs" />
     <Compile Include="LexerTests.fs" />
     <Compile Include="ParserTests.fs" />
     <Compile Include="InterpreterTests.fs" />
