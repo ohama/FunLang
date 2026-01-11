@@ -24,7 +24,7 @@
     <Compile Include="PatternTests.fs" />
     <Compile Include="TypeTests.fs" />
     <Compile Include="UserDefinedTypeTests.fs" />
-    <Compile Include="DemoTests.fs" />
+    <Compile Include="FileBasedTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

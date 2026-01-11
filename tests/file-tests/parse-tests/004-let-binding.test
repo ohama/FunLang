@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
+// --INPUT
+let x = 1 in x + 2
+// --EXPECTED
+=== PARSED AST ===
+  ELet ("x", ELiteral (LInt 1), EBinaryOp (Add, EVariable "x", ELiteral (LInt 2)))
+==================

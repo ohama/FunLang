@@ -1,8 +1,9 @@
--- Expected: 55
--- Recursive fibonacci with multiline if-then-else
-
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
 let rec fib = fun n ->
   if n <= 1 then n
   else fib (n - 1) + fib (n - 2)
 in
 fib 10
+// --EXPECTED
+55

@@ -1,6 +1,5 @@
--- Expected: 10
--- Recursive list type with sum
-
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
 type List 'a = Nil | Cons of 'a * List 'a
 
 let rec sum = fun xs ->
@@ -9,3 +8,5 @@ let rec sum = fun xs ->
   | Cons (h, t) -> h + sum t
 in
 sum (Cons (1, Cons (2, Cons (3, Cons (4, Nil)))))
+// --EXPECTED
+10

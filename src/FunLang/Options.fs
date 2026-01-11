@@ -79,7 +79,7 @@ let parseOptions (results: ParseResults<CliArgs>) : Logging.RunOptions =
         LogLevel =
             results.TryGetResult Log_Level
             |> Option.map parseLogLevel
-            |> Option.defaultValue (if results.Contains Debug then LogEventLevel.Debug else LogEventLevel.Information)
+            |> Option.defaultValue (if results.Contains Debug then LogEventLevel.Debug else LogEventLevel.Fatal)
         LogFile = results.TryGetResult Log_File
         ShowTokens = results.Contains Show_Tokens
         ShowAst = results.Contains Show_Ast

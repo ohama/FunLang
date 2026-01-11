@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
+// --INPUT
+1 :: [2; 3]
+// --EXPECTED
+=== PARSED AST ===
+  ECons (ELiteral (LInt 1), EList [ELiteral (LInt 2); ELiteral (LInt 3)])
+==================

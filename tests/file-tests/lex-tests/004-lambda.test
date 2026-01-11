@@ -1,0 +1,13 @@
+// --COMMAND: dotnet run --project src/FunLang -- --show-tokens %s
+// --INPUT
+fun x -> x + 1
+// --EXPECTED
+=== LEXER TOKENS ===
+  FUN
+  IDENT "x"
+  ARROW
+  IDENT "x"
+  PLUS
+  INT 1
+  EOF
+====================

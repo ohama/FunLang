@@ -5,6 +5,9 @@ open Argu
 open FunLang.Ast
 open FunLang.Parser
 open FunLang.Interpreter
+open FunLang.ConstructorResolver
+open FunLang.Types
+open FunLang.TypeInfer
 open FunLang.Errors
 open FunLang.Logging
 open FunLang.Options
@@ -24,8 +27,12 @@ let rec formatValue = function
     | VConstructed (name, None) -> name
     | VConstructed (name, Some v) -> sprintf "%s %s" name (formatValue v)
 
-/// Run the interpreter on input
-let run (opts: RunOptions) (input: string) =
+/// Check if input contains type definitions
+let hasTypeDefinitions (input: string) =
+    input.Contains("type ") && input.Contains(" = ")
+
+/// Run the interpreter on input (expression only)
+let runExpr (opts: RunOptions) (input: string) =
     logInfo Lexer "Starting tokenization"
 
     match tokenize input with
@@ -36,10 +43,12 @@ let run (opts: RunOptions) (input: string) =
     | Ok tokens ->
         logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
 
-        if opts.ShowTokens || opts.Debug then
+        if opts.ShowTokens then
             printfn "=== LEXER TOKENS ==="
             tokens |> List.iter (printfn "  %A")
             printfn "===================="
+            0  // Stop here if --show-tokens
+        else
 
         logInfo Parser "Starting parsing"
 
@@ -51,10 +60,12 @@ let run (opts: RunOptions) (input: string) =
         | Ok ast ->
             logInfo Parser "Parsing complete"
 
-            if opts.ShowAst || opts.Debug then
+            if opts.ShowAst then
                 printfn "=== PARSED AST ==="
                 printfn "  %A" ast
                 printfn "=================="
+                0  // Stop here if --show-ast
+            else
 
             logInfo Eval "Starting evaluation"
 
@@ -67,6 +78,88 @@ let run (opts: RunOptions) (input: string) =
                 logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
                 printfn "%s" (formatValue value)
                 0
+
+/// Run the interpreter on input (program with type definitions)
+let runProgram (opts: RunOptions) (input: string) =
+    logInfo Lexer "Starting tokenization"
+
+    match tokenize input with
+    | Error e ->
+        logError Lexer e.Message
+        printfn "%s" (formatError e)
+        1
+    | Ok tokens ->
+        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
+
+        if opts.ShowTokens then
+            printfn "=== LEXER TOKENS ==="
+            tokens |> List.iter (printfn "  %A")
+            printfn "===================="
+            0  // Stop here if --show-tokens
+        else
+
+        logInfo Parser "Starting parsing (program mode)"
+
+        match parseProgram tokens with
+        | Error e ->
+            logError Parser e
+            printfn "Parse error: %s" e
+            1
+        | Ok program ->
+            logInfo Parser (sprintf "Parsing complete: %d type definitions" (List.length program.TypeDefs))
+
+            // Resolve constructors
+            let resolved = resolveProgram program
+
+            match resolved.MainExpr with
+            | None ->
+                printfn "Error: No main expression in program"
+                1
+            | Some ast ->
+                if opts.ShowAst then
+                    printfn "=== PARSED AST ==="
+                    printfn "  TypeDefs: %A" program.TypeDefs
+                    printfn "  MainExpr: %A" ast
+                    printfn "=================="
+                    0  // Stop here if --show-ast
+                else
+
+                // Build type definition environment
+                let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv program.TypeDefs
+
+                // Type check
+                logInfo TypeCheck "Starting type inference"
+                match inferTypeWithTypeDefEnv typeDefEnv ast with
+                | Error e ->
+                    logError TypeCheck (formatTypeError e)
+                    printfn "Type error: %s" (formatTypeError e)
+                    1
+                | Ok inferredType ->
+                    logInfo TypeCheck (sprintf "Type inference complete: %s" (formatType inferredType))
+
+                    if opts.ShowTypes || opts.Debug then
+                        printfn "=== INFERRED TYPE ==="
+                        printfn "  %s" (formatType inferredType)
+                        printfn "====================="
+
+                    logInfo Eval "Starting evaluation"
+
+                    match eval Map.empty ast with
+                    | Error e ->
+                        logError Eval e.Message
+                        printfn "%s" (formatError e)
+                        1
+                    | Ok value ->
+                        logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
+                        printfn "%s" (formatValue value)
+                        0
+
+/// Run the interpreter on input (auto-detect mode)
+let run (opts: RunOptions) (input: string) =
+    if hasTypeDefinitions input then
+        runProgram opts input
+    else
+        runExpr opts input
 
 /// Run REPL mode
 let runRepl (opts: RunOptions) =

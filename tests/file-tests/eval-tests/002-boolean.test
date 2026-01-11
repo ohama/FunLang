@@ -1,0 +1,5 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+(3 > 2) and (5 < 10) or false
+// --EXPECTED
+true

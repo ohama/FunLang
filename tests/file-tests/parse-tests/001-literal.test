@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
+// --INPUT
+42
+// --EXPECTED
+=== PARSED AST ===
+  ELiteral (LInt 42)
+==================

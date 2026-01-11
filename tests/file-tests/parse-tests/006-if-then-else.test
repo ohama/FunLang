@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
+// --INPUT
+if true then 1 else 2
+// --EXPECTED
+=== PARSED AST ===
+  EIf (ELiteral (LBool true), ELiteral (LInt 1), ELiteral (LInt 2))
+==================
