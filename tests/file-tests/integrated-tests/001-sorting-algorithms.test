@@ -23,6 +23,12 @@ type BST 'a =
   | Empty
   | Node of 'a * BST 'a * BST 'a
 
+// Helper: append two lists
+let rec append = fun xs -> fun ys ->
+  match xs with
+  | [] -> ys
+  | h :: t -> h :: append t ys
+
 let rec bstInsert = fun tree -> fun x ->
   match tree with
   | Empty -> Node (x, Empty, Empty)
@@ -36,13 +42,8 @@ let rec bstInorder = fun tree ->
   match tree with
   | Empty -> []
   | Node (v, left, right) ->
-    let leftList = bstInorder left in
-    let rightList = bstInorder right in
-    let rec append = fun xs -> fun ys ->
-      match xs with
-      | [] -> ys
-      | h :: t -> h :: append t ys
-    in
+    let leftList = bstInorder left
+    let rightList = bstInorder right
     append leftList (v :: rightList)
 
 let rec bstFromList = fun xs ->
@@ -94,10 +95,10 @@ let rec mergeSort = fun xs ->
   | [] -> []
   | [x] -> [x]
   | _ ->
-    let n = length xs in
-    let half = n / 2 in
-    let left = take half xs in
-    let right = drop half xs in
+    let n = length xs
+    let half = n / 2
+    let left = take half xs
+    let right = drop half xs
     merge (mergeSort left) (mergeSort right)
 
 // -----------------------------------------------------------------------------
@@ -116,21 +117,16 @@ let rec filter = fun pred -> fun xs ->
     else
       filter pred t
 
-let rec appendList = fun xs -> fun ys ->
-  match xs with
-  | [] -> ys
-  | h :: t -> h :: appendList t ys
-
 let rec quickSort = fun xs ->
   match xs with
   | [] -> []
   | [x] -> [x]
   | pivot :: rest ->
-    let smaller = filter (fun x -> x <= pivot) rest in
-    let larger = filter (fun x -> x > pivot) rest in
-    let sortedSmaller = quickSort smaller in
-    let sortedLarger = quickSort larger in
-    appendList sortedSmaller (pivot :: sortedLarger)
+    let smaller = filter (fun x -> x <= pivot) rest
+    let larger = filter (fun x -> x > pivot) rest
+    let sortedSmaller = quickSort smaller
+    let sortedLarger = quickSort larger
+    append sortedSmaller (pivot :: sortedLarger)
 
 // -----------------------------------------------------------------------------
 // 4. Insertion Sort
@@ -165,7 +161,7 @@ let rec findMin = fun xs ->
   | [] -> 0
   | [x] -> x
   | h :: t ->
-    let minTail = findMin t in
+    let minTail = findMin t
     if h <= minTail then h else minTail
 
 let rec removeFirst = fun x -> fun xs ->
@@ -179,8 +175,8 @@ let rec selectionSort = fun xs ->
   match xs with
   | [] -> []
   | _ ->
-    let minVal = findMin xs in
-    let remaining = removeFirst minVal xs in
+    let minVal = findMin xs
+    let remaining = removeFirst minVal xs
     minVal :: selectionSort remaining
 
 // -----------------------------------------------------------------------------
@@ -201,11 +197,10 @@ let rec bubblePass = fun xs ->
       y :: bubblePass (x :: rest)
 
 let rec bubbleSort = fun xs ->
-  let n = length xs in
+  let n = length xs
   let rec loop = fun count -> fun ys ->
     if count <= 0 then ys
     else loop (count - 1) (bubblePass ys)
-  in
   loop n xs
 
 // -----------------------------------------------------------------------------
@@ -218,12 +213,12 @@ let testList = [64; 34; 25; 12; 22; 11; 90; 5; 77; 33]
 // Run All Sorting Algorithms and Compare Results
 // -----------------------------------------------------------------------------
 
-let result1 = bstSort testList in
-let result2 = mergeSort testList in
-let result3 = quickSort testList in
-let result4 = insertionSort testList in
-let result5 = selectionSort testList in
-let result6 = bubbleSort testList in
+let result1 = bstSort testList
+let result2 = mergeSort testList
+let result3 = quickSort testList
+let result4 = insertionSort testList
+let result5 = selectionSort testList
+let result6 = bubbleSort testList
 
 // Verify all results are equal
 let rec listEqual = fun xs -> fun ys ->

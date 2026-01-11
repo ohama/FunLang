@@ -3,10 +3,33 @@
 ## Current Status
 
 - **Phase**: Phase 7 Complete, Phase 8.6 On Hold
-- **Tests**: 490 passed, 1 failed (sorting test parsing issue)
+- **Tests**: 490 passed, 1 failed (sorting test - issue-009)
 - **Last Session**: 2026-01-12
 
 ## Recent Sessions
+
+### 2026-01-12 06:25 (Session: n3456789)
+
+**주요 변경 사항:**
+- Sorting test 파일에서 `in` 키워드 제거 (block-style로 변환)
+- issue-009 발견 및 등록: match INDENT after else 문제
+
+**시도한 실험:**
+- Sorting test에서 `in` 제거하여 block-style 사용 시도
+- `else match xs with` 다음 줄에서 INDENT 토큰 파싱 실패 확인
+
+**배운 점:**
+- `match_cases_start` 규칙이 INDENT를 처리하지 않음
+- `else` 다음에 `match`가 오고 다음 줄에 cases가 있으면 INDENT 발생
+
+**Key Decisions:**
+- issue-009 등록: Parser.fsy에 INDENT 케이스 추가 필요
+
+**Unresolved Issues:**
+- issue-008: Sorting test (issue-009로 인해 블록됨)
+- issue-009: Match INDENT after else - Parser.fsy 수정 필요
+
+---
 
 ### 2026-01-12 06:10 (Session: m2345678)
 
