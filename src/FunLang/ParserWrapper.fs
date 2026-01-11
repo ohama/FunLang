@@ -53,11 +53,31 @@ let tokenize (input: string) : Result<Token list, FunLangError> =
     | Ok tokensWithPos ->
         Indentation.processIndentation tokensWithPos
 
+/// Tokenize with indentation processing, preserving position information
+let tokenizeWithPositions (input: string) : Result<(Token * Position) list, FunLangError> =
+    match tokenizeRawWithPositions input with
+    | Error e -> Error e
+    | Ok tokensWithPos ->
+        Indentation.processIndentationWithPositions tokensWithPos
+
 // =============================================================================
 // Parsing
 // =============================================================================
 
-/// Create a lexer function from a token list
+/// Mutable state for tracking current token position during parsing
+let mutable private currentTokenPosition : Position = { Line = 1; Column = 1; File = None }
+
+/// Create a lexer function from a token list with positions
+let private makeListLexerWithPositions (tokensWithPos: (Token * Position) list ref) : (LexBuffer<char> -> token) =
+    fun _ ->
+        match !tokensWithPos with
+        | [] -> EOF
+        | (t, pos) :: rest ->
+            currentTokenPosition <- pos
+            tokensWithPos := rest
+            t
+
+/// Create a lexer function from a token list (no positions)
 let private makeListLexer (tokens: Token list ref) : (LexBuffer<char> -> token) =
     fun _ ->
         match !tokens with
@@ -66,16 +86,41 @@ let private makeListLexer (tokens: Token list ref) : (LexBuffer<char> -> token) 
             tokens := rest
             t
 
-/// Parse from a token list - returns full Program
-let parseProgram (tokens: Token list) : Result<Program, string> =
+/// Format a rich parse error into a human-readable message
+let private formatRichParseError (currentToken: string option) (expectedTokens: string list) (pos: Position) : string =
+    let tokenStr =
+        match currentToken with
+        | Some t -> sprintf "unexpected '%s'" t
+        | None -> "unexpected end of input"
+
+    let expectedStr =
+        match expectedTokens with
+        | [] -> ""
+        | [t] -> sprintf ", expected %s" t
+        | ts -> sprintf ", expected one of: %s" (String.concat ", " ts)
+
+    sprintf "Parse error at line %d, column %d: %s%s" pos.Line pos.Column tokenStr expectedStr
+
+/// Parse from a token list with positions - returns full Program
+let parseProgramWithPositions (tokensWithPos: (Token * Position) list) : Result<Program, string> =
     try
-        let tokensRef = ref tokens
+        currentTokenPosition <- { Line = 1; Column = 1; File = None }
+        let tokensRef = ref tokensWithPos
         let dummyLexbuf = LexBuffer<char>.FromString("")
-        let lexer = makeListLexer tokensRef
+        let lexer = makeListLexerWithPositions tokensRef
         let result = prog lexer dummyLexbuf
         Ok result
     with
-    | ex -> Error ex.Message
+    | FunLang.GeneratedParser.RichParseError (currentToken, expectedTokens, _) ->
+        // Use the tracked position instead of the one from the exception
+        Error (formatRichParseError currentToken expectedTokens currentTokenPosition)
+    | ex -> Error (sprintf "Parse error: %s" ex.Message)
+
+/// Parse from a token list - returns full Program
+let parseProgram (tokens: Token list) : Result<Program, string> =
+    // If we don't have positions, use default position
+    let tokensWithPos = tokens |> List.map (fun t -> (t, { Line = 1; Column = 1; File = None }))
+    parseProgramWithPositions tokensWithPos
 
 /// Parse from a token list - extracts main expression for backward compatibility
 let parse (tokens: Token list) : Result<LExpr, string> =
@@ -85,17 +130,22 @@ let parse (tokens: Token list) : Result<LExpr, string> =
         | Some expr -> Ok expr
         | None -> Error "No main expression in program")
 
-/// Parse a string to Program (tokenize + parse)
+/// Parse a string to Program (tokenize + parse) with position tracking
 let parseProgramString (input: string) : Result<Program, string> =
-    match tokenize input with
+    match tokenizeWithPositions input with
     | Error e -> Error e.Message
-    | Ok tokens -> parseProgram tokens
+    | Ok tokensWithPos -> parseProgramWithPositions tokensWithPos
 
 /// Parse a string directly (tokenize + parse) - extracts main expression
 let parseString (input: string) : Result<LExpr, string> =
-    match tokenize input with
+    match tokenizeWithPositions input with
     | Error e -> Error e.Message
-    | Ok tokens -> parse tokens
+    | Ok tokensWithPos ->
+        parseProgramWithPositions tokensWithPos
+        |> Result.bind (fun program ->
+            match program.MainExpr with
+            | Some expr -> Ok expr
+            | None -> Error "No main expression in program")
 
 // =============================================================================
 // Compatibility Module

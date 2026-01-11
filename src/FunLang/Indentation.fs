@@ -67,22 +67,26 @@ let private generateDedents (stack: int list) (targetCol: int) (pos: Position)
 
 /// Process raw token stream and insert INDENT/DEDENT/NEWLINE tokens
 /// based on indentation levels (Python-style offside rule)
-let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangError> =
-    let rec loop (state: IndentState) (remaining: TokenWithPos list) (output: token list)
-        : Result<token list, FunLangError> =
+/// Returns tokens WITH position information preserved
+let processIndentationWithPositions (tokens: TokenWithPos list) : Result<TokenWithPos list, FunLangError> =
+    // Default position for synthetic tokens (INDENT, DEDENT, NEWLINE)
+    let syntheticPos = { Line = 0; Column = 0; File = None }
+
+    let rec loop (state: IndentState) (remaining: TokenWithPos list) (output: TokenWithPos list)
+        : Result<TokenWithPos list, FunLangError> =
         match remaining with
         | [] ->
             // End of input - should not happen, EOF should be present
             Ok (List.rev output)
 
-        | (EOF, _) :: _ ->
+        | (EOF, eofPos) :: _ ->
             // End of file - generate DEDENTs to close all open indentation levels
             // Keep only the base level (first element if exists)
             let rec closeLevels stk acc =
                 match stk with
-                | [] -> Ok (List.rev (EOF :: acc))
-                | [_] -> Ok (List.rev (EOF :: acc))  // Base level, no DEDENT needed
-                | _ :: rest -> closeLevels rest (DEDENT :: acc)
+                | [] -> Ok (List.rev ((EOF, eofPos) :: acc))
+                | [_] -> Ok (List.rev ((EOF, eofPos) :: acc))  // Base level, no DEDENT needed
+                | _ :: rest -> closeLevels rest ((DEDENT, syntheticPos) :: acc)
             closeLevels state.IndentStack output
 
         | (NEWLINE, _) :: rest ->
@@ -103,10 +107,10 @@ let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangE
 
             // If inside parens (before this token), just output the token
             if state.ParenDepth > 0 then
-                loop { state with ParenDepth = newParenDepth } rest (tok :: output)
+                loop { state with ParenDepth = newParenDepth } rest ((tok, pos) :: output)
             // Handle open paren specially - it starts paren mode, no indent processing
             elif isOpenParen tok then
-                loop { state with ParenDepth = newParenDepth; AtLineStart = false } rest (tok :: output)
+                loop { state with ParenDepth = newParenDepth; AtLineStart = false } rest ((tok, pos) :: output)
             // If at line start, check indentation
             elif state.AtLineStart then
                 let col = pos.Column
@@ -114,20 +118,20 @@ let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangE
                 | [] ->
                     // First token - set initial indentation level
                     loop { state with IndentStack = [col]; AtLineStart = false; ParenDepth = newParenDepth }
-                         rest (tok :: output)
+                         rest ((tok, pos) :: output)
                 | top :: _ when col > top ->
                     // Increased indentation - emit INDENT
                     let newStack = col :: state.IndentStack
                     loop { state with IndentStack = newStack; AtLineStart = false; ParenDepth = newParenDepth }
-                         rest (tok :: INDENT :: output)
+                         rest ((tok, pos) :: (INDENT, pos) :: output)
                 | top :: _ when col = top ->
                     // Same level - emit NEWLINE as statement separator (if there's output)
                     if output <> [] then
                         loop { state with AtLineStart = false; ParenDepth = newParenDepth }
-                             rest (tok :: NEWLINE :: output)
+                             rest ((tok, pos) :: (NEWLINE, pos) :: output)
                     else
                         loop { state with AtLineStart = false; ParenDepth = newParenDepth }
-                             rest (tok :: output)
+                             rest ((tok, pos) :: output)
                 | _ ->
                     // Decreased indentation - emit DEDENT(s)
                     // Add NEWLINE after DEDENTs to separate from next item at top-level
@@ -135,11 +139,18 @@ let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangE
                     | Error e -> Error e
                     | Ok (newStack, dedents) ->
                         // Insert NEWLINE between DEDENTs and next token for proper separation
-                        let newOutput = tok :: NEWLINE :: (dedents @ output)
+                        let dedentsWithPos = dedents |> List.map (fun t -> (t, pos))
+                        let newOutput = (tok, pos) :: (NEWLINE, pos) :: (dedentsWithPos @ output)
                         loop { state with IndentStack = newStack; AtLineStart = false; ParenDepth = newParenDepth }
                              rest newOutput
             else
                 // Not at line start - just output the token
-                loop { state with ParenDepth = newParenDepth } rest (tok :: output)
+                loop { state with ParenDepth = newParenDepth } rest ((tok, pos) :: output)
 
     loop initialState tokens []
+
+/// Process raw token stream and insert INDENT/DEDENT/NEWLINE tokens (without positions)
+/// For backward compatibility
+let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangError> =
+    processIndentationWithPositions tokens
+    |> Result.map (List.map fst)

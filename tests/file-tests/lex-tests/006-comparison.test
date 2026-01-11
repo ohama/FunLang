@@ -5,8 +5,8 @@
 // --EXPECTED
 
 === LEXER TOKENS ===
-  INT 1
-  LT
-  INT 2
-  EOF
+  [1:1] INT 1
+  [1:3] LT
+  [1:5] INT 2
+  [2:1] EOF
 ====================

@@ -1,0 +1,15 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+type Option 'a = None | Some of 'a
+
+let check = fun opt ->
+  match opt with
+  | Some 42 -> 1
+  | Some _ -> 2
+  | None -> 0
+
+check (Some 42) + check (Some 10) + check None
+
+// --EXPECTED
+
+3

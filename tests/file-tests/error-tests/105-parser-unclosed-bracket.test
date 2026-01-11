@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+[1, 2
+
+// --EXPECTED
+
+Parse error: Parse error at line 1, column 3: unexpected 'COMMA', expected ']'

@@ -1,0 +1,14 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+type Tree 'a = Leaf of 'a | Node of Tree 'a * Tree 'a
+
+let rec sumTree = fun t ->
+  match t with
+  | Leaf x -> x
+  | Node (l, r) -> sumTree l + sumTree r
+
+sumTree (Node (Node (Leaf 1, Leaf 2), Node (Leaf 3, Leaf 4)))
+
+// --EXPECTED
+
+10

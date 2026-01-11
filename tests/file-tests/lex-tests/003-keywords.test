@@ -5,11 +5,11 @@ let x = 1 in x
 // --EXPECTED
 
 === LEXER TOKENS ===
-  LET
-  IDENT "x"
-  EQ
-  INT 1
-  IN
-  IDENT "x"
-  EOF
+  [1:1] LET
+  [1:5] IDENT "x"
+  [1:7] EQ
+  [1:9] INT 1
+  [1:11] IN
+  [1:14] IDENT "x"
+  [2:1] EOF
 ====================

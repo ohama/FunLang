@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+(1 + 2
+
+// --EXPECTED
+
+Parse error: Parse error at line 2, column 1: unexpected 'EOF', expected one of: ',', ')'

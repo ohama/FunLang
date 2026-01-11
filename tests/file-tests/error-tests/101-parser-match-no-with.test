@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+match x | _ -> 1
+
+// --EXPECTED
+
+Parse error: Parse error at line 1, column 9: unexpected 'PIPE', expected 'with'

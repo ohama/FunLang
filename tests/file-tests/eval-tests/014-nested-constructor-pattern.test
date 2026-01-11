@@ -1,0 +1,12 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+type Option 'a = None | Some of 'a
+
+match Some (Some 1) with
+| Some (Some x) -> x
+| Some None -> 0
+| None -> 0
+
+// --EXPECTED
+
+1

@@ -48,72 +48,77 @@ let hasTypeDefinitions (input: string) =
 let runExpr (opts: RunOptions) (input: string) =
     logInfo Lexer "Starting tokenization"
 
-    match tokenize input with
+    match tokenizeWithPositions input with
     | Error e ->
         logError Lexer e.Message
         displayError input e
         1
-    | Ok tokens ->
-        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
+    | Ok tokensWithPos ->
+        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokensWithPos))
 
         if opts.ShowTokens then
             printfn "=== LEXER TOKENS ==="
-            tokens |> List.iter (printfn "  %A")
+            tokensWithPos |> List.iter (fun (tok, pos) -> printfn "  [%d:%d] %A" pos.Line pos.Column tok)
             printfn "===================="
             0  // Stop here if --show-tokens
         else
 
         logInfo Parser "Starting parsing"
 
-        match parse tokens with
+        match parseProgramWithPositions tokensWithPos with
         | Error e ->
             logError Parser e
             eprintfn "Parse error: %s" e
             1
-        | Ok ast ->
-            logInfo Parser "Parsing complete"
-
-            if opts.ShowAst then
-                printfn "=== PARSED AST ==="
-                printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
-                printfn "=================="
-                0  // Stop here if --show-ast
-            else
-
-            logInfo Eval "Starting evaluation"
-
-            match eval Map.empty ast with
-            | Error e ->
-                logError Eval e.Message
-                displayError input e
+        | Ok program ->
+            match program.MainExpr with
+            | None ->
+                eprintfn "Parse error: No main expression in program"
                 1
-            | Ok value ->
-                logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
-                printfn "%s" (formatValue value)
-                0
+            | Some ast ->
+                logInfo Parser "Parsing complete"
+
+                if opts.ShowAst then
+                    printfn "=== PARSED AST ==="
+                    printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
+                    printfn "=================="
+                    0  // Stop here if --show-ast
+                else
+
+                logInfo Eval "Starting evaluation"
+
+                match eval Map.empty ast with
+                | Error e ->
+                    logError Eval e.Message
+                    displayError input e
+                    1
+                | Ok value ->
+                    logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
+                    printfn "%s" (formatValue value)
+                    0
 
 /// Run the interpreter on input (program with type definitions)
 let runProgram (opts: RunOptions) (input: string) =
     logInfo Lexer "Starting tokenization"
 
-    match tokenize input with
+    match tokenizeWithPositions input with
     | Error e ->
         logError Lexer e.Message
         displayError input e
         1
-    | Ok tokens ->
-        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokens))
+    | Ok tokensWithPos ->
+        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokensWithPos))
 
         if opts.ShowTokens then
             printfn "=== LEXER TOKENS ==="
-            tokens |> List.iter (printfn "  %A")
+            tokensWithPos |> List.iter (fun (tok, pos) -> printfn "  [%d:%d] %A" pos.Line pos.Column tok)
             printfn "===================="
             0  // Stop here if --show-tokens
         else
 
         logInfo Parser "Starting parsing (program mode)"
 
-        match parseProgram tokens with
+        match parseProgramWithPositions tokensWithPos with
         | Error e ->
             logError Parser e
             eprintfn "Parse error: %s" e
@@ -208,32 +213,24 @@ FunLang REPL Commands:
             loop Map.empty
         | input when input.StartsWith ":tokens " ->
             let expr = input.Substring 8
-            match tokenize expr with
-            | Ok tokens -> tokens |> List.iter (printfn "  %A")
+            match tokenizeWithPositions expr with
+            | Ok tokensWithPos -> tokensWithPos |> List.iter (fun (tok, pos) -> printfn "  [%d:%d] %A" pos.Line pos.Column tok)
             | Error e -> displayError expr e
             loop env
         | input when input.StartsWith ":ast " ->
             let expr = input.Substring 5
-            match tokenize expr with
-            | Error e -> displayError expr e
-            | Ok tokens ->
-                match parse tokens with
-                | Ok ast -> printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
-                | Error e -> eprintfn "Parse error: %s" e
+            match parseString expr with
+            | Ok ast -> printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
+            | Error e -> eprintfn "Parse error: %s" e
             loop env
         | "" ->
             loop env
         | input ->
-            match tokenize input with
+            match parseString input with
             | Error e ->
-                displayError input e
+                eprintfn "Parse error: %s" e
                 loop env
-            | Ok tokens ->
-                match parse tokens with
-                | Error e ->
-                    eprintfn "Parse error: %s" e
-                    loop env
-                | Ok ast ->
+            | Ok ast ->
                     match eval env ast with
                     | Error e ->
                         displayError input e

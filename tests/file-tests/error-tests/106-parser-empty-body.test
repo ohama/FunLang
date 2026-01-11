@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+let f x = in x
+
+// --EXPECTED
+
+Parse error: Parse error at line 1, column 7: unexpected 'IDENT "x"', expected '='

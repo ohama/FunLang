@@ -4,4 +4,4 @@ if true 1 else 2
 
 // --EXPECTED
 
-Parse error: parse error
+Parse error: Parse error at line 1, column 11: unexpected 'ELSE', expected 'then'

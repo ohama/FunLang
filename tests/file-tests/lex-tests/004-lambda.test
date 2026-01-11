@@ -5,11 +5,11 @@ fun x -> x + 1
 // --EXPECTED
 
 === LEXER TOKENS ===
-  FUN
-  IDENT "x"
-  ARROW
-  IDENT "x"
-  PLUS
-  INT 1
-  EOF
+  [1:1] FUN
+  [1:5] IDENT "x"
+  [1:7] ARROW
+  [1:10] IDENT "x"
+  [1:12] PLUS
+  [1:14] INT 1
+  [2:1] EOF
 ====================

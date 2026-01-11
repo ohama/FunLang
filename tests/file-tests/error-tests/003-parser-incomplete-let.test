@@ -4,4 +4,4 @@ let x =
 
 // --EXPECTED
 
-Parse error: parse error
+Parse error: Parse error at line 2, column 1: unexpected 'EOF', expected one of: indent, '[', '(', '-', 'true', 'false', 'not', 'match', 'fun', 'if', 'let', identifier, string, boolean, integer

@@ -1,0 +1,21 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+type List 'a = Nil | Cons of 'a * List 'a
+
+let rec map = fun f -> fun xs ->
+  match xs with
+  | Nil -> Nil
+  | Cons (h, t) -> Cons (f h, map f t)
+
+let rec sum = fun xs ->
+  match xs with
+  | Nil -> 0
+  | Cons (h, t) -> h + sum t
+
+let double = fun x -> x * 2
+
+sum (map double (Cons (1, Cons (2, Cons (3, Nil)))))
+
+// --EXPECTED
+
+12

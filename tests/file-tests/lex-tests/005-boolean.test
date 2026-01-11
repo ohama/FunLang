@@ -5,10 +5,10 @@ true and false or true
 // --EXPECTED
 
 === LEXER TOKENS ===
-  TRUE
-  AND_KW
-  FALSE
-  OR_KW
-  TRUE
-  EOF
+  [1:1] TRUE
+  [1:6] AND_KW
+  [1:10] FALSE
+  [1:16] OR_KW
+  [1:19] TRUE
+  [2:1] EOF
 ====================

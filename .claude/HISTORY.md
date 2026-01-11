@@ -2,85 +2,112 @@
 
 ## Current Status
 
-- **Phase**: Phase 8.3 Complete (File-based error tests in progress)
-- **Tests**: 473 passed
+- **Phase**: Phase 7 Complete, Phase 8.6 On Hold
+- **Tests**: 483 passed, 0 failed
 - **Last Session**: 2026-01-12
 
 ## Recent Sessions
 
-### 2026-01-12 09:30 (Session: h6789012)
+### 2026-01-12 05:30 (Session: k0123456)
 
 **주요 변경 사항:**
-- Lexer error position 버그 수정 (ParserWrapper.fs)
-  - `lexbuf`를 `try` 블록 밖으로 이동 (F# 스코핑 규칙)
-  - `LexBuffer.StartPos`가 액션 실행 전에 업데이트되므로 catch에서 사용 가능
-- Test file format 표준화 (`// --EXPECTED` 앞뒤로 빈 줄)
-- startsession command 업데이트 (FILE_BASED_TESTING.md 읽기)
-- docs/FILE_BASED_TESTING.md 문서화 개선 (템플릿, 체크리스트 추가)
-- 새 error tests 추가 (12개): 010-015 (lexer), 020-025 (runtime)
-
-**시도한 실험:**
-- Lexer error position fix 두 가지 접근법 분석
-  - Option 1: Lexer가 에러와 함께 위치 반환 (FsLex 제한으로 불가)
-  - Option 2: catch 블록에서 lexbuf.StartPos 사용 (정확한 방법)
+- Phase 7 상태 확인: 이미 완료되어 있음 확인
+  - Constructor Application Patterns (`Some x`, `Some (Some x)`) 동작
+  - Recursive Types (`List 'a = Nil | Cons of 'a * List 'a`) 동작
+- Phase 7 file-based tests 4개 추가:
+  - `014-nested-constructor-pattern.test`
+  - `015-constructor-pattern-literal.test`
+  - `016-list-map.test`
+  - `017-tree-type.test`
+- Phase 8.6 (REPL & Color Integration) 보류로 설정
 
 **배운 점:**
-- F# try-with 스코핑: try 블록 내 변수는 with 핸들러에서 접근 불가
-- FsLex LexBuffer: StartPos는 액션 실행 전에 업데이트됨
-- 테스트 파일 형식: 가독성을 위해 `// --EXPECTED` 앞뒤로 빈 줄 권장
+- Phase 7이 이미 구현되어 있었음 (테스트 479개 모두 통과)
+- 타입 변수 문법: `'a` (single quote 필수)
 
 **Key Decisions:**
-- lexbuf를 try 블록 밖에 정의하여 에러 위치 정보 정확하게 캡처
-- Test file format 표준: `// --EXPECTED` 앞뒤로 빈 줄 하나씩
+- Phase 8.6 보류
+- Phase 7 완료 확인 후 file-based tests 추가
 
 **Unresolved Issues:**
 - (없음)
 
 ---
 
+### 2026-01-12 05:10 (Session: j8901234)
+
+**주요 변경 사항:**
+- Issue 006 해결: Parser error position이 이제 올바르게 표시됨
+- Program.fs에서 `tokenize` + `parse` 대신 `tokenizeWithPositions` + `parseProgramWithPositions` 사용
+- `--show-tokens` 출력에 위치 정보 `[line:col]` 추가
+
+**근본 원인 분석:**
+- `Program.fs`에서 `tokenize` (위치 정보 없음) + `parse` 사용
+- `parse` 함수가 위치 정보 없는 토큰에 `(1,1)` 할당
+- 해결: `tokenizeWithPositions` + `parseProgramWithPositions` 사용
+
+**배운 점:**
+- Systematic debugging 프로세스가 효과적 (데이터 흐름 추적)
+- 디버그 출력으로 각 레이어의 데이터 확인 필수
+- Raw lexer는 올바른 위치 반환, 문제는 호출 경로에 있었음
+
+**Key Decisions:**
+- 토큰 위치 정보를 출력에 포함 (`[1:5] IDENT "x"` 형식)
+- 테스트 파일 업데이트는 별도 Issue 007로 분리
+
+**Unresolved Issues:**
+- Issue 007: 15개 테스트 파일 형식 업데이트 필요
+
+---
+
+### 2026-01-12 04:57 (Session: i7890123)
+
+**주요 변경 사항:**
+- Parser error tests 6개 추가 (101-106)
+- Rich parse error 구현 (Parser.fsy에 RichParseError 예외)
+- `tokenTagToName` 함수: 토큰 인덱스를 사람이 읽기 쉬운 이름으로 변환
+- `parse_error_rich` 핸들러: 상세한 에러 컨텍스트 캡처
+- `processIndentationWithPositions`: 위치 정보 보존하는 indentation 처리
+- `tokenizeWithPositions`, `parseProgramWithPositions` 함수 추가
+
+**배운 점:**
+- Parser.fs는 Parser.fsy에서 FsYacc가 생성하는 파일 (직접 수정 불가)
+- `parse_error_rich`를 Parser.fsy 헤더에 정의하면 생성된 Parser.fs에 포함됨
+- 토큰 리스트 기반 파싱에서 위치 추적은 별도 구현 필요
+
+**Key Decisions:**
+- RichParseError 예외로 currentToken, expectedTokens, position 전달
+- tokenTagToName에서 모든 토큰 태그를 사람이 읽기 쉬운 문자열로 변환
+
+---
+
+### 2026-01-12 09:30 (Session: h6789012)
+
+**주요 변경 사항:**
+- Lexer error position 버그 수정 (ParserWrapper.fs)
+- Test file format 표준화 (`// --EXPECTED` 앞뒤로 빈 줄)
+- 새 error tests 추가 (12개): 010-015 (lexer), 020-025 (runtime)
+
+**배운 점:**
+- F# try-with 스코핑: try 블록 내 변수는 with 핸들러에서 접근 불가
+- FsLex LexBuffer: StartPos는 액션 실행 전에 업데이트됨
+
+---
+
 ### 2026-01-11 22:08 (Session: g5678901)
 
 **주요 변경 사항:**
-- 세션 시작 및 컨텍스트 복원
 - Error message file-based test 강화 작업 계획
-
-**작업 계획 (Todo 생성):**
-- Lexer error tests (E001-E004) 추가 예정
-- Parser error tests (E101-E106) 추가 예정
-- Type error tests (E201-E208) 추가 예정
-- Runtime error tests (E301-E304) 추가 예정
-
----
-
-### 2026-01-11 23:15 (Session: f4567890)
-
-**주요 변경 사항:**
-- Let-In Expression 설계 문서 작성 (`docs/design/let-in-expression.md`)
-
----
-
-### 2026-01-11 21:32 (Session: e3456789)
-
-**주요 변경 사항:**
-- Phase 8.3: AST Position Tracking 구현 완료
-- Located<'T> wrapper type 추가 (Ast.fs)
-- LExpr = Located<Expr>, LPattern = Located<Pattern> 타입 별칭
-- Display module: 깔끔한 AST 출력을 위한 Located wrapper 제거
-- 테스트: 441 → 455 (+14 LocatedTests)
-
----
-
-### 2026-01-11 21:23 (Session: c1234567)
-
-**주요 변경 사항:**
-- Phase 8.5: Error Explanations 구현 완료
-- ErrorExplanations.fs 생성 (22개 에러 코드 설명)
-- CLI --explain 옵션 추가
-- 18개 새 테스트 추가 (422 → 441)
 
 ---
 
 ## Accumulated Knowledge
+
+### Phase 7: Advanced Features (2026-01-12)
+- Constructor Application Patterns: `Some x` → `PConstructor("Some", Some(PVariable "x"))`
+- Nested patterns 지원: `Some (Some x)`
+- Recursive Types: `type List 'a = Nil | Cons of 'a * List 'a`
+- 타입 변수 문법: `'a` (single quote 필수)
 
 ### Lexer Error Position Fix (2026-01-12)
 - `lexbuf`는 반드시 `try` 블록 **밖**에 정의해야 함
@@ -92,16 +119,12 @@
 - **중요**: `// --EXPECTED` 앞뒤로 빈 줄 하나씩 필요
 - `%s` 플레이스홀더가 입력 파일 경로로 치환됨
 
-### Phase 8.3: AST Position Tracking
-- `Located<'T> = { Node: 'T; Pos: Position }` wrapper type
-- `LExpr = Located<Expr>`, `LPattern = Located<Pattern>`
-- 합성 노드는 `Located.noLoc` 사용
-
 ### Phase 8: Better Error Messages
 - Diagnostic.fs: Severity, SourceSpan, LabeledSpan, Suggestion 타입
 - ErrorFormatter.fs: Rust-style 에러 출력
 - ErrorExplanations.fs: 22개 에러 코드 설명
 - Suggestions.fs: Levenshtein distance, findSimilar
+- Rich Parse Error: `RichParseError`, `tokenTagToName`, `parse_error_rich`
 
 ### Build/Parser Tips
 - FsLexYacc --module, --unicode 필수
@@ -113,6 +136,6 @@
 - Severity.Error와 Result.Error 이름 충돌 주의
 
 ### Phase Completion History
-- Phase 0~6: COMPLETE
-- Phase 7: Advanced Features - IN PROGRESS
+- Phase 0~7: COMPLETE
 - Phase 8.1~8.5: COMPLETE
+- Phase 8.6: ON HOLD (REPL & Color Integration)
