@@ -292,6 +292,44 @@ let letRecTests = testList "Let Rec" [
         let result = parseExpr "let rec fact = fun n -> if n == 0 then 1 else n * fact (n - 1) in fact 5"
         Expect.isOk result "should parse recursive function"
     }
+
+    // Issue-005 regression test: multiline let rec chains with 'in' on separate line
+    test "parse multiline let rec with in on separate line" {
+        let input = """let rec a = fun x -> x
+in
+a 1"""
+        let result = parseExpr input
+        Expect.isOk result "should parse multiline let rec with in on separate line"
+    }
+
+    test "parse chained multiline let rec" {
+        let input = """let rec a = fun x ->
+  match x with
+  | [] -> []
+  | h :: t -> a t
+in
+let rec b = fun x -> x
+in
+b [1]"""
+        let result = parseExpr input
+        Expect.isOk result "should parse chained multiline let rec"
+    }
+
+    test "parse 5 chained multiline let rec (issue-005)" {
+        let input = """let rec a = fun x -> x
+in
+let rec b = fun x -> x
+in
+let rec c = fun x -> x
+in
+let rec d = fun x -> x
+in
+let rec e = fun x -> x
+in
+e 1"""
+        let result = parseExpr input
+        Expect.isOk result "should parse 5 chained multiline let rec"
+    }
 ]
 
 // =============================================================================

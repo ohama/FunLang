@@ -172,8 +172,8 @@ type_atom:
 ;
 
 expr:
-    | LET IDENT EQ expr IN nl_opt expr         { ELet($2, $4, $7) }
-    | LET REC IDENT EQ expr IN nl_opt expr     { ELetRec($3, $5, $8) }
+    | LET IDENT EQ expr nl_opt IN nl_opt expr         { ELet($2, $4, $8) }
+    | LET REC IDENT EQ expr nl_opt IN nl_opt expr     { ELetRec($3, $5, $9) }
     | IF expr THEN nl_opt expr nl_opt ELSE nl_opt expr { EIf($2, $5, $9) }
     | FUN IDENT ARROW nl_opt expr              { ELambda($2, $5) }
     | MATCH expr WITH match_cases_start        { EMatch($2, $4) }

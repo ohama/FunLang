@@ -8,6 +8,7 @@ Start a new work session and restore context from previous sessions.
    - `.claude/HISTORY.md` - 이전 세션 히스토리 및 축적된 지식
    - `.claude/PLAN.md` - 구현 계획 및 현재 phase
    - `.claude/session/state.json` - 마지막 세션 상태 (있다면)
+   - `docs/issues/unresolved/*.md` - 미해결 이슈 파일들 (있다면 모두 읽기)
 
 2. **Restore accumulated knowledge** from HISTORY.md:
    - Recent session summaries (최근 세션 요약)
@@ -20,26 +21,23 @@ Start a new work session and restore context from previous sessions.
    - Next phase items
    - Remaining work
 
-4. **Auto-initialize session state** (DO NOT ask user):
-   - If state.json exists: restore previous state
-   - If not: initialize from HISTORY.md and PLAN.md
-   - Set currentGoal from context or use default
-   - Generate new session ID
+4. **Restore session state** (read-only, DO NOT write):
+   - If state.json exists: read previous state
+   - If not: determine state from HISTORY.md and PLAN.md
+   - Note: Session state is saved only by `/endsession`
 
-5. **Save session start time** to `.claude/session/state.json`
-
-6. **Display session context**:
+5. **Display session context**:
    - Previous session summary (from HISTORY.md)
    - Current phase from PLAN.md
    - TDD/FsCheck requirements reminder
    - Available debugging options
 
-7. **Display next steps prominently** (from `nextPhase`):
+6. **Display next steps prominently** (from `nextPhase`):
    - Show the next phase name
    - List all items to be implemented
    - Highlight the first actionable item
 
-8. **Display unresolved issues** (if any exist):
+7. **Display unresolved issues** (if any exist):
    - Show count and list of unresolved issues
    - Include priority and context for each
    - Remind user these need attention
@@ -182,7 +180,9 @@ docs/issues/resolved/        - Resolved issue files
    ↓
 7. state.json 읽기 (있다면)
    ↓
-8. 새 세션 초기화
+8. docs/issues/unresolved/*.md 읽기 (이슈 파일들)
+   ↓
+9. 세션 정보 표시 (파일 쓰기 없음)
 ```
 
 ### Previous Session Display
@@ -213,7 +213,7 @@ Unresolved Issues:
 첫 세션이거나 HISTORY.md가 없으면:
 1. PLAN.md에서 Phase 0 시작
 2. 기본 목표: "Build the FunLang interpreter"
-3. 빈 HISTORY.md 생성 (endsession에서 채워짐)
+3. HISTORY.md는 `/endsession`에서 생성됨 (startsession에서는 생성하지 않음)
 
 ## Output
 
@@ -251,25 +251,37 @@ This section should be displayed prominently so the user knows exactly what to w
 
 ### Unresolved Issues Display Format
 
-If there are unresolved issues, display them prominently:
+**IMPORTANT:** If there are unresolved issues, ALWAYS display them prominently in the session output.
+
+**How to get unresolved issues:**
+1. Check `docs/issues/unresolved/` directory for `.md` files
+2. Read each issue file to get description, workaround, impact
+3. Also check `state.json` issues.unresolved array for quick reference
+
+**Display format:**
 
 ```
 === Unresolved Issues ({count}) ===
 
-1. [high] issue-001: Parser conflict with NEWLINE token
-   Context: src/FunLang/Parser.fsy
-   Created: 2026-01-10
+1. [priority] issue-XXX: {short description}
+   Impact: {low|medium|high}
+   Workaround: {brief workaround if available}
+   File: docs/issues/unresolved/XXX-description.md
 
-2. [medium] issue-002: Performance issue in large lists
-   Context: src/FunLang/Interpreter.fs
-   Created: 2026-01-09
+2. [priority] issue-YYY: {short description}
+   Impact: {low|medium|high}
+   Workaround: {brief workaround if available}
+   File: docs/issues/unresolved/YYY-description.md
 
 Use `/issue` to manage issues
 Use `/issue resolve <id>` to mark as resolved
 ==============================
 ```
 
-If no unresolved issues exist, skip this section entirely.
+**Rules:**
+- If unresolved issues exist: MUST display this section
+- If no unresolved issues: skip this section entirely
+- Read actual issue files to get accurate descriptions and workarounds
 
 ### Issue Management
 
