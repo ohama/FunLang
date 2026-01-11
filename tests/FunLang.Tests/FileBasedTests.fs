@@ -112,11 +112,12 @@ let computeHash (s: string) : string =
     BitConverter.ToString(hash).Replace("-", "").Substring(0, 8).ToLower()
 
 /// Execute command with shell
+/// Returns Ok () if process ran (regardless of exit code), Error only if process couldn't start
 let executeCommand (command: string) (inputFile: string) (outputFile: string) : Result<unit, string> =
     // Replace %s with input file path
     let cmd = command.Replace("%s", inputFile)
 
-    // Construct shell command with output redirection
+    // Construct shell command with output redirection (stderr merged to stdout)
     let shellCmd = sprintf "%s > \"%s\" 2>&1" cmd outputFile
 
     let isWindows = Environment.OSVersion.Platform = PlatformID.Win32NT
@@ -137,14 +138,8 @@ let executeCommand (command: string) (inputFile: string) (outputFile: string) : 
     try
         use proc = Process.Start(startInfo)
         proc.WaitForExit(60000) |> ignore  // 60 second timeout
-
-        if proc.ExitCode <> 0 then
-            let errorOutput =
-                if File.Exists(outputFile) then File.ReadAllText(outputFile)
-                else sprintf "Process exited with code %d" proc.ExitCode
-            Error (sprintf "Command failed (exit code %d): %s" proc.ExitCode errorOutput)
-        else
-            Ok ()
+        // Accept any exit code - output comparison will determine pass/fail
+        Ok ()
     with ex ->
         Error (sprintf "Failed to execute command: %s" ex.Message)
 

@@ -3,10 +3,37 @@
 ## Current Status
 
 - **Phase**: Phase 8.1-8.2 Complete (Phase 8 진행중)
-- **Tests**: 385 passed
+- **Tests**: 394 passed
 - **Last Session**: 2026-01-11
 
 ## Recent Sessions
+
+### 2026-01-11 16:32 (Session: y6789012)
+
+**주요 변경 사항:**
+- File-based error testing 추가 (9개 에러 테스트)
+- FileBasedTests.fs: non-zero exit code 지원 (에러 테스트용)
+- Diagnostic.fs 버그 수정: lexerMsg의 null 문자 문제 해결
+- tests/file-tests/error-tests/ 디렉토리 생성
+- 테스트: 385 → 394 (+9)
+
+**시도한 작업:**
+- 에러 테스트 시 exit code 1로 인한 테스트 실패 문제 해결
+- lexerMsg가 '\000' 문자를 사용하여 에러 메시지 손상되는 버그 발견 및 수정
+
+**배운 점:**
+- FileBasedTests.executeCommand가 exit code 확인하여 에러 테스트 불가 → exit code 무시하고 출력만 비교하도록 수정
+- Diagnostic.fromFunLangError가 err.Message 대신 재구성한 메시지 사용 → null char 문제
+- 수정: c = '\000'일 때 원본 err.Message 사용
+
+**Key Decisions:**
+- 에러 테스트도 동일한 file-based testing 프레임워크 사용
+- exit code와 관계없이 stdout/stderr 출력으로 성공/실패 판단
+
+**Unresolved Issues:**
+- (없음)
+
+---
 
 ### 2026-01-11 16:21 (Session: x5678901)
 
@@ -17,22 +44,12 @@
 - 에러 출력을 stderr로 변경 (eprintfn)
 - 테스트: 340 → 385 (+45)
 
-**시도한 작업:**
-- ErrorFormatter 모듈 구현 (formatHeader, formatLocation, formatSourceContext, formatFooter)
-- Multi-line span 지원 및 line elision 구현
-- `open FunLang.Diagnostic` 시 이름 충돌 발생 → module alias로 해결
-
 **배운 점:**
 - `open FunLang.Diagnostic` 시 Severity.Error가 Result.Error를 가림
 - 해결책: `module Diag = FunLang.Diagnostic` 사용
-- 에러는 stderr (eprintfn), 정상 출력은 stdout (printfn)
 
 **Key Decisions:**
 - 에러 출력을 stderr로 변경 (CLI 표준 관례 준수)
-- Config 타입으로 formatter 설정 캡슐화
-
-**Unresolved Issues:**
-- (없음)
 
 ---
 
@@ -40,23 +57,7 @@
 
 **주요 변경 사항:**
 - Better Error Messages 설계 문서에 Rust 패턴 추가
-- Rust Diagnostic System 분석 (rustc-dev-guide, annotate-snippets, Ariadne, Miette)
-- Phase 8 구현 계획 확장 (8.5 Error Explanations, 8.6 REPL & Color 추가)
-
-**배운 점:**
-- Rust Diagnostic 원칙: 메시지 독립성, Primary Span 자족성
-- Suggestion Applicability: MachineApplicable만 자동 적용 가능
-
-**Key Decisions:**
-- Phase 8 구현 순서: 8.1 → 8.2 → 8.4 → 8.5 → 8.6 → 8.3
-
----
-
-### 2026-01-11 16:45 (Session: v3456789)
-
-**주요 변경 사항:**
-- Better Error Messages 설계 문서 작성 완료
-- 현재 에러 시스템 상세 분석
+- Phase 8 구현 계획 확장
 
 ---
 
@@ -82,22 +83,22 @@
 - ErrorFormatter.fs: Rust-style 에러 출력 (header, location, source context, footer)
 - 에러는 stderr로 출력 (eprintfn 사용)
 - `module Diag = FunLang.Diagnostic` 패턴으로 이름 충돌 회피
-
-### Error Output Format
-```
-error[E201]: Type mismatch
-  --> file.fun:3:15
-  |
-3 | let x = "hello" + 1
-  | ^^^^^^^ expected `int`, found `string`
-  |
-  = note: `+` requires int operands
-  = help: use `++` for string concatenation
-```
+- lexerMsg 사용 시 c='\000' → err.Message 사용하도록 처리
 
 ### File-Based Testing
 - 포맷: `// --COMMAND`, `// --INPUT`, `// --EXPECTED`
 - `%s` 플레이스홀더가 입력 파일 경로로 치환됨
+- 에러 테스트: exit code 무시, 출력만 비교
+- 디렉토리: lex-tests, parse-tests, eval-tests, indent-tests, error-tests
+
+### Error Output Format
+```
+error[E001]: Unexpected character: @
+  --> :1:1
+  |
+1 | @bad
+  | ^
+```
 
 ### Parser Multiline Handling
 - `nl_opt` 규칙으로 optional NEWLINE 처리

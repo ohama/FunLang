@@ -1,0 +1,5 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+if true 1 else 2
+// --EXPECTED
+Parse error: parse error

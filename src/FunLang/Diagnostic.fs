@@ -307,7 +307,9 @@ module Diagnostic =
         let code, message =
             match err.Kind with
             | FunLang.Errors.LexerError (c, _) ->
-                ErrorCodes.unexpectedChar, sprintf "Unexpected character '%c'" c
+                // Use original message if character is null (from lexerMsg helper)
+                let msg = if c = '\000' then err.Message else sprintf "Unexpected character '%c'" c
+                ErrorCodes.unexpectedChar, msg
             | FunLang.Errors.ParseError (tok, expected, _) ->
                 let expectedStr =
                     if List.isEmpty expected then ""

@@ -1,0 +1,9 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+"unclosed string
+// --EXPECTED
+error[E001]: Unterminated string
+  --> :1:1
+  |
+1 | "unclosed string
+  | ^

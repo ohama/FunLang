@@ -1,0 +1,5 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+1 / 0
+// --EXPECTED
+error[E303]: Division by zero

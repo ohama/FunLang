@@ -1,0 +1,5 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+let x =
+// --EXPECTED
+Parse error: parse error
