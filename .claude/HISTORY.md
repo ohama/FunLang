@@ -2,11 +2,58 @@
 
 ## Current Status
 
-- **Phase**: Phase 7 In Progress
+- **Phase**: Phase 7 In Progress (Phase 8 설계 완료)
 - **Tests**: 340 passed
 - **Last Session**: 2026-01-11
 
 ## Recent Sessions
+
+### 2026-01-11 17:30 (Session: w4567890)
+
+**주요 변경 사항:**
+- Better Error Messages 설계 문서에 Rust 패턴 추가
+- Rust Diagnostic System 분석 (rustc-dev-guide, annotate-snippets, Ariadne, Miette)
+- Phase 8 구현 계획 확장 (8.5 Error Explanations, 8.6 REPL & Color 추가)
+
+**시도한 작업:**
+- Rust 진단 시스템 웹 리서치
+- rustc-dev-guide, Ariadne, Miette 문서 분석
+- 설계 문서 1000줄 규모로 확장
+
+**배운 점:**
+- Rust Diagnostic 원칙: 메시지 독립성, Primary Span 자족성
+- Suggestion Applicability: MachineApplicable만 자동 적용 가능
+- Multi-span diagnostics: 여러 위치 라벨링
+- Error Explanations: `rustc --explain E0308` 패턴
+
+**Key Decisions:**
+- Diagnostic Builder API 패턴 적용 (fluent interface)
+- Primary/Secondary span 구분
+- SuggestionApplicability 레벨 (MachineApplicable, HasPlaceholders, MaybeIncorrect, Unspecified)
+- Phase 8 구현 순서: 8.1 → 8.2 → 8.4 → 8.5 → 8.6 → 8.3
+
+**Unresolved Issues:**
+- (없음)
+
+---
+
+### 2026-01-11 16:45 (Session: v3456789)
+
+**주요 변경 사항:**
+- Better Error Messages 설계 문서 작성 완료
+- 현재 에러 시스템 상세 분석 (Errors.fs, Types.fs, Program.fs, Interpreter.fs)
+- Phase 8 구현 계획 수립
+
+**배운 점:**
+- Parser가 `Result<Expr, string>` 반환 → position 정보 손실
+- AST에 Position 없음 → 타입/런타임 에러 위치 표시 불가
+- `formatErrorWithSource` 존재하지만 호출되지 않음
+- FunLangError와 TypeError가 분리되어 있음
+
+**Resolved Issues:**
+- issue-004: Comments not supported → Won't Fix (v0.1 설계 결정)
+
+---
 
 ### 2026-01-11 15:18 (Session: u2345678)
 
@@ -18,45 +65,6 @@
 - `--show-tokens`/`--show-ast` 조기 종료 기능 구현
 - 테스트: 323 → 340 (+17 file-based tests)
 
-**시도한 작업:**
-- File-based test format: `// --COMMAND`, `// --INPUT`, `// --EXPECTED`
-- Shell 명령어 실행 및 결과 비교
-- trimEmptyLines로 앞뒤 공백 라인 무시
-
-**배운 점:**
-- File-based test에서 상대 경로 사용하여 중복 테스트명 방지
-- `--show-tokens`는 토큰 출력 후 즉시 종료 (파싱/평가 없음)
-- `--show-ast`는 AST 출력 후 즉시 종료 (평가 없음)
-
-**Key Decisions:**
-- DemoTests.fs 삭제, FileBasedTests.fs로 대체
-- 테스트 카테고리별 서브디렉토리 분리
-
-**Unresolved Issues:**
-- issue-004: 주석 (`--`) 렉서 미지원
-
----
-
-### 2026-01-11 14:15 (Session: t0123456)
-
-**주요 변경 사항:**
-- (없음 - 짧은 세션)
-
-**시도한 작업:**
-- Changelog generator skill 추가 시도 (GitHub에서 SKILL.md 가져오기)
-- 사용자에 의해 중단됨
-
----
-
-### 2026-01-11 14:06 (Session: s9012345)
-
-**주요 변경 사항:**
-- SESSION_MANAGEMENT.md 생성: vibe-coding 디렉토리에 세션 관리 가이드 작성
-
-**배운 점:**
-- endsession은 저장만 수행 (컨텍스트 리셋 안함)
-- clear 또는 새 대화로 컨텍스트 리셋
-
 ---
 
 ### 2026-01-11 13:54 (Session: r8901234)
@@ -65,9 +73,6 @@
 - **Issue-005 해결**: Multiline let rec 체인 파싱 에러 수정
 - Parser.fsy: `IN` 앞에 `nl_opt` 추가
 - 테스트: 320 → 323 (+3)
-
-**Resolved Issues:**
-- issue-005: Multiline let rec 체인 파싱 에러 → `nl_opt` 추가로 해결
 
 ---
 
@@ -79,6 +84,15 @@
 ---
 
 ## Accumulated Knowledge
+
+### Better Error Messages Design (Phase 8)
+- 설계 문서: `docs/design/better-error-messages.md` (~1000줄)
+- Rust Diagnostic 원칙: 메시지 독립성, Primary Span 자족성, 평이한 언어
+- Primary vs Secondary Spans: Primary = 핵심 위치, Secondary = 관련 정보
+- Suggestion Applicability: MachineApplicable, HasPlaceholders, MaybeIncorrect, Unspecified
+- 구현 순서: 8.1 (Diagnostic) → 8.2 (Formatter) → 8.4 (Suggestions) → 8.5 (Explain) → 8.6 (REPL) → 8.3 (AST)
+- 에러 코드 체계: E001-E099 (Lexer), E100-E199 (Parser), E200-E299 (Type), E300-E399 (Runtime)
+- `funlang --explain E201` 명령으로 상세 설명 제공
 
 ### File-Based Testing
 - 포맷: `// --COMMAND`, `// --INPUT`, `// --EXPECTED`
@@ -109,9 +123,10 @@
 - FsCheck에서 음수 테스트 시 NonNegativeInt 사용
 - Exception 금지: Result/Option으로 에러 전파 필수
 
-### Known Parser Limitations
-- 주석 (`--`): 렉서에서 미지원
+### Known Limitations
+- 주석 (`--`): 렉서에서 미지원 (Won't Fix)
 
 ### Phase Completion History
 - Phase 0~6: COMPLETE
 - Phase 7: Advanced Features - IN PROGRESS (340 tests)
+- Phase 8: Better Error Messages - DESIGN COMPLETE
