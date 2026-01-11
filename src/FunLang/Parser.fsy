@@ -2,14 +2,27 @@
 open FunLang.Ast
 
 // =============================================================================
+// Position Helpers
+// =============================================================================
+
+/// Create a Located value from parseState and a node
+let inline locate (parseState: FSharp.Text.Parsing.IParseState) (node: 'T) : Located<'T> =
+    let pos = parseState.InputStartPosition 1
+    { Node = node; Pos = { Line = pos.Line; Column = pos.Column; File = None } }
+
+/// Create a Located value with no position (for synthesized nodes)
+let inline noLoc (node: 'T) : Located<'T> =
+    { Node = node; Pos = noPos }
+
+// =============================================================================
 // Block Item Types and Transformation
 // =============================================================================
 
 /// Intermediate representation for block items before transformation
 type BlockItem =
-    | BILet of string * Expr       // let x = e (block-local, no IN)
-    | BILetRec of string * Expr    // let rec f = e (block-local, no IN)
-    | BIExpr of Expr               // standalone expression
+    | BILet of string * LExpr       // let x = e (block-local, no IN)
+    | BILetRec of string * LExpr    // let rec f = e (block-local, no IN)
+    | BIExpr of LExpr               // standalone expression
 
 /// Transform a list of block items into a single nested expression
 /// [BILet("x", 10); BILet("y", 20); BIExpr(x+y)]
@@ -21,27 +34,27 @@ let rec blockToExpr (items: BlockItem list) : Expr =
         ELiteral LUnit
 
     | [BIExpr e] ->
-        // Single expression - just return it
-        e
+        // Single expression - just unwrap and return
+        e.Node
 
     | [BILet(name, value)] ->
         // Single binding with no following expression - body is unit
-        ELet(name, value, ELiteral LUnit)
+        ELet(name, value, noLoc (ELiteral LUnit))
 
     | [BILetRec(name, value)] ->
-        ELetRec(name, value, ELiteral LUnit)
+        ELetRec(name, value, noLoc (ELiteral LUnit))
 
     | BIExpr e :: rest ->
         // Expression for side effects, then continue
         // Use wildcard binding to sequence: let _ = e in rest
-        ELet("_", e, blockToExpr rest)
+        ELet("_", e, noLoc (blockToExpr rest))
 
     | BILet(name, value) :: rest ->
         // Binding scopes over the rest
-        ELet(name, value, blockToExpr rest)
+        ELet(name, value, noLoc (blockToExpr rest))
 
     | BILetRec(name, value) :: rest ->
-        ELetRec(name, value, blockToExpr rest)
+        ELetRec(name, value, noLoc (blockToExpr rest))
 
 %}
 
@@ -102,8 +115,8 @@ prog:
 // =============================================================================
 
 program:
-    | expr                                  { { TypeDefs = []; MainExpr = Some $1 } }
-    | type_def_or_list expr                 { { TypeDefs = $1; MainExpr = Some $2 } }
+    | expr                                  { { TypeDefs = []; MainExpr = Some (locate parseState $1) } }
+    | type_def_or_list expr                 { { TypeDefs = $1; MainExpr = Some (locate parseState $2) } }
     | type_def_or_list                      { { TypeDefs = $1; MainExpr = None } }
 ;
 
@@ -172,11 +185,11 @@ type_atom:
 ;
 
 expr:
-    | LET IDENT EQ expr nl_opt IN nl_opt expr         { ELet($2, $4, $8) }
-    | LET REC IDENT EQ expr nl_opt IN nl_opt expr     { ELetRec($3, $5, $9) }
-    | IF expr THEN nl_opt expr nl_opt ELSE nl_opt expr { EIf($2, $5, $9) }
-    | FUN IDENT ARROW nl_opt expr              { ELambda($2, $5) }
-    | MATCH expr WITH match_cases_start        { EMatch($2, $4) }
+    | LET IDENT EQ expr nl_opt IN nl_opt expr         { ELet($2, locate parseState $4, locate parseState $8) }
+    | LET REC IDENT EQ expr nl_opt IN nl_opt expr     { ELetRec($3, locate parseState $5, locate parseState $9) }
+    | IF expr THEN nl_opt expr nl_opt ELSE nl_opt expr { EIf(locate parseState $2, locate parseState $5, locate parseState $9) }
+    | FUN IDENT ARROW nl_opt expr              { ELambda($2, locate parseState $5) }
+    | MATCH expr WITH match_cases_start        { EMatch(locate parseState $2, $4) }
     | block                                    { $1 }
     | cons_expr                                { $1 }
 ;
@@ -199,8 +212,8 @@ match_cases:
 ;
 
 match_case:
-    | PIPE pattern ARROW nl_opt expr                   { ($2, None, $5) }
-    | PIPE pattern WHEN expr ARROW nl_opt expr         { ($2, Some $4, $7) }
+    | PIPE pattern ARROW nl_opt expr                   { (locate parseState $2, None, locate parseState $5) }
+    | PIPE pattern WHEN expr ARROW nl_opt expr         { (locate parseState $2, Some (locate parseState $4), locate parseState $7) }
 ;
 
 // Handle NEWLINE before first PIPE (for indented match)
@@ -214,8 +227,8 @@ pattern:
 ;
 
 cons_pattern:
-    | IDENT pattern_atom                      { PConstructor($1, Some $2) }
-    | pattern_atom DOUBLECOLON cons_pattern   { PCons($1, $3) }
+    | IDENT pattern_atom                      { PConstructor($1, Some (locate parseState $2)) }
+    | pattern_atom DOUBLECOLON cons_pattern   { PCons(locate parseState $1, locate parseState $3) }
     | pattern_atom                            { $1 }
 ;
 
@@ -228,19 +241,19 @@ pattern_atom:
     | STRING                            { PLiteral(LString $1) }
     | LPAREN RPAREN                     { PLiteral LUnit }
     | LPAREN pattern RPAREN             { $2 }
-    | LPAREN pattern COMMA pattern_tuple_rest RPAREN { PTuple($2 :: $4) }
+    | LPAREN pattern COMMA pattern_tuple_rest RPAREN { PTuple(locate parseState $2 :: $4) }
     | LBRACKET RBRACKET                 { PList [] }
     | LBRACKET pattern_list RBRACKET    { PList $2 }
 ;
 
 pattern_tuple_rest:
-    | pattern                           { [$1] }
-    | pattern COMMA pattern_tuple_rest  { $1 :: $3 }
+    | pattern                           { [locate parseState $1] }
+    | pattern COMMA pattern_tuple_rest  { locate parseState $1 :: $3 }
 ;
 
 pattern_list:
-    | pattern                           { [$1] }
-    | pattern SEMICOLON pattern_list    { $1 :: $3 }
+    | pattern                           { [locate parseState $1] }
+    | pattern SEMICOLON pattern_list    { locate parseState $1 :: $3 }
 ;
 
 // =============================================================================
@@ -259,9 +272,9 @@ block:
 //   - see IN → it's an expr with LET...IN...
 //   - see NEWLINE/DEDENT → it's a block-local binding
 block_item:
-    | LET IDENT EQ expr                 { BILet($2, $4) }
-    | LET REC IDENT EQ expr             { BILetRec($3, $5) }
-    | expr                              { BIExpr $1 }
+    | LET IDENT EQ expr                 { BILet($2, locate parseState $4) }
+    | LET REC IDENT EQ expr             { BILetRec($3, locate parseState $5) }
+    | expr                              { BIExpr (locate parseState $1) }
 ;
 
 block_body:
@@ -274,55 +287,55 @@ block_body:
 // =============================================================================
 
 cons_expr:
-    | or_expr DOUBLECOLON cons_expr     { ECons($1, $3) }
+    | or_expr DOUBLECOLON cons_expr     { ECons(locate parseState $1, locate parseState $3) }
     | or_expr                           { $1 }
 ;
 
 or_expr:
-    | or_expr OR_KW and_expr            { EBinaryOp(Or, $1, $3) }
+    | or_expr OR_KW and_expr            { EBinaryOp(Or, locate parseState $1, locate parseState $3) }
     | and_expr                          { $1 }
 ;
 
 and_expr:
-    | and_expr AND_KW eq_expr           { EBinaryOp(And, $1, $3) }
+    | and_expr AND_KW eq_expr           { EBinaryOp(And, locate parseState $1, locate parseState $3) }
     | eq_expr                           { $1 }
 ;
 
 eq_expr:
-    | eq_expr EQ cmp_expr               { EBinaryOp(Eq, $1, $3) }
-    | eq_expr NEQ cmp_expr              { EBinaryOp(Neq, $1, $3) }
+    | eq_expr EQ cmp_expr               { EBinaryOp(Eq, locate parseState $1, locate parseState $3) }
+    | eq_expr NEQ cmp_expr              { EBinaryOp(Neq, locate parseState $1, locate parseState $3) }
     | cmp_expr                          { $1 }
 ;
 
 cmp_expr:
-    | cmp_expr LT add_expr              { EBinaryOp(Lt, $1, $3) }
-    | cmp_expr GT add_expr              { EBinaryOp(Gt, $1, $3) }
-    | cmp_expr LTE add_expr             { EBinaryOp(Lte, $1, $3) }
-    | cmp_expr GTE add_expr             { EBinaryOp(Gte, $1, $3) }
+    | cmp_expr LT add_expr              { EBinaryOp(Lt, locate parseState $1, locate parseState $3) }
+    | cmp_expr GT add_expr              { EBinaryOp(Gt, locate parseState $1, locate parseState $3) }
+    | cmp_expr LTE add_expr             { EBinaryOp(Lte, locate parseState $1, locate parseState $3) }
+    | cmp_expr GTE add_expr             { EBinaryOp(Gte, locate parseState $1, locate parseState $3) }
     | add_expr                          { $1 }
 ;
 
 add_expr:
-    | add_expr PLUS mul_expr            { EBinaryOp(Add, $1, $3) }
-    | add_expr MINUS mul_expr           { EBinaryOp(Sub, $1, $3) }
+    | add_expr PLUS mul_expr            { EBinaryOp(Add, locate parseState $1, locate parseState $3) }
+    | add_expr MINUS mul_expr           { EBinaryOp(Sub, locate parseState $1, locate parseState $3) }
     | mul_expr                          { $1 }
 ;
 
 mul_expr:
-    | mul_expr STAR unary_expr          { EBinaryOp(Mul, $1, $3) }
-    | mul_expr SLASH unary_expr         { EBinaryOp(Div, $1, $3) }
-    | mul_expr PERCENT unary_expr       { EBinaryOp(Mod, $1, $3) }
+    | mul_expr STAR unary_expr          { EBinaryOp(Mul, locate parseState $1, locate parseState $3) }
+    | mul_expr SLASH unary_expr         { EBinaryOp(Div, locate parseState $1, locate parseState $3) }
+    | mul_expr PERCENT unary_expr       { EBinaryOp(Mod, locate parseState $1, locate parseState $3) }
     | unary_expr                        { $1 }
 ;
 
 unary_expr:
-    | MINUS unary_expr %prec UMINUS     { EUnaryOp(Neg, $2) }
-    | NOT_KW unary_expr %prec UNOT      { EUnaryOp(Not, $2) }
+    | MINUS unary_expr %prec UMINUS     { EUnaryOp(Neg, locate parseState $2) }
+    | NOT_KW unary_expr %prec UNOT      { EUnaryOp(Not, locate parseState $2) }
     | app_expr                          { $1 }
 ;
 
 app_expr:
-    | app_expr atom                     { EApply($1, $2) }
+    | app_expr atom                     { EApply(locate parseState $1, locate parseState $2) }
     | atom                              { $1 }
 ;
 
@@ -335,19 +348,19 @@ atom:
     | IDENT                             { EVariable $1 }
     | LPAREN RPAREN                     { ELiteral LUnit }
     | LPAREN expr RPAREN                { $2 }
-    | LPAREN expr COMMA tuple_rest RPAREN { ETuple($2 :: $4) }
+    | LPAREN expr COMMA tuple_rest RPAREN { ETuple(locate parseState $2 :: $4) }
     | LBRACKET RBRACKET                 { EList [] }
     | LBRACKET list_items RBRACKET      { EList $2 }
 ;
 
 tuple_rest:
-    | expr                              { [$1] }
-    | expr COMMA tuple_rest             { $1 :: $3 }
+    | expr                              { [locate parseState $1] }
+    | expr COMMA tuple_rest             { locate parseState $1 :: $3 }
 ;
 
 list_items:
-    | expr                              { [$1] }
-    | expr SEMICOLON list_items         { $1 :: $3 }
+    | expr                              { [locate parseState $1] }
+    | expr SEMICOLON list_items         { locate parseState $1 :: $3 }
 ;
 
 %%

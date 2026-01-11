@@ -36,9 +36,13 @@ let tokenizeStringRaw (input: string) : Result<Token list, FunLang.Errors.FunLan
 // Parsing Helpers
 // =============================================================================
 
-/// Parse a string to an AST (main expression)
-let parseStringToAst (input: string) : Result<Expr, string> =
+/// Parse a string to an AST (main expression as LExpr)
+let parseStringToAst (input: string) : Result<LExpr, string> =
     parseString input
+
+/// Parse a string to an AST (main expression Node only - for tests comparing structure)
+let parseStringToExpr (input: string) : Result<Expr, string> =
+    parseString input |> Result.map (fun lexpr -> lexpr.Node)
 
 /// Parse a string to a full Program (type defs + optional main expr)
 let parseStringToProgram (input: string) : Result<Program, string> =

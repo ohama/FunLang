@@ -83,8 +83,8 @@ let private evalUnaryOp op operand =
 
 /// Try to match a value against a pattern
 /// Returns Some(bindings) on success, None on failure
-let rec matchPattern (pattern: Pattern) (value: Value) : Map<string, Value> option =
-    match pattern, value with
+let rec matchPattern (lpattern: LPattern) (value: Value) : Map<string, Value> option =
+    match lpattern.Node, value with
     // Wildcard matches anything, no bindings
     | PWildcard, _ -> Some Map.empty
 
@@ -160,8 +160,8 @@ let rec matchPattern (pattern: Pattern) (value: Value) : Map<string, Value> opti
 // =============================================================================
 
 /// Evaluate an expression in the given environment
-let rec eval (env: Env) (expr: Expr) : EvalResult =
-    match expr with
+let rec eval (env: Env) (lexpr: LExpr) : EvalResult =
+    match lexpr.Node with
     // Literals
     | ELiteral (LInt n) -> Ok (VInt n)
     | ELiteral (LBool b) -> Ok (VBool b)
@@ -200,7 +200,7 @@ let rec eval (env: Env) (expr: Expr) : EvalResult =
     // Recursive let binding
     | ELetRec (name, value, body) ->
         // For recursive functions, we need to create a closure that captures itself
-        match value with
+        match value.Node with
         | ELambda (param, funcBody) ->
             let closure = VRecClosure (name, param, funcBody, env)
             let env' = Map.add name closure env

@@ -30,94 +30,101 @@ let buildConstructorInfo (typeDefs: TypeDef list) : Map<string, ConstructorInfo>
     |> Map.ofList
 
 /// Resolve constructors in an expression
-let rec resolveExpr (ctorInfo: Map<string, ConstructorInfo>) (expr: Expr) : Expr =
-    match expr with
-    | ELiteral _ -> expr
+let rec resolveExpr (ctorInfo: Map<string, ConstructorInfo>) (lexpr: LExpr) : LExpr =
+    let resolvedNode =
+        match lexpr.Node with
+        | ELiteral _ -> lexpr.Node
 
-    // Check if variable is a nullary constructor
-    | EVariable name ->
-        match Map.tryFind name ctorInfo with
-        | Some info when info.Arity = 0 -> EConstructor (name, None)
-        | _ -> expr
+        // Check if variable is a nullary constructor
+        | EVariable name ->
+            match Map.tryFind name ctorInfo with
+            | Some info when info.Arity = 0 -> EConstructor (name, None)
+            | _ -> lexpr.Node
 
-    // Check if application is a unary constructor
-    | EApply (EVariable name, arg) ->
-        match Map.tryFind name ctorInfo with
-        | Some info when info.Arity = 1 ->
-            EConstructor (name, Some (resolveExpr ctorInfo arg))
-        | _ ->
-            EApply (resolveExpr ctorInfo (EVariable name), resolveExpr ctorInfo arg)
+        // Check if application is a unary constructor
+        | EApply (func, arg) ->
+            match func.Node with
+            | EVariable name ->
+                match Map.tryFind name ctorInfo with
+                | Some info when info.Arity = 1 ->
+                    EConstructor (name, Some (resolveExpr ctorInfo arg))
+                | _ ->
+                    EApply (resolveExpr ctorInfo func, resolveExpr ctorInfo arg)
+            | _ ->
+                EApply (resolveExpr ctorInfo func, resolveExpr ctorInfo arg)
 
-    | EApply (func, arg) ->
-        EApply (resolveExpr ctorInfo func, resolveExpr ctorInfo arg)
+        | EBinaryOp (op, e1, e2) ->
+            EBinaryOp (op, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
 
-    | EBinaryOp (op, e1, e2) ->
-        EBinaryOp (op, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
+        | EUnaryOp (op, e) ->
+            EUnaryOp (op, resolveExpr ctorInfo e)
 
-    | EUnaryOp (op, e) ->
-        EUnaryOp (op, resolveExpr ctorInfo e)
+        | ELet (name, e1, e2) ->
+            ELet (name, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
 
-    | ELet (name, e1, e2) ->
-        ELet (name, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
+        | ELetRec (name, e1, e2) ->
+            ELetRec (name, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
 
-    | ELetRec (name, e1, e2) ->
-        ELetRec (name, resolveExpr ctorInfo e1, resolveExpr ctorInfo e2)
+        | ELambda (param, body) ->
+            ELambda (param, resolveExpr ctorInfo body)
 
-    | ELambda (param, body) ->
-        ELambda (param, resolveExpr ctorInfo body)
+        | EIf (cond, thenE, elseE) ->
+            EIf (resolveExpr ctorInfo cond, resolveExpr ctorInfo thenE, resolveExpr ctorInfo elseE)
 
-    | EIf (cond, thenE, elseE) ->
-        EIf (resolveExpr ctorInfo cond, resolveExpr ctorInfo thenE, resolveExpr ctorInfo elseE)
+        | ETuple exprs ->
+            ETuple (List.map (resolveExpr ctorInfo) exprs)
 
-    | ETuple exprs ->
-        ETuple (List.map (resolveExpr ctorInfo) exprs)
+        | EList exprs ->
+            EList (List.map (resolveExpr ctorInfo) exprs)
 
-    | EList exprs ->
-        EList (List.map (resolveExpr ctorInfo) exprs)
+        | ECons (head, tail) ->
+            ECons (resolveExpr ctorInfo head, resolveExpr ctorInfo tail)
 
-    | ECons (head, tail) ->
-        ECons (resolveExpr ctorInfo head, resolveExpr ctorInfo tail)
+        | EBlock exprs ->
+            EBlock (List.map (resolveExpr ctorInfo) exprs)
 
-    | EBlock exprs ->
-        EBlock (List.map (resolveExpr ctorInfo) exprs)
+        | EMatch (scrutinee, cases) ->
+            let resolvedScrutinee = resolveExpr ctorInfo scrutinee
+            let resolvedCases =
+                cases
+                |> List.map (fun (pat, guard, body) ->
+                    let resolvedPat = resolvePattern ctorInfo pat
+                    let resolvedGuard = Option.map (resolveExpr ctorInfo) guard
+                    let resolvedBody = resolveExpr ctorInfo body
+                    (resolvedPat, resolvedGuard, resolvedBody))
+            EMatch (resolvedScrutinee, resolvedCases)
 
-    | EMatch (scrutinee, cases) ->
-        let resolvedScrutinee = resolveExpr ctorInfo scrutinee
-        let resolvedCases =
-            cases
-            |> List.map (fun (pat, guard, body) ->
-                let resolvedPat = resolvePattern ctorInfo pat
-                let resolvedGuard = Option.map (resolveExpr ctorInfo) guard
-                let resolvedBody = resolveExpr ctorInfo body
-                (resolvedPat, resolvedGuard, resolvedBody))
-        EMatch (resolvedScrutinee, resolvedCases)
+        | EConstructor (name, argOpt) ->
+            EConstructor (name, Option.map (resolveExpr ctorInfo) argOpt)
 
-    | EConstructor (name, argOpt) ->
-        EConstructor (name, Option.map (resolveExpr ctorInfo) argOpt)
+    { lexpr with Node = resolvedNode }
 
 /// Resolve constructors in a pattern
-and resolvePattern (ctorInfo: Map<string, ConstructorInfo>) (pattern: Pattern) : Pattern =
-    match pattern with
-    | PWildcard -> pattern
-    | PLiteral _ -> pattern
+and resolvePattern (ctorInfo: Map<string, ConstructorInfo>) (lpattern: LPattern) : LPattern =
+    let resolvedNode =
+        match lpattern.Node with
+        | PWildcard -> lpattern.Node
+        | PLiteral _ -> lpattern.Node
 
-    // Check if variable is a nullary constructor
-    | PVariable name ->
-        match Map.tryFind name ctorInfo with
-        | Some info when info.Arity = 0 -> PConstructor (name, None)
-        | _ -> pattern
+        // Check if variable is a nullary constructor
+        | PVariable name ->
+            match Map.tryFind name ctorInfo with
+            | Some info when info.Arity = 0 -> PConstructor (name, None)
+            | _ -> lpattern.Node
 
-    | PTuple patterns ->
-        PTuple (List.map (resolvePattern ctorInfo) patterns)
+        | PTuple patterns ->
+            PTuple (List.map (resolvePattern ctorInfo) patterns)
 
-    | PList patterns ->
-        PList (List.map (resolvePattern ctorInfo) patterns)
+        | PList patterns ->
+            PList (List.map (resolvePattern ctorInfo) patterns)
 
-    | PCons (headP, tailP) ->
-        PCons (resolvePattern ctorInfo headP, resolvePattern ctorInfo tailP)
+        | PCons (headP, tailP) ->
+            PCons (resolvePattern ctorInfo headP, resolvePattern ctorInfo tailP)
 
-    | PConstructor (name, argPatOpt) ->
-        PConstructor (name, Option.map (resolvePattern ctorInfo) argPatOpt)
+        | PConstructor (name, argPatOpt) ->
+            PConstructor (name, Option.map (resolvePattern ctorInfo) argPatOpt)
+
+    { lpattern with Node = resolvedNode }
 
 /// Resolve a full program
 let resolveProgram (program: Program) : Program =

@@ -147,7 +147,7 @@ let integrationTests = testList "Integration" [
         let ast = FunLang.Parser.parseString code
         Expect.isOk ast "should parse"
 
-        let result = FunLang.TypeInfer.inferType (Result.defaultValue (FunLang.Ast.ELiteral FunLang.Ast.LUnit) ast)
+        let result = FunLang.TypeInfer.inferType (Result.defaultValue (FunLang.Ast.Located.noLoc (FunLang.Ast.ELiteral FunLang.Ast.LUnit)) ast)
         Expect.isError result "should fail type check"
 
         match result with
@@ -189,7 +189,7 @@ let integrationTests = testList "Integration" [
         let ast = FunLang.Parser.parseString code
         Expect.isOk ast "should parse"
 
-        let result = FunLang.TypeInfer.inferType (Result.defaultValue (FunLang.Ast.ELiteral FunLang.Ast.LUnit) ast)
+        let result = FunLang.TypeInfer.inferType (Result.defaultValue (FunLang.Ast.Located.noLoc (FunLang.Ast.ELiteral FunLang.Ast.LUnit)) ast)
 
         match result with
         | Error err ->

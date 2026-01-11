@@ -9,6 +9,29 @@ open FunLang.TypeInfer
 open FunLang.Tests.TestHelpers
 
 // =============================================================================
+// Test Helpers
+// =============================================================================
+
+/// Infer type of an Expr by wrapping it in Located.noLoc
+let inferExpr (e: Expr) = inferType (Located.noLoc e)
+
+// Aliases for Unlocated helpers
+let binOp = Unlocated.binOp
+let unaryOp = Unlocated.unaryOp
+let elet = Unlocated.elet
+let eletrec = Unlocated.eletrec
+let elambda = Unlocated.elambda
+let eapply = Unlocated.eapply
+let eif = Unlocated.eif
+let etuple = Unlocated.etuple
+let elist = Unlocated.elist
+let econs = Unlocated.econs
+let ematch = Unlocated.ematch
+let ptuple = Unlocated.ptuple
+let plist = Unlocated.plist
+let pcons = Unlocated.pcons
+
+// =============================================================================
 // Type Helper Tests
 // =============================================================================
 
@@ -187,28 +210,28 @@ let literalInferenceTests = testList "Literal Inference" [
 
     test "infer integer literal" {
         TypeHelpers.resetCounter ()
-        let result = inferType (ELiteral (LInt 42))
+        let result = inferExpr (ELiteral (LInt 42))
         let t = expectOk "infer int" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer boolean literal" {
         TypeHelpers.resetCounter ()
-        let result = inferType (ELiteral (LBool true))
+        let result = inferExpr (ELiteral (LBool true))
         let t = expectOk "infer bool" result
         Expect.equal t TBool "should be bool"
     }
 
     test "infer string literal" {
         TypeHelpers.resetCounter ()
-        let result = inferType (ELiteral (LString "hello"))
+        let result = inferExpr (ELiteral (LString "hello"))
         let t = expectOk "infer string" result
         Expect.equal t TString "should be string"
     }
 
     test "infer unit literal" {
         TypeHelpers.resetCounter ()
-        let result = inferType (ELiteral LUnit)
+        let result = inferExpr (ELiteral LUnit)
         let t = expectOk "infer unit" result
         Expect.equal t TUnit "should be unit"
     }
@@ -222,8 +245,8 @@ let lambdaInferenceTests = testList "Lambda Inference" [
 
     test "infer identity function" {
         TypeHelpers.resetCounter ()
-        let expr = ELambda ("x", EVariable "x")
-        let result = inferType expr
+        let expr = elambda "x" (EVariable "x")
+        let result = inferExpr expr
         let t = expectOk "infer identity" result
         match t with
         | TFun (TVar a, TVar b) when a = b -> ()
@@ -232,8 +255,8 @@ let lambdaInferenceTests = testList "Lambda Inference" [
 
     test "infer constant function" {
         TypeHelpers.resetCounter ()
-        let expr = ELambda ("x", ELiteral (LInt 42))
-        let result = inferType expr
+        let expr = elambda "x" (ELiteral (LInt 42))
+        let result = inferExpr expr
         let t = expectOk "infer const" result
         match t with
         | TFun (_, TInt) -> ()
@@ -242,16 +265,16 @@ let lambdaInferenceTests = testList "Lambda Inference" [
 
     test "infer application" {
         TypeHelpers.resetCounter ()
-        let expr = EApply (ELambda ("x", EVariable "x"), ELiteral (LInt 1))
-        let result = inferType expr
+        let expr = eapply (elambda "x" (EVariable "x")) (ELiteral (LInt 1))
+        let result = inferExpr expr
         let t = expectOk "infer app" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer curried function" {
         TypeHelpers.resetCounter ()
-        let expr = ELambda ("x", ELambda ("y", EVariable "x"))
-        let result = inferType expr
+        let expr = elambda "x" (elambda "y" (EVariable "x"))
+        let result = inferExpr expr
         let t = expectOk "infer curried" result
         match t with
         | TFun (TVar a, TFun (_, TVar b)) when a = b -> ()
@@ -267,17 +290,18 @@ let letInferenceTests = testList "Let Inference" [
 
     test "infer simple let" {
         TypeHelpers.resetCounter ()
-        let expr = ELet ("x", ELiteral (LInt 42), EVariable "x")
-        let result = inferType expr
+        let expr = elet "x" (ELiteral (LInt 42)) (EVariable "x")
+        let result = inferExpr expr
         let t = expectOk "infer let" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer let with function" {
         TypeHelpers.resetCounter ()
-        let expr = ELet ("f", ELambda ("x", EVariable "x"),
-                         EApply (EVariable "f", ELiteral (LInt 1)))
-        let result = inferType expr
+        let f = elambda "x" (EVariable "x")
+        let body = eapply (EVariable "f") (ELiteral (LInt 1))
+        let expr = elet "f" f body
+        let result = inferExpr expr
         let t = expectOk "infer let func" result
         Expect.equal t TInt "should be int"
     }
@@ -285,11 +309,13 @@ let letInferenceTests = testList "Let Inference" [
     test "let-polymorphism: identity used at different types" {
         TypeHelpers.resetCounter ()
         // let id = fun x -> x in (id 1, id true)
-        let expr =
-            ELet ("id", ELambda ("x", EVariable "x"),
-                  ETuple [EApply (EVariable "id", ELiteral (LInt 1));
-                          EApply (EVariable "id", ELiteral (LBool true))])
-        let result = inferType expr
+        let id = elambda "x" (EVariable "x")
+        let body = etuple [
+            eapply (EVariable "id") (ELiteral (LInt 1))
+            eapply (EVariable "id") (ELiteral (LBool true))
+        ]
+        let expr = elet "id" id body
+        let result = inferExpr expr
         let t = expectOk "let-polymorphism" result
         match t with
         | TTuple [TInt; TBool] -> ()
@@ -306,16 +332,12 @@ let letRecInferenceTests = testList "LetRec Inference" [
     ptest "infer recursive function (TODO: fix let rec unification)" {
         TypeHelpers.resetCounter ()
         // let rec fact = fun n -> if n = 0 then 1 else n * fact (n - 1) in fact
-        let expr =
-            ELetRec ("fact",
-                ELambda ("n",
-                    EIf (EBinaryOp (Eq, EVariable "n", ELiteral (LInt 0)),
-                         ELiteral (LInt 1),
-                         EBinaryOp (Mul, EVariable "n",
-                                    EApply (EVariable "fact",
-                                            EBinaryOp (Sub, EVariable "n", ELiteral (LInt 1)))))),
-                EVariable "fact")
-        let result = inferType expr
+        let factBody =
+            eif (binOp Eq (EVariable "n") (ELiteral (LInt 0)))
+                (ELiteral (LInt 1))
+                (binOp Mul (EVariable "n") (eapply (EVariable "fact") (binOp Sub (EVariable "n") (ELiteral (LInt 1)))))
+        let expr = eletrec "fact" (elambda "n" factBody) (EVariable "fact")
+        let result = inferExpr expr
         let t = expectOk "infer fact" result
         Expect.equal t (TFun (TInt, TInt)) "should be int -> int"
     }
@@ -323,17 +345,13 @@ let letRecInferenceTests = testList "LetRec Inference" [
     test "infer recursive list function" {
         TypeHelpers.resetCounter ()
         // let rec len = fun xs -> match xs with | [] -> 0 | _ :: rest -> 1 + len rest in len
-        let expr =
-            ELetRec ("len",
-                ELambda ("xs",
-                    EMatch (EVariable "xs", [
-                        (PList [], None, ELiteral (LInt 0));
-                        (PCons (PWildcard, PVariable "rest"), None,
-                         EBinaryOp (Add, ELiteral (LInt 1),
-                                    EApply (EVariable "len", EVariable "rest")))
-                    ])),
-                EVariable "len")
-        let result = inferType expr
+        let matchBody = ematch (EVariable "xs") [
+            (PList [], None, ELiteral (LInt 0))
+            (pcons PWildcard (PVariable "rest"), None,
+             binOp Add (ELiteral (LInt 1)) (eapply (EVariable "len") (EVariable "rest")))
+        ]
+        let expr = eletrec "len" (elambda "xs" matchBody) (EVariable "len")
+        let result = inferExpr expr
         let t = expectOk "infer len" result
         match t with
         | TFun (TList _, TInt) -> ()
@@ -349,23 +367,23 @@ let ifInferenceTests = testList "If Inference" [
 
     test "infer if-then-else" {
         TypeHelpers.resetCounter ()
-        let expr = EIf (ELiteral (LBool true), ELiteral (LInt 1), ELiteral (LInt 2))
-        let result = inferType expr
+        let expr = eif (ELiteral (LBool true)) (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        let result = inferExpr expr
         let t = expectOk "infer if" result
         Expect.equal t TInt "should be int"
     }
 
     test "if branches must have same type" {
         TypeHelpers.resetCounter ()
-        let expr = EIf (ELiteral (LBool true), ELiteral (LInt 1), ELiteral (LBool false))
-        let result = inferType expr
+        let expr = eif (ELiteral (LBool true)) (ELiteral (LInt 1)) (ELiteral (LBool false))
+        let result = inferExpr expr
         Expect.isError result "branches have different types"
     }
 
     test "if condition must be bool" {
         TypeHelpers.resetCounter ()
-        let expr = EIf (ELiteral (LInt 1), ELiteral (LInt 2), ELiteral (LInt 3))
-        let result = inferType expr
+        let expr = eif (ELiteral (LInt 1)) (ELiteral (LInt 2)) (ELiteral (LInt 3))
+        let result = inferExpr expr
         Expect.isError result "condition not bool"
     }
 ]
@@ -378,46 +396,46 @@ let binaryOpInferenceTests = testList "BinaryOp Inference" [
 
     test "infer addition" {
         TypeHelpers.resetCounter ()
-        let expr = EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2))
-        let result = inferType expr
+        let expr = binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        let result = inferExpr expr
         let t = expectOk "infer add" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer comparison" {
         TypeHelpers.resetCounter ()
-        let expr = EBinaryOp (Lt, ELiteral (LInt 1), ELiteral (LInt 2))
-        let result = inferType expr
+        let expr = binOp Lt (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        let result = inferExpr expr
         let t = expectOk "infer lt" result
         Expect.equal t TBool "should be bool"
     }
 
     test "infer equality (polymorphic)" {
         TypeHelpers.resetCounter ()
-        let expr = EBinaryOp (Eq, ELiteral (LInt 1), ELiteral (LInt 2))
-        let result = inferType expr
+        let expr = binOp Eq (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        let result = inferExpr expr
         let t = expectOk "infer eq int" result
         Expect.equal t TBool "should be bool"
 
         TypeHelpers.resetCounter ()
-        let expr2 = EBinaryOp (Eq, ELiteral (LBool true), ELiteral (LBool false))
-        let result2 = inferType expr2
+        let expr2 = binOp Eq (ELiteral (LBool true)) (ELiteral (LBool false))
+        let result2 = inferExpr expr2
         let t2 = expectOk "infer eq bool" result2
         Expect.equal t2 TBool "should be bool"
     }
 
     test "infer boolean operators" {
         TypeHelpers.resetCounter ()
-        let expr = EBinaryOp (And, ELiteral (LBool true), ELiteral (LBool false))
-        let result = inferType expr
+        let expr = binOp And (ELiteral (LBool true)) (ELiteral (LBool false))
+        let result = inferExpr expr
         let t = expectOk "infer and" result
         Expect.equal t TBool "should be bool"
     }
 
     test "type error: int + bool" {
         TypeHelpers.resetCounter ()
-        let expr = EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LBool true))
-        let result = inferType expr
+        let expr = binOp Add (ELiteral (LInt 1)) (ELiteral (LBool true))
+        let result = inferExpr expr
         Expect.isError result "should fail"
     }
 ]
@@ -431,7 +449,7 @@ let dataStructureInferenceTests = testList "DataStructure Inference" [
     test "infer empty list" {
         TypeHelpers.resetCounter ()
         let expr = EList []
-        let result = inferType expr
+        let result = inferExpr expr
         let t = expectOk "infer []" result
         match t with
         | TList _ -> ()
@@ -440,32 +458,32 @@ let dataStructureInferenceTests = testList "DataStructure Inference" [
 
     test "infer integer list" {
         TypeHelpers.resetCounter ()
-        let expr = EList [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
-        let result = inferType expr
+        let expr = elist [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
+        let result = inferExpr expr
         let t = expectOk "infer [1;2;3]" result
         Expect.equal t (TList TInt) "should be int list"
     }
 
     test "infer cons" {
         TypeHelpers.resetCounter ()
-        let expr = ECons (ELiteral (LInt 1), EList [])
-        let result = inferType expr
+        let expr = econs (ELiteral (LInt 1)) (EList [])
+        let result = inferExpr expr
         let t = expectOk "infer 1 :: []" result
         Expect.equal t (TList TInt) "should be int list"
     }
 
     test "infer tuple" {
         TypeHelpers.resetCounter ()
-        let expr = ETuple [ELiteral (LInt 1); ELiteral (LBool true); ELiteral (LString "hello")]
-        let result = inferType expr
+        let expr = etuple [ELiteral (LInt 1); ELiteral (LBool true); ELiteral (LString "hello")]
+        let result = inferExpr expr
         let t = expectOk "infer tuple" result
         Expect.equal t (TTuple [TInt; TBool; TString]) "should be (int, bool, string)"
     }
 
     test "type error: heterogeneous list" {
         TypeHelpers.resetCounter ()
-        let expr = EList [ELiteral (LInt 1); ELiteral (LBool true)]
-        let result = inferType expr
+        let expr = elist [ELiteral (LInt 1); ELiteral (LBool true)]
+        let result = inferExpr expr
         Expect.isError result "list elements must have same type"
     }
 ]
@@ -478,53 +496,53 @@ let patternMatchingInferenceTests = testList "PatternMatching Inference" [
 
     test "infer match with wildcard" {
         TypeHelpers.resetCounter ()
-        let expr = EMatch (ELiteral (LInt 1), [
+        let expr = ematch (ELiteral (LInt 1)) [
             (PWildcard, None, ELiteral (LInt 42))
-        ])
-        let result = inferType expr
+        ]
+        let result = inferExpr expr
         let t = expectOk "infer match wildcard" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer match with variable" {
         TypeHelpers.resetCounter ()
-        let expr = EMatch (ELiteral (LInt 1), [
-            (PVariable "x", None, EBinaryOp (Add, EVariable "x", ELiteral (LInt 1)))
-        ])
-        let result = inferType expr
+        let expr = ematch (ELiteral (LInt 1)) [
+            (PVariable "x", None, binOp Add (EVariable "x") (ELiteral (LInt 1)))
+        ]
+        let result = inferExpr expr
         let t = expectOk "infer match var" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer match with list patterns" {
         TypeHelpers.resetCounter ()
-        let expr = EMatch (EList [ELiteral (LInt 1)], [
-            (PList [], None, ELiteral (LInt 0));
-            (PCons (PVariable "x", PWildcard), None, EVariable "x")
-        ])
-        let result = inferType expr
+        let expr = ematch (elist [ELiteral (LInt 1)]) [
+            (PList [], None, ELiteral (LInt 0))
+            (pcons (PVariable "x") PWildcard, None, EVariable "x")
+        ]
+        let result = inferExpr expr
         let t = expectOk "infer match list" result
         Expect.equal t TInt "should be int"
     }
 
     test "infer match with guard" {
         TypeHelpers.resetCounter ()
-        let expr = EMatch (ELiteral (LInt 1), [
-            (PVariable "x", Some (EBinaryOp (Gt, EVariable "x", ELiteral (LInt 0))), EVariable "x");
+        let expr = ematch (ELiteral (LInt 1)) [
+            (PVariable "x", Some (binOp Gt (EVariable "x") (ELiteral (LInt 0))), EVariable "x")
             (PWildcard, None, ELiteral (LInt 0))
-        ])
-        let result = inferType expr
+        ]
+        let result = inferExpr expr
         let t = expectOk "infer match guard" result
         Expect.equal t TInt "should be int"
     }
 
     test "match cases must have same type" {
         TypeHelpers.resetCounter ()
-        let expr = EMatch (ELiteral (LInt 1), [
-            (PLiteral (LInt 0), None, ELiteral (LInt 42));
+        let expr = ematch (ELiteral (LInt 1)) [
+            (PLiteral (LInt 0), None, ELiteral (LInt 42))
             (PWildcard, None, ELiteral (LBool true))
-        ])
-        let result = inferType expr
+        ]
+        let result = inferExpr expr
         Expect.isError result "cases have different types"
     }
 ]
@@ -537,14 +555,14 @@ let errorTests = testList "Error Cases" [
 
     test "unbound variable" {
         TypeHelpers.resetCounter ()
-        let result = inferType (EVariable "undefined")
+        let result = inferExpr (EVariable "undefined")
         Expect.isError result "should fail for unbound variable"
     }
 
     test "not a function" {
         TypeHelpers.resetCounter ()
-        let expr = EApply (ELiteral (LInt 42), ELiteral (LInt 1))
-        let result = inferType expr
+        let expr = eapply (ELiteral (LInt 42)) (ELiteral (LInt 1))
+        let result = inferExpr expr
         Expect.isError result "cannot apply int"
     }
 ]
@@ -557,10 +575,10 @@ let propertyTests = ptestList "Properties (TODO: fix infinite loop)" [
 
     testProperty "type inference is deterministic" <| fun () ->
         TypeHelpers.resetCounter ()
-        let expr = ELambda ("x", EVariable "x")
-        let t1 = inferType expr
+        let expr = elambda "x" (EVariable "x")
+        let t1 = inferExpr expr
         TypeHelpers.resetCounter ()
-        let t2 = inferType expr
+        let t2 = inferExpr expr
         t1 = t2
 
     testProperty "unification is symmetric for success/failure" <| fun () ->

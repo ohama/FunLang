@@ -74,7 +74,7 @@ let parseProgram (tokens: Token list) : Result<Program, string> =
     | ex -> Error ex.Message
 
 /// Parse from a token list - extracts main expression for backward compatibility
-let parse (tokens: Token list) : Result<Expr, string> =
+let parse (tokens: Token list) : Result<LExpr, string> =
     parseProgram tokens
     |> Result.bind (fun program ->
         match program.MainExpr with
@@ -88,7 +88,7 @@ let parseProgramString (input: string) : Result<Program, string> =
     | Ok tokens -> parseProgram tokens
 
 /// Parse a string directly (tokenize + parse) - extracts main expression
-let parseString (input: string) : Result<Expr, string> =
+let parseString (input: string) : Result<LExpr, string> =
     match tokenize input with
     | Error e -> Error e.Message
     | Ok tokens -> parse tokens

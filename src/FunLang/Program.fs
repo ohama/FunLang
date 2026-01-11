@@ -75,7 +75,7 @@ let runExpr (opts: RunOptions) (input: string) =
 
             if opts.ShowAst then
                 printfn "=== PARSED AST ==="
-                printfn "  %A" ast
+                printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
                 printfn "=================="
                 0  // Stop here if --show-ast
             else
@@ -132,7 +132,7 @@ let runProgram (opts: RunOptions) (input: string) =
                 if opts.ShowAst then
                     printfn "=== PARSED AST ==="
                     printfn "  TypeDefs: %A" program.TypeDefs
-                    printfn "  MainExpr: %A" ast
+                    printfn "  MainExpr: %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
                     printfn "=================="
                     0  // Stop here if --show-ast
                 else
@@ -218,7 +218,7 @@ FunLang REPL Commands:
             | Error e -> displayError expr e
             | Ok tokens ->
                 match parse tokens with
-                | Ok ast -> printfn "  %A" ast
+                | Ok ast -> printfn "  %A" (Ast.Display.ofExpr ast)  // Show without Located wrappers
                 | Error e -> eprintfn "Parse error: %s" e
             loop env
         | "" ->

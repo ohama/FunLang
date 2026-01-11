@@ -9,10 +9,24 @@ open FunLang.Parser
 // Helper Functions
 // =============================================================================
 
+/// Parse expression and extract Node (for comparing AST structure without positions)
 let parseExpr input =
     match tokenize input with
-    | Ok tokens -> parse tokens
+    | Ok tokens ->
+        parse tokens |> Result.map (fun lexpr -> lexpr.Node)
     | Error e -> Error (sprintf "Lexer error: %s" e.Message)
+
+// Aliases for Unlocated helpers
+let binOp = Unlocated.binOp
+let unaryOp = Unlocated.unaryOp
+let elet = Unlocated.elet
+let eletrec = Unlocated.eletrec
+let elambda = Unlocated.elambda
+let eapply = Unlocated.eapply
+let eif = Unlocated.eif
+let etuple = Unlocated.etuple
+let elist = Unlocated.elist
+let econs = Unlocated.econs
 
 // =============================================================================
 // Property-Based Tests
@@ -33,13 +47,19 @@ let propertyTests = testList "Parser Properties" [
     testProperty "addition is left-associative" <| fun (a: NonNegativeInt) (b: NonNegativeInt) (c: NonNegativeInt) ->
         let input = sprintf "%d + %d + %d" a.Get b.Get c.Get
         match parseExpr input with
-        | Ok (EBinaryOp (Add, EBinaryOp (Add, _, _), _)) -> true
+        | Ok (EBinaryOp (Add, left, _)) ->
+            match left.Node with
+            | EBinaryOp (Add, _, _) -> true
+            | _ -> false
         | _ -> false
 
     testProperty "multiplication has higher precedence than addition" <| fun (a: NonNegativeInt) (b: NonNegativeInt) (c: NonNegativeInt) ->
         let input = sprintf "%d + %d * %d" a.Get b.Get c.Get
         match parseExpr input with
-        | Ok (EBinaryOp (Add, _, EBinaryOp (Mul, _, _))) -> true
+        | Ok (EBinaryOp (Add, _, right)) ->
+            match right.Node with
+            | EBinaryOp (Mul, _, _) -> true
+            | _ -> false
         | _ -> false
 ]
 
@@ -92,48 +112,44 @@ let variableTests = testList "Variables" [
 let arithmeticTests = testList "Arithmetic" [
     test "parse addition" {
         let result = parseExpr "1 + 2"
-        let expected = EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
         Expect.equal result (Ok expected) "should parse addition"
     }
 
     test "parse subtraction" {
         let result = parseExpr "5 - 3"
-        let expected = EBinaryOp (Sub, ELiteral (LInt 5), ELiteral (LInt 3))
+        let expected = binOp Sub (ELiteral (LInt 5)) (ELiteral (LInt 3))
         Expect.equal result (Ok expected) "should parse subtraction"
     }
 
     test "parse multiplication" {
         let result = parseExpr "2 * 3"
-        let expected = EBinaryOp (Mul, ELiteral (LInt 2), ELiteral (LInt 3))
+        let expected = binOp Mul (ELiteral (LInt 2)) (ELiteral (LInt 3))
         Expect.equal result (Ok expected) "should parse multiplication"
     }
 
     test "parse division" {
         let result = parseExpr "10 / 2"
-        let expected = EBinaryOp (Div, ELiteral (LInt 10), ELiteral (LInt 2))
+        let expected = binOp Div (ELiteral (LInt 10)) (ELiteral (LInt 2))
         Expect.equal result (Ok expected) "should parse division"
     }
 
     test "parse complex expression" {
         let result = parseExpr "1 + 2 * 3"
         // Should be 1 + (2 * 3) due to precedence
-        let expected = EBinaryOp (Add,
-            ELiteral (LInt 1),
-            EBinaryOp (Mul, ELiteral (LInt 2), ELiteral (LInt 3)))
+        let expected = binOp Add (ELiteral (LInt 1)) (binOp Mul (ELiteral (LInt 2)) (ELiteral (LInt 3)))
         Expect.equal result (Ok expected) "should respect precedence"
     }
 
     test "parse parenthesized expression" {
         let result = parseExpr "(1 + 2) * 3"
-        let expected = EBinaryOp (Mul,
-            EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2)),
-            ELiteral (LInt 3))
+        let expected = binOp Mul (binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))) (ELiteral (LInt 3))
         Expect.equal result (Ok expected) "should respect parentheses"
     }
 
     test "parse unary minus" {
         let result = parseExpr "-5"
-        let expected = EUnaryOp (Neg, ELiteral (LInt 5))
+        let expected = unaryOp Neg (ELiteral (LInt 5))
         Expect.equal result (Ok expected) "should parse unary minus"
     }
 ]
@@ -145,25 +161,25 @@ let arithmeticTests = testList "Arithmetic" [
 let comparisonTests = testList "Comparison" [
     test "parse less than" {
         let result = parseExpr "1 < 2"
-        let expected = EBinaryOp (Lt, ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = binOp Lt (ELiteral (LInt 1)) (ELiteral (LInt 2))
         Expect.equal result (Ok expected) "should parse <"
     }
 
     test "parse greater than" {
         let result = parseExpr "2 > 1"
-        let expected = EBinaryOp (Gt, ELiteral (LInt 2), ELiteral (LInt 1))
+        let expected = binOp Gt (ELiteral (LInt 2)) (ELiteral (LInt 1))
         Expect.equal result (Ok expected) "should parse >"
     }
 
     test "parse equality" {
         let result = parseExpr "1 == 1"
-        let expected = EBinaryOp (Eq, ELiteral (LInt 1), ELiteral (LInt 1))
+        let expected = binOp Eq (ELiteral (LInt 1)) (ELiteral (LInt 1))
         Expect.equal result (Ok expected) "should parse =="
     }
 
     test "parse inequality" {
         let result = parseExpr "1 != 2"
-        let expected = EBinaryOp (Neq, ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = binOp Neq (ELiteral (LInt 1)) (ELiteral (LInt 2))
         Expect.equal result (Ok expected) "should parse !="
     }
 ]
@@ -175,23 +191,22 @@ let comparisonTests = testList "Comparison" [
 let letTests = testList "Let Binding" [
     test "parse simple let" {
         let result = parseExpr "let x = 1 in x"
-        let expected = ELet ("x", ELiteral (LInt 1), EVariable "x")
+        let expected = elet "x" (ELiteral (LInt 1)) (EVariable "x")
         Expect.equal result (Ok expected) "should parse let"
     }
 
     test "parse let with expression" {
         let result = parseExpr "let x = 1 + 2 in x * 3"
-        let expected = ELet ("x",
-            EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2)),
-            EBinaryOp (Mul, EVariable "x", ELiteral (LInt 3)))
+        let value = binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        let body = binOp Mul (EVariable "x") (ELiteral (LInt 3))
+        let expected = elet "x" value body
         Expect.equal result (Ok expected) "should parse let with expressions"
     }
 
     test "parse nested let" {
         let result = parseExpr "let x = 1 in let y = 2 in x + y"
-        let expected = ELet ("x", ELiteral (LInt 1),
-            ELet ("y", ELiteral (LInt 2),
-                EBinaryOp (Add, EVariable "x", EVariable "y")))
+        let inner = elet "y" (ELiteral (LInt 2)) (binOp Add (EVariable "x") (EVariable "y"))
+        let expected = elet "x" (ELiteral (LInt 1)) inner
         Expect.equal result (Ok expected) "should parse nested let"
     }
 ]
@@ -203,16 +218,14 @@ let letTests = testList "Let Binding" [
 let ifTests = testList "If Expression" [
     test "parse if-then-else" {
         let result = parseExpr "if true then 1 else 2"
-        let expected = EIf (ELiteral (LBool true), ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = eif (ELiteral (LBool true)) (ELiteral (LInt 1)) (ELiteral (LInt 2))
         Expect.equal result (Ok expected) "should parse if"
     }
 
     test "parse if with comparison" {
         let result = parseExpr "if x < 10 then x else 10"
-        let expected = EIf (
-            EBinaryOp (Lt, EVariable "x", ELiteral (LInt 10)),
-            EVariable "x",
-            ELiteral (LInt 10))
+        let cond = binOp Lt (EVariable "x") (ELiteral (LInt 10))
+        let expected = eif cond (EVariable "x") (ELiteral (LInt 10))
         Expect.equal result (Ok expected) "should parse if with condition"
     }
 ]
@@ -224,19 +237,19 @@ let ifTests = testList "If Expression" [
 let lambdaTests = testList "Lambda" [
     test "parse simple lambda" {
         let result = parseExpr "fun x -> x"
-        let expected = ELambda ("x", EVariable "x")
+        let expected = elambda "x" (EVariable "x")
         Expect.equal result (Ok expected) "should parse lambda"
     }
 
     test "parse lambda with expression body" {
         let result = parseExpr "fun x -> x + 1"
-        let expected = ELambda ("x", EBinaryOp (Add, EVariable "x", ELiteral (LInt 1)))
+        let expected = elambda "x" (binOp Add (EVariable "x") (ELiteral (LInt 1)))
         Expect.equal result (Ok expected) "should parse lambda with expression"
     }
 
     test "parse nested lambda (curried)" {
         let result = parseExpr "fun x -> fun y -> x + y"
-        let expected = ELambda ("x", ELambda ("y", EBinaryOp (Add, EVariable "x", EVariable "y")))
+        let expected = elambda "x" (elambda "y" (binOp Add (EVariable "x") (EVariable "y")))
         Expect.equal result (Ok expected) "should parse nested lambda"
     }
 ]
@@ -248,31 +261,31 @@ let lambdaTests = testList "Lambda" [
 let applicationTests = testList "Function Application" [
     test "parse simple application" {
         let result = parseExpr "f x"
-        let expected = EApply (EVariable "f", EVariable "x")
+        let expected = eapply (EVariable "f") (EVariable "x")
         Expect.equal result (Ok expected) "should parse application"
     }
 
     test "parse application with literal" {
         let result = parseExpr "f 42"
-        let expected = EApply (EVariable "f", ELiteral (LInt 42))
+        let expected = eapply (EVariable "f") (ELiteral (LInt 42))
         Expect.equal result (Ok expected) "should parse application with literal"
     }
 
     test "parse chained application (left-associative)" {
         let result = parseExpr "f x y"
-        let expected = EApply (EApply (EVariable "f", EVariable "x"), EVariable "y")
+        let expected = eapply (eapply (EVariable "f") (EVariable "x")) (EVariable "y")
         Expect.equal result (Ok expected) "should parse chained application"
     }
 
     test "parse application with parenthesized argument" {
         let result = parseExpr "f (1 + 2)"
-        let expected = EApply (EVariable "f", EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2)))
+        let expected = eapply (EVariable "f") (binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2)))
         Expect.equal result (Ok expected) "should parse application with paren arg"
     }
 
     test "parse lambda application" {
         let result = parseExpr "(fun x -> x) 42"
-        let expected = EApply (ELambda ("x", EVariable "x"), ELiteral (LInt 42))
+        let expected = eapply (elambda "x" (EVariable "x")) (ELiteral (LInt 42))
         Expect.equal result (Ok expected) "should parse lambda application"
     }
 ]
@@ -284,7 +297,7 @@ let applicationTests = testList "Function Application" [
 let letRecTests = testList "Let Rec" [
     test "parse let rec" {
         let result = parseExpr "let rec f = fun x -> x in f"
-        let expected = ELetRec ("f", ELambda ("x", EVariable "x"), EVariable "f")
+        let expected = eletrec "f" (elambda "x" (EVariable "x")) (EVariable "f")
         Expect.equal result (Ok expected) "should parse let rec"
     }
 
@@ -339,20 +352,20 @@ e 1"""
 let tupleTests = testList "Tuples" [
     test "parse pair" {
         let result = parseExpr "(1, 2)"
-        let expected = ETuple [ELiteral (LInt 1); ELiteral (LInt 2)]
+        let expected = etuple [ELiteral (LInt 1); ELiteral (LInt 2)]
         Expect.equal result (Ok expected) "should parse pair"
     }
 
     test "parse triple" {
         let result = parseExpr "(1, 2, 3)"
-        let expected = ETuple [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
+        let expected = etuple [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
         Expect.equal result (Ok expected) "should parse triple"
     }
 
     test "parse tuple with expressions" {
         let result = parseExpr "(1 + 2, x, true)"
-        let expected = ETuple [
-            EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = etuple [
+            binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
             EVariable "x"
             ELiteral (LBool true)
         ]
@@ -361,7 +374,7 @@ let tupleTests = testList "Tuples" [
 
     test "parse nested tuple" {
         let result = parseExpr "((1, 2), 3)"
-        let expected = ETuple [ETuple [ELiteral (LInt 1); ELiteral (LInt 2)]; ELiteral (LInt 3)]
+        let expected = etuple [etuple [ELiteral (LInt 1); ELiteral (LInt 2)]; ELiteral (LInt 3)]
         Expect.equal result (Ok expected) "should parse nested tuple"
     }
 ]
@@ -379,20 +392,20 @@ let listTests = testList "Lists" [
 
     test "parse singleton list" {
         let result = parseExpr "[1]"
-        let expected = EList [ELiteral (LInt 1)]
+        let expected = elist [ELiteral (LInt 1)]
         Expect.equal result (Ok expected) "should parse singleton list"
     }
 
     test "parse list with multiple elements" {
         let result = parseExpr "[1; 2; 3]"
-        let expected = EList [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
+        let expected = elist [ELiteral (LInt 1); ELiteral (LInt 2); ELiteral (LInt 3)]
         Expect.equal result (Ok expected) "should parse list"
     }
 
     test "parse list with expressions" {
         let result = parseExpr "[1 + 2; x; 4]"
-        let expected = EList [
-            EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2))
+        let expected = elist [
+            binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
             EVariable "x"
             ELiteral (LInt 4)
         ]
@@ -401,9 +414,9 @@ let listTests = testList "Lists" [
 
     test "parse nested list" {
         let result = parseExpr "[[1]; [2; 3]]"
-        let expected = EList [
-            EList [ELiteral (LInt 1)]
-            EList [ELiteral (LInt 2); ELiteral (LInt 3)]
+        let expected = elist [
+            elist [ELiteral (LInt 1)]
+            elist [ELiteral (LInt 2); ELiteral (LInt 3)]
         ]
         Expect.equal result (Ok expected) "should parse nested list"
     }
@@ -416,19 +429,19 @@ let listTests = testList "Lists" [
 let consTests = testList "Cons" [
     test "parse simple cons" {
         let result = parseExpr "1 :: []"
-        let expected = ECons (ELiteral (LInt 1), EList [])
+        let expected = econs (ELiteral (LInt 1)) (EList [])
         Expect.equal result (Ok expected) "should parse cons"
     }
 
     test "parse chained cons (right-associative)" {
         let result = parseExpr "1 :: 2 :: []"
-        let expected = ECons (ELiteral (LInt 1), ECons (ELiteral (LInt 2), EList []))
+        let expected = econs (ELiteral (LInt 1)) (econs (ELiteral (LInt 2)) (EList []))
         Expect.equal result (Ok expected) "should parse chained cons"
     }
 
     test "parse cons with variable" {
         let result = parseExpr "x :: xs"
-        let expected = ECons (EVariable "x", EVariable "xs")
+        let expected = econs (EVariable "x") (EVariable "xs")
         Expect.equal result (Ok expected) "should parse cons with variables"
     }
 ]
