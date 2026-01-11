@@ -3,3 +3,4 @@
 x + 1
 // --EXPECTED
 error[E303]: Unbound variable: x
+   = info: operation not supported

@@ -7,3 +7,4 @@ error[E001]: Unterminated string
   |
 1 | "unclosed string
   | ^
+   = info: character not recognized by lexer

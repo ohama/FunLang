@@ -3,3 +3,4 @@
 1 / 0
 // --EXPECTED
 error[E303]: Division by zero
+   = info: operation not supported

@@ -3,3 +3,4 @@
 "hello" + 1
 // --EXPECTED
 error[E303]: Cannot add string and int
+   = info: operation not supported

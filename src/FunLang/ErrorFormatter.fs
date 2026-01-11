@@ -219,9 +219,17 @@ let formatFooter (diag: Diagnostic) : string =
                 | Unspecified -> ""
             sprintf "   = suggestion: %s%s\n     %s" s.Message applicabilityNote s.Replacement)
 
+    // Add brief explanation from ErrorExplanations if available
+    let info =
+        diag.Code
+        |> Option.bind FunLang.ErrorExplanations.getBrief
+        |> Option.map (sprintf "   = info: %s")
+        |> Option.toList
+
     [ yield! notes
       yield! helps
-      yield! suggestions ]
+      yield! suggestions
+      yield! info ]
     |> String.concat "\n"
 
 // =============================================================================

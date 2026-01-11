@@ -170,11 +170,21 @@ let footerTests = testList "Footer Formatting" [
     }
 
     test "format empty footer" {
+        // Use unknown error code to get truly empty footer
+        let diag = Diagnostic.error "E999" "Unknown error"
+
+        let footer = formatFooter diag
+
+        Expect.equal footer "" "should be empty for no notes/helps/suggestions and no info"
+    }
+
+    test "format footer with only info" {
+        // Known error codes get info line even without notes/helps/suggestions
         let diag = Diagnostic.error "E201" "Type mismatch"
 
         let footer = formatFooter diag
 
-        Expect.equal footer "" "should be empty for no notes/helps/suggestions"
+        Expect.stringContains footer "= info:" "should have info line"
     }
 ]
 

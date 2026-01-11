@@ -22,6 +22,7 @@ type CliArgs =
     | Trace of phases: string
     | No_Color
     | No_Prelude
+    | Explain of codes: string
     | Version
 
     interface IArgParserTemplate with
@@ -41,6 +42,7 @@ type CliArgs =
             | Trace _ -> "Trace specific phases (comma-separated: lexer,parser,typecheck,eval)"
             | No_Color -> "Disable colored output"
             | No_Prelude -> "Don't load standard prelude"
+            | Explain _ -> "Show error explanation (e.g., --explain E202 or --explain all)"
             | Version -> "Show version"
 
 // =============================================================================

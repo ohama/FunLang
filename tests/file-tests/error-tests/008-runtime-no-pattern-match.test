@@ -4,3 +4,4 @@ match 1 with
 | 0 -> "zero"
 // --EXPECTED
 error[E303]: No pattern matched
+   = info: operation not supported

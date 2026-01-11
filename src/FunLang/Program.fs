@@ -249,12 +249,41 @@ FunLang REPL Commands:
 
     loop Map.empty
 
+/// Handle --explain option
+let handleExplain (codes: string) : int =
+    if codes.ToLowerInvariant() = "all" then
+        printfn "%s" (ErrorExplanations.formatAllCodes ())
+        0
+    else
+        let codeList =
+            codes.Split([|','; ' '|], StringSplitOptions.RemoveEmptyEntries)
+            |> Array.toList
+
+        let (found, notFound) =
+            codeList
+            |> List.partition ErrorExplanations.hasExplanation
+
+        // Print found explanations
+        if not (List.isEmpty found) then
+            printfn "%s" (ErrorExplanations.formatExplanations found)
+
+        // Warn about unknown codes
+        for code in notFound do
+            eprintfn "Warning: Unknown error code '%s'" code
+
+        if List.isEmpty found && not (List.isEmpty notFound) then 1 else 0
+
 [<EntryPoint>]
 let main argv =
     let parser = ArgumentParser.Create<CliArgs>(programName = "funlang")
 
     try
         let results = parser.ParseCommandLine argv
+
+        // Handle --explain flag (before other processing)
+        match results.TryGetResult Explain with
+        | Some codes -> handleExplain codes
+        | None ->
 
         // Handle version flag
         if results.Contains Version then

@@ -25,6 +25,7 @@
     <Compile Include="TypeTests.fs" />
     <Compile Include="UserDefinedTypeTests.fs" />
     <Compile Include="SuggestionTests.fs" />
+    <Compile Include="ErrorExplanationTests.fs" />
     <Compile Include="DiagnosticTests.fs" />
     <Compile Include="ErrorFormatterTests.fs" />
     <Compile Include="FileBasedTests.fs" />
