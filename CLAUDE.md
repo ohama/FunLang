@@ -265,12 +265,33 @@ dotnet run --project tests/FunLang.Tests
 # 상세 출력
 dotnet run --project tests/FunLang.Tests -- --debug
 
-# 특정 테스트만
-dotnet run --project tests/FunLang.Tests -- --filter "Lexer"
-
 # 병렬 실행
 dotnet run --project tests/FunLang.Tests -- --parallel
+
+# 테스트 목록 확인
+dotnet run --project tests/FunLang.Tests -- --list-tests
 ```
+
+### Expecto 필터 옵션 (⚠️ 주의)
+
+```bash
+# --filter-test-list: 테스트 리스트 이름으로 필터 (substring 매칭)
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "Lexer"
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "File-Based"
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "Type"
+
+# --filter-test-case: 테스트 케이스 이름으로 필터 (substring 매칭)
+dotnet run --project tests/FunLang.Tests -- --filter-test-case "arithmetic"
+dotnet run --project tests/FunLang.Tests -- --filter-test-case "fibonacci"
+
+# --filter: 계층 구조로 필터 (정확한 이름 필요, "/" 구분)
+dotnet run --project tests/FunLang.Tests -- --filter "File-Based Tests"
+dotnet run --project tests/FunLang.Tests -- --filter "File-Based Tests.eval-tests"
+```
+
+**⚠️ 주의:** `--filter`는 정확한 테스트 리스트 이름이 필요함
+- ❌ `--filter "FileBasedTests"` → 0 tests (camelCase 불일치)
+- ✅ `--filter-test-list "File-Based"` → 61 tests (substring 매칭)
 
 ### 테스트 파일 구조
 

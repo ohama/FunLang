@@ -49,6 +49,7 @@ let newline = '\n'
 rule token = parse
     | whitespace+       { token lexbuf }
     | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
+    | "//"              { lineComment lexbuf }
     | digit+            { INT (int (lexeme lexbuf)) }
     | '"'               { STRING (stringToken "" lexbuf) }
     | '\'' ['a'-'z']+   { TYPEVAR (typeVarName (lexeme lexbuf)) }
@@ -90,3 +91,8 @@ and stringToken acc = parse
     | [^ '"' '\\']+     { stringToken (acc + lexeme lexbuf) lexbuf }
     | eof               { failwith "Unterminated string" }
     | _                 { stringToken (acc + lexeme lexbuf) lexbuf }
+
+and lineComment = parse
+    | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
+    | eof               { EOF }
+    | _                 { lineComment lexbuf }

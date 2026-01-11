@@ -3,10 +3,32 @@
 ## Current Status
 
 - **Phase**: Phase 7 Complete, Phase 8.6 On Hold
-- **Tests**: 483 passed, 0 failed
+- **Tests**: 490 passed, 1 failed (sorting test parsing issue)
 - **Last Session**: 2026-01-12
 
 ## Recent Sessions
+
+### 2026-01-12 06:10 (Session: m2345678)
+
+**주요 변경 사항:**
+- 주석 기능 구현 (`// ...` 한 줄 주석)
+  - Lexer.fsl에 `lineComment` 룰 추가
+  - 7개 주석 테스트 추가
+- Expecto 필터 옵션 문서화 (CLAUDE.md, HISTORY.md)
+- Issue 008 등록: Sorting algorithms integrated test 보류
+
+**배운 점:**
+- Expecto `--filter`는 정확한 이름 필요, `--filter-test-list`는 substring 매칭
+- 주석 끝 NEWLINE은 indentation 처리에서 선행 NEWLINE로 필터링됨
+
+**Key Decisions:**
+- `//` 스타일 한 줄 주석 채택 (F#/Scala 스타일)
+- issue-004 (Won't Fix) 결정 번복, 주석 기능 구현
+
+**Unresolved Issues:**
+- Issue 008: Sorting test 파싱 이슈 (주석과 무관, 중첩 let 구문 문제)
+
+---
 
 ### 2026-01-12 05:53 (Session: l1234567)
 
@@ -117,6 +139,12 @@
 
 ## Accumulated Knowledge
 
+### Comment Syntax (2026-01-12)
+- 한 줄 주석: `// comment text`
+- 주석은 줄 끝까지 모든 문자 무시
+- Lexer.fsl의 `lineComment` 룰로 처리
+- 특수문자 포함 가능: `// @#$%^&*() OK`
+
 ### Phase 7: Advanced Features (2026-01-12)
 - Constructor Application Patterns: `Some x` → `PConstructor("Some", Some(PVariable "x"))`
 - Nested patterns 지원: `Some (Some x)`
@@ -133,6 +161,13 @@
 - 포맷: `// --COMMAND`, `// --INPUT`, `// --EXPECTED`
 - **중요**: `// --EXPECTED` 앞뒤로 빈 줄 하나씩 필요
 - `%s` 플레이스홀더가 입력 파일 경로로 치환됨
+
+### Expecto 테스트 필터 옵션 (2026-01-12)
+- `--filter`: 정확한 테스트 리스트 이름 필요 (계층 구조, "/" 구분)
+- `--filter-test-list`: 테스트 리스트 이름 substring 매칭 (권장)
+- `--filter-test-case`: 테스트 케이스 이름 substring 매칭
+- **주의**: `--filter "FileBasedTests"` ❌ → `--filter-test-list "File-Based"` ✅
+- 테스트 목록 확인: `--list-tests`
 
 ### Phase 8: Better Error Messages
 - Diagnostic.fs: Severity, SourceSpan, LabeledSpan, Suggestion 타입

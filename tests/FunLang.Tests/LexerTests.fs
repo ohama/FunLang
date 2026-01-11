@@ -129,6 +129,77 @@ let unitTests = testList "Lexer Unit Tests" [
 ]
 
 // =============================================================================
+// Comment Tests
+// =============================================================================
+
+let commentTests = testList "Lexer Comment Tests" [
+    test "single line comment is ignored" {
+        let result = tokenize "// this is a comment"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [EOF] "comment should be ignored"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "comment after code is ignored" {
+        let result = tokenize "42 // the answer"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [INT 42; EOF] "only code before comment"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "code after comment on new line" {
+        // Note: Leading NEWLINEs are filtered by tokenize for indentation handling
+        let result = tokenize "// comment\n42"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [INT 42; EOF] "code on next line works"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "multiple comments" {
+        // Note: Leading NEWLINEs are filtered by tokenize for indentation handling
+        let result = tokenize "// first\n// second\n1 + 2"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [INT 1; PLUS; INT 2; EOF] "multiple comments work"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "comment with special characters" {
+        let result = tokenize "// @#$%^&*() special chars!"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [EOF] "special chars in comment ok"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "empty comment" {
+        let result = tokenize "//"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [EOF] "empty comment ok"
+        | Error _ -> failtest "unexpected error"
+    }
+
+    test "comment in expression" {
+        let result = tokenize "let x = 1 // define x\nin x + 1"
+        Expect.isOk result "should succeed"
+        match result with
+        | Ok tokens ->
+            Expect.equal tokens [LET; IDENT "x"; EQ; INT 1; NEWLINE; IN; IDENT "x"; PLUS; INT 1; EOF] "comment in middle"
+        | Error _ -> failtest "unexpected error"
+    }
+]
+
+// =============================================================================
 // All Tests
 // =============================================================================
 
@@ -136,4 +207,5 @@ let unitTests = testList "Lexer Unit Tests" [
 let tests = testList "Lexer" [
     propertyTests
     unitTests
+    commentTests
 ]
