@@ -2,12 +2,14 @@
 
 ## Overview
 
-FunLang supports two syntactic forms for `let` bindings, distinguished by context:
+FunLang supports optional `in` keyword for `let` bindings. The `in` keyword can be omitted when followed by a newline:
 
-| Form | Syntax | `in` Required | Context |
-|------|--------|---------------|---------|
-| One-line | `let x = expr in body` | Yes | Single expression |
-| Multi-line | `let x = expr` (newline) `body` | No | Indented block |
+| Form | Syntax | Context |
+|------|--------|---------|
+| With `in` | `let x = expr in body` | Same line or `in` on same line |
+| Without `in` | `let x = expr` (newline) `body` | Multi-line (top-level or block) |
+
+**Note:** The `in` keyword must appear on the same line as the `let` expression if used. Placing `in` on a separate line is not supported.
 
 ## Syntax Examples
 
@@ -27,6 +29,12 @@ let a = 1 in let b = 2 in a + b
 ### Multi-line Let (no `in` required)
 
 ```funlang
+// Top-level bindings (no indentation needed)
+let x = 1
+let y = 2
+x + y
+// Result: 3
+
 // Indentation-based block
 let result =
     let x = 10
@@ -84,18 +92,26 @@ This works because `in` is never a valid start of a new statement in a block.
 
 ```
 expr:
-    | LET IDENT EQ expr IN expr         { ELet($2, $4, $6) }
-    | LET REC IDENT EQ expr IN expr     { ELetRec($3, $5, $7) }
+    | LET IDENT EQ expr IN nl_opt expr  { ELet($2, $4, $7) }
+    | LET REC IDENT EQ expr IN nl_opt expr { ELetRec($3, $5, $8) }
 ```
 
-### Multi-line Let (block_item rule)
+Note: `IN` must appear on the same line as the preceding expression. A newline is only allowed **after** `IN`.
+
+### Multi-line Let (top_level_item / block_item rule)
 
 ```
-block_item:
+top_level_item:
     | LET IDENT EQ expr                 { BILet($2, $4) }
     | LET REC IDENT EQ expr             { BILetRec($3, $5) }
     | expr                              { BIExpr($1) }
+
+top_level_body:
+    | top_level_item                    { [$1] }
+    | top_level_item NEWLINE top_level_body { $1 :: $3 }
 ```
+
+Top-level and block contexts both use the same `block_item` structure, allowing optional `in` everywhere.
 
 ## AST Transformation
 

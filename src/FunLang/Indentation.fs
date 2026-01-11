@@ -130,10 +130,12 @@ let processIndentation (tokens: TokenWithPos list) : Result<token list, FunLangE
                              rest (tok :: output)
                 | _ ->
                     // Decreased indentation - emit DEDENT(s)
+                    // Add NEWLINE after DEDENTs to separate from next item at top-level
                     match generateDedents state.IndentStack col pos with
                     | Error e -> Error e
                     | Ok (newStack, dedents) ->
-                        let newOutput = tok :: (dedents @ output)
+                        // Insert NEWLINE between DEDENTs and next token for proper separation
+                        let newOutput = tok :: NEWLINE :: (dedents @ output)
                         loop { state with IndentStack = newStack; AtLineStart = false; ParenDepth = newParenDepth }
                              rest newOutput
             else

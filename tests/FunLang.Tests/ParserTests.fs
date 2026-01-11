@@ -291,6 +291,63 @@ let applicationTests = testList "Function Application" [
 ]
 
 // =============================================================================
+// Unit Tests - Optional 'in' (multiline let)
+// =============================================================================
+
+let optionalInTests = testList "Optional 'in'" [
+    test "parse multiline let without 'in'" {
+        // Top-level: let x = 1 (newline) x + 1
+        let input = """let x = 1
+x + 1"""
+        let result = parseExpr input
+        let expected = elet "x" (ELiteral (LInt 1)) (binOp Add (EVariable "x") (ELiteral (LInt 1)))
+        Expect.equal result (Ok expected) "should parse let without 'in'"
+    }
+
+    test "parse chained let without 'in'" {
+        let input = """let x = 1
+let y = 2
+x + y"""
+        let result = parseExpr input
+        let expected = elet "x" (ELiteral (LInt 1)) (elet "y" (ELiteral (LInt 2)) (binOp Add (EVariable "x") (EVariable "y")))
+        Expect.equal result (Ok expected) "should parse chained let without 'in'"
+    }
+
+    test "parse let rec without 'in'" {
+        let input = """let rec f = fun x -> x
+f 1"""
+        let result = parseExpr input
+        let expected = eletrec "f" (elambda "x" (EVariable "x")) (eapply (EVariable "f") (ELiteral (LInt 1)))
+        Expect.equal result (Ok expected) "should parse let rec without 'in'"
+    }
+
+    test "parse mixed let and let rec without 'in'" {
+        let input = """let x = 10
+let rec f = fun n -> if n == 0 then x else f (n - 1)
+f 5"""
+        let result = parseExpr input
+        Expect.isOk result "should parse mixed let/let rec without 'in'"
+    }
+
+    test "parse single let without body returns unit" {
+        // let x = 1 with no following expression
+        let input = "let x = 1"
+        let result = parseExpr input
+        // Should be: ELet("x", 1, ELiteral LUnit)
+        let expected = elet "x" (ELiteral (LInt 1)) (ELiteral LUnit)
+        Expect.equal result (Ok expected) "single let without body should have unit body"
+    }
+
+    test "parse expression without let at top-level" {
+        // Just an expression at top-level still works
+        let input = "1 + 2"
+        let result = parseExpr input
+        let expected = binOp Add (ELiteral (LInt 1)) (ELiteral (LInt 2))
+        Expect.equal result (Ok expected) "plain expression should still work"
+    }
+]
+
+// =============================================================================
 // Unit Tests - Let Rec
 // =============================================================================
 
@@ -306,42 +363,34 @@ let letRecTests = testList "Let Rec" [
         Expect.isOk result "should parse recursive function"
     }
 
-    // Issue-005 regression test: multiline let rec chains with 'in' on separate line
-    test "parse multiline let rec with in on separate line" {
+    // Multiline let rec without 'in' (optional 'in' feature)
+    test "parse multiline let rec without in" {
         let input = """let rec a = fun x -> x
-in
 a 1"""
         let result = parseExpr input
-        Expect.isOk result "should parse multiline let rec with in on separate line"
+        Expect.isOk result "should parse multiline let rec without in"
     }
 
-    test "parse chained multiline let rec" {
+    test "parse chained multiline let rec without in" {
         let input = """let rec a = fun x ->
   match x with
   | [] -> []
   | h :: t -> a t
-in
 let rec b = fun x -> x
-in
 b [1]"""
         let result = parseExpr input
-        Expect.isOk result "should parse chained multiline let rec"
+        Expect.isOk result "should parse chained multiline let rec without in"
     }
 
-    test "parse 5 chained multiline let rec (issue-005)" {
+    test "parse 5 chained multiline let rec without in" {
         let input = """let rec a = fun x -> x
-in
 let rec b = fun x -> x
-in
 let rec c = fun x -> x
-in
 let rec d = fun x -> x
-in
 let rec e = fun x -> x
-in
 e 1"""
         let result = parseExpr input
-        Expect.isOk result "should parse 5 chained multiline let rec"
+        Expect.isOk result "should parse 5 chained multiline let rec without in"
     }
 ]
 
@@ -458,6 +507,7 @@ let tests = testList "Parser" [
     arithmeticTests
     comparisonTests
     letTests
+    optionalInTests
     ifTests
     lambdaTests
     applicationTests

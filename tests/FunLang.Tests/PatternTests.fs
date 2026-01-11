@@ -298,15 +298,17 @@ else
     }
 
     test "multiline function with match" {
+        // Using optional 'in' - no 'in' keyword, just newline
         let code = """let rec len = fun xs ->
     match xs with
     | [] -> 0
     | _ :: t -> 1 + len t
-in len [1; 2; 3]"""
+len [1; 2; 3]"""
         eval code |> shouldEqual (Some (VInt 3))
     }
 
     test "nested multiline expressions" {
+        // Using optional 'in' - no 'in' keyword, just newline
         let code = """let x =
     if true then
         match 1 with
@@ -314,7 +316,7 @@ in len [1; 2; 3]"""
         | _ -> 0
     else
         0
-in x"""
+x"""
         eval code |> shouldEqual (Some (VInt 10))
     }
 ]

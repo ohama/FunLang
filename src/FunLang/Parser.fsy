@@ -115,9 +115,28 @@ prog:
 // =============================================================================
 
 program:
-    | expr                                  { { TypeDefs = []; MainExpr = Some (locate parseState $1) } }
-    | type_def_or_list expr                 { { TypeDefs = $1; MainExpr = Some (locate parseState $2) } }
+    | top_level_body                        { { TypeDefs = []; MainExpr = Some (noLoc (blockToExpr $1)) } }
+    | type_def_or_list top_level_body       { { TypeDefs = $1; MainExpr = Some (noLoc (blockToExpr $2)) } }
     | type_def_or_list                      { { TypeDefs = $1; MainExpr = None } }
+;
+
+// =============================================================================
+// Top-level body: like block_body but without INDENT/DEDENT
+// Allows optional 'in' for multiline let expressions at top-level
+// =============================================================================
+
+top_level_body:
+    | top_level_item                            { [$1] }
+    | top_level_item NEWLINE top_level_body     { $1 :: $3 }
+;
+
+// Top-level item: same as block_item
+// LET without IN becomes block-local binding
+// expr (including LET...IN...expr) becomes expression
+top_level_item:
+    | LET IDENT EQ expr                 { BILet($2, locate parseState $4) }
+    | LET REC IDENT EQ expr             { BILetRec($3, locate parseState $5) }
+    | expr                              { BIExpr (locate parseState $1) }
 ;
 
 // Type definition list - handles optional trailing NEWLINE
@@ -185,8 +204,8 @@ type_atom:
 ;
 
 expr:
-    | LET IDENT EQ expr nl_opt IN nl_opt expr         { ELet($2, locate parseState $4, locate parseState $8) }
-    | LET REC IDENT EQ expr nl_opt IN nl_opt expr     { ELetRec($3, locate parseState $5, locate parseState $9) }
+    | LET IDENT EQ expr IN nl_opt expr         { ELet($2, locate parseState $4, locate parseState $7) }
+    | LET REC IDENT EQ expr IN nl_opt expr     { ELetRec($3, locate parseState $5, locate parseState $8) }
     | IF expr THEN nl_opt expr nl_opt ELSE nl_opt expr { EIf(locate parseState $2, locate parseState $5, locate parseState $9) }
     | FUN IDENT ARROW nl_opt expr              { ELambda($2, locate parseState $5) }
     | MATCH expr WITH match_cases_start        { EMatch(locate parseState $2, $4) }
