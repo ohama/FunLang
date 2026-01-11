@@ -9,6 +9,7 @@ Start a new work session and restore context from previous sessions.
    - `.claude/PLAN.md` - 구현 계획 및 현재 phase
    - `.claude/session/state.json` - 마지막 세션 상태 (있다면)
    - `docs/issues/unresolved/*.md` - 미해결 이슈 파일들 (있다면 모두 읽기)
+   - `docs/FILE_BASED_TESTING.md` - 파일 기반 테스트 가이드 (있다면)
 
 2. **Restore accumulated knowledge** from HISTORY.md:
    - Recent session summaries (최근 세션 요약)
@@ -146,6 +147,7 @@ CLAUDE.md                    - Development guidelines
 README.md                    - Project overview
 docs/issues/unresolved/      - Unresolved issue files
 docs/issues/resolved/        - Resolved issue files
+docs/FILE_BASED_TESTING.md   - File-based testing guide (if exists)
 ```
 
 ## Context Restoration from HISTORY.md
@@ -182,7 +184,9 @@ docs/issues/resolved/        - Resolved issue files
    ↓
 8. docs/issues/unresolved/*.md 읽기 (이슈 파일들)
    ↓
-9. 세션 정보 표시 (파일 쓰기 없음)
+9. docs/FILE_BASED_TESTING.md 읽기 (있다면)
+   ↓
+10. 세션 정보 표시 (파일 쓰기 없음)
 ```
 
 ### Previous Session Display

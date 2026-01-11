@@ -1,7 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-if true 1 else 2
+42 / 0
 
 // --EXPECTED
 
-Parse error: parse error
+error[E303]: Division by zero
+   = info: operation not supported

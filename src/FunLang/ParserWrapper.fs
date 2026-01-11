@@ -17,8 +17,11 @@ type LexResult = Result<Token list, FunLangError>
 
 /// Tokenize with position information (raw, no indentation processing)
 let tokenizeRawWithPositions (input: string) : Result<(Token * Position) list, FunLangError> =
+    if isNull input then
+        Error (Error.lexerMsg "null input" { Line = 1; Column = 1; File = None })
+    else
+    let lexbuf = LexBuffer<char>.FromString(input)
     try
-        let lexbuf = LexBuffer<char>.FromString(input)
         let rec loop acc =
             let tok = FunLang.GeneratedLexer.token lexbuf
             // Capture StartPos AFTER tokenizing - this gives the actual start of the matched token
@@ -30,7 +33,8 @@ let tokenizeRawWithPositions (input: string) : Result<(Token * Position) list, F
         loop []
     with
     | ex ->
-        let pos = { Line = 1; Column = 1; File = None }
+        let startPos = lexbuf.StartPos
+        let pos = { Line = startPos.Line + 1; Column = startPos.Column + 1; File = None }
         Error (Error.lexerMsg ex.Message pos)
 
 /// Tokenize without indentation processing (raw tokens)

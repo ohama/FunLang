@@ -2,5 +2,7 @@
 // --INPUT
 let square = fun x -> x * x in
 square 5
+
 // --EXPECTED
+
 25

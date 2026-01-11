@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
 // --INPUT
 (fun x -> x) 42
+
 // --EXPECTED
+
 === PARSED AST ===
   EApply (ELambda ("x", EVariable "x"), ELiteral (LInt 42))
 ==================

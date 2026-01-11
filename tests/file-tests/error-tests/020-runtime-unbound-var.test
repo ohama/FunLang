@@ -1,8 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-"hello" + 1
+undefined_variable
 
 // --EXPECTED
 
-error[E303]: Cannot add string and int
+error[E303]: Unbound variable: undefined_variable
    = info: operation not supported

@@ -1,8 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-"hello" + 1
+1 + true
 
 // --EXPECTED
 
-error[E303]: Cannot add string and int
+error[E303]: Cannot add int and bool
    = info: operation not supported

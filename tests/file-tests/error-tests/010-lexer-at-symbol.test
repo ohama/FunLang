@@ -1,12 +1,12 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-"unclosed string
+let x = 5 @ 3
 
 // --EXPECTED
 
-error[E001]: Unterminated string
-  --> :1:18
+error[E001]: Unexpected character: @
+  --> :1:11
   |
-1 | "unclosed string
-  |                  ^
+1 | let x = 5 @ 3
+  |           ^
    = info: character not recognized by lexer

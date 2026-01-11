@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- --show-tokens %s
 // --INPUT
 true and false or true
+
 // --EXPECTED
+
 === LEXER TOKENS ===
   TRUE
   AND_KW

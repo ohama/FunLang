@@ -7,5 +7,7 @@ let rec sum = fun xs ->
   | Nil -> 0
   | Cons (h, t) -> h + sum t
 sum (Cons (1, Cons (2, Cons (3, Cons (4, Nil)))))
+
 // --EXPECTED
+
 10

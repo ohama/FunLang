@@ -1,8 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-"hello" + 1
+"hello" - 1
 
 // --EXPECTED
 
-error[E303]: Cannot add string and int
+error[E303]: Cannot subtract int from string
    = info: operation not supported

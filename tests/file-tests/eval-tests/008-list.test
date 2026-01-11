@@ -1,5 +1,7 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
 1 :: 2 :: 3 :: [4; 5]
+
 // --EXPECTED
+
 [1; 2; 3; 4; 5]

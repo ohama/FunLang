@@ -7,5 +7,7 @@ let rec inorder = fun t -> match t with | Leaf -> [] | Node (v, left, right) -> 
 let rec buildTree = fun xs -> match xs with | [] -> Leaf | h :: t -> insert (buildTree t) h in
 let treeSort = fun xs -> inorder (buildTree xs) in
 treeSort [3; 1; 4; 5; 2]
+
 // --EXPECTED
+
 [1; 2; 3; 4; 5]

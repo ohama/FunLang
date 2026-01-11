@@ -10,9 +10,13 @@ File-based testing allows running external commands on input files and comparing
 // --COMMAND: <command with %s placeholder>
 // --INPUT
 <input content>
+
 // --EXPECTED
+
 <expected result>
 ```
+
+**중요**: `// --EXPECTED` 앞뒤로 빈 줄을 넣어 가독성을 높입니다.
 
 ### Sections
 
@@ -53,7 +57,9 @@ File-based testing allows running external commands on input files and comparing
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
 1 + 2
+
 // --EXPECTED
+
 3
 ```
 
@@ -68,7 +74,9 @@ dotnet run --project src/FunLang -- /tmp/input.fun > /tmp/actual.txt
 // --COMMAND: dotnet run --project src/FunLang -- -d --show-tokens %s
 // --INPUT
 let x = 1
+
 // --EXPECTED
+
 === LEXER TOKENS ===
 ...
 ```
@@ -82,7 +90,9 @@ Multiple commands can be piped together. Each `%s` is replaced with the same inp
 // --INPUT
 let x = 10
 x * 2
+
 // --EXPECTED
+
 20
 ```
 
@@ -90,7 +100,9 @@ x * 2
 // --COMMAND: commandA --options %s | commandB --filter
 // --INPUT
 ...
+
 // --EXPECTED
+
 ...
 ```
 
@@ -165,9 +177,47 @@ x + 2
 // --INPUT
 let x = 40
 x + 2
+
 // --EXPECTED
+
 42
 ```
+
+## 새 테스트 파일 추가하기
+
+### 테스트 파일 형식 템플릿
+
+```
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+<여기에 입력 코드>
+
+// --EXPECTED
+
+<여기에 예상 출력>
+```
+
+### 빠른 생성 스크립트
+
+```bash
+# 새 테스트 파일 생성
+cat << 'EOF' > tests/file-tests/error-tests/XXX-description.test
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+
+
+// --EXPECTED
+
+EOF
+```
+
+### 체크리스트
+
+- [ ] `// --COMMAND:` 줄 포함
+- [ ] `// --INPUT` 섹션 포함
+- [ ] `// --EXPECTED` 앞에 빈 줄
+- [ ] `// --EXPECTED` 뒤에 빈 줄
+- [ ] 실제 명령 실행 결과와 EXPECTED 일치 확인
 
 ## Directory Structure
 

@@ -3,5 +3,7 @@
 let x = 5 in
 let y = 10 in
 x + y
+
 // --EXPECTED
+
 15

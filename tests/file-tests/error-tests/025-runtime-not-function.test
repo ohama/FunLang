@@ -1,8 +1,8 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
-"hello" + 1
+let x = 42 in x 10
 
 // --EXPECTED
 
-error[E303]: Cannot add string and int
+error[E303]: Cannot apply int as function
    = info: operation not supported

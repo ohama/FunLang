@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
 // --INPUT
 1 + 2
+
 // --EXPECTED
+
 === PARSED AST ===
   EBinaryOp (Add, ELiteral (LInt 1), ELiteral (LInt 2))
 ==================

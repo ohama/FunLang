@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- --show-tokens %s
 // --INPUT
 1 < 2
+
 // --EXPECTED
+
 === LEXER TOKENS ===
   INT 1
   LT

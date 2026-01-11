@@ -5,5 +5,7 @@ let rec sum = fun xs ->
   | [] -> 0
   | h :: t -> h + sum t
 sum [1; 2; 3]
+
 // --EXPECTED
+
 6

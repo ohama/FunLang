@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- %s
 // --INPUT
 @bad
+
 // --EXPECTED
+
 error[E001]: Unexpected character: @
   --> :1:1
   |

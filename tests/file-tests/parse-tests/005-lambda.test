@@ -1,7 +1,9 @@
 // --COMMAND: dotnet run --project src/FunLang -- --show-ast %s
 // --INPUT
 fun x -> x + 1
+
 // --EXPECTED
+
 === PARSED AST ===
   ELambda ("x", EBinaryOp (Add, EVariable "x", ELiteral (LInt 1)))
 ==================
