@@ -47,6 +47,7 @@ type TypeError = {
     Message: string
     Position: Position option
     Hint: string option
+    Suggestions: string list  // "Did you mean?" suggestions
 }
 
 // =============================================================================
@@ -54,41 +55,52 @@ type TypeError = {
 // =============================================================================
 
 module TypeError =
-    let unboundVar name pos =
+    /// Create unbound variable error with optional suggestions
+    let unboundVarWithSuggestions name pos (suggestions: string list) =
         { Kind = UnboundVariable name
           Message = sprintf "Unbound variable: %s" name
           Position = pos
-          Hint = Some "Did you mean to define it?" }
+          Hint = None
+          Suggestions = suggestions }
+
+    /// Create unbound variable error (no suggestions)
+    let unboundVar name pos =
+        unboundVarWithSuggestions name pos []
 
     let mismatch expected actual pos =
         { Kind = TypeMismatch (expected, actual)
           Message = "Type mismatch"
           Position = pos
-          Hint = None }
+          Hint = None
+          Suggestions = [] }
 
     let occursCheck v t pos =
         { Kind = OccursCheck (v, t)
           Message = sprintf "Infinite type: type variable occurs in its own definition"
           Position = pos
-          Hint = Some "Cannot construct infinite type" }
+          Hint = Some "Cannot construct infinite type"
+          Suggestions = [] }
 
     let notAFunction t pos =
         { Kind = NotAFunction t
           Message = "Not a function"
           Position = pos
-          Hint = Some "Cannot apply arguments to non-function" }
+          Hint = Some "Cannot apply arguments to non-function"
+          Suggestions = [] }
 
     let arityMismatch expected actual pos =
         { Kind = ArityMismatch (expected, actual)
           Message = sprintf "Wrong number of arguments: expected %d, got %d" expected actual
           Position = pos
-          Hint = None }
+          Hint = None
+          Suggestions = [] }
 
     let patternMismatch expected actual pos =
         { Kind = PatternTypeMismatch (expected, actual)
           Message = "Pattern type mismatch"
           Position = pos
-          Hint = None }
+          Hint = None
+          Suggestions = [] }
 
 // =============================================================================
 // Type Helper Functions

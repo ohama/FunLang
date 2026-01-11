@@ -341,16 +341,25 @@ module Diagnostic =
             | None -> diag
 
         // Add hint as help if available
-        let diag =
-            match err.Hint with
-            | Some hint -> withHelp hint diag
-            | None -> diag
-
-        diag
+        match err.Hint with
+        | Some hint -> withHelp hint diag
+        | None -> diag
 
     // -------------------------------------------------------------------------
     // Conversion from TypeError
     // -------------------------------------------------------------------------
+
+    /// Format suggestions as help messages
+    let private formatSuggestions (suggestions: string list) (diag: Diagnostic) : Diagnostic =
+        match suggestions with
+        | [] -> diag
+        | [best] ->
+            withHelp (sprintf "did you mean `%s`?" best) diag
+        | best :: others ->
+            let othersStr = others |> List.map (sprintf "`%s`") |> String.concat ", "
+            diag
+            |> withHelp (sprintf "did you mean `%s`?" best)
+            |> withHelp (sprintf "other similar: %s" othersStr)
 
     /// Convert TypeError to Diagnostic
     let fromTypeError (err: FunLang.Types.TypeError) : Diagnostic =
@@ -402,4 +411,5 @@ module Diagnostic =
             | Some hint -> withHelp hint diag
             | None -> diag
 
-        diag
+        // Add suggestions as help messages (for unbound variable errors)
+        formatSuggestions err.Suggestions diag

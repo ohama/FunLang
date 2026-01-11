@@ -183,7 +183,8 @@ let conversionTests = testList "Conversion Tests" [
             { Kind = FunLang.Types.TypeMismatch (FunLang.Types.TInt, FunLang.Types.TString)
               Message = "Type mismatch"
               Position = Some pos
-              Hint = None }
+              Hint = None
+              Suggestions = [] }
 
         let diag = Diagnostic.fromTypeError err
 

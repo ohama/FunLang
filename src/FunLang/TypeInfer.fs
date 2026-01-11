@@ -4,6 +4,7 @@ open FunLang.Ast
 open FunLang.Types
 open FunLang.Unification
 open FunLang.Errors
+open FunLang.Suggestions
 
 // =============================================================================
 // Built-in Operator Types
@@ -66,7 +67,10 @@ let rec infer (env: TypeEnv) (expr: Expr) : InferResult =
             let t = TypeHelpers.instantiate scheme
             Ok (Map.empty, t)
         | None ->
-            Error (TypeError.unboundVar name None)
+            // Find similar variable names for "did you mean?" suggestions
+            let candidates = env |> Map.toList |> List.map fst
+            let suggestions = findSimilar name candidates
+            Error (TypeError.unboundVarWithSuggestions name None suggestions)
 
     // -------------------------------------------------------------------------
     // Lambda: fun x -> e
