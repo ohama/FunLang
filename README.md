@@ -225,6 +225,37 @@ The `tests/file-tests/` directory contains many examples:
 - `eval-tests/016-list-map.test` - Custom List type with map
 - `eval-tests/017-tree-type.test` - Binary tree operations
 
+## Development
+
+### Version Management
+
+Use `upgrade_version.sh` to release new versions:
+
+```bash
+./upgrade_version.sh [major|minor|patch] [--push]
+
+# Examples
+./upgrade_version.sh patch          # 0.3.0 -> 0.3.1 (local only)
+./upgrade_version.sh minor          # 0.3.0 -> 0.4.0 (local only)
+./upgrade_version.sh major          # 0.3.0 -> 1.0.0 (local only)
+./upgrade_version.sh minor --push   # 0.3.0 -> 0.4.0 + git push
+```
+
+The script automatically:
+1. Bumps version in `VERSION` file
+2. Generates changelog from commits (categorizes as Added/Changed/Fixed/Removed)
+3. Updates `CHANGELOG.md`
+4. Creates git commit and tag (`vX.Y.Z`)
+5. Pushes to remote (with `--push` flag)
+
+### Running Tests
+
+```bash
+dotnet test                                           # All tests
+dotnet run --project tests/FunLang.Tests              # With Expecto
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "File-Based"
+```
+
 ## License
 
 MIT
