@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-13
+
+### Added
+- Add pattern matching analysis module (exhaustiveness & redundancy)
+- Add Phase 9: Pattern Matching Improvements plan
+
+### Changed
+- Integrate pattern analysis warnings into type inference (Phase 9.3)
+
 ## [0.2.0] - 2026-01-13
 
 ### Added
