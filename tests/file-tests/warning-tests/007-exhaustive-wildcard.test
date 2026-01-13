@@ -1,0 +1,8 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s 2>&1
+// --INPUT
+match 100 with
+| _ -> "any"
+
+// --EXPECTED
+
+"any"

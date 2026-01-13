@@ -4,5 +4,5 @@ x + 1
 
 // --EXPECTED
 
-error[E303]: Unbound variable: x
-   = info: operation not supported
+error[E202]: Unbound variable 'x'
+   = info: variables must be defined with 'let' before use

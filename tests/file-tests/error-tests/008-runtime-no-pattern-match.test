@@ -5,6 +5,8 @@ match 1 with
 
 // --EXPECTED
 
+Warning: Non-exhaustive pattern match at line 1, column 1
+  Missing case(s): _
 error[E303]: No pattern matched for value: VInt 1 (tried 1 pattern(s))
   --> :2:3
   |

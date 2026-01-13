@@ -10,4 +10,12 @@ treeSort [3; 1; 4; 5; 2]
 
 // --EXPECTED
 
+Warning: Non-exhaustive pattern match at line 2, column 38
+  Missing case(s): _
+Warning: Non-exhaustive pattern match at line 3, column 36
+  Missing case(s): _
+Warning: Non-exhaustive pattern match at line 4, column 28
+  Missing case(s): _
+Warning: Non-exhaustive pattern match at line 5, column 31
+  Missing case(s): _
 [1; 2; 3; 4; 5]

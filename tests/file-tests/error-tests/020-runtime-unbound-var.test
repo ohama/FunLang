@@ -4,5 +4,5 @@ undefined_variable
 
 // --EXPECTED
 
-error[E303]: Unbound variable: undefined_variable
-   = info: operation not supported
+error[E202]: Unbound variable 'undefined_variable'
+   = info: variables must be defined with 'let' before use

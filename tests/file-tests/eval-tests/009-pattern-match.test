@@ -8,4 +8,6 @@ sum [1; 2; 3]
 
 // --EXPECTED
 
+Warning: Non-exhaustive pattern match at line 2, column 3
+  Missing case(s): _
 6

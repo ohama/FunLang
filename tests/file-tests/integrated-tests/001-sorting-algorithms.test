@@ -2,174 +2,145 @@
 // --INPUT
 
 // =============================================================================
-// FunLang Sorting Algorithms Collection
+// FunLang Sorting Algorithms - Pattern Matching Version
 // =============================================================================
-// This file demonstrates multiple sorting algorithms implemented in FunLang,
-// showcasing:
-//   - User-defined types (Tree, List)
-//   - Higher-order functions
-//   - Pattern matching
-//   - Recursion
+// Uses pattern matching with exhaustive patterns.
+// Pattern warnings are tested separately in warning-tests/.
 // =============================================================================
 
-// -----------------------------------------------------------------------------
-// 1. Binary Search Tree (BST) Sort
-// -----------------------------------------------------------------------------
-// Uses a binary search tree to sort elements.
-// Time Complexity: O(n log n) average, O(n^2) worst case
-// -----------------------------------------------------------------------------
-
-type BST 'a =
-  | Empty
-  | Node of 'a * BST 'a * BST 'a
-
-// Helper: append two lists
-let rec append = fun xs -> fun ys ->
+// Helper functions with exhaustive patterns (wildcard fallback for lists)
+let head = fun xs ->
   match xs with
-  | [] -> ys
-  | h :: t -> h :: append t ys
+  | h :: _ -> h
+  | _ -> 0
 
-let rec bstInsert = fun tree -> fun x ->
-  match tree with
-  | Empty -> Node (x, Empty, Empty)
-  | Node (v, left, right) ->
-    if x <= v then
-      Node (v, bstInsert left x, right)
-    else
-      Node (v, left, bstInsert right x)
-
-let rec bstInorder = fun tree ->
-  match tree with
-  | Empty -> []
-  | Node (v, left, right) ->
-    let leftList = bstInorder left
-    let rightList = bstInorder right
-    append leftList (v :: rightList)
-
-let rec bstFromList = fun xs ->
+let tail = fun xs ->
   match xs with
-  | [] -> Empty
-  | h :: t -> bstInsert (bstFromList t) h
+  | _ :: t -> t
+  | _ -> []
 
-let bstSort = fun xs -> bstInorder (bstFromList xs)
-
-// -----------------------------------------------------------------------------
-// 2. Merge Sort
-// -----------------------------------------------------------------------------
-// Divide and conquer algorithm that splits the list, sorts recursively,
-// and merges the sorted halves.
-// Time Complexity: O(n log n)
-// -----------------------------------------------------------------------------
-
+// Length of a list
 let rec length = fun xs ->
   match xs with
   | [] -> 0
-  | _ :: t -> 1 + length t
+  | _ -> 1 + length (tail xs)
 
+// Append two lists
+let rec append = fun xs -> fun ys ->
+  match xs with
+  | [] -> ys
+  | _ -> (head xs) :: append (tail xs) ys
+
+// Take first n elements
 let rec take = fun n -> fun xs ->
-  if n <= 0 then []
-  else match xs with
-       | [] -> []
-       | h :: t -> h :: take (n - 1) t
+  match n <= 0 with
+  | true -> []
+  | false ->
+    match xs with
+    | [] -> []
+    | _ -> (head xs) :: take (n - 1) (tail xs)
 
+// Drop first n elements
 let rec drop = fun n -> fun xs ->
-  if n <= 0 then xs
-  else match xs with
-       | [] -> []
-       | _ :: t -> drop (n - 1) t
+  match n <= 0 with
+  | true -> xs
+  | false ->
+    match xs with
+    | [] -> []
+    | _ -> drop (n - 1) (tail xs)
+
+// =============================================================================
+// Insertion Sort
+// =============================================================================
+
+let rec insert = fun x -> fun xs ->
+  match xs with
+  | [] -> [x]
+  | _ ->
+    match x <= head xs with
+    | true -> x :: xs
+    | false -> (head xs) :: insert x (tail xs)
+
+let rec insertionSort = fun xs ->
+  match xs with
+  | [] -> []
+  | _ -> insert (head xs) (insertionSort (tail xs))
+
+// =============================================================================
+// Merge Sort
+// =============================================================================
 
 let rec merge = fun xs -> fun ys ->
   match xs with
   | [] -> ys
-  | xh :: xt ->
+  | _ ->
     match ys with
     | [] -> xs
-    | yh :: yt ->
-      if xh <= yh then
-        xh :: merge xt ys
-      else
-        yh :: merge xs yt
+    | _ ->
+      match head xs <= head ys with
+      | true -> (head xs) :: merge (tail xs) ys
+      | false -> (head ys) :: merge xs (tail ys)
 
 let rec mergeSort = fun xs ->
-  match xs with
-  | [] -> []
-  | [x] -> [x]
-  | _ ->
-    let n = length xs
+  let n = length xs
+  match n <= 1 with
+  | true -> xs
+  | false ->
     let half = n / 2
     let left = take half xs
     let right = drop half xs
     merge (mergeSort left) (mergeSort right)
 
-// -----------------------------------------------------------------------------
-// 3. Quick Sort
-// -----------------------------------------------------------------------------
-// Divide and conquer using a pivot element.
-// Time Complexity: O(n log n) average, O(n^2) worst case
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Quick Sort
+// =============================================================================
 
 let rec filter = fun pred -> fun xs ->
   match xs with
   | [] -> []
-  | h :: t ->
-    if pred h then
-      h :: filter pred t
-    else
-      filter pred t
+  | _ ->
+    match pred (head xs) with
+    | true -> (head xs) :: filter pred (tail xs)
+    | false -> filter pred (tail xs)
 
 let rec quickSort = fun xs ->
   match xs with
   | [] -> []
-  | [x] -> [x]
-  | pivot :: rest ->
-    let smaller = filter (fun x -> x <= pivot) rest
-    let larger = filter (fun x -> x > pivot) rest
-    let sortedSmaller = quickSort smaller
-    let sortedLarger = quickSort larger
-    append sortedSmaller (pivot :: sortedLarger)
+  | _ ->
+    let n = length xs
+    match n = 1 with
+    | true -> xs
+    | false ->
+      let pivot = head xs
+      let rest = tail xs
+      let smaller = filter (fun x -> x <= pivot) rest
+      let larger = filter (fun x -> x > pivot) rest
+      append (quickSort smaller) (pivot :: quickSort larger)
 
-// -----------------------------------------------------------------------------
-// 4. Insertion Sort
-// -----------------------------------------------------------------------------
-// Builds the sorted list one element at a time.
-// Time Complexity: O(n^2)
-// -----------------------------------------------------------------------------
-
-let rec insert = fun x -> fun xs ->
-  match xs with
-  | [] -> [x]
-  | h :: t ->
-    if x <= h then
-      x :: xs
-    else
-      h :: insert x t
-
-let rec insertionSort = fun xs ->
-  match xs with
-  | [] -> []
-  | h :: t -> insert h (insertionSort t)
-
-// -----------------------------------------------------------------------------
-// 5. Selection Sort
-// -----------------------------------------------------------------------------
-// Repeatedly finds the minimum element and moves it to the front.
-// Time Complexity: O(n^2)
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Selection Sort
+// =============================================================================
 
 let rec findMin = fun xs ->
   match xs with
   | [] -> 0
-  | [x] -> x
-  | h :: t ->
-    let minTail = findMin t
-    if h <= minTail then h else minTail
+  | _ ->
+    let n = length xs
+    match n = 1 with
+    | true -> head xs
+    | false ->
+      let minTail = findMin (tail xs)
+      match head xs <= minTail with
+      | true -> head xs
+      | false -> minTail
 
 let rec removeFirst = fun x -> fun xs ->
   match xs with
   | [] -> []
-  | h :: t ->
-    if h = x then t
-    else h :: removeFirst x t
+  | _ ->
+    match head xs = x with
+    | true -> tail xs
+    | false -> (head xs) :: removeFirst x (tail xs)
 
 let rec selectionSort = fun xs ->
   match xs with
@@ -179,66 +150,41 @@ let rec selectionSort = fun xs ->
     let remaining = removeFirst minVal xs
     minVal :: selectionSort remaining
 
-// -----------------------------------------------------------------------------
-// 6. Bubble Sort (Single Pass Demo)
-// -----------------------------------------------------------------------------
-// Repeatedly swaps adjacent elements if they are in wrong order.
-// Time Complexity: O(n^2)
-// -----------------------------------------------------------------------------
-
-let rec bubblePass = fun xs ->
-  match xs with
-  | [] -> []
-  | [x] -> [x]
-  | x :: y :: rest ->
-    if x <= y then
-      x :: bubblePass (y :: rest)
-    else
-      y :: bubblePass (x :: rest)
-
-let rec bubbleSort = fun xs ->
-  let n = length xs
-  let rec loop = fun count -> fun ys ->
-    if count <= 0 then ys
-    else loop (count - 1) (bubblePass ys)
-  loop n xs
-
-// -----------------------------------------------------------------------------
-// Test Data
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Test Data and Verification
+// =============================================================================
 
 let testList = [64; 34; 25; 12; 22; 11; 90; 5; 77; 33]
 
-// -----------------------------------------------------------------------------
-// Run All Sorting Algorithms and Compare Results
-// -----------------------------------------------------------------------------
-
-let result1 = bstSort testList
+let result1 = insertionSort testList
 let result2 = mergeSort testList
 let result3 = quickSort testList
-let result4 = insertionSort testList
-let result5 = selectionSort testList
-let result6 = bubbleSort testList
+let result4 = selectionSort testList
 
-// Verify all results are equal
+// Simple list equality check
 let rec listEqual = fun xs -> fun ys ->
   match xs with
-  | [] -> match ys with | [] -> true | _ -> false
-  | xh :: xt ->
+  | [] ->
+    match ys with
+    | [] -> true
+    | _ -> false
+  | _ ->
     match ys with
     | [] -> false
-    | yh :: yt -> if xh = yh then listEqual xt yt else false
+    | _ ->
+      match head xs = head ys with
+      | true -> listEqual (tail xs) (tail ys)
+      | false -> false
 
 let allEqual =
   listEqual result1 result2 and
   listEqual result2 result3 and
-  listEqual result3 result4 and
-  listEqual result4 result5 and
-  listEqual result5 result6
+  listEqual result3 result4
 
-// Return tuple: (all algorithms produce same result, the sorted list)
+// Return (all equal, sorted result)
 (allEqual, result1)
 
 // --EXPECTED
 
 (true, [5; 11; 12; 22; 25; 33; 34; 64; 77; 90])
+

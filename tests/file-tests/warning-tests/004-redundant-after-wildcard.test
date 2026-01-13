@@ -1,0 +1,10 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s 2>&1
+// --INPUT
+match 42 with
+| _ -> "any"
+| 0 -> "zero"
+
+// --EXPECTED
+
+Warning: Pattern 2 at line 3, column 3 is redundant (never matches)
+"any"

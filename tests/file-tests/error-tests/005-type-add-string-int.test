@@ -4,5 +4,7 @@
 
 // --EXPECTED
 
-error[E303]: Cannot add string and int
-   = info: operation not supported
+error[E201]: Type mismatch
+   = note: expected: string
+   = note: found: int
+   = info: expression type doesn't match expected type

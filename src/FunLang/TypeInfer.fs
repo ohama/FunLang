@@ -5,6 +5,7 @@ open FunLang.Types
 open FunLang.Unification
 open FunLang.Errors
 open FunLang.Suggestions
+open FunLang.PatternAnalysis
 
 // =============================================================================
 // Built-in Operator Types
@@ -458,4 +459,129 @@ let inferTypeWithTypeDefEnv (typeDefEnv: TypeEnv) (lexpr: LExpr) : TypeResult<Ty
     result {
         let! (subst, t) = infer Map.empty lexpr
         return TypeHelpers.apply subst t
+    }
+
+// =============================================================================
+// Pattern Warnings Collection
+// =============================================================================
+
+/// ThreadLocal registry for pattern analysis (parallel test safety)
+let private patternRegistry = new System.Threading.ThreadLocal<TypeDefRegistry>(fun () -> Map.empty)
+
+/// Set the type definition registry for pattern analysis
+let setPatternRegistry (registry: TypeDefRegistry) = patternRegistry.Value <- registry
+
+/// Get scrutinee type from a match expression
+/// This is a simplified version that infers the type of the first pattern
+let private inferScrutineeType (env: TypeEnv) (lscrutinee: LExpr) : Type option =
+    match infer env lscrutinee with
+    | Ok (subst, t) -> Some (TypeHelpers.apply subst t)
+    | Error _ -> None
+
+/// Collect pattern warnings from a match expression
+let private analyzeMatchExpr
+    (env: TypeEnv)
+    (subst: Substitution)
+    (lscrutinee: LExpr)
+    (cases: (LPattern * LExpr option * LExpr) list)
+    (registry: TypeDefRegistry)
+    : PatternWarning list =
+
+    // Get the scrutinee type using current substitution
+    match inferScrutineeType (TypeHelpers.applyEnv subst env) lscrutinee with
+    | None -> []  // Type inference failed, skip pattern analysis
+    | Some scrutineeType ->
+        let matchPos = lscrutinee.Pos
+        analyzeMatch scrutineeType cases registry matchPos
+
+/// Recursively collect pattern warnings from an expression
+let rec private collectWarnings
+    (env: TypeEnv)
+    (subst: Substitution)
+    (registry: TypeDefRegistry)
+    (lexpr: LExpr)
+    : PatternWarning list =
+
+    match lexpr.Node with
+    | ELiteral _ | EVariable _ -> []
+
+    | ELambda (param, body) ->
+        let α = TypeHelpers.freshTypeVar ()
+        let env' = Map.add param (Forall ([], α)) env
+        collectWarnings env' subst registry body
+
+    | EApply (le1, le2) ->
+        collectWarnings env subst registry le1 @
+        collectWarnings env subst registry le2
+
+    | ELet (name, le1, le2) ->
+        let warnings1 = collectWarnings env subst registry le1
+        // For body, we don't need precise type - just collect warnings
+        let warnings2 = collectWarnings env subst registry le2
+        warnings1 @ warnings2
+
+    | ELetRec (name, le1, le2) ->
+        let warnings1 = collectWarnings env subst registry le1
+        let warnings2 = collectWarnings env subst registry le2
+        warnings1 @ warnings2
+
+    | EIf (lcond, lthen, lelse) ->
+        collectWarnings env subst registry lcond @
+        collectWarnings env subst registry lthen @
+        collectWarnings env subst registry lelse
+
+    | EBinaryOp (_, le1, le2) ->
+        collectWarnings env subst registry le1 @
+        collectWarnings env subst registry le2
+
+    | EUnaryOp (_, le) ->
+        collectWarnings env subst registry le
+
+    | ETuple lexprs ->
+        lexprs |> List.collect (collectWarnings env subst registry)
+
+    | EList lexprs ->
+        lexprs |> List.collect (collectWarnings env subst registry)
+
+    | ECons (lhead, ltail) ->
+        collectWarnings env subst registry lhead @
+        collectWarnings env subst registry ltail
+
+    | EBlock lexprs ->
+        lexprs |> List.collect (collectWarnings env subst registry)
+
+    | EMatch (lscrutinee, cases) ->
+        // Analyze this match expression
+        let matchWarnings = analyzeMatchExpr env subst lscrutinee cases registry
+        // Collect warnings from scrutinee and case bodies
+        let scrutineeWarnings = collectWarnings env subst registry lscrutinee
+        let bodyWarnings = cases |> List.collect (fun (_, guardOpt, body) ->
+            let guardWarnings = guardOpt |> Option.map (collectWarnings env subst registry) |> Option.defaultValue []
+            let bodyWarns = collectWarnings env subst registry body
+            guardWarnings @ bodyWarns)
+        matchWarnings @ scrutineeWarnings @ bodyWarnings
+
+    | EConstructor (_, largOpt) ->
+        largOpt |> Option.map (collectWarnings env subst registry) |> Option.defaultValue []
+
+/// Infer type with pattern warnings
+/// Returns (Type, PatternWarning list) on success
+let inferTypeWithWarnings
+    (typeDefEnv: TypeEnv)
+    (registry: TypeDefRegistry)
+    (lexpr: LExpr)
+    : TypeResult<Type * PatternWarning list> =
+
+    TypeHelpers.resetCounter ()
+    setConstructorEnv typeDefEnv
+    setPatternRegistry registry
+
+    result {
+        let! (subst, t) = infer Map.empty lexpr
+        let finalType = TypeHelpers.apply subst t
+
+        // Collect pattern warnings from all match expressions
+        let warnings = collectWarnings Map.empty subst registry lexpr
+
+        return (finalType, warnings)
     }

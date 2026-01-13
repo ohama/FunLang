@@ -12,6 +12,7 @@ open FunLang.Errors
 open FunLang.Logging
 open FunLang.Options
 open FunLang.ErrorFormatter
+open FunLang.PatternAnalysis
 
 module Diag = FunLang.Diagnostic
 
@@ -85,17 +86,36 @@ let runExpr (opts: RunOptions) (input: string) =
                     0  // Stop here if --show-ast
                 else
 
-                logInfo Eval "Starting evaluation"
-
-                match eval Map.empty ast with
+                // Type check with pattern analysis (empty registry for built-in types only)
+                logInfo TypeCheck "Starting type inference"
+                match inferTypeWithWarnings Map.empty Map.empty ast with
                 | Error e ->
-                    logError Eval e.Message
-                    displayError input e
+                    logError TypeCheck (formatTypeError e)
+                    displayTypeError input e
                     1
-                | Ok value ->
-                    logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
-                    printfn "%s" (formatValue value)
-                    0
+                | Ok (inferredType, warnings) ->
+                    logInfo TypeCheck (sprintf "Type inference complete: %s" (formatType inferredType))
+
+                    // Display pattern matching warnings
+                    for warning in warnings do
+                        eprintfn "%s" (formatWarning warning)
+
+                    if opts.ShowTypes || opts.Debug then
+                        printfn "=== INFERRED TYPE ==="
+                        printfn "  %s" (formatType inferredType)
+                        printfn "====================="
+
+                    logInfo Eval "Starting evaluation"
+
+                    match eval Map.empty ast with
+                    | Error e ->
+                        logError Eval e.Message
+                        displayError input e
+                        1
+                    | Ok value ->
+                        logInfo Eval (sprintf "Evaluation complete: %s" (formatValue value))
+                        printfn "%s" (formatValue value)
+                        0
 
 /// Run the interpreter on input (program with type definitions)
 let runProgram (opts: RunOptions) (input: string) =
@@ -142,18 +162,23 @@ let runProgram (opts: RunOptions) (input: string) =
                     0  // Stop here if --show-ast
                 else
 
-                // Build type definition environment
+                // Build type definition environments
                 let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv program.TypeDefs
+                let registry = TypeDefRegistryBuilder.buildTypeDefRegistry program.TypeDefs
 
-                // Type check
+                // Type check with pattern analysis
                 logInfo TypeCheck "Starting type inference"
-                match inferTypeWithTypeDefEnv typeDefEnv ast with
+                match inferTypeWithWarnings typeDefEnv registry ast with
                 | Error e ->
                     logError TypeCheck (formatTypeError e)
                     displayTypeError input e
                     1
-                | Ok inferredType ->
+                | Ok (inferredType, warnings) ->
                     logInfo TypeCheck (sprintf "Type inference complete: %s" (formatType inferredType))
+
+                    // Display pattern matching warnings
+                    for warning in warnings do
+                        eprintfn "%s" (formatWarning warning)
 
                     if opts.ShowTypes || opts.Debug then
                         printfn "=== INFERRED TYPE ==="

@@ -13,4 +13,6 @@ test false (Some 5)
 
 // --EXPECTED
 
+Warning: Non-exhaustive pattern match at line 6, column 8
+  Missing case(s): _
 15

@@ -803,6 +803,140 @@ let analyzeMatchTests = testList "analyzeMatch" [
 // All Tests
 // =============================================================================
 
+// =============================================================================
+// Phase 9.3: TypeInfer Integration Tests
+// =============================================================================
+
+open FunLang.TypeInfer
+
+let typeInferIntegrationTests = testList "TypeInfer Integration" [
+
+    test "inferTypeWithWarnings detects missing bool case" {
+        // match true with | true -> 1
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (ELiteral (LBool true)),
+            [(locP (PLiteral (LBool true)), None, Located.noLoc (ELiteral (LInt 1)))]
+        ))
+        let result = inferTypeWithWarnings Map.empty Map.empty matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            Expect.hasLength warnings 1 "should have one warning"
+            match List.head warnings with
+            | NonExhaustive (missing, _) ->
+                Expect.isTrue (List.contains "false" missing) "should report false missing"
+            | _ -> failtest "expected NonExhaustive warning"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+
+    test "inferTypeWithWarnings detects redundant bool case" {
+        // match true with | true -> 1 | false -> 2 | true -> 3
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (ELiteral (LBool true)),
+            [
+                (locP (PLiteral (LBool true)), None, Located.noLoc (ELiteral (LInt 1)))
+                (locP (PLiteral (LBool false)), None, Located.noLoc (ELiteral (LInt 2)))
+                (locP (PLiteral (LBool true)), None, Located.noLoc (ELiteral (LInt 3)))
+            ]
+        ))
+        let result = inferTypeWithWarnings Map.empty Map.empty matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            Expect.hasLength warnings 1 "should have one warning"
+            match List.head warnings with
+            | RedundantPattern (idx, _) -> Expect.equal idx 2 "third pattern is redundant"
+            | _ -> failtest "expected RedundantPattern warning"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+
+    test "inferTypeWithWarnings no warnings for complete bool match" {
+        // match true with | true -> 1 | false -> 2
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (ELiteral (LBool true)),
+            [
+                (locP (PLiteral (LBool true)), None, Located.noLoc (ELiteral (LInt 1)))
+                (locP (PLiteral (LBool false)), None, Located.noLoc (ELiteral (LInt 2)))
+            ]
+        ))
+        let result = inferTypeWithWarnings Map.empty Map.empty matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            Expect.isEmpty warnings "should have no warnings"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+
+    test "inferTypeWithWarnings detects missing list case" {
+        // match [1] with | x :: xs -> 1
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (EList [Located.noLoc (ELiteral (LInt 1))]),
+            [(locP (PCons (locP (PVariable "x"), locP (PVariable "xs"))), None, Located.noLoc (ELiteral (LInt 1)))]
+        ))
+        let result = inferTypeWithWarnings Map.empty Map.empty matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            Expect.hasLength warnings 1 "should have one warning"
+            match List.head warnings with
+            | NonExhaustive (missing, _) ->
+                Expect.isTrue (List.contains "[]" missing) "should report [] missing"
+            | _ -> failtest "expected NonExhaustive warning"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+
+    test "inferTypeWithWarnings with user-defined type" {
+        // type Option 'a = None | Some of 'a
+        // match Some 1 with | Some x -> x
+        let typeDef: FunLang.Ast.TypeDef = {
+            Name = "Option"
+            TypeParams = ["a"]
+            Constructors = [("None", None); ("Some", Some (TEVar "a"))]
+        }
+        let typeDefs = [typeDef]
+        let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv typeDefs
+        let registry = TypeDefRegistryBuilder.buildTypeDefRegistry typeDefs
+
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (EConstructor ("Some", Some (Located.noLoc (ELiteral (LInt 1))))),
+            [(locP (PConstructor ("Some", Some (locP (PVariable "x")))), None, Located.noLoc (EVariable "x"))]
+        ))
+        let result = inferTypeWithWarnings typeDefEnv registry matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            Expect.hasLength warnings 1 "should have one warning"
+            match List.head warnings with
+            | NonExhaustive (missing, _) ->
+                Expect.isTrue (List.contains "None" missing) "should report None missing"
+            | _ -> failtest "expected NonExhaustive warning"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+
+    test "inferTypeWithWarnings nested match detects all warnings" {
+        // match (true, false) with
+        // | (true, true) -> 1
+        // | (false, _) -> 2
+        let matchExpr = Located.noLoc (EMatch (
+            Located.noLoc (ETuple [
+                Located.noLoc (ELiteral (LBool true))
+                Located.noLoc (ELiteral (LBool false))
+            ]),
+            [
+                (locP (PTuple [locP (PLiteral (LBool true)); locP (PLiteral (LBool true))]), None, Located.noLoc (ELiteral (LInt 1)))
+                (locP (PTuple [locP (PLiteral (LBool false)); locP PWildcard]), None, Located.noLoc (ELiteral (LInt 2)))
+            ]
+        ))
+        let result = inferTypeWithWarnings Map.empty Map.empty matchExpr
+        match result with
+        | Ok (t, warnings) ->
+            Expect.equal t TInt "result type should be int"
+            // Missing: (true, false)
+            Expect.hasLength warnings 1 "should have one warning for missing case"
+        | Error e -> failtest (sprintf "type inference failed: %A" e)
+    }
+]
+
 [<Tests>]
 let tests = testList "Pattern Analysis" [
     typeDefRegistryTests
@@ -813,4 +947,5 @@ let tests = testList "Pattern Analysis" [
     findMissingTests
     checkRedundancyTests
     analyzeMatchTests
+    typeInferIntegrationTests
 ]

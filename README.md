@@ -94,6 +94,59 @@ error[E303]: No pattern matched
    = info: operation not supported
 ```
 
+### Pattern Matching Analysis
+
+FunLang analyzes pattern matches for **exhaustiveness** and **redundancy**, helping you write safer code.
+
+**Non-exhaustive pattern warning:**
+```funlang
+type Option 'a = None | Some of 'a
+
+let getValue = fun opt ->
+  match opt with
+  | Some x -> x
+```
+```
+Warning: Non-exhaustive pattern match at line 4, column 3
+  Missing case(s): None
+```
+
+**Redundant pattern warning:**
+```funlang
+let test = fun x ->
+  match x with
+  | true -> 1
+  | false -> 2
+  | true -> 3   // This pattern is never reached
+```
+```
+Warning: Pattern 3 at line 5, column 5 is redundant (never matches)
+```
+
+**Writing exhaustive patterns:**
+```funlang
+// Option 1: Cover all cases explicitly
+let getValue = fun opt ->
+  match opt with
+  | Some x -> x
+  | None -> 0
+
+// Option 2: Use wildcard as fallback
+let head = fun xs ->
+  match xs with
+  | h :: _ -> h
+  | _ -> 0          // Covers empty list
+```
+
+**Exhaustive bool matching:**
+```funlang
+// Use true and false explicitly (not wildcard)
+let describe = fun b ->
+  match b with
+  | true -> "yes"
+  | false -> "no"
+```
+
 ## Quick Start
 
 ### Requirements
@@ -161,10 +214,11 @@ The `tests/file-tests/` directory contains many examples:
 
 | Directory | Description |
 |-----------|-------------|
-| `eval-tests/` | Evaluation examples (17 tests) |
+| `eval-tests/` | Evaluation examples |
 | `parse-tests/` | Parsing examples |
-| `error-tests/` | Error message examples (26 tests) |
-| `integrated-tests/` | Complex programs |
+| `error-tests/` | Error message examples |
+| `warning-tests/` | Pattern matching warnings |
+| `integrated-tests/` | Complex programs (sorting algorithms) |
 
 **Notable examples:**
 - `eval-tests/006-fibonacci.test` - Fibonacci with recursion

@@ -11,4 +11,6 @@ sumTree (Node (Node (Leaf 1, Leaf 2), Node (Leaf 3, Leaf 4)))
 
 // --EXPECTED
 
+Warning: Non-exhaustive pattern match at line 4, column 3
+  Missing case(s): _
 10

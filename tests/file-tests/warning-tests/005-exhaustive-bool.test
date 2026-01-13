@@ -1,0 +1,9 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s 2>&1
+// --INPUT
+match true with
+| true -> 1
+| false -> 0
+
+// --EXPECTED
+
+1
