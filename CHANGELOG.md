@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-13
+
+### Added
+- Add version system with upgrade script
+
+### Fixed
+- Fix inline match syntax parsing (issue-008)
+- Fix position tracking to use 1-based line/column numbers
+- Fix parser indentation issues and improve error messages
+
 ## [0.1.0] - 2026-01-13
 
 ### Added
