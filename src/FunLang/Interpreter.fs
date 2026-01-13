@@ -4,6 +4,30 @@ open FunLang.Ast
 open FunLang.Errors
 
 // =============================================================================
+// Module Value Environment (for module system)
+// =============================================================================
+
+/// Module value environment
+/// Maps module names to their value environments
+/// moduleEnv["Math"]["add"] = Value for Math.add
+let private moduleEnv = new System.Threading.ThreadLocal<Map<string, Map<string, Value>>>(fun () -> Map.empty)
+
+/// Set the module value environment
+let setModuleValueEnv (env: Map<string, Map<string, Value>>) = moduleEnv.Value <- env
+
+/// Lookup a qualified value in the module environment
+let private lookupQualifiedValue (path: QualifiedPath) : Value option =
+    match path with
+    | [] -> None
+    | [_] -> None  // Single-segment paths are not qualified
+    | moduleName :: rest ->
+        match Map.tryFind moduleName moduleEnv.Value with
+        | None -> None
+        | Some modValues ->
+            let valueName = String.concat "." rest
+            Map.tryFind valueName modValues
+
+// =============================================================================
 // Helper Functions
 // =============================================================================
 
@@ -154,6 +178,9 @@ let rec matchPattern (lpattern: LPattern) (value: Value) : Map<string, Value> op
         matchPattern argPat argVal
     | PConstructor _, VConstructed _ -> None  // Constructor name mismatch or arity mismatch
     | PConstructor _, _ -> None  // Not a constructor value
+
+    // Qualified constructor patterns - not yet implemented
+    | PQualifiedCons _, _ -> None
 
 // =============================================================================
 // Evaluator
@@ -324,3 +351,27 @@ let rec eval (env: Env) (lexpr: LExpr) : EvalResult =
         match eval env argExpr with
         | Error e -> Error e
         | Ok argVal -> Ok (VConstructed (name, Some argVal))
+
+    // Qualified variable: Math.add
+    | EQualifiedVar path ->
+        let fullName = String.concat "." path
+        match lookupQualifiedValue path with
+        | Some value -> Ok value
+        | None ->
+            let moduleName = List.head path
+            if Map.containsKey moduleName moduleEnv.Value then
+                Error (Error.runtime (sprintf "Value not found in module '%s': %s" moduleName fullName) None)
+            else
+                Error (Error.runtime (sprintf "Module '%s' not found" moduleName) None)
+
+    // Qualified constructor: Option.Some x
+    | EQualifiedCons (path, argOpt) ->
+        let fullName = String.concat "." path
+        // For constructors, we create a VConstructed with the full qualified name
+        let consName = List.last path
+        match argOpt with
+        | None -> Ok (VConstructed (consName, None))
+        | Some argExpr ->
+            match eval env argExpr with
+            | Error e -> Error e
+            | Ok argVal -> Ok (VConstructed (consName, Some argVal))

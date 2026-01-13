@@ -50,6 +50,13 @@ module Located =
 // =============================================================================
 
 // =============================================================================
+// Qualified Names (for module system)
+// =============================================================================
+
+/// Qualified path for module access: ["Math"; "add"] = Math.add
+type QualifiedPath = string list
+
+// =============================================================================
 // Literals
 // =============================================================================
 
@@ -79,6 +86,7 @@ type UnaryOp =
 type Expr =
     | ELiteral of Literal
     | EVariable of string
+    | EQualifiedVar of QualifiedPath              // Math.add (module qualified variable)
     | EBinaryOp of BinaryOp * Located<Expr> * Located<Expr>
     | EUnaryOp of UnaryOp * Located<Expr>
     | ELet of string * Located<Expr> * Located<Expr>
@@ -92,6 +100,7 @@ type Expr =
     | EBlock of Located<Expr> list
     | EMatch of Located<Expr> * (Located<Pattern> * Located<Expr> option * Located<Expr>) list
     | EConstructor of string * Located<Expr> option
+    | EQualifiedCons of QualifiedPath * Located<Expr> option  // Option.Some x
 
 /// Pattern AST with position-tracked sub-patterns
 and Pattern =
@@ -102,6 +111,7 @@ and Pattern =
     | PList of Located<Pattern> list
     | PCons of Located<Pattern> * Located<Pattern>
     | PConstructor of string * Located<Pattern> option
+    | PQualifiedCons of QualifiedPath * Located<Pattern> option  // Option.Some x
 
 // =============================================================================
 // Located Expression and Pattern type aliases
@@ -160,9 +170,60 @@ type TypeDef = {
     Constructors: ConstructorDef list  // [("None", None); ("Some", Some (TEVar "a"))]
 }
 
-/// Program = type definitions + main expression
+// =============================================================================
+// Module System Types
+// =============================================================================
+
+/// Export type mode - controls how a type is exported
+type ExportTypeMode =
+    | OpaqueType                        // Export type name only (constructors hidden)
+    | AllConstructors                   // Export type with all constructors
+    | SomeConstructors of string list   // Export type with specific constructors
+
+/// Export item in a module's export list
+type ExportItem =
+    | ExportValue of string                      // export add
+    | ExportType of string * ExportTypeMode      // export type Option(..)
+    | ExportModule of string                     // export SubModule
+    | ExportAll                                  // export *
+
+/// Import declaration
+type ImportDecl =
+    | OpenModule of QualifiedPath                    // open Math
+    | ImportItems of QualifiedPath * string list     // import Math (add, multiply)
+    | ImportQualified of QualifiedPath * string      // import qualified Math as M
+    | ImportHiding of QualifiedPath * string list    // open Math hiding (PI)
+
+/// Visibility of module items
+type Visibility =
+    | Public    // Exported
+    | Private   // Module-internal only
+
+/// Module item - content inside a module
+type ModuleItem =
+    | MIValue of name: string * value: LExpr * visibility: Visibility
+    | MIRecValue of name: string * value: LExpr * visibility: Visibility
+    | MIType of TypeDef * visibility: Visibility
+    | MIModule of ModuleDecl
+
+/// Module declaration
+and ModuleDecl = {
+    Name: string
+    Exports: ExportItem list option   // None = no exports, Some [ExportAll] = export all
+    Imports: ImportDecl list
+    Items: ModuleItem list
+    Pos: Position
+}
+
+// =============================================================================
+// Program (Top-Level)
+// =============================================================================
+
+/// Program = modules + type definitions + main expression
 type Program = {
-    TypeDefs: TypeDef list
+    Modules: ModuleDecl list          // Top-level module declarations
+    Imports: ImportDecl list          // Program-level imports
+    TypeDefs: TypeDef list            // Legacy: type definitions outside modules
     MainExpr: LExpr option
 }
 
@@ -263,6 +324,7 @@ module Display =
     type Expr =
         | ELiteral of Literal
         | EVariable of string
+        | EQualifiedVar of QualifiedPath
         | EBinaryOp of BinaryOp * Expr * Expr
         | EUnaryOp of UnaryOp * Expr
         | ELet of string * Expr * Expr
@@ -276,6 +338,7 @@ module Display =
         | EBlock of Expr list
         | EMatch of Expr * (Pattern * Expr option * Expr) list
         | EConstructor of string * Expr option
+        | EQualifiedCons of QualifiedPath * Expr option
 
     /// Display pattern - mirrors Pattern but without Located wrappers
     and Pattern =
@@ -286,12 +349,14 @@ module Display =
         | PList of Pattern list
         | PCons of Pattern * Pattern
         | PConstructor of string * Pattern option
+        | PQualifiedCons of QualifiedPath * Pattern option
 
     /// Convert LExpr to display-friendly format
     let rec ofExpr (lexpr: LExpr) : Expr =
         match lexpr.Node with
         | OrigExpr.ELiteral lit -> ELiteral lit
         | OrigExpr.EVariable name -> EVariable name
+        | OrigExpr.EQualifiedVar path -> EQualifiedVar path
         | OrigExpr.EBinaryOp (op, left, right) -> EBinaryOp (op, ofExpr left, ofExpr right)
         | OrigExpr.EUnaryOp (op, operand) -> EUnaryOp (op, ofExpr operand)
         | OrigExpr.ELet (name, value, body) -> ELet (name, ofExpr value, ofExpr body)
@@ -309,6 +374,7 @@ module Display =
                     (ofPattern pat, Option.map ofExpr guard, ofExpr body))
             EMatch (ofExpr scrutinee, displayCases)
         | OrigExpr.EConstructor (name, arg) -> EConstructor (name, Option.map ofExpr arg)
+        | OrigExpr.EQualifiedCons (path, arg) -> EQualifiedCons (path, Option.map ofExpr arg)
 
     and ofPattern (lpat: LPattern) : Pattern =
         match lpat.Node with
@@ -319,3 +385,4 @@ module Display =
         | OrigPattern.PList pats -> PList (List.map ofPattern pats)
         | OrigPattern.PCons (head, tail) -> PCons (ofPattern head, ofPattern tail)
         | OrigPattern.PConstructor (name, arg) -> PConstructor (name, Option.map ofPattern arg)
+        | OrigPattern.PQualifiedCons (path, arg) -> PQualifiedCons (path, Option.map ofPattern arg)

@@ -72,6 +72,69 @@ let emitFormatted (opts: RunOptions) (input: string) : bool =
 let hasTypeDefinitions (input: string) =
     input.Contains("type ") && input.Contains(" = ")
 
+/// Check if input contains module definitions
+let hasModules (input: string) =
+    input.Contains("module ") && input.Contains(" =")
+
+/// Build module type environment from module declarations
+/// For each module, infer types of its value bindings
+let buildModuleTypeEnv (modules: ModuleDecl list) : Map<string, Map<string, TypeScheme>> =
+    modules
+    |> List.map (fun m ->
+        let valueTypes =
+            m.Items
+            |> List.choose (function
+                | MIValue (name, expr, _) ->
+                    // Infer type of the value
+                    match infer Map.empty expr with
+                    | Ok (_, t) -> Some (name, Forall([], t))
+                    | Error _ -> None  // Skip values that fail type inference for now
+                | MIRecValue (name, expr, _) ->
+                    // For recursive values, use a fresh type variable
+                    let tv = TypeHelpers.freshTypeVar ()
+                    let env = Map.add name (Forall([], tv)) Map.empty
+                    match infer env expr with
+                    | Ok (subst, t) -> Some (name, Forall([], TypeHelpers.apply subst t))
+                    | Error _ -> None
+                | MIType _ -> None
+                | MIModule _ -> None  // Nested modules not yet supported
+            )
+            |> Map.ofList
+        (m.Name, valueTypes)
+    )
+    |> Map.ofList
+
+/// Build module value environment from module declarations
+/// For each module, evaluate its value bindings
+let buildModuleValueEnv (modules: ModuleDecl list) : Map<string, Map<string, Value>> =
+    modules
+    |> List.map (fun m ->
+        let values =
+            m.Items
+            |> List.choose (function
+                | MIValue (name, expr, _) ->
+                    // Evaluate the value expression
+                    match eval Map.empty expr with
+                    | Ok v -> Some (name, v)
+                    | Error _ -> None
+                | MIRecValue (name, expr, _) ->
+                    // For recursive values, need special handling
+                    // Create a recursive closure if it's a function
+                    match expr.Node with
+                    | ELambda (param, body) ->
+                        Some (name, VRecClosure(name, param, body, Map.empty))
+                    | _ ->
+                        match eval Map.empty expr with
+                        | Ok v -> Some (name, v)
+                        | Error _ -> None
+                | MIType _ -> None
+                | MIModule _ -> None
+            )
+            |> Map.ofList
+        (m.Name, values)
+    )
+    |> Map.ofList
+
 /// Run the interpreter on input (expression only)
 let runExpr (opts: RunOptions) (input: string) =
     logInfo Lexer "Starting tokenization"
@@ -203,6 +266,12 @@ let runProgram (opts: RunOptions) (input: string) =
                 let typeDefEnv = TypeDefEnvBuilder.buildTypeDefEnv program.TypeDefs
                 let registry = TypeDefRegistryBuilder.buildTypeDefRegistry program.TypeDefs
 
+                // Build module type environment if modules exist
+                if not (List.isEmpty program.Modules) then
+                    let moduleTypeEnv = buildModuleTypeEnv program.Modules
+                    setModuleEnv moduleTypeEnv
+                    logInfo TypeCheck (sprintf "Module environment built: %d modules" (Map.count moduleTypeEnv))
+
                 // Type check with pattern analysis
                 logInfo TypeCheck "Starting type inference"
                 match inferTypeWithWarnings typeDefEnv registry ast with
@@ -222,6 +291,11 @@ let runProgram (opts: RunOptions) (input: string) =
                         printfn "  %s" (formatType inferredType)
                         printfn "====================="
 
+                    // Build module value environment if modules exist
+                    if not (List.isEmpty program.Modules) then
+                        let moduleValueEnv = buildModuleValueEnv program.Modules
+                        Interpreter.setModuleValueEnv moduleValueEnv
+
                     logInfo Eval "Starting evaluation"
 
                     match eval Map.empty ast with
@@ -236,7 +310,7 @@ let runProgram (opts: RunOptions) (input: string) =
 
 /// Run the interpreter on input (auto-detect mode)
 let run (opts: RunOptions) (input: string) =
-    if hasTypeDefinitions input then
+    if hasTypeDefinitions input || hasModules input then
         runProgram opts input
     else
         runExpr opts input

@@ -45,6 +45,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="Unification.fs" />
     <Compile Include="PatternAnalysis.fs" />
+    <Compile Include="NameResolution.fs" />
     <Compile Include="TypeInfer.fs" />
     <Compile Include="Diagnostic.fs" />
     <Compile Include="ErrorExplanations.fs" />

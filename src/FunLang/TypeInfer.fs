@@ -43,6 +43,34 @@ let setConstructorEnv (env: TypeEnv) = ctorEnv.Value <- env
 let private lookupConstructor (name: string) : TypeScheme option =
     Map.tryFind name ctorEnv.Value
 
+// =============================================================================
+// Module Registry (for module system)
+// =============================================================================
+
+/// Module type environment
+/// Maps module values to their type schemes
+/// Uses ThreadLocal for parallel test safety
+let private moduleEnv = new System.Threading.ThreadLocal<Map<string, Map<string, TypeScheme>>>(fun () -> Map.empty)
+
+/// Set the module environment
+/// moduleEnv["Math"]["add"] = TypeScheme for Math.add
+let setModuleEnv (env: Map<string, Map<string, TypeScheme>>) = moduleEnv.Value <- env
+
+/// Lookup a qualified value in the module environment
+/// path = ["Math"; "add"] → lookup moduleEnv["Math"]["add"]
+let private lookupQualifiedValue (path: QualifiedPath) : TypeScheme option =
+    match path with
+    | [] -> None
+    | [_] -> None  // Single-segment paths are not qualified
+    | moduleName :: rest ->
+        match Map.tryFind moduleName moduleEnv.Value with
+        | None -> None
+        | Some modValues ->
+            // For now, support only single-level qualified names (Module.value)
+            // Nested modules would need recursive lookup
+            let valueName = String.concat "." rest
+            Map.tryFind valueName modValues
+
 /// Infer the type of an expression
 /// Returns (Substitution, Type) on success
 let rec infer (env: TypeEnv) (lexpr: LExpr) : InferResult =
@@ -251,6 +279,47 @@ let rec infer (env: TypeEnv) (lexpr: LExpr) : InferResult =
             | Some _, _ ->
                 Error (TypeError.arityMismatch 0 1 None)
 
+    // -------------------------------------------------------------------------
+    // Qualified Names (module system)
+    // -------------------------------------------------------------------------
+    | EQualifiedVar path ->
+        let fullName = String.concat "." path
+        match lookupQualifiedValue path with
+        | Some scheme ->
+            let t = TypeHelpers.instantiate scheme
+            Ok (Map.empty, t)
+        | None ->
+            // Module or value not found
+            let moduleName = List.head path
+            if Map.containsKey moduleName moduleEnv.Value then
+                Error (TypeError.unboundVarWithSuggestions fullName None [$"Value not found in module '{moduleName}'"])
+            else
+                Error (TypeError.unboundVarWithSuggestions fullName None [$"Module '{moduleName}' not found"])
+
+    | EQualifiedCons (path, argOpt) ->
+        let fullName = String.concat "." path
+        // For qualified constructors, the last segment is the constructor name
+        // Look it up in the module's constructor environment
+        match lookupQualifiedValue path with
+        | Some scheme ->
+            let consType = TypeHelpers.instantiate scheme
+            match argOpt with
+            | None ->
+                // Nullary constructor
+                Ok (Map.empty, consType)
+            | Some argExpr ->
+                // Constructor with argument: cons : argType -> resultType
+                result {
+                    let! (s1, argType) = infer env argExpr
+                    let resultType = TypeHelpers.freshTypeVar ()
+                    let expectedConsType = TFun(argType, resultType)
+                    let! s2 = unify consType expectedConsType
+                    let finalSubst = TypeHelpers.compose s2 s1
+                    return (finalSubst, TypeHelpers.apply finalSubst resultType)
+                }
+        | None ->
+            Error (TypeError.unboundVarWithSuggestions fullName None [$"Qualified constructor not found"])
+
 /// Infer types for a list of located expressions, threading substitutions
 and inferList (env: TypeEnv) (lexprs: LExpr list) : TypeResult<Substitution * Type list> =
     match lexprs with
@@ -358,6 +427,10 @@ and inferPattern (lpattern: LPattern) : TypeResult<Map<string, Type> * Type> =
             // Constructor doesn't expect argument but pattern has one
             | Some _, _ ->
                 Error (TypeError.arityMismatch 0 1 None)
+
+    | PQualifiedCons (path, _) ->
+        let name = String.concat "." path
+        Error (TypeError.unboundVarWithSuggestions name None ["Qualified constructor patterns are not yet supported"])
 
 /// Infer type of match expression
 and inferMatch (env: TypeEnv) (lscrutinee: LExpr) (cases: (LPattern * LExpr option * LExpr) list) : InferResult =
@@ -562,6 +635,11 @@ let rec private collectWarnings
         matchWarnings @ scrutineeWarnings @ bodyWarnings
 
     | EConstructor (_, largOpt) ->
+        largOpt |> Option.map (collectWarnings env subst registry) |> Option.defaultValue []
+
+    | EQualifiedVar _ -> []
+
+    | EQualifiedCons (_, largOpt) ->
         largOpt |> Option.map (collectWarnings env subst registry) |> Option.defaultValue []
 
 /// Infer type with pattern warnings

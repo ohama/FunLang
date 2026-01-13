@@ -97,6 +97,11 @@ let rec resolveExpr (ctorInfo: Map<string, ConstructorInfo>) (lexpr: LExpr) : LE
         | EConstructor (name, argOpt) ->
             EConstructor (name, Option.map (resolveExpr ctorInfo) argOpt)
 
+        | EQualifiedVar _ -> lexpr.Node
+
+        | EQualifiedCons (path, argOpt) ->
+            EQualifiedCons (path, Option.map (resolveExpr ctorInfo) argOpt)
+
     { lexpr with Node = resolvedNode }
 
 /// Resolve constructors in a pattern
@@ -123,6 +128,9 @@ and resolvePattern (ctorInfo: Map<string, ConstructorInfo>) (lpattern: LPattern)
 
         | PConstructor (name, argPatOpt) ->
             PConstructor (name, Option.map (resolvePattern ctorInfo) argPatOpt)
+
+        | PQualifiedCons (path, argPatOpt) ->
+            PQualifiedCons (path, Option.map (resolvePattern ctorInfo) argPatOpt)
 
     { lpattern with Node = resolvedNode }
 

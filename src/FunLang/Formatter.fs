@@ -88,6 +88,14 @@ let rec formatPattern (lpat: LPattern) : string =
             sprintf "%s (%s)" name (formatPattern arg)
         else
             sprintf "%s %s" name (formatPattern arg)
+    | PQualifiedCons (path, None) ->
+        String.concat "." path
+    | PQualifiedCons (path, Some arg) ->
+        let name = String.concat "." path
+        if patternNeedsParens arg then
+            sprintf "%s (%s)" name (formatPattern arg)
+        else
+            sprintf "%s %s" name (formatPattern arg)
 
 // =============================================================================
 // Type Expression Formatting
@@ -135,6 +143,7 @@ let lambdaPrecedence = 0    // lowest
 let exprNeedsParens parentPrec (lexpr: LExpr) : bool =
     match lexpr.Node with
     | ELiteral _ | EVariable _ | ETuple _ | EList _ -> false
+    | EQualifiedVar _ -> false
     | EBinaryOp (op, _, _) ->
         let (prec, _) = opPrecedence op
         prec < parentPrec
@@ -145,6 +154,8 @@ let exprNeedsParens parentPrec (lexpr: LExpr) : bool =
     | ELet _ | ELetRec _ | EIf _ | EMatch _ | EBlock _ -> true
     | EConstructor (_, Some _) -> appPrecedence < parentPrec
     | EConstructor (_, None) -> false
+    | EQualifiedCons (_, Some _) -> appPrecedence < parentPrec
+    | EQualifiedCons (_, None) -> false
 
 /// Format binary operation with proper parenthesization
 let rec formatBinaryOp parentPrec op left right =
@@ -219,6 +230,20 @@ and formatExpr (parentPrec: int) (lexpr: LExpr) : string =
 
     | EConstructor (name, None) -> name
     | EConstructor (name, Some arg) ->
+        let argStr = formatExpr atomPrecedence arg
+        let result = sprintf "%s %s" name argStr
+        if parentPrec > appPrecedence then
+            sprintf "(%s)" result
+        else
+            result
+
+    | EQualifiedVar path ->
+        String.concat "." path
+
+    | EQualifiedCons (path, None) ->
+        String.concat "." path
+    | EQualifiedCons (path, Some arg) ->
+        let name = String.concat "." path
         let argStr = formatExpr atomPrecedence arg
         let result = sprintf "%s %s" name argStr
         if parentPrec > appPrecedence then
@@ -385,7 +410,7 @@ let formatProgram (program: Program) : string =
 
 /// Format a complete program with type definitions and expression
 let formatWithTypeDefs (typeDefs: TypeDef list) (lexpr: LExpr) : string =
-    formatProgram { TypeDefs = typeDefs; MainExpr = Some lexpr }
+    formatProgram { Modules = []; Imports = []; TypeDefs = typeDefs; MainExpr = Some lexpr }
 
 // =============================================================================
 // Comment-Aware Formatting

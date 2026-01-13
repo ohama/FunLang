@@ -49,6 +49,14 @@ let keywords =
         "not", NOT_KW
         "true", TRUE
         "false", FALSE
+        // Module system keywords
+        "module", MODULE
+        "export", EXPORT
+        "import", IMPORT
+        "open", OPEN
+        "qualified", QUALIFIED
+        "as", AS
+        "hiding", HIDING
     ]
 
 // Extract type variable name (everything after the quote)
@@ -87,6 +95,8 @@ rule token = parse
     | ';'               { SEMICOLON }
     | ':'               { COLON }
     | "::"              { DOUBLECOLON }
+    | ".."              { DOTDOT }
+    | '.'               { DOT }
     | "->"              { ARROW }
     | '|'               { PIPE }
     | '_'               { UNDERSCORE }

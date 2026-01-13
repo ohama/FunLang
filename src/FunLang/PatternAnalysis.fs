@@ -61,6 +61,11 @@ let rec simplify (lp: LPattern) : SimplePattern =
         SPConstructor (name, [])
     | PConstructor (name, Some arg) ->
         SPConstructor (name, [simplify arg])
+    | PQualifiedCons (path, None) ->
+        // Qualified constructor: treat as constructor with full path name
+        SPConstructor (String.concat "." path, [])
+    | PQualifiedCons (path, Some arg) ->
+        SPConstructor (String.concat "." path, [simplify arg])
 
 // =============================================================================
 // Pattern to String (for error messages)
