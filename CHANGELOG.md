@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-13
+
+### Added
+- Add comment preservation to --emit formatter
+- Add pretty printer with --emit CLI option
+- Add Development section to README with version management docs
+
 ## [0.3.0] - 2026-01-13
 
 ### Added
