@@ -1,0 +1,15 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+// comment1
+let x = 1
+// comment2
+let y = 2
+x + y
+
+// --EXPECTED
+
+// comment1
+let x = 1
+// comment2
+let y = 2
+x + y

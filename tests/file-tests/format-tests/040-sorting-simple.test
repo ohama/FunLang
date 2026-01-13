@@ -1,0 +1,19 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+// Helper function
+let head = fun xs ->
+  match xs with
+  | h :: _ -> h
+  | _ -> 0
+
+head [1; 2; 3]
+
+// --EXPECTED
+
+// Helper function
+let head =
+  fun xs ->
+    match xs with
+      | h :: _ -> h
+      | _ -> 0
+head [1; 2; 3]

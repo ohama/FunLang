@@ -40,7 +40,6 @@
   -->
   <ItemGroup>
     <Compile Include="Ast.fs" />
-    <Compile Include="Formatter.fs" />
     <Compile Include="Errors.fs" />
     <Compile Include="Suggestions.fs" />
     <Compile Include="Types.fs" />
@@ -55,6 +54,8 @@
     <Compile Include="Parser.fs" />
     <Compile Include="Lexer.fs" />
     <Compile Include="Indentation.fs" />
+    <Compile Include="CommentCollector.fs" />
+    <Compile Include="Formatter.fs" />
     <Compile Include="ParserWrapper.fs" />
     <Compile Include="ConstructorResolver.fs" />
     <Compile Include="Interpreter.fs" />

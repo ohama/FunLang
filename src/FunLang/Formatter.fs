@@ -1,6 +1,7 @@
 module FunLang.Formatter
 
 open FunLang.Ast
+open FunLang.CommentCollector
 
 // =============================================================================
 // Operator Precedence and Associativity
@@ -385,3 +386,229 @@ let formatProgram (program: Program) : string =
 /// Format a complete program with type definitions and expression
 let formatWithTypeDefs (typeDefs: TypeDef list) (lexpr: LExpr) : string =
     formatProgram { TypeDefs = typeDefs; MainExpr = Some lexpr }
+
+// =============================================================================
+// Comment-Aware Formatting
+// =============================================================================
+
+/// Build a map from line number to comments on that line
+let private buildLineCommentMap (comments: Comment list) : Map<int, Comment> =
+    comments
+    |> List.map (fun c -> (c.Pos.Line, c))
+    |> Map.ofList
+
+/// Get leading comments for a line (comments on lines above)
+let private getLeadingCommentsForLine (commentMap: Map<int, Comment>) (targetLine: int) : Comment list =
+    // Find comments from the line before targetLine going back
+    let rec collectLeading line acc =
+        if line < 1 then acc
+        else
+            match Map.tryFind line commentMap with
+            | Some comment -> collectLeading (line - 1) (comment :: acc)
+            | None -> acc
+    collectLeading (targetLine - 1) []
+
+/// Get trailing comment for a line (comment on the same line)
+let private getTrailingCommentForLine (comments: Comment list) (targetLine: int) : Comment option =
+    comments
+    |> List.tryFind (fun c -> c.Pos.Line = targetLine)
+
+/// Format an expression with leading and trailing comments
+let private formatExprWithComments (indent: int) (lexpr: LExpr) (comments: Comment list) : string =
+    let spaces = String.replicate indent " "
+    let line = lexpr.Pos.Line
+
+    // Get leading comments for this expression
+    let leadingComments =
+        comments
+        |> List.filter (fun c -> c.Pos.Line < line)
+        |> List.sortBy (fun c -> c.Pos.Line)
+
+    // Get trailing comment on the same line as the expression starts
+    let trailingComment = getTrailingCommentForLine comments line
+
+    // Format leading comments
+    let leadingStr =
+        leadingComments
+        |> List.map (fun c -> sprintf "%s//%s\n" spaces c.Text)
+        |> String.concat ""
+
+    // Format the expression itself
+    let exprStr = formatExprIndent indent lexpr
+
+    // Format trailing comment
+    let trailingStr =
+        match trailingComment with
+        | Some c -> sprintf "  //%s" c.Text
+        | None -> ""
+
+    leadingStr + exprStr + trailingStr
+
+/// Recursively format an expression, inserting comments at appropriate positions
+let rec private formatExprWithCommentsRecursive (indent: int) (lexpr: LExpr) (comments: Comment list) : string =
+    let spaces = String.replicate indent " "
+    let exprLine = lexpr.Pos.Line
+
+    // Find leading comments (on lines immediately before this expression)
+    let (leadingComments, remainingComments) =
+        comments
+        |> List.partition (fun c -> c.Pos.Line < exprLine)
+
+    // Find trailing comment (on the same line as expression)
+    let (trailingCommentOpt, childComments) =
+        let onSameLine = remainingComments |> List.tryFind (fun c -> c.Pos.Line = exprLine)
+        let rest = remainingComments |> List.filter (fun c -> c.Pos.Line <> exprLine)
+        (onSameLine, rest)
+
+    // Format leading comments
+    let leadingStr =
+        leadingComments
+        |> List.sortBy (fun c -> c.Pos.Line)
+        |> List.map (fun c -> sprintf "%s//%s\n" spaces c.Text)
+        |> String.concat ""
+
+    // Format expression based on type
+    // For compound expressions (let, match, etc.), pass trailing comment to be placed correctly
+    let exprStr =
+        match lexpr.Node with
+        | ELet (name, value, body) ->
+            formatLetWithComments indent "let" name value body trailingCommentOpt childComments
+        | ELetRec (name, value, body) ->
+            formatLetWithComments indent "let rec" name value body trailingCommentOpt childComments
+        | EMatch (scrut, cases) ->
+            formatMatchWithComments indent scrut cases trailingCommentOpt childComments
+        | EBlock exprs ->
+            formatBlockWithComments indent exprs childComments
+        | _ ->
+            let baseStr = formatExprIndent indent lexpr
+            // For simple expressions, add trailing comment at the end
+            match trailingCommentOpt with
+            | Some c -> baseStr + sprintf "  //%s" c.Text
+            | None -> baseStr
+
+    leadingStr + exprStr
+
+and private formatLetWithComments indent keyword name value body (trailingComment: Comment option) comments : string =
+    let nextIndent = indent + defaultIndent
+
+    // Trailing comment goes right after the let binding line
+    let trailingStr =
+        match trailingComment with
+        | Some c -> sprintf "  //%s" c.Text
+        | None -> ""
+
+    let (valueStr, prefixSpace) =
+        match value.Node with
+        | ELambda _ | EIf _ | EMatch _ | ELet _ | ELetRec _ ->
+            // Multi-line value: newline after =, no space needed
+            let str = sprintf "%s\n%s%s"
+                        trailingStr
+                        (String.replicate nextIndent " ")
+                        (formatExprIndent nextIndent value)
+            (str, "")
+        | _ ->
+            // Single-line value: space before value, trailing comment after value
+            let str = sprintf "%s%s" (formatExpr 0 value) trailingStr
+            (str, " ")
+
+    // Get comments for body (include leading comments that appear before body line)
+    // Comments are passed to recursive call which will handle leading/trailing classification
+    let bodyStr = formatExprWithCommentsRecursive indent body comments
+    sprintf "%s %s =%s%s\n%s" keyword name prefixSpace valueStr bodyStr
+
+and private formatMatchWithComments indent scrut cases (trailingComment: Comment option) comments : string =
+    let spaces = String.replicate indent " "
+    let caseSpaces = String.replicate (indent + defaultIndent) " "
+
+    // Trailing comment goes after "match ... with"
+    let trailingStr =
+        match trailingComment with
+        | Some c -> sprintf "  //%s" c.Text
+        | None -> ""
+
+    let casesStr =
+        cases
+        |> List.map (fun (pat, guardOpt, body) ->
+            // Get comments for this case body
+            let caseBodyComments =
+                comments
+                |> List.filter (fun c -> c.Pos.Line >= body.Pos.Line)
+            formatCaseWithComments (indent + defaultIndent) (pat, guardOpt, body) caseBodyComments)
+        |> String.concat (sprintf "\n%s" caseSpaces)
+
+    sprintf "match %s with%s\n%s%s"
+        (formatExpr 0 scrut)
+        trailingStr
+        caseSpaces
+        casesStr
+
+and private formatCaseWithComments indent (pat, guardOpt, body) comments : string =
+    let patStr = formatPattern pat
+    let guardStr =
+        match guardOpt with
+        | Some guard -> sprintf " when %s" (formatExpr 0 guard)
+        | None -> ""
+
+    // Format body with comments
+    let bodyStr =
+        match body.Node with
+        | ELet _ | ELetRec _ | EIf _ | EMatch _ | EBlock _ ->
+            sprintf "\n%s%s"
+                (String.replicate (indent + defaultIndent) " ")
+                (formatExprWithCommentsRecursive (indent + defaultIndent) body comments)
+        | _ -> formatExpr 0 body
+
+    sprintf "| %s%s -> %s" patStr guardStr bodyStr
+
+and private formatBlockWithComments indent exprs comments : string =
+    let spaces = String.replicate indent " "
+    exprs
+    |> List.map (fun expr ->
+        let exprComments =
+            comments
+            |> List.filter (fun c -> c.Pos.Line <= expr.Pos.Line || c.Pos.Line < (expr.Pos.Line + 10))
+        formatExprWithCommentsRecursive indent expr exprComments)
+    |> String.concat (sprintf "\n%s" spaces)
+
+/// Format a program with comments preserved
+let formatProgramWithComments (program: Program) (comments: Comment list) : string =
+    // Group comments by their relationship to AST nodes
+    let commentMap = buildLineCommentMap comments
+
+    // Find comments that don't belong to any expression (file-level leading comments)
+    let firstExprLine =
+        match program.MainExpr with
+        | Some expr -> expr.Pos.Line
+        | None ->
+            match program.TypeDefs with
+            | [] -> 0
+            | td :: _ -> 1  // Type defs start at line 1
+
+    // File-level leading comments (before any code)
+    let fileLevelComments =
+        comments
+        |> List.filter (fun c -> c.Pos.Line < firstExprLine)
+        |> List.sortBy (fun c -> c.Pos.Line)
+
+    let fileLevelStr =
+        fileLevelComments
+        |> List.map (fun c -> sprintf "//%s\n" c.Text)
+        |> String.concat ""
+
+    // Type definitions (currently no comment support)
+    let typeDefsStr =
+        if List.isEmpty program.TypeDefs then ""
+        else formatTypeDefs program.TypeDefs + "\n\n"
+
+    // Main expression with comments
+    let exprStr =
+        match program.MainExpr with
+        | Some expr ->
+            // Get comments associated with the main expression
+            let exprComments =
+                comments
+                |> List.filter (fun c -> c.Pos.Line >= firstExprLine)
+            formatExprWithCommentsRecursive 0 expr exprComments
+        | None -> ""
+
+    fileLevelStr + typeDefsStr + exprStr

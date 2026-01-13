@@ -197,17 +197,57 @@ type Tree 'a = Leaf of 'a | Node of Tree 'a * Tree 'a
 funlang <file>              # Run a file
 funlang -e "<expr>"         # Evaluate expression
 funlang -i                  # Interactive REPL
+funlang --emit              # Output formatted source to stdout
+funlang --emit output.fun   # Output formatted source to file
 funlang --show-tokens       # Display lexer tokens
 funlang --show-ast          # Display parsed AST
 funlang --show-types        # Display inferred types
 funlang -d                  # Full debug mode
 ```
 
+### Source Formatting (`--emit`)
+
+The `--emit` option parses your source code and outputs it in a normalized format, **preserving comments**.
+
+```bash
+# Format to stdout
+dotnet run --project src/FunLang -- myprogram.fun --emit
+
+# Format to file
+dotnet run --project src/FunLang -- myprogram.fun --emit formatted.fun
+```
+
+**Comment preservation:**
+```funlang
+// Input
+// Calculate factorial
+let rec fact = fun n ->
+  if n = 0 then 1
+  else n * fact (n - 1)  // recursive case
+
+fact 5
+
+// Output (--emit) - comments preserved
+// Calculate factorial
+let rec fact = fun n ->
+  if n = 0 then 1
+  else n * fact (n - 1)  // recursive case
+
+fact 5
+```
+
+See `docs/emit-algorithm.md` for implementation details.
+
 ## Learning More
 
 ### Grammar & Syntax
 - `docs/grammar.md` - Language grammar documentation
 - `docs/funlang.ebnf` - Formal EBNF grammar
+
+### Internals
+- `docs/emit-algorithm.md` - Source formatting (`--emit`) algorithm
+- `docs/indentation.md` - Indentation-based parsing
+- `docs/TYPE_SYSTEM_ALGORITHM.md` - Type inference (Algorithm W)
 
 ### Examples
 The `tests/file-tests/` directory contains many examples:
@@ -218,6 +258,7 @@ The `tests/file-tests/` directory contains many examples:
 | `parse-tests/` | Parsing examples |
 | `error-tests/` | Error message examples |
 | `warning-tests/` | Pattern matching warnings |
+| `format-tests/` | Source formatting (`--emit`) tests |
 | `integrated-tests/` | Complex programs (sorting algorithms) |
 
 **Notable examples:**

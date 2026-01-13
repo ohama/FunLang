@@ -5,10 +5,30 @@
 // 헤더에 module 선언하면 FS0010 에러 발생
 // 상세: docs/build-issues.md #2 참조
 // ============================================================================
+open System.Text
 open FSharp.Text.Lexing
 open FunLang.GeneratedParser
 
 let lexeme = LexBuffer<_>.LexemeString
+
+// =============================================================================
+// Comment Buffer Mechanism
+// FsLex can only return one token at a time, so we buffer comments
+// and return them with the next token (via tokenize wrapper)
+// =============================================================================
+// Stores: (text, line, column) where line/column are 0-based
+let mutable private pendingComment: (string * int * int) option = None
+
+/// Get and clear any pending comment (called after each token)
+/// Returns (text, line, column) where line/column are 0-based
+let getAndClearComment () =
+    let result = pendingComment
+    pendingComment <- None
+    result
+
+/// Set a pending comment with position (called from lineComment rule)
+let private setPendingComment (text: string) (line: int) (col: int) =
+    pendingComment <- Some (text, line, col)
 
 let keywords =
     Map.ofList [
@@ -49,7 +69,7 @@ let newline = '\n'
 rule token = parse
     | whitespace+       { token lexbuf }
     | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
-    | "//"              { lineComment lexbuf }
+    | "//"              { let pos = lexbuf.StartPos in lineComment (StringBuilder()) pos.pos_lnum pos.pos_cnum lexbuf }
     | digit+            { INT (int (lexeme lexbuf)) }
     | '"'               { STRING (stringToken "" lexbuf) }
     | '\'' ['a'-'z']+   { TYPEVAR (typeVarName (lexeme lexbuf)) }
@@ -92,7 +112,17 @@ and stringToken acc = parse
     | eof               { failwith "Unterminated string" }
     | _                 { stringToken (acc + lexeme lexbuf) lexbuf }
 
-and lineComment = parse
-    | newline           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; NEWLINE }
-    | eof               { EOF }
-    | _                 { lineComment lexbuf }
+and lineComment acc line col = parse
+    | newline           {
+        lexbuf.EndPos <- lexbuf.EndPos.NextLine
+        setPendingComment (acc.ToString()) line col
+        NEWLINE
+      }
+    | eof               {
+        setPendingComment (acc.ToString()) line col
+        EOF
+      }
+    | _                 {
+        acc.Append(lexeme lexbuf) |> ignore
+        lineComment acc line col lexbuf
+      }

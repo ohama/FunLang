@@ -55,11 +55,12 @@ let tokenTagToName (tag: int) : string =
     | 40 -> "'let'"
     | 41 -> "'rec'"
     | 42 -> "'in'"
-    | 43 -> "type variable"
-    | 44 -> "identifier"
-    | 45 -> "string"
-    | 46 -> "boolean"
-    | 47 -> "integer"
+    | 43 -> "comment"
+    | 44 -> "type variable"
+    | 45 -> "identifier"
+    | 46 -> "string"
+    | 47 -> "boolean"
+    | 48 -> "integer"
     | _ -> sprintf "token(%d)" tag
 
 /// Get token name from actual token
@@ -116,6 +117,19 @@ type BlockItem =
     | BILetRec of string * LExpr    // let rec f = e (block-local, no IN)
     | BIExpr of LExpr               // standalone expression
 
+/// Get the position of the first item in a block item list
+let blockItemPos (item: BlockItem) : Position =
+    match item with
+    | BILet(_, value) -> value.Pos
+    | BILetRec(_, value) -> value.Pos
+    | BIExpr e -> e.Pos
+
+/// Create a Located value with position from the next block item
+let locateFromRest (rest: BlockItem list) (node: 'T) : Located<'T> =
+    match rest with
+    | first :: _ -> { Node = node; Pos = blockItemPos first }
+    | [] -> noLoc node
+
 /// Transform a list of block items into a single nested expression
 /// [BILet("x", 10); BILet("y", 20); BIExpr(x+y)]
 /// → ELet("x", 10, ELet("y", 20, x+y))
@@ -139,14 +153,14 @@ let rec blockToExpr (items: BlockItem list) : Expr =
     | BIExpr e :: rest ->
         // Expression for side effects, then continue
         // Use wildcard binding to sequence: let _ = e in rest
-        ELet("_", e, noLoc (blockToExpr rest))
+        ELet("_", e, locateFromRest rest (blockToExpr rest))
 
     | BILet(name, value) :: rest ->
-        // Binding scopes over the rest
-        ELet(name, value, noLoc (blockToExpr rest))
+        // Binding scopes over the rest - body position from next item
+        ELet(name, value, locateFromRest rest (blockToExpr rest))
 
     | BILetRec(name, value) :: rest ->
-        ELetRec(name, value, noLoc (blockToExpr rest))
+        ELetRec(name, value, locateFromRest rest (blockToExpr rest))
 
 %}
 
@@ -156,6 +170,7 @@ let rec blockToExpr (items: BlockItem list) : Expr =
 %token <string> STRING
 %token <string> IDENT
 %token <string> TYPEVAR
+%token <string> COMMENT
 
 // Keywords
 %token LET REC IN

@@ -1,0 +1,11 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+// compute value
+let x = 1  // initial
+x + 1
+
+// --EXPECTED
+
+// compute value
+let x = 1  // initial
+x + 1

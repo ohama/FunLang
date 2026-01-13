@@ -4,6 +4,7 @@ open FSharp.Text.Lexing
 open FunLang.Ast
 open FunLang.Errors
 open FunLang.GeneratedParser
+open FunLang.CommentCollector
 
 /// Re-export token type for external use
 type Token = token
@@ -15,27 +16,43 @@ type LexResult = Result<Token list, FunLangError>
 // Raw Tokenization (without indentation processing)
 // =============================================================================
 
-/// Tokenize with position information (raw, no indentation processing)
-let tokenizeRawWithPositions (input: string) : Result<(Token * Position) list, FunLangError> =
+/// Tokenize with position information and comment collection (raw, no indentation processing)
+let tokenizeRawWithComments (input: string) : Result<(Token * Position) list * Comment list, FunLangError> =
     if isNull input then
         Error (Error.lexerMsg "null input" { Line = 1; Column = 1; File = None })
     else
     let lexbuf = LexBuffer<char>.FromString(input)
     try
-        let rec loop acc =
+        let rec loop tokAcc commentAcc =
             let tok = FunLang.GeneratedLexer.token lexbuf
             // Capture StartPos AFTER tokenizing - this gives the actual start of the matched token
             let startPos = lexbuf.StartPos
             let pos = { Line = startPos.Line + 1; Column = startPos.Column + 1; File = None }
+
+            // Check for pending comment from lexer buffer
+            let commentAcc' =
+                match FunLang.GeneratedLexer.getAndClearComment () with
+                | Some (commentText, line, col) ->
+                    // line and col are 0-based from lexbuf, convert to 1-based
+                    let commentPos = { Line = line + 1; Column = col + 1; File = None }
+                    let comment = { Text = commentText; Pos = commentPos; Kind = LineComment }
+                    comment :: commentAcc
+                | None -> commentAcc
+
             match tok with
-            | EOF -> Ok (List.rev ((EOF, pos) :: acc))
-            | _ -> loop ((tok, pos) :: acc)
-        loop []
+            | EOF -> Ok (List.rev ((EOF, pos) :: tokAcc), List.rev commentAcc')
+            | _ -> loop ((tok, pos) :: tokAcc) commentAcc'
+        loop [] []
     with
     | ex ->
         let startPos = lexbuf.StartPos
         let pos = { Line = startPos.Line + 1; Column = startPos.Column + 1; File = None }
         Error (Error.lexerMsg ex.Message pos)
+
+/// Tokenize with position information (raw, no indentation processing)
+let tokenizeRawWithPositions (input: string) : Result<(Token * Position) list, FunLangError> =
+    tokenizeRawWithComments input
+    |> Result.map fst
 
 /// Tokenize without indentation processing (raw tokens)
 let tokenizeRaw (input: string) : Result<Token list, FunLangError> =
@@ -141,6 +158,20 @@ let parseProgramString (input: string) : Result<Program, string> =
     match tokenizeWithPositions input with
     | Error e -> Error e.Message
     | Ok tokensWithPos -> parseProgramWithPositions tokensWithPos
+
+/// Parse a string to Program with comment collection
+let parseProgramWithComments (input: string) : Result<Program * Comment list, string> =
+    match tokenizeRawWithComments input with
+    | Error e -> Error e.Message
+    | Ok (tokensWithPos, comments) ->
+        // Process indentation on tokens (comments already extracted)
+        match Indentation.processIndentationWithPositions tokensWithPos with
+        | Error e -> Error e.Message
+        | Ok processedTokens ->
+            // Parse tokens to Program
+            match parseProgramWithPositions processedTokens with
+            | Error e -> Error e
+            | Ok program -> Ok (program, comments)
 
 /// Parse a string directly (tokenize + parse) - extracts main expression
 let parseString (input: string) : Result<LExpr, string> =

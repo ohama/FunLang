@@ -42,12 +42,22 @@ let rec formatValue = function
     | VConstructed (name, None) -> name
     | VConstructed (name, Some v) -> sprintf "%s %s" name (formatValue v)
 
-/// Emit formatted source code
-let emitFormatted (opts: RunOptions) (program: Ast.Program) : bool =
+/// Emit formatted source code with comment preservation
+let emitFormatted (opts: RunOptions) (input: string) : bool =
     match opts.EmitPath with
     | None -> false  // No emit requested
     | Some pathOpt ->
-        let formatted = Fmt.formatProgram program
+        // Parse with comments for comment-aware formatting
+        let formatted =
+            match parseProgramWithComments input with
+            | Ok (program, comments) ->
+                Fmt.formatProgramWithComments program comments
+            | Error _ ->
+                // Fallback: parse without comments (shouldn't happen in normal flow)
+                match parseProgramString input with
+                | Ok program -> Fmt.formatProgram program
+                | Error _ -> ""
+
         match pathOpt with
         | None ->
             // stdout
@@ -97,7 +107,7 @@ let runExpr (opts: RunOptions) (input: string) =
                 logInfo Parser "Parsing complete"
 
                 // Handle --emit option (output formatted source and exit)
-                if emitFormatted opts program then
+                if emitFormatted opts input then
                     0
                 else
 
@@ -177,7 +187,7 @@ let runProgram (opts: RunOptions) (input: string) =
                 1
             | Some ast ->
                 // Handle --emit option (output formatted source and exit)
-                if emitFormatted opts resolved then
+                if emitFormatted opts input then
                     0
                 else
 

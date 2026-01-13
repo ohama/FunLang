@@ -1,0 +1,13 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+// function definition
+let double = fun x -> x + x  // doubles the input
+double 5
+
+// --EXPECTED
+
+// function definition
+let double =  // doubles the input
+  fun x ->
+    x + x
+double 5
