@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-13
+
+### Added
+- Add module system (Phase 1 MVP)
+
+### Changed
+- Update README with module system documentation
+
 ## [0.4.0] - 2026-01-13
 
 ### Added
