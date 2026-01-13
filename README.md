@@ -147,6 +147,45 @@ let describe = fun b ->
   | false -> "no"
 ```
 
+### Module System
+
+Organize code into **modules** with explicit exports and qualified access:
+
+```funlang
+module Math =
+  export add, multiply
+
+  let add = fun x -> fun y -> x + y
+  let multiply = fun x -> fun y -> x * y
+
+module Utils =
+  export double
+
+  let double = fun x -> x * 2
+
+// Use qualified names to access module functions
+Math.multiply (Math.add 2 3) (Utils.double 4)  // => 40
+```
+
+**Recursive functions in modules:**
+```funlang
+module Math =
+  export factorial
+
+  let rec factorial = fun n ->
+    if n <= 1 then 1
+    else n * factorial (n - 1)
+
+Math.factorial 5  // => 120
+```
+
+**Module syntax:**
+- `module Name = ...` - Define a module
+- `export fn1, fn2` - Declare exported functions
+- `Module.function` - Access module members
+
+See `docs/module-system-design.md` for the full design specification.
+
 ## Quick Start
 
 ### Requirements
@@ -248,6 +287,7 @@ See `docs/emit-algorithm.md` for implementation details.
 - `docs/emit-algorithm.md` - Source formatting (`--emit`) algorithm
 - `docs/indentation.md` - Indentation-based parsing
 - `docs/TYPE_SYSTEM_ALGORITHM.md` - Type inference (Algorithm W)
+- `docs/module-system-design.md` - Module system design specification
 
 ### Examples
 The `tests/file-tests/` directory contains many examples:
