@@ -292,19 +292,17 @@ let rec eval (env: Env) (lexpr: LExpr) : EvalResult =
         match eval env scrutinee with
         | Error e -> Error e
         | Ok value ->
-            // Track match position and patterns tried for error reporting
-            let matchPos = lexpr.Pos
             let totalPatterns = List.length cases
-            // Try each case in order
-            let rec tryCase cases triedCount =
+            // Try each case in order, tracking last pattern position for error reporting
+            let rec tryCase cases lastPatternPos =
                 match cases with
                 | [] ->
                     let valueStr = sprintf "%A" value
                     let msg = sprintf "No pattern matched for value: %s (tried %d pattern(s))" valueStr totalPatterns
-                    Error (Error.runtime msg (Some matchPos))
+                    Error (Error.runtime msg lastPatternPos)
                 | (pattern, guard, body) :: rest ->
                     match matchPattern pattern value with
-                    | None -> tryCase rest (triedCount + 1)
+                    | None -> tryCase rest (Some pattern.Pos)
                     | Some bindings ->
                         // Extend environment with pattern bindings
                         let env' = Map.fold (fun m k v -> Map.add k v m) env bindings
@@ -315,9 +313,9 @@ let rec eval (env: Env) (lexpr: LExpr) : EvalResult =
                             match eval env' guardExpr with
                             | Error e -> Error e
                             | Ok (VBool true) -> eval env' body
-                            | Ok (VBool false) -> tryCase rest (triedCount + 1)  // Guard failed, try next case
+                            | Ok (VBool false) -> tryCase rest (Some pattern.Pos)  // Guard failed, try next case
                             | Ok v -> Error (Error.runtime (sprintf "Guard must be bool, got %s" (typeOf v)) None)
-            tryCase cases 0
+            tryCase cases None
 
     // Constructor expression
     | EConstructor (name, None) ->

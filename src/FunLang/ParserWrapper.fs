@@ -69,11 +69,17 @@ let mutable private currentTokenPosition : Position = { Line = 1; Column = 1; Fi
 
 /// Create a lexer function from a token list with positions
 let private makeListLexerWithPositions (tokensWithPos: (Token * Position) list ref) : (LexBuffer<char> -> token) =
-    fun _ ->
+    fun lexbuf ->
         match !tokensWithPos with
         | [] -> EOF
         | (t, pos) :: rest ->
             currentTokenPosition <- pos
+            // Update lexbuf position so parseState.InputStartPosition works correctly
+            // Position is 1-based in our system, but LexBuffer uses 0-based internally
+            let lexPos = FSharp.Text.Lexing.Position.Empty
+            let lexPos = { lexPos with pos_lnum = pos.Line - 1; pos_cnum = pos.Column - 1 }
+            lexbuf.StartPos <- lexPos
+            lexbuf.EndPos <- lexPos
             tokensWithPos := rest
             t
 

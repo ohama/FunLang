@@ -5,5 +5,9 @@ match 1 with
 
 // --EXPECTED
 
-error[E303]: No pattern matched
+error[E303]: No pattern matched for value: VInt 1 (tried 1 pattern(s))
+  --> :2:3
+  |
+2 | | 0 -> "zero"
+  |   ^
    = info: operation not supported

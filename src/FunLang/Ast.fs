@@ -10,7 +10,7 @@ type Position = {
     File: string option
 }
 
-let noPos = { Line = 0; Column = 0; File = None }
+let noPos = { Line = 1; Column = 1; File = None }
 
 // =============================================================================
 // Located<'T> - Wrapper for AST nodes with position information
