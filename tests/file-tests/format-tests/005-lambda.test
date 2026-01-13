@@ -1,0 +1,8 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+fun x -> x + 1
+
+// --EXPECTED
+
+fun x ->
+  x + 1

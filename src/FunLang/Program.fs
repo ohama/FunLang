@@ -15,6 +15,7 @@ open FunLang.ErrorFormatter
 open FunLang.PatternAnalysis
 
 module Diag = FunLang.Diagnostic
+module Fmt = FunLang.Formatter
 
 let version = "0.1.0"
 
@@ -40,6 +41,22 @@ let rec formatValue = function
     | VRecClosure _ -> "<function>"
     | VConstructed (name, None) -> name
     | VConstructed (name, Some v) -> sprintf "%s %s" name (formatValue v)
+
+/// Emit formatted source code
+let emitFormatted (opts: RunOptions) (program: Ast.Program) : bool =
+    match opts.EmitPath with
+    | None -> false  // No emit requested
+    | Some pathOpt ->
+        let formatted = Fmt.formatProgram program
+        match pathOpt with
+        | None ->
+            // stdout
+            printfn "%s" formatted
+        | Some path ->
+            // file
+            IO.File.WriteAllText(path, formatted)
+            printfn "Formatted source written to: %s" path
+        true  // Emit was performed
 
 /// Check if input contains type definitions
 let hasTypeDefinitions (input: string) =
@@ -78,6 +95,11 @@ let runExpr (opts: RunOptions) (input: string) =
                 1
             | Some ast ->
                 logInfo Parser "Parsing complete"
+
+                // Handle --emit option (output formatted source and exit)
+                if emitFormatted opts program then
+                    0
+                else
 
                 if opts.ShowAst then
                     printfn "=== PARSED AST ==="
@@ -154,6 +176,11 @@ let runProgram (opts: RunOptions) (input: string) =
                 eprintfn "Error: No main expression in program"
                 1
             | Some ast ->
+                // Handle --emit option (output formatted source and exit)
+                if emitFormatted opts resolved then
+                    0
+                else
+
                 if opts.ShowAst then
                     printfn "=== PARSED AST ==="
                     printfn "  TypeDefs: %A" program.TypeDefs

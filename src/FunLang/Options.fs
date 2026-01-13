@@ -23,6 +23,7 @@ type CliArgs =
     | No_Color
     | No_Prelude
     | Explain of codes: string
+    | [<AltCommandLine("-o")>] Emit of path: string option
     | Version
 
     interface IArgParserTemplate with
@@ -43,6 +44,7 @@ type CliArgs =
             | No_Color -> "Disable colored output"
             | No_Prelude -> "Don't load standard prelude"
             | Explain _ -> "Show error explanation (e.g., --explain E202 or --explain all)"
+            | Emit _ -> "Emit formatted source code (--emit for stdout, --emit file.fun for file)"
             | Version -> "Show version"
 
 // =============================================================================
@@ -90,6 +92,11 @@ let parseOptions (results: ParseResults<CliArgs>) : Logging.RunOptions =
         TracePhases = tracePhases
         NoColor = results.Contains No_Color
         NoPrelude = results.Contains No_Prelude
+        EmitPath =
+            if results.Contains Emit then
+                Some (results.TryGetResult Emit |> Option.flatten)
+            else
+                None
     }
 
 // =============================================================================

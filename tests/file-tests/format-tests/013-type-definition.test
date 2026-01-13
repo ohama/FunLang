@@ -1,0 +1,11 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit
+// --INPUT
+type Option 'a = None | Some of 'a
+
+None
+
+// --EXPECTED
+
+type Option 'a = None | Some of 'a
+
+None

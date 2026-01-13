@@ -1,0 +1,8 @@
+// Roundtrip test: format then execute - should produce same result
+// --COMMAND: dotnet run --project src/FunLang -- %s --emit | dotnet run --project src/FunLang -- -e "$(cat)"
+// --INPUT
+(1 + 2) * 3
+
+// --EXPECTED
+
+9

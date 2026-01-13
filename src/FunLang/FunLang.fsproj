@@ -40,6 +40,7 @@
   -->
   <ItemGroup>
     <Compile Include="Ast.fs" />
+    <Compile Include="Formatter.fs" />
     <Compile Include="Errors.fs" />
     <Compile Include="Suggestions.fs" />
     <Compile Include="Types.fs" />

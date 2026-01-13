@@ -38,6 +38,7 @@ type RunOptions = {
     TracePhases: Set<Phase>
     NoColor: bool
     NoPrelude: bool
+    EmitPath: string option option  // None = not used, Some None = stdout, Some (Some path) = file
 }
 
 let defaultOptions = {
@@ -53,6 +54,7 @@ let defaultOptions = {
     TracePhases = Set.empty
     NoColor = false
     NoPrelude = false
+    EmitPath = None
 }
 
 // =============================================================================
