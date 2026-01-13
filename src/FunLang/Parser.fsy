@@ -323,11 +323,19 @@ nl_opt:
 // Pattern Matching
 // =============================================================================
 
-// Handle optional NEWLINE between match cases (for indented match expressions)
-match_cases:
+// Inline match cases: NO NEWLINE allowed between cases (all on same line)
+// Used when match starts inline: `match x with | a -> e1 | b -> e2`
+match_cases_inline:
     | match_case                            { [$1] }
-    | match_case match_cases                { $1 :: $2 }
-    | match_case NEWLINE match_cases        { $1 :: $3 }
+    | match_case match_cases_inline         { $1 :: $2 }
+;
+
+// Block match cases: NEWLINE allowed between cases (indented style)
+// Used when match starts with NEWLINE/INDENT after WITH
+match_cases_block:
+    | match_case                            { [$1] }
+    | match_case match_cases_block          { $1 :: $2 }
+    | match_case NEWLINE match_cases_block  { $1 :: $3 }
 ;
 
 match_case:
@@ -336,11 +344,13 @@ match_case:
 ;
 
 // Handle NEWLINE/INDENT before first PIPE (for indented match)
+// Key: inline cases use match_cases_inline (no NEWLINE between cases)
+//      block cases use match_cases_block (NEWLINE allowed)
 match_cases_start:
-    | match_cases                           { $1 }
-    | NEWLINE match_cases                   { $2 }
-    | NEWLINE INDENT match_cases DEDENT     { $3 }
-    | INDENT match_cases DEDENT             { $2 }
+    | match_cases_inline                    { $1 }
+    | NEWLINE match_cases_block             { $2 }
+    | NEWLINE INDENT match_cases_block DEDENT { $3 }
+    | INDENT match_cases_block DEDENT       { $2 }
 ;
 
 pattern:
