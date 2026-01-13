@@ -355,3 +355,56 @@ module TypeDefEnvBuilder =
         typeDefs
         |> List.map buildFromTypeDef
         |> List.fold (fun acc env -> Map.fold (fun a k v -> Map.add k v a) acc env) Map.empty
+
+// =============================================================================
+// Type Definition Registry (for Pattern Analysis)
+// =============================================================================
+//
+// Maps type names to their constructor information.
+// Used for exhaustiveness and redundancy checking.
+// =============================================================================
+
+/// Information about a user-defined type
+type TypeDefInfo = {
+    Name: string
+    TypeParams: string list
+    Constructors: (string * int) list  // (constructor name, arity)
+}
+
+/// Registry mapping type names to their definitions
+type TypeDefRegistry = Map<string, TypeDefInfo>
+
+module TypeDefRegistryBuilder =
+    open FunLang.Ast
+
+    /// Build a type definition registry from type definitions
+    let buildTypeDefRegistry (typeDefs: TypeDef list) : TypeDefRegistry =
+        typeDefs
+        |> List.map (fun td ->
+            let ctors =
+                td.Constructors
+                |> List.map (fun (name, argOpt: TypeExpr option) ->
+                    let arity = match argOpt with Some _ -> 1 | None -> 0
+                    (name, arity))
+            let info: TypeDefInfo = {
+                Name = td.Name
+                TypeParams = td.TypeParams
+                Constructors = ctors
+            }
+            (td.Name, info))
+        |> Map.ofList
+
+    /// Get all constructors for a type (returns None if type has infinite domain)
+    let getConstructors (t: Type) (registry: TypeDefRegistry) : (string * int) list option =
+        match t with
+        | TConstructor (typeName, _) ->
+            Map.tryFind typeName registry
+            |> Option.map (fun info -> info.Constructors)
+        | TBool -> Some [("true", 0); ("false", 0)]
+        | TList _ -> Some [("[]", 0); ("::", 2)]
+        | TUnit -> Some [("()", 0)]
+        | TTuple _ -> Some [("tuple", 0)]  // Tuple has single constructor (conceptually)
+        | TInt -> None     // Infinite domain
+        | TString -> None  // Infinite domain
+        | TVar _ -> None   // Unknown type
+        | TFun _ -> None   // Functions can't be pattern matched

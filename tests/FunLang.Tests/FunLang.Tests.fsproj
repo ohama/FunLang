@@ -29,6 +29,7 @@
     <Compile Include="ErrorExplanationTests.fs" />
     <Compile Include="DiagnosticTests.fs" />
     <Compile Include="ErrorFormatterTests.fs" />
+    <Compile Include="PatternAnalysisTests.fs" />
     <Compile Include="FileBasedTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
