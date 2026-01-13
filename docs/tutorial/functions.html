@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functions - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Functions</h1>
+
+        <p>Functions are first-class values in FunLang. They can be assigned to variables, passed as arguments, and returned from other functions.</p>
+
+        <h2 id="lambda">Lambda Expressions</h2>
+        <p>Functions are created using the <code>fun</code> keyword:</p>
+
+        <div class="example">
+            <div class="example-header">Basic lambda</div>
+            <pre><code><span class="keyword">fun</span> x -> x + <span class="number">1</span></code></pre>
+            <div class="example-result">=> &lt;function&gt;</div>
+        </div>
+
+        <h3>Naming Functions</h3>
+        <p>Bind a function to a name with <code>let</code>:</p>
+
+        <div class="example">
+            <div class="example-header">Named function</div>
+            <pre><code><span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+
+double <span class="number">21</span></code></pre>
+            <div class="example-result">=> 42</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">More examples</div>
+            <pre><code><span class="keyword">let</span> square = <span class="keyword">fun</span> x -> x * x
+<span class="keyword">let</span> negate = <span class="keyword">fun</span> x -> -x
+<span class="keyword">let</span> isPositive = <span class="keyword">fun</span> x -> x > <span class="number">0</span>
+
+(square <span class="number">5</span>, negate <span class="number">3</span>, isPositive <span class="number">10</span>)</code></pre>
+            <div class="example-result">=> (25, -3, true)</div>
+        </div>
+
+        <h3>Function Types</h3>
+        <p>Function types are written as <code>input -> output</code>:</p>
+        <ul>
+            <li><code>fun x -> x + 1</code> has type <code>int -> int</code></li>
+            <li><code>fun x -> x > 0</code> has type <code>int -> bool</code></li>
+            <li><code>fun x -> x</code> has type <code>'a -> 'a</code> (polymorphic identity)</li>
+        </ul>
+
+        <h2 id="currying">Currying</h2>
+        <p>Multi-parameter functions are represented as nested functions (currying):</p>
+
+        <div class="example">
+            <div class="example-header">Curried function</div>
+            <pre><code><span class="comment">// A function that takes x, then returns a function that takes y</span>
+<span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+
+<span class="comment">// Full application</span>
+add <span class="number">3</span> <span class="number">4</span></code></pre>
+            <div class="example-result">=> 7</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            <code>add 3 4</code> is parsed as <code>(add 3) 4</code>. First <code>add 3</code> returns a function, then that function is applied to <code>4</code>.
+        </div>
+
+        <h3>Partial Application</h3>
+        <p>Apply some but not all arguments to create a specialized function:</p>
+
+        <div class="example">
+            <div class="example-header">Partial application</div>
+            <pre><code><span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+
+<span class="comment">// Partial application: add5 is a function waiting for one more argument</span>
+<span class="keyword">let</span> add5 = add <span class="number">5</span>
+
+add5 <span class="number">10</span></code></pre>
+            <div class="example-result">=> 15</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Multiple partial applications</div>
+            <pre><code><span class="keyword">let</span> multiply = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x * y
+
+<span class="keyword">let</span> double = multiply <span class="number">2</span>
+<span class="keyword">let</span> triple = multiply <span class="number">3</span>
+
+(double <span class="number">5</span>, triple <span class="number">5</span>)</code></pre>
+            <div class="example-result">=> (10, 15)</div>
+        </div>
+
+        <h3>Three or More Parameters</h3>
+        <div class="example">
+            <div class="example-header">Three parameters</div>
+            <pre><code><span class="keyword">let</span> addThree = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> <span class="keyword">fun</span> z -> x + y + z
+
+addThree <span class="number">1</span> <span class="number">2</span> <span class="number">3</span></code></pre>
+            <div class="example-result">=> 6</div>
+        </div>
+
+        <h2 id="higher-order">Higher-Order Functions</h2>
+        <p>Functions that take functions as arguments or return functions are called higher-order functions.</p>
+
+        <h3>Functions as Arguments</h3>
+        <div class="example">
+            <div class="example-header">Apply twice</div>
+            <pre><code><span class="keyword">let</span> applyTwice = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> x -> f (f x)
+
+<span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+applyTwice double <span class="number">3</span></code></pre>
+            <div class="example-result">=> 12</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Compose functions</div>
+            <pre><code><span class="keyword">let</span> compose = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> g -> <span class="keyword">fun</span> x -> f (g x)
+
+<span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+<span class="keyword">let</span> addOne = <span class="keyword">fun</span> x -> x + <span class="number">1</span>
+
+<span class="keyword">let</span> doubleThenAddOne = compose addOne double
+doubleThenAddOne <span class="number">5</span></code></pre>
+            <div class="example-result">=> 11</div>
+        </div>
+
+        <h3>Common Higher-Order Patterns</h3>
+        <div class="example">
+            <div class="example-header">Map over a list</div>
+            <pre><code><span class="keyword">let rec</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t -> f h :: map f t
+
+<span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+map double [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>]</code></pre>
+            <div class="example-result">=> [2; 4; 6]</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Filter a list</div>
+            <pre><code><span class="keyword">let rec</span> filter = <span class="keyword">fun</span> pred -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t ->
+      <span class="keyword">if</span> pred h <span class="keyword">then</span> h :: filter pred t
+      <span class="keyword">else</span> filter pred t
+
+<span class="keyword">let</span> isEven = <span class="keyword">fun</span> x -> x % <span class="number">2</span> = <span class="number">0</span>
+filter isEven [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>; <span class="number">6</span>]</code></pre>
+            <div class="example-result">=> [2; 4; 6]</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Fold (reduce) a list</div>
+            <pre><code><span class="keyword">let rec</span> fold = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> acc
+  | h :: t -> fold f (f acc h) t
+
+<span class="comment">// Sum using fold</span>
+<span class="keyword">let</span> add = <span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a + b
+fold add <span class="number">0</span> [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> 15</div>
+        </div>
+
+        <h2 id="recursion">Recursion</h2>
+        <p>Recursive functions must be declared with <code>let rec</code>:</p>
+
+        <div class="example">
+            <div class="example-header">Factorial</div>
+            <pre><code><span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+  <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)
+
+factorial <span class="number">5</span></code></pre>
+            <div class="example-result">=> 120</div>
+        </div>
+
+        <div class="warning">
+            <div class="note-title">Important</div>
+            Without <code>rec</code>, the function name is not visible inside its own body. Always use <code>let rec</code> for recursive functions.
+        </div>
+
+        <h3>Why <code>rec</code> is Required</h3>
+        <pre><code><span class="comment">// This would NOT work (factorial not in scope):</span>
+<span class="keyword">let</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+  <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)  <span class="comment">// Error: factorial not defined</span>
+
+<span class="comment">// This works:</span>
+<span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+  <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)  <span class="comment">// OK: rec makes it visible</span></code></pre>
+
+        <h3>Recursive List Functions</h3>
+        <div class="example">
+            <div class="example-header">Reverse a list</div>
+            <pre><code><span class="keyword">let rec</span> reverse = <span class="keyword">fun</span> xs ->
+  <span class="keyword">let rec</span> helper = <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> ys ->
+    <span class="keyword">match</span> ys <span class="keyword">with</span>
+    | [] -> acc
+    | h :: t -> helper (h :: acc) t
+  helper [] xs
+
+reverse [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>]</code></pre>
+            <div class="example-result">=> [4; 3; 2; 1]</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Append two lists</div>
+            <pre><code><span class="keyword">let rec</span> append = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | h :: t -> h :: append t ys
+
+append [<span class="number">1</span>; <span class="number">2</span>] [<span class="number">3</span>; <span class="number">4</span>]</code></pre>
+            <div class="example-result">=> [1; 2; 3; 4]</div>
+        </div>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            When writing recursive functions on lists, always handle the base case (empty list <code>[]</code>) first, then the recursive case (<code>h :: t</code>).
+        </div>
+
+        <div class="page-nav">
+            <a href="data-structures.html" class="prev">Data Structures</a>
+            <a href="control-flow.html" class="next">Control Flow</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Structures - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Data Structures</h1>
+
+        <p>FunLang provides two built-in compound data structures: tuples and lists.</p>
+
+        <h2 id="tuples">Tuples</h2>
+        <p>Tuples group multiple values of potentially different types into a single value.</p>
+
+        <h3>Creating Tuples</h3>
+        <pre><code><span class="comment">// Pair (2-tuple)</span>
+(<span class="number">1</span>, <span class="number">2</span>)
+
+<span class="comment">// Triple (3-tuple)</span>
+(<span class="string">"hello"</span>, <span class="number">42</span>, <span class="keyword">true</span>)
+
+<span class="comment">// Nested tuples</span>
+((<span class="number">1</span>, <span class="number">2</span>), (<span class="number">3</span>, <span class="number">4</span>))
+
+<span class="comment">// Mixed types</span>
+(<span class="string">"name"</span>, <span class="number">25</span>, [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>])</code></pre>
+
+        <h3>Tuple Types</h3>
+        <p>Tuple types are written with <code>*</code> between element types:</p>
+        <ul>
+            <li><code>(1, 2)</code> has type <code>int * int</code></li>
+            <li><code>("hello", true)</code> has type <code>string * bool</code></li>
+            <li><code>(1, "a", true)</code> has type <code>int * string * bool</code></li>
+        </ul>
+
+        <h3>Destructuring Tuples</h3>
+        <p>Use pattern matching to extract tuple elements:</p>
+
+        <div class="example">
+            <div class="example-header">Tuple destructuring</div>
+            <pre><code><span class="keyword">let</span> pair = (<span class="number">10</span>, <span class="number">20</span>)
+
+<span class="keyword">match</span> pair <span class="keyword">with</span>
+| (x, y) -> x + y</code></pre>
+            <div class="example-result">=> 30</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Swap function</div>
+            <pre><code><span class="keyword">let</span> swap = <span class="keyword">fun</span> pair ->
+  <span class="keyword">match</span> pair <span class="keyword">with</span>
+  | (a, b) -> (b, a)
+
+swap (<span class="number">1</span>, <span class="number">2</span>)</code></pre>
+            <div class="example-result">=> (2, 1)</div>
+        </div>
+
+        <h3>Tuple in Let Binding</h3>
+        <div class="example">
+            <div class="example-header">Pattern in let</div>
+            <pre><code><span class="keyword">let</span> point = (<span class="number">3</span>, <span class="number">4</span>)
+
+<span class="keyword">match</span> point <span class="keyword">with</span>
+| (x, y) ->
+    <span class="keyword">let</span> squared = x * x + y * y
+    squared</code></pre>
+            <div class="example-result">=> 25</div>
+        </div>
+
+        <h2 id="lists">Lists</h2>
+        <p>Lists are homogeneous sequences - all elements must have the same type.</p>
+
+        <h3>Creating Lists</h3>
+        <pre><code><span class="comment">// Empty list</span>
+[]
+
+<span class="comment">// List of integers</span>
+[<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>]
+
+<span class="comment">// List of strings</span>
+[<span class="string">"a"</span>; <span class="string">"b"</span>; <span class="string">"c"</span>]
+
+<span class="comment">// List of booleans</span>
+[<span class="keyword">true</span>; <span class="keyword">false</span>; <span class="keyword">true</span>]
+
+<span class="comment">// Nested lists</span>
+[[<span class="number">1</span>; <span class="number">2</span>]; [<span class="number">3</span>; <span class="number">4</span>]; [<span class="number">5</span>; <span class="number">6</span>]]</code></pre>
+
+        <h3>The Cons Operator (::)</h3>
+        <p>The <code>::</code> operator prepends an element to a list:</p>
+
+        <div class="example">
+            <div class="example-header">Cons operator</div>
+            <pre><code><span class="comment">// Prepend to list</span>
+<span class="number">1</span> :: [<span class="number">2</span>; <span class="number">3</span>]</code></pre>
+            <div class="example-result">=> [1; 2; 3]</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Building lists with cons</div>
+            <pre><code><span class="comment">// Build list from empty</span>
+<span class="number">1</span> :: <span class="number">2</span> :: <span class="number">3</span> :: []</code></pre>
+            <div class="example-result">=> [1; 2; 3]</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            The cons operator <code>::</code> is right-associative, so <code>1 :: 2 :: 3 :: []</code> is parsed as <code>1 :: (2 :: (3 :: []))</code>.
+        </div>
+
+        <h3>List Types</h3>
+        <p>List types are written as <code>element_type list</code>:</p>
+        <ul>
+            <li><code>[1; 2; 3]</code> has type <code>int list</code></li>
+            <li><code>["a"; "b"]</code> has type <code>string list</code></li>
+            <li><code>[[1]; [2]]</code> has type <code>int list list</code></li>
+            <li><code>[]</code> has type <code>'a list</code> (polymorphic empty list)</li>
+        </ul>
+
+        <h3>Pattern Matching on Lists</h3>
+        <p>Lists have two patterns: empty list <code>[]</code> and cons <code>head :: tail</code>.</p>
+
+        <div class="example">
+            <div class="example-header">List head</div>
+            <pre><code><span class="keyword">let</span> head = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>        <span class="comment">// default for empty</span>
+  | h :: _ -> h    <span class="comment">// h is head, _ ignores tail</span>
+
+head [<span class="number">5</span>; <span class="number">4</span>; <span class="number">3</span>]</code></pre>
+            <div class="example-result">=> 5</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">List length</div>
+            <pre><code><span class="keyword">let rec</span> length = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | _ :: t -> <span class="number">1</span> + length t
+
+length [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> 5</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Sum of list</div>
+            <pre><code><span class="keyword">let rec</span> sum = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | h :: t -> h + sum t
+
+sum [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> 15</div>
+        </div>
+
+        <h3>More List Patterns</h3>
+        <div class="example">
+            <div class="example-header">Matching specific structures</div>
+            <pre><code><span class="keyword">let</span> describe = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="string">"empty"</span>
+  | [x] -> <span class="string">"singleton"</span>
+  | [x; y] -> <span class="string">"pair"</span>
+  | _ -> <span class="string">"many"</span>
+
+describe [<span class="number">1</span>; <span class="number">2</span>]</code></pre>
+            <div class="example-result">=> "pair"</div>
+        </div>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            Always handle the empty list case <code>[]</code> when writing recursive list functions to avoid infinite recursion.
+        </div>
+
+        <h3>Combining Tuples and Lists</h3>
+        <div class="example">
+            <div class="example-header">List of tuples</div>
+            <pre><code><span class="keyword">let</span> points = [(<span class="number">1</span>, <span class="number">2</span>); (<span class="number">3</span>, <span class="number">4</span>); (<span class="number">5</span>, <span class="number">6</span>)]
+
+<span class="keyword">let rec</span> sumX = <span class="keyword">fun</span> pts ->
+  <span class="keyword">match</span> pts <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | (x, _) :: rest -> x + sumX rest
+
+sumX points</code></pre>
+            <div class="example-result">=> 9</div>
+        </div>
+
+        <div class="page-nav">
+            <a href="basics.html" class="prev">Basics</a>
+            <a href="functions.html" class="next">Functions</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

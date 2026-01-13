@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Types - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Type System</h1>
+
+        <p>FunLang is statically typed with automatic type inference. You rarely need to write type annotations - the compiler figures out types for you.</p>
+
+        <h2 id="type-inference">Type Inference</h2>
+        <p>FunLang uses the Hindley-Milner type inference algorithm (Algorithm W) to automatically determine types:</p>
+
+        <h3>Basic Types</h3>
+        <table>
+            <tr><th>Type</th><th>Description</th><th>Examples</th></tr>
+            <tr><td><code>int</code></td><td>Integer numbers</td><td><code>42</code>, <code>-17</code>, <code>0</code></td></tr>
+            <tr><td><code>bool</code></td><td>Boolean values</td><td><code>true</code>, <code>false</code></td></tr>
+            <tr><td><code>string</code></td><td>Text strings</td><td><code>"hello"</code>, <code>""</code></td></tr>
+            <tr><td><code>unit</code></td><td>Unit (no value)</td><td><code>()</code></td></tr>
+        </table>
+
+        <h3>Compound Types</h3>
+        <table>
+            <tr><th>Type</th><th>Description</th><th>Examples</th></tr>
+            <tr><td><code>T1 * T2</code></td><td>Tuple</td><td><code>int * string</code></td></tr>
+            <tr><td><code>T list</code></td><td>List</td><td><code>int list</code>, <code>string list</code></td></tr>
+            <tr><td><code>T1 -> T2</code></td><td>Function</td><td><code>int -> int</code></td></tr>
+        </table>
+
+        <h3>Inferred Types</h3>
+        <pre><code><span class="comment">// int -> int</span>
+<span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+
+<span class="comment">// int -> bool</span>
+<span class="keyword">let</span> isPositive = <span class="keyword">fun</span> x -> x > <span class="number">0</span>
+
+<span class="comment">// string -> string -> string</span>
+<span class="keyword">let</span> greet = <span class="keyword">fun</span> name -> <span class="keyword">fun</span> greeting -> greeting ^ <span class="string">", "</span> ^ name
+
+<span class="comment">// int list -> int</span>
+<span class="keyword">let rec</span> sum = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | h :: t -> h + sum t</code></pre>
+
+        <h3>Polymorphic Types</h3>
+        <p>Some functions work with any type. These have polymorphic types with type variables (<code>'a</code>, <code>'b</code>, etc.):</p>
+
+        <pre><code><span class="comment">// 'a -> 'a (identity function - works with any type)</span>
+<span class="keyword">let</span> id = <span class="keyword">fun</span> x -> x
+
+<span class="comment">// 'a * 'b -> 'b * 'a (swap tuple elements)</span>
+<span class="keyword">let</span> swap = <span class="keyword">fun</span> pair ->
+  <span class="keyword">match</span> pair <span class="keyword">with</span>
+  | (a, b) -> (b, a)
+
+<span class="comment">// 'a -> 'b -> 'a (returns first argument)</span>
+<span class="keyword">let</span> first = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x
+
+<span class="comment">// ('a -> 'b) -> 'a list -> 'b list</span>
+<span class="keyword">let rec</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t -> f h :: map f t</code></pre>
+
+        <div class="note">
+            <div class="note-title">Type Variables</div>
+            <code>'a</code>, <code>'b</code>, <code>'c</code> are type variables (like generics). They represent "any type" and make functions polymorphic.
+        </div>
+
+        <h3>Viewing Inferred Types</h3>
+        <p>Use the <code>--show-types</code> flag to see inferred types:</p>
+        <pre><code>dotnet run --project src/FunLang -- --show-types myfile.fun</code></pre>
+
+        <h2 id="algebraic-types">Algebraic Data Types</h2>
+        <p>Define your own types using discriminated unions (sum types):</p>
+
+        <h3>Basic Type Definition</h3>
+        <pre><code><span class="keyword">type</span> <span class="type">Color</span> = <span class="type">Red</span> | <span class="type">Green</span> | <span class="type">Blue</span></code></pre>
+
+        <p>Use the constructors to create values:</p>
+        <div class="example">
+            <div class="example-header">Using Color type</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Color</span> = <span class="type">Red</span> | <span class="type">Green</span> | <span class="type">Blue</span>
+
+<span class="keyword">let</span> toHex = <span class="keyword">fun</span> c ->
+  <span class="keyword">match</span> c <span class="keyword">with</span>
+  | <span class="type">Red</span> -> <span class="string">"#FF0000"</span>
+  | <span class="type">Green</span> -> <span class="string">"#00FF00"</span>
+  | <span class="type">Blue</span> -> <span class="string">"#0000FF"</span>
+
+toHex <span class="type">Green</span></code></pre>
+            <div class="example-result">=> "#00FF00"</div>
+        </div>
+
+        <h3>Constructors with Data</h3>
+        <p>Constructors can carry data using <code>of</code>:</p>
+
+        <div class="example">
+            <div class="example-header">Shape type</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Shape</span> =
+  | <span class="type">Circle</span> <span class="keyword">of</span> <span class="type">int</span>
+  | <span class="type">Rectangle</span> <span class="keyword">of</span> <span class="type">int</span> * <span class="type">int</span>
+
+<span class="keyword">let</span> area = <span class="keyword">fun</span> shape ->
+  <span class="keyword">match</span> shape <span class="keyword">with</span>
+  | <span class="type">Circle</span> r -> <span class="number">3</span> * r * r     <span class="comment">// approximation</span>
+  | <span class="type">Rectangle</span> (w, h) -> w * h
+
+area (<span class="type">Rectangle</span> (<span class="number">4</span>, <span class="number">5</span>))</code></pre>
+            <div class="example-result">=> 20</div>
+        </div>
+
+        <h3>Polymorphic Types</h3>
+        <p>Types can have type parameters for genericity:</p>
+
+        <div class="example">
+            <div class="example-header">Option type</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="keyword">let</span> safeDivide = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y ->
+  <span class="keyword">if</span> y = <span class="number">0</span> <span class="keyword">then</span> <span class="type">None</span>
+  <span class="keyword">else</span> <span class="type">Some</span> (x / y)
+
+<span class="keyword">let</span> getOrElse = <span class="keyword">fun</span> default -> <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">None</span> -> default
+  | <span class="type">Some</span> x -> x
+
+getOrElse <span class="number">-1</span> (safeDivide <span class="number">10</span> <span class="number">0</span>)</code></pre>
+            <div class="example-result">=> -1</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Either type</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Either</span> <span class="type">'a</span> <span class="type">'b</span> = <span class="type">Left</span> <span class="keyword">of</span> <span class="type">'a</span> | <span class="type">Right</span> <span class="keyword">of</span> <span class="type">'b</span>
+
+<span class="keyword">let</span> mapRight = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> e ->
+  <span class="keyword">match</span> e <span class="keyword">with</span>
+  | <span class="type">Left</span> x -> <span class="type">Left</span> x
+  | <span class="type">Right</span> y -> <span class="type">Right</span> (f y)
+
+mapRight (<span class="keyword">fun</span> x -> x * <span class="number">2</span>) (<span class="type">Right</span> <span class="number">21</span>)</code></pre>
+            <div class="example-result">=> Right 42</div>
+        </div>
+
+        <h3>Recursive Types</h3>
+        <p>Types can reference themselves for recursive data structures:</p>
+
+        <div class="example">
+            <div class="example-header">Binary Tree</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Tree</span> <span class="type">'a</span> =
+  | <span class="type">Leaf</span> <span class="keyword">of</span> <span class="type">'a</span>
+  | <span class="type">Node</span> <span class="keyword">of</span> <span class="type">Tree</span> <span class="type">'a</span> * <span class="type">Tree</span> <span class="type">'a</span>
+
+<span class="keyword">let rec</span> sumTree = <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> n -> n
+  | <span class="type">Node</span> (left, right) -> sumTree left + sumTree right
+
+<span class="keyword">let</span> myTree = <span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">1</span>, <span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">2</span>, <span class="type">Leaf</span> <span class="number">3</span>))
+sumTree myTree</code></pre>
+            <div class="example-result">=> 6</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Custom List</div>
+            <pre><code><span class="keyword">type</span> <span class="type">MyList</span> <span class="type">'a</span> = <span class="type">Nil</span> | <span class="type">Cons</span> <span class="keyword">of</span> <span class="type">'a</span> * <span class="type">MyList</span> <span class="type">'a</span>
+
+<span class="keyword">let rec</span> myLength = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | <span class="type">Nil</span> -> <span class="number">0</span>
+  | <span class="type">Cons</span> (_, rest) -> <span class="number">1</span> + myLength rest
+
+<span class="keyword">let</span> myList = <span class="type">Cons</span> (<span class="number">1</span>, <span class="type">Cons</span> (<span class="number">2</span>, <span class="type">Cons</span> (<span class="number">3</span>, <span class="type">Nil</span>)))
+myLength myList</code></pre>
+            <div class="example-result">=> 3</div>
+        </div>
+
+        <h3>Multi-line Type Definitions</h3>
+        <p>Use indentation for cleaner type definitions:</p>
+        <pre><code><span class="keyword">type</span> <span class="type">Expr</span> =
+  | <span class="type">Num</span> <span class="keyword">of</span> <span class="type">int</span>
+  | <span class="type">Add</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Mul</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Neg</span> <span class="keyword">of</span> <span class="type">Expr</span></code></pre>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            Algebraic data types are perfect for representing domain models, ASTs, state machines, and any data that can be one of several variants.
+        </div>
+
+        <h3>Type Error Messages</h3>
+        <p>When types don't match, FunLang provides helpful error messages:</p>
+
+        <pre><code><span class="comment">// Error: trying to add int and string</span>
+<span class="number">1</span> + <span class="string">"hello"</span>
+<span class="comment">// Type error: expected int but got string</span>
+
+<span class="comment">// Error: if branches have different types</span>
+<span class="keyword">if</span> <span class="keyword">true</span> <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> <span class="string">"two"</span>
+<span class="comment">// Type error: branches have incompatible types int and string</span></code></pre>
+
+        <div class="page-nav">
+            <a href="control-flow.html" class="prev">Control Flow</a>
+            <a href="modules.html" class="next">Modules</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Errors & Warnings - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Errors & Warnings</h1>
+
+        <p>FunLang provides detailed error messages with source locations and hints. This page documents all error types and pattern matching warnings.</p>
+
+        <h2>Error Message Format</h2>
+
+        <p>FunLang uses Rust-style error messages:</p>
+
+        <pre><code><span class="keyword">error</span>[E001]: Unexpected character: @
+  --> file.fun:1:1
+  |
+1 | @bad
+  | ^
+   = info: character not recognized by lexer</code></pre>
+
+        <p>Components:</p>
+        <ul>
+            <li><strong>Error code</strong> (e.g., <code>E001</code>) - Unique identifier</li>
+            <li><strong>Message</strong> - Description of the error</li>
+            <li><strong>Location</strong> - File, line, and column</li>
+            <li><strong>Source snippet</strong> - The problematic code with pointer</li>
+            <li><strong>Hint</strong> - Suggestion for fixing the error</li>
+        </ul>
+
+        <h2 id="lexer-errors">Lexer Errors</h2>
+
+        <p>Errors during tokenization of source code.</p>
+
+        <h3>E001: Unexpected Character</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code>@bad</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E001]: Unexpected character: @
+  --> :1:1
+  |
+1 | @bad
+  | ^
+   = info: character not recognized by lexer</code></pre>
+        </div>
+
+        <h3>E002: Unterminated String</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code>"hello</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E002]: Unterminated string literal
+  --> :1:1
+  |
+1 | "hello
+  | ^
+   = info: string must be closed with "</code></pre>
+        </div>
+
+        <h2 id="parse-errors">Parse Errors</h2>
+
+        <p>Errors during parsing of token stream.</p>
+
+        <h3>E101: Unexpected Token</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">if</span> x else y</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code>Parse error at line 1, column 6: unexpected 'ELSE', expected 'THEN'</code></pre>
+        </div>
+
+        <h3>E102: Missing Expression</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">let</span> x = </code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code>Parse error at line 1, column 9: unexpected 'EOF', expected expression</code></pre>
+        </div>
+
+        <h3>E103: Indentation Error</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">let</span> x =
+    10
+  y      <span class="comment">// wrong indentation</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E103]: Indentation error
+  --> :3:3
+  |
+3 |   y
+  |   ^
+   = info: expected column 1 or 5, got 3</code></pre>
+        </div>
+
+        <h2 id="type-errors">Type Errors</h2>
+
+        <p>Errors detected during type inference.</p>
+
+        <h3>E201: Type Mismatch</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="number">1</span> + <span class="keyword">true</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E201]: Type mismatch
+  --> :1:5
+  |
+1 | 1 + true
+  |     ^^^^
+   = info: expected int, got bool</code></pre>
+        </div>
+
+        <h3>E202: Unbound Variable</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code>x + <span class="number">1</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E202]: Unbound variable 'x'
+  --> :1:1
+  |
+1 | x + 1
+  | ^
+   = help: Did you forget to define 'x'?</code></pre>
+        </div>
+
+        <h3>E203: Occurs Check (Infinite Type)</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">let</span> f = <span class="keyword">fun</span> x -> x x</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E203]: Infinite type detected
+  --> :1:17
+   = info: Cannot construct infinite type: 'a = 'a -> 'b</code></pre>
+        </div>
+
+        <h3>E204: If Branch Type Mismatch</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">if</span> <span class="keyword">true</span> <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> <span class="string">"no"</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E204]: If branches have different types
+  --> :1:17
+  |
+1 | if true then 1 else "no"
+  |                     ^^^^
+   = info: then branch has type int, else branch has type string</code></pre>
+        </div>
+
+        <h3>E205: Constructor Not Found</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="type">Unknown</span> <span class="number">42</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E205]: Unknown constructor 'Unknown'
+  --> :1:1
+   = help: Did you define the type?</code></pre>
+        </div>
+
+        <h2 id="runtime-errors">Runtime Errors</h2>
+
+        <p>Errors detected during evaluation.</p>
+
+        <h3>E301: Division by Zero</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="number">10</span> / <span class="number">0</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E301]: Division by zero
+  --> :1:4
+  |
+1 | 10 / 0
+  |    ^
+   = help: Check divisor is not zero</code></pre>
+        </div>
+
+        <h3>E302: Non-Exhaustive Match</h3>
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x
+
+getValue <span class="type">None</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E302]: No pattern matched
+  --> :4:3
+   = info: All patterns failed to match the value</code></pre>
+        </div>
+
+        <h3>E303: Type Error at Runtime</h3>
+        <div class="example">
+            <div class="example-header">Error</div>
+            <pre><code><span class="keyword">error</span>[E303]: Cannot add int and bool
+   = info: operation not supported</code></pre>
+        </div>
+
+        <h2 id="pattern-warnings">Pattern Matching Warnings</h2>
+
+        <p>FunLang analyzes pattern matches for completeness and usefulness. These are <strong>warnings</strong>, not errors - the program will still run.</p>
+
+        <h3>Non-Exhaustive Pattern Warning</h3>
+
+        <p>Warns when pattern matching might fail at runtime because not all cases are covered.</p>
+
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Warning</div>
+            <pre><code><span class="keyword">Warning</span>: Non-exhaustive pattern match at line 4, column 3
+  Missing case(s): None</code></pre>
+        </div>
+
+        <h4>How to Fix</h4>
+
+        <p><strong>Option 1:</strong> Handle all cases explicitly</p>
+        <pre><code><span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x
+  | <span class="type">None</span> -> <span class="number">0</span>    <span class="comment">// handle None case</span></code></pre>
+
+        <p><strong>Option 2:</strong> Use wildcard as catch-all</p>
+        <pre><code><span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x
+  | _ -> <span class="number">0</span>        <span class="comment">// wildcard catches None</span></code></pre>
+
+        <h4>Common Cases</h4>
+
+        <table>
+            <tr><th>Type</th><th>Missing Pattern Example</th><th>Fix</th></tr>
+            <tr>
+                <td><code>bool</code></td>
+                <td><code>| true -> ...</code></td>
+                <td>Add <code>| false -> ...</code></td>
+            </tr>
+            <tr>
+                <td><code>list</code></td>
+                <td><code>| h :: t -> ...</code></td>
+                <td>Add <code>| [] -> ...</code></td>
+            </tr>
+            <tr>
+                <td><code>Option</code></td>
+                <td><code>| Some x -> ...</code></td>
+                <td>Add <code>| None -> ...</code></td>
+            </tr>
+        </table>
+
+        <h3>Redundant Pattern Warning</h3>
+
+        <p>Warns when a pattern can never be matched because previous patterns already cover all cases.</p>
+
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">let</span> test = <span class="keyword">fun</span> x ->
+  <span class="keyword">match</span> x <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> <span class="number">1</span>
+  | <span class="keyword">false</span> -> <span class="number">2</span>
+  | <span class="keyword">true</span> -> <span class="number">3</span>   <span class="comment">// this pattern is redundant!</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Warning</div>
+            <pre><code><span class="keyword">Warning</span>: Pattern 3 at line 5, column 5 is redundant (never matches)</code></pre>
+        </div>
+
+        <h4>How to Fix</h4>
+
+        <p>Remove the redundant pattern:</p>
+        <pre><code><span class="keyword">let</span> test = <span class="keyword">fun</span> x ->
+  <span class="keyword">match</span> x <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> <span class="number">1</span>
+  | <span class="keyword">false</span> -> <span class="number">2</span></code></pre>
+
+        <h4>Wildcard Redundancy</h4>
+
+        <div class="example">
+            <div class="example-header">Code</div>
+            <pre><code><span class="keyword">let</span> test = <span class="keyword">fun</span> x ->
+  <span class="keyword">match</span> x <span class="keyword">with</span>
+  | _ -> <span class="number">1</span>           <span class="comment">// matches everything</span>
+  | <span class="keyword">true</span> -> <span class="number">2</span>        <span class="comment">// redundant!</span>
+  | <span class="keyword">false</span> -> <span class="number">3</span>       <span class="comment">// redundant!</span></code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Warning</div>
+            <pre><code><span class="keyword">Warning</span>: Pattern 2 at line 4, column 5 is redundant (never matches)
+<span class="keyword">Warning</span>: Pattern 3 at line 5, column 5 is redundant (never matches)</code></pre>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            Place wildcards (<code>_</code>) and catch-all patterns <strong>last</strong> in your match expressions.
+        </div>
+
+        <h3>Pattern Analysis for Lists</h3>
+
+        <div class="example">
+            <div class="example-header">Non-exhaustive list pattern</div>
+            <pre><code><span class="keyword">let</span> head = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | h :: _ -> h</code></pre>
+            <pre><code><span class="keyword">Warning</span>: Non-exhaustive pattern match
+  Missing case(s): []</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Fixed version</div>
+            <pre><code><span class="keyword">let</span> head = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | h :: _ -> h
+  | [] -> <span class="number">0</span>        <span class="comment">// or use Option type</span></code></pre>
+        </div>
+
+        <h3>Pattern Analysis for Custom Types</h3>
+
+        <div class="example">
+            <div class="example-header">Missing constructor</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Color</span> = <span class="type">Red</span> | <span class="type">Green</span> | <span class="type">Blue</span>
+
+<span class="keyword">let</span> toHex = <span class="keyword">fun</span> c ->
+  <span class="keyword">match</span> c <span class="keyword">with</span>
+  | <span class="type">Red</span> -> <span class="string">"#FF0000"</span>
+  | <span class="type">Green</span> -> <span class="string">"#00FF00"</span></code></pre>
+            <pre><code><span class="keyword">Warning</span>: Non-exhaustive pattern match
+  Missing case(s): Blue</code></pre>
+        </div>
+
+        <h2>Best Practices</h2>
+
+        <div class="tip">
+            <div class="note-title">Pattern Matching Tips</div>
+            <ul>
+                <li><strong>Always handle all constructors</strong> of algebraic types</li>
+                <li><strong>Use wildcards last</strong> as catch-all patterns</li>
+                <li><strong>Handle empty list</strong> <code>[]</code> for list patterns</li>
+                <li><strong>Handle both <code>true</code> and <code>false</code></strong> for bool patterns</li>
+                <li><strong>Pay attention to warnings</strong> - they prevent runtime errors</li>
+            </ul>
+        </div>
+
+        <div class="page-nav">
+            <a href="examples.html" class="prev">Examples</a>
+            <a href="algorithms.html" class="next">Algorithms</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

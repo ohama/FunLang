@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Flow - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Control Flow</h1>
+
+        <p>FunLang provides two primary control flow mechanisms: conditionals (<code>if-then-else</code>) and pattern matching (<code>match</code>).</p>
+
+        <h2 id="conditionals">Conditionals</h2>
+        <p>The <code>if-then-else</code> expression evaluates a condition and returns one of two values:</p>
+
+        <div class="example">
+            <div class="example-header">Basic if expression</div>
+            <pre><code><span class="keyword">if</span> <span class="keyword">true</span> <span class="keyword">then</span> <span class="number">1</span> <span class="keyword">else</span> <span class="number">2</span></code></pre>
+            <div class="example-result">=> 1</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Absolute value</div>
+            <pre><code><span class="keyword">let</span> abs = <span class="keyword">fun</span> x ->
+  <span class="keyword">if</span> x < <span class="number">0</span> <span class="keyword">then</span> -x
+  <span class="keyword">else</span> x
+
+abs (<span class="number">-42</span>)</code></pre>
+            <div class="example-result">=> 42</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            In FunLang, <code>if</code> is an expression that returns a value. Both branches must have the same type.
+        </div>
+
+        <h3>Nested Conditionals</h3>
+        <div class="example">
+            <div class="example-header">Nested if</div>
+            <pre><code><span class="keyword">let</span> sign = <span class="keyword">fun</span> x ->
+  <span class="keyword">if</span> x > <span class="number">0</span> <span class="keyword">then</span> <span class="string">"positive"</span>
+  <span class="keyword">else</span> <span class="keyword">if</span> x < <span class="number">0</span> <span class="keyword">then</span> <span class="string">"negative"</span>
+  <span class="keyword">else</span> <span class="string">"zero"</span>
+
+sign (<span class="number">-5</span>)</code></pre>
+            <div class="example-result">=> "negative"</div>
+        </div>
+
+        <h3>Multi-line If</h3>
+        <p>Use indentation for multi-line branches:</p>
+
+        <div class="example">
+            <div class="example-header">Multi-line branches</div>
+            <pre><code><span class="keyword">let</span> describe = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n > <span class="number">100</span> <span class="keyword">then</span>
+    <span class="keyword">let</span> x = n / <span class="number">100</span>
+    x * <span class="number">100</span>
+  <span class="keyword">else</span>
+    n
+
+describe <span class="number">250</span></code></pre>
+            <div class="example-result">=> 200</div>
+        </div>
+
+        <h2 id="pattern-matching">Pattern Matching</h2>
+        <p>Pattern matching is a powerful way to destructure data and make decisions based on structure:</p>
+
+        <div class="example">
+            <div class="example-header">Basic match</div>
+            <pre><code><span class="keyword">let</span> describe = <span class="keyword">fun</span> n ->
+  <span class="keyword">match</span> n <span class="keyword">with</span>
+  | <span class="number">0</span> -> <span class="string">"zero"</span>
+  | <span class="number">1</span> -> <span class="string">"one"</span>
+  | <span class="number">2</span> -> <span class="string">"two"</span>
+  | _ -> <span class="string">"many"</span>
+
+describe <span class="number">1</span></code></pre>
+            <div class="example-result">=> "one"</div>
+        </div>
+
+        <h3>Pattern Types</h3>
+
+        <h4>Literal Patterns</h4>
+        <p>Match exact values:</p>
+        <pre><code><span class="keyword">match</span> x <span class="keyword">with</span>
+| <span class="number">0</span> -> <span class="string">"zero"</span>           <span class="comment">// integer literal</span>
+| <span class="keyword">true</span> -> <span class="string">"yes"</span>         <span class="comment">// boolean literal</span>
+| <span class="string">"hello"</span> -> <span class="string">"hi"</span>      <span class="comment">// string literal</span></code></pre>
+
+        <h4>Variable Patterns</h4>
+        <p>Bind the matched value to a name:</p>
+        <pre><code><span class="keyword">match</span> x <span class="keyword">with</span>
+| n -> n + <span class="number">1</span>          <span class="comment">// n binds to whatever x is</span></code></pre>
+
+        <h4>Wildcard Pattern</h4>
+        <p>Match anything without binding:</p>
+        <pre><code><span class="keyword">match</span> x <span class="keyword">with</span>
+| <span class="number">0</span> -> <span class="string">"zero"</span>
+| _ -> <span class="string">"not zero"</span>     <span class="comment">// _ matches anything</span></code></pre>
+
+        <h4>Tuple Patterns</h4>
+        <div class="example">
+            <div class="example-header">Tuple pattern</div>
+            <pre><code><span class="keyword">let</span> add = <span class="keyword">fun</span> pair ->
+  <span class="keyword">match</span> pair <span class="keyword">with</span>
+  | (x, y) -> x + y
+
+add (<span class="number">3</span>, <span class="number">4</span>)</code></pre>
+            <div class="example-result">=> 7</div>
+        </div>
+
+        <h4>List Patterns</h4>
+        <div class="example">
+            <div class="example-header">List patterns</div>
+            <pre><code><span class="keyword">let</span> describe = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="string">"empty"</span>
+  | [x] -> <span class="string">"one element"</span>
+  | [x; y] -> <span class="string">"two elements"</span>
+  | h :: t -> <span class="string">"head and tail"</span>
+
+describe [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>]</code></pre>
+            <div class="example-result">=> "head and tail"</div>
+        </div>
+
+        <h4>Constructor Patterns</h4>
+        <p>Match user-defined type constructors:</p>
+        <div class="example">
+            <div class="example-header">Constructor pattern</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="keyword">let</span> getOrElse = <span class="keyword">fun</span> default -> <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">None</span> -> default
+  | <span class="type">Some</span> x -> x
+
+getOrElse <span class="number">0</span> (<span class="type">Some</span> <span class="number">42</span>)</code></pre>
+            <div class="example-result">=> 42</div>
+        </div>
+
+        <h3>Pattern Matching on Recursive Structures</h3>
+        <div class="example">
+            <div class="example-header">Sum of list</div>
+            <pre><code><span class="keyword">let rec</span> sum = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | h :: t -> h + sum t
+
+sum [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> 15</div>
+        </div>
+
+        <h2 id="guards">Guards</h2>
+        <p>Add conditions to patterns with <code>when</code>:</p>
+
+        <div class="example">
+            <div class="example-header">Pattern with guard</div>
+            <pre><code><span class="keyword">let</span> classify = <span class="keyword">fun</span> n ->
+  <span class="keyword">match</span> n <span class="keyword">with</span>
+  | x <span class="keyword">when</span> x < <span class="number">0</span> -> <span class="string">"negative"</span>
+  | x <span class="keyword">when</span> x = <span class="number">0</span> -> <span class="string">"zero"</span>
+  | x <span class="keyword">when</span> x < <span class="number">10</span> -> <span class="string">"small"</span>
+  | _ -> <span class="string">"large"</span>
+
+classify <span class="number">5</span></code></pre>
+            <div class="example-result">=> "small"</div>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Guards with list patterns</div>
+            <pre><code><span class="keyword">let rec</span> takeWhilePositive = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t <span class="keyword">when</span> h > <span class="number">0</span> -> h :: takeWhilePositive t
+  | _ -> []
+
+takeWhilePositive [<span class="number">3</span>; <span class="number">2</span>; <span class="number">1</span>; <span class="number">0</span>; <span class="number">-1</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> [3; 2; 1]</div>
+        </div>
+
+        <h3>Exhaustiveness Checking</h3>
+        <p>FunLang checks that pattern matches cover all cases and warns about redundant patterns:</p>
+
+        <div class="warning">
+            <div class="note-title">Non-exhaustive pattern warning</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x
+  <span class="comment">// Warning: Non-exhaustive pattern match</span>
+  <span class="comment">// Missing case(s): None</span></code></pre>
+        </div>
+
+        <div class="warning">
+            <div class="note-title">Redundant pattern warning</div>
+            <pre><code><span class="keyword">let</span> test = <span class="keyword">fun</span> x ->
+  <span class="keyword">match</span> x <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> <span class="number">1</span>
+  | <span class="keyword">false</span> -> <span class="number">2</span>
+  | <span class="keyword">true</span> -> <span class="number">3</span>   <span class="comment">// Warning: Pattern is redundant (never matches)</span></code></pre>
+        </div>
+
+        <h3>Writing Exhaustive Patterns</h3>
+        <div class="tip">
+            <div class="note-title">Best Practice</div>
+            <p>Always handle all cases or use a wildcard (<code>_</code>) as a catch-all:</p>
+        </div>
+
+        <pre><code><span class="comment">// Option 1: Handle all cases explicitly</span>
+<span class="keyword">let</span> getValue = <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">Some</span> x -> x
+  | <span class="type">None</span> -> <span class="number">0</span>
+
+<span class="comment">// Option 2: Use wildcard as fallback</span>
+<span class="keyword">let</span> head = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | h :: _ -> h
+  | _ -> <span class="number">0</span>
+
+<span class="comment">// For bools: use true and false explicitly</span>
+<span class="keyword">let</span> describe = <span class="keyword">fun</span> b ->
+  <span class="keyword">match</span> b <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> <span class="string">"yes"</span>
+  | <span class="keyword">false</span> -> <span class="string">"no"</span></code></pre>
+
+        <div class="page-nav">
+            <a href="functions.html" class="prev">Functions</a>
+            <a href="types.html" class="next">Types</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

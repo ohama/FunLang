@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examples - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Complete Examples</h1>
+
+        <p>This section contains complete, runnable examples that demonstrate FunLang's features.</p>
+
+        <h2 id="fibonacci">Fibonacci Sequence</h2>
+
+        <h3>Simple Recursive</h3>
+        <div class="example">
+            <div class="example-header">fibonacci.fun</div>
+            <pre><code><span class="comment">// Classic recursive Fibonacci</span>
+<span class="keyword">let rec</span> fib = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> n
+  <span class="keyword">else</span> fib (n - <span class="number">1</span>) + fib (n - <span class="number">2</span>)
+
+<span class="comment">// First 10 Fibonacci numbers</span>
+[fib <span class="number">0</span>; fib <span class="number">1</span>; fib <span class="number">2</span>; fib <span class="number">3</span>; fib <span class="number">4</span>;
+ fib <span class="number">5</span>; fib <span class="number">6</span>; fib <span class="number">7</span>; fib <span class="number">8</span>; fib <span class="number">9</span>]</code></pre>
+            <div class="example-result">=> [0; 1; 1; 2; 3; 5; 8; 13; 21; 34]</div>
+        </div>
+
+        <h3>With Pattern Matching</h3>
+        <div class="example">
+            <div class="example-header">fibonacci_pattern.fun</div>
+            <pre><code><span class="keyword">let rec</span> fib = <span class="keyword">fun</span> n ->
+  <span class="keyword">match</span> n <span class="keyword">with</span>
+  | <span class="number">0</span> -> <span class="number">0</span>
+  | <span class="number">1</span> -> <span class="number">1</span>
+  | n -> fib (n - <span class="number">1</span>) + fib (n - <span class="number">2</span>)
+
+fib <span class="number">10</span></code></pre>
+            <div class="example-result">=> 55</div>
+        </div>
+
+        <h2 id="factorial">Factorial</h2>
+
+        <h3>Recursive with if-else</h3>
+        <div class="example">
+            <div class="example-header">factorial_if.fun</div>
+            <pre><code><span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+  <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)
+
+factorial <span class="number">10</span></code></pre>
+            <div class="example-result">=> 3628800</div>
+        </div>
+
+        <h3>With Pattern Matching</h3>
+        <div class="example">
+            <div class="example-header">factorial_match.fun</div>
+            <pre><code><span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">match</span> n <span class="keyword">with</span>
+  | <span class="number">0</span> -> <span class="number">1</span>
+  | <span class="number">1</span> -> <span class="number">1</span>
+  | n -> n * factorial (n - <span class="number">1</span>)
+
+factorial <span class="number">5</span></code></pre>
+            <div class="example-result">=> 120</div>
+        </div>
+
+        <h3>Tail Recursive (Efficient)</h3>
+        <div class="example">
+            <div class="example-header">factorial_tail.fun</div>
+            <pre><code><span class="keyword">let</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">let rec</span> helper = <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> n ->
+    <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> acc
+    <span class="keyword">else</span> helper (acc * n) (n - <span class="number">1</span>)
+  helper <span class="number">1</span> n
+
+factorial <span class="number">10</span></code></pre>
+            <div class="example-result">=> 3628800</div>
+        </div>
+
+        <h2 id="list-ops">List Operations</h2>
+
+        <h3>Map</h3>
+        <div class="example">
+            <div class="example-header">map.fun</div>
+            <pre><code><span class="comment">// Apply a function to each element</span>
+<span class="keyword">let rec</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t -> f h :: map f t
+
+<span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+<span class="keyword">let</span> square = <span class="keyword">fun</span> x -> x * x
+
+<span class="keyword">let</span> numbers = [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]
+
+(map double numbers, map square numbers)</code></pre>
+            <div class="example-result">=> ([2; 4; 6; 8; 10], [1; 4; 9; 16; 25])</div>
+        </div>
+
+        <h3>Filter</h3>
+        <div class="example">
+            <div class="example-header">filter.fun</div>
+            <pre><code><span class="comment">// Keep elements that satisfy predicate</span>
+<span class="keyword">let rec</span> filter = <span class="keyword">fun</span> pred -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t ->
+      <span class="keyword">if</span> pred h <span class="keyword">then</span> h :: filter pred t
+      <span class="keyword">else</span> filter pred t
+
+<span class="keyword">let</span> isEven = <span class="keyword">fun</span> x -> x % <span class="number">2</span> = <span class="number">0</span>
+<span class="keyword">let</span> isPositive = <span class="keyword">fun</span> x -> x > <span class="number">0</span>
+
+<span class="keyword">let</span> numbers = [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>; <span class="number">6</span>]
+
+filter isEven numbers</code></pre>
+            <div class="example-result">=> [2; 4; 6]</div>
+        </div>
+
+        <h3>Fold (Reduce)</h3>
+        <div class="example">
+            <div class="example-header">fold.fun</div>
+            <pre><code><span class="comment">// Left fold: accumulate values</span>
+<span class="keyword">let rec</span> fold = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> acc
+  | h :: t -> fold f (f acc h) t
+
+<span class="keyword">let</span> add = <span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a + b
+<span class="keyword">let</span> mul = <span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a * b
+
+<span class="keyword">let</span> numbers = [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]
+
+<span class="comment">// Sum: 1 + 2 + 3 + 4 + 5 = 15</span>
+<span class="keyword">let</span> sum = fold add <span class="number">0</span> numbers
+
+<span class="comment">// Product: 1 * 2 * 3 * 4 * 5 = 120</span>
+<span class="keyword">let</span> product = fold mul <span class="number">1</span> numbers
+
+(sum, product)</code></pre>
+            <div class="example-result">=> (15, 120)</div>
+        </div>
+
+        <h3>Reverse</h3>
+        <div class="example">
+            <div class="example-header">reverse.fun</div>
+            <pre><code><span class="keyword">let</span> reverse = <span class="keyword">fun</span> xs ->
+  <span class="keyword">let rec</span> helper = <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> ys ->
+    <span class="keyword">match</span> ys <span class="keyword">with</span>
+    | [] -> acc
+    | h :: t -> helper (h :: acc) t
+  helper [] xs
+
+reverse [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]</code></pre>
+            <div class="example-result">=> [5; 4; 3; 2; 1]</div>
+        </div>
+
+        <h3>Append</h3>
+        <div class="example">
+            <div class="example-header">append.fun</div>
+            <pre><code><span class="keyword">let rec</span> append = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | h :: t -> h :: append t ys
+
+append [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>] [<span class="number">4</span>; <span class="number">5</span>; <span class="number">6</span>]</code></pre>
+            <div class="example-result">=> [1; 2; 3; 4; 5; 6]</div>
+        </div>
+
+        <h3>Complete List Library</h3>
+        <div class="example">
+            <div class="example-header">list_lib.fun</div>
+            <pre><code><span class="comment">// Complete list operations example</span>
+
+<span class="keyword">let rec</span> length = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | _ :: t -> <span class="number">1</span> + length t
+
+<span class="keyword">let rec</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t -> f h :: map f t
+
+<span class="keyword">let rec</span> filter = <span class="keyword">fun</span> p -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | h :: t ->
+      <span class="keyword">if</span> p h <span class="keyword">then</span> h :: filter p t
+      <span class="keyword">else</span> filter p t
+
+<span class="keyword">let rec</span> fold = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> acc
+  | h :: t -> fold f (f acc h) t
+
+<span class="comment">// Example pipeline</span>
+<span class="keyword">let</span> numbers = [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>; <span class="number">6</span>; <span class="number">7</span>; <span class="number">8</span>; <span class="number">9</span>; <span class="number">10</span>]
+
+<span class="comment">// Filter even, double them, sum</span>
+<span class="keyword">let</span> evens = filter (<span class="keyword">fun</span> x -> x % <span class="number">2</span> = <span class="number">0</span>) numbers
+<span class="keyword">let</span> doubled = map (<span class="keyword">fun</span> x -> x * <span class="number">2</span>) evens
+<span class="keyword">let</span> total = fold (<span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a + b) <span class="number">0</span> doubled
+
+total</code></pre>
+            <div class="example-result">=> 60</div>
+        </div>
+
+        <h2 id="tree">Binary Tree</h2>
+
+        <h3>Tree Type and Operations</h3>
+        <div class="example">
+            <div class="example-header">tree.fun</div>
+            <pre><code><span class="comment">// Binary tree type</span>
+<span class="keyword">type</span> <span class="type">Tree</span> <span class="type">'a</span> =
+  | <span class="type">Leaf</span> <span class="keyword">of</span> <span class="type">'a</span>
+  | <span class="type">Node</span> <span class="keyword">of</span> <span class="type">Tree</span> <span class="type">'a</span> * <span class="type">Tree</span> <span class="type">'a</span>
+
+<span class="comment">// Count leaves in tree</span>
+<span class="keyword">let rec</span> countLeaves = <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> _ -> <span class="number">1</span>
+  | <span class="type">Node</span> (left, right) -> countLeaves left + countLeaves right
+
+<span class="comment">// Calculate tree depth</span>
+<span class="keyword">let rec</span> depth = <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> _ -> <span class="number">1</span>
+  | <span class="type">Node</span> (left, right) ->
+      <span class="keyword">let</span> ld = depth left
+      <span class="keyword">let</span> rd = depth right
+      <span class="number">1</span> + (<span class="keyword">if</span> ld > rd <span class="keyword">then</span> ld <span class="keyword">else</span> rd)
+
+<span class="comment">// Sum all values in tree</span>
+<span class="keyword">let rec</span> sumTree = <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> n -> n
+  | <span class="type">Node</span> (left, right) -> sumTree left + sumTree right
+
+<span class="comment">// Map over tree</span>
+<span class="keyword">let rec</span> mapTree = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> x -> <span class="type">Leaf</span> (f x)
+  | <span class="type">Node</span> (left, right) -> <span class="type">Node</span> (mapTree f left, mapTree f right)
+
+<span class="comment">// Example tree:     Node</span>
+<span class="comment">//                  /    \</span>
+<span class="comment">//               Leaf 1   Node</span>
+<span class="comment">//                       /    \</span>
+<span class="comment">//                    Leaf 2  Leaf 3</span>
+<span class="keyword">let</span> myTree = <span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">1</span>, <span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">2</span>, <span class="type">Leaf</span> <span class="number">3</span>))
+
+(countLeaves myTree, depth myTree, sumTree myTree)</code></pre>
+            <div class="example-result">=> (3, 3, 6)</div>
+        </div>
+
+        <h3>In-order Traversal</h3>
+        <div class="example">
+            <div class="example-header">tree_traversal.fun</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Tree</span> <span class="type">'a</span> =
+  | <span class="type">Leaf</span> <span class="keyword">of</span> <span class="type">'a</span>
+  | <span class="type">Node</span> <span class="keyword">of</span> <span class="type">Tree</span> <span class="type">'a</span> * <span class="type">Tree</span> <span class="type">'a</span>
+
+<span class="comment">// Helper: append two lists</span>
+<span class="keyword">let rec</span> append = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | h :: t -> h :: append t ys
+
+<span class="comment">// Flatten tree to list (in-order)</span>
+<span class="keyword">let rec</span> flatten = <span class="keyword">fun</span> tree ->
+  <span class="keyword">match</span> tree <span class="keyword">with</span>
+  | <span class="type">Leaf</span> x -> [x]
+  | <span class="type">Node</span> (left, right) -> append (flatten left) (flatten right)
+
+<span class="keyword">let</span> tree = <span class="type">Node</span> (<span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">1</span>, <span class="type">Leaf</span> <span class="number">2</span>), <span class="type">Node</span> (<span class="type">Leaf</span> <span class="number">3</span>, <span class="type">Leaf</span> <span class="number">4</span>))
+flatten tree</code></pre>
+            <div class="example-result">=> [1; 2; 3; 4]</div>
+        </div>
+
+        <h2>Option Type Example</h2>
+        <div class="example">
+            <div class="example-header">option.fun</div>
+            <pre><code><span class="keyword">type</span> <span class="type">Option</span> <span class="type">'a</span> = <span class="type">None</span> | <span class="type">Some</span> <span class="keyword">of</span> <span class="type">'a</span>
+
+<span class="comment">// Safe operations that return Option</span>
+<span class="keyword">let</span> safeDivide = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y ->
+  <span class="keyword">if</span> y = <span class="number">0</span> <span class="keyword">then</span> <span class="type">None</span>
+  <span class="keyword">else</span> <span class="type">Some</span> (x / y)
+
+<span class="keyword">let</span> safeHead = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="type">None</span>
+  | h :: _ -> <span class="type">Some</span> h
+
+<span class="comment">// Option operations</span>
+<span class="keyword">let</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">None</span> -> <span class="type">None</span>
+  | <span class="type">Some</span> x -> <span class="type">Some</span> (f x)
+
+<span class="keyword">let</span> getOrElse = <span class="keyword">fun</span> default -> <span class="keyword">fun</span> opt ->
+  <span class="keyword">match</span> opt <span class="keyword">with</span>
+  | <span class="type">None</span> -> default
+  | <span class="type">Some</span> x -> x
+
+<span class="comment">// Example usage</span>
+<span class="keyword">let</span> result1 = getOrElse <span class="number">0</span> (safeDivide <span class="number">10</span> <span class="number">2</span>)   <span class="comment">// 5</span>
+<span class="keyword">let</span> result2 = getOrElse <span class="number">0</span> (safeDivide <span class="number">10</span> <span class="number">0</span>)   <span class="comment">// 0</span>
+<span class="keyword">let</span> result3 = map (<span class="keyword">fun</span> x -> x * <span class="number">2</span>) (safeHead [<span class="number">5</span>; <span class="number">4</span>; <span class="number">3</span>])
+
+(result1, result2, result3)</code></pre>
+            <div class="example-result">=> (5, 0, Some 10)</div>
+        </div>
+
+        <h2>Module Example</h2>
+        <div class="example">
+            <div class="example-header">modules_example.fun</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Math</span> =
+  <span class="keyword">export</span> add, multiply, square, factorial
+
+  <span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+  <span class="keyword">let</span> multiply = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x * y
+  <span class="keyword">let</span> square = <span class="keyword">fun</span> x -> x * x
+
+  <span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+    <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+    <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)
+
+<span class="keyword">module</span> <span class="type">ListOps</span> =
+  <span class="keyword">export</span> sum, product, length
+
+  <span class="keyword">let rec</span> fold = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> xs ->
+    <span class="keyword">match</span> xs <span class="keyword">with</span>
+    | [] -> acc
+    | h :: t -> fold f (f acc h) t
+
+  <span class="keyword">let</span> sum = fold (<span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a + b) <span class="number">0</span>
+  <span class="keyword">let</span> product = fold (<span class="keyword">fun</span> a -> <span class="keyword">fun</span> b -> a * b) <span class="number">1</span>
+
+  <span class="keyword">let rec</span> length = <span class="keyword">fun</span> xs ->
+    <span class="keyword">match</span> xs <span class="keyword">with</span>
+    | [] -> <span class="number">0</span>
+    | _ :: t -> <span class="number">1</span> + length t
+
+<span class="comment">// Use both modules</span>
+<span class="keyword">let</span> numbers = [<span class="number">1</span>; <span class="number">2</span>; <span class="number">3</span>; <span class="number">4</span>; <span class="number">5</span>]
+
+<span class="keyword">let</span> total = <span class="type">ListOps</span>.sum numbers
+<span class="keyword">let</span> prod = <span class="type">ListOps</span>.product numbers
+<span class="keyword">let</span> fact5 = <span class="type">Math</span>.factorial <span class="number">5</span>
+<span class="keyword">let</span> calculation = <span class="type">Math</span>.multiply (<span class="type">Math</span>.add <span class="number">2</span> <span class="number">3</span>) (<span class="type">Math</span>.square <span class="number">4</span>)
+
+(total, prod, fact5, calculation)</code></pre>
+            <div class="example-result">=> (15, 120, 120, 80)</div>
+        </div>
+
+        <div class="tip">
+            <div class="note-title">Try it yourself!</div>
+            <p>Save any of these examples to a <code>.fun</code> file and run with:</p>
+            <pre><code>dotnet run --project src/FunLang -- yourfile.fun</code></pre>
+        </div>
+
+        <div class="page-nav">
+            <a href="modules.html" class="prev">Modules</a>
+            <div class="placeholder"></div>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

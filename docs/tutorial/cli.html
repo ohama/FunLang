@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI Reference - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>CLI Reference</h1>
+
+        <p>Complete reference for FunLang command-line options.</p>
+
+        <h2>Basic Usage</h2>
+
+        <pre><code>funlang [OPTIONS] [FILE]
+funlang -e &lt;expression&gt;
+funlang -i</code></pre>
+
+        <h2>Input Modes</h2>
+
+        <h3>File Input</h3>
+        <pre><code><span class="comment"># Run a FunLang source file</span>
+funlang myprogram.fun
+funlang path/to/script.fun</code></pre>
+
+        <h3>Expression Mode (-e)</h3>
+        <pre><code><span class="comment"># Evaluate an expression directly</span>
+funlang -e "1 + 2 * 3"
+funlang -e "let x = 10 in x * 2"
+funlang -e "[1; 2; 3]"</code></pre>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            Use quotes around expressions with spaces or special characters.
+        </div>
+
+        <h3>Interactive REPL (-i)</h3>
+        <pre><code><span class="comment"># Start interactive mode</span>
+funlang -i
+
+<span class="comment"># REPL session example</span>
+> let x = 42
+val x : int = 42
+> x * 2
+val it : int = 84
+> :quit</code></pre>
+
+        <h2>Complete Option Reference</h2>
+
+        <table>
+            <tr><th>Option</th><th>Short</th><th>Description</th></tr>
+            <tr><td><code>&lt;file&gt;</code></td><td></td><td>FunLang source file to execute</td></tr>
+            <tr><td><code>--expression</code></td><td><code>-e</code></td><td>Execute expression directly</td></tr>
+            <tr><td><code>--interactive</code></td><td><code>-i</code></td><td>Start interactive REPL mode</td></tr>
+            <tr><td><code>--verbose</code></td><td><code>-v</code></td><td>Enable verbose output</td></tr>
+            <tr><td><code>--debug</code></td><td><code>-d</code></td><td>Enable debug mode (all phases)</td></tr>
+            <tr><td><code>--show-tokens</code></td><td></td><td>Display lexer tokens</td></tr>
+            <tr><td><code>--show-ast</code></td><td></td><td>Display parsed AST</td></tr>
+            <tr><td><code>--show-types</code></td><td></td><td>Display inferred types</td></tr>
+            <tr><td><code>--show-indents</code></td><td></td><td>Display indentation tokens</td></tr>
+            <tr><td><code>--trace</code></td><td></td><td>Trace specific phases</td></tr>
+            <tr><td><code>--no-color</code></td><td></td><td>Disable colored output</td></tr>
+            <tr><td><code>--no-prelude</code></td><td></td><td>Don't load standard prelude</td></tr>
+            <tr><td><code>--emit</code></td><td><code>-o</code></td><td>Emit formatted source code</td></tr>
+            <tr><td><code>--explain</code></td><td></td><td>Show error explanation</td></tr>
+            <tr><td><code>--log-level</code></td><td></td><td>Set log level</td></tr>
+            <tr><td><code>--log-file</code></td><td></td><td>Write logs to file</td></tr>
+            <tr><td><code>--version</code></td><td></td><td>Show version</td></tr>
+        </table>
+
+        <h2>Debug Options</h2>
+
+        <h3>--show-tokens</h3>
+        <p>Display the token stream from the lexer:</p>
+
+        <div class="example">
+            <div class="example-header">Command</div>
+            <pre><code>funlang --show-tokens -e "1 + 2"</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Output</div>
+            <pre><code>Tokens:
+  INT 1 at (1, 1)
+  PLUS at (1, 3)
+  INT 2 at (1, 5)
+  EOF at (1, 6)
+
+3</code></pre>
+        </div>
+
+        <h3>--show-ast</h3>
+        <p>Display the parsed Abstract Syntax Tree:</p>
+
+        <div class="example">
+            <div class="example-header">Command</div>
+            <pre><code>funlang --show-ast -e "let x = 1 in x + 2"</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Output</div>
+            <pre><code>AST:
+ELet(
+  name = "x",
+  value = ELiteral(LInt 1),
+  body = EBinaryOp(
+    op = Add,
+    left = EVariable "x",
+    right = ELiteral(LInt 2)
+  )
+)
+
+3</code></pre>
+        </div>
+
+        <h3>--show-types</h3>
+        <p>Display inferred types for all bindings:</p>
+
+        <div class="example">
+            <div class="example-header">Command</div>
+            <pre><code>funlang --show-types -e "let double = fun x -> x * 2 in double 21"</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Output</div>
+            <pre><code>Types:
+  double : int -> int
+  result : int
+
+42</code></pre>
+        </div>
+
+        <h3>--show-indents</h3>
+        <p>Display INDENT/DEDENT tokens inserted by the indentation processor:</p>
+
+        <div class="example">
+            <div class="example-header">Command</div>
+            <pre><code>funlang --show-indents myfile.fun</code></pre>
+        </div>
+
+        <h3>--debug (-d)</h3>
+        <p>Enable all debug output (equivalent to combining all --show-* options):</p>
+        <pre><code>funlang -d myprogram.fun</code></pre>
+
+        <h3>--trace</h3>
+        <p>Trace specific compilation phases (comma-separated):</p>
+        <pre><code><span class="comment"># Trace lexer phase only</span>
+funlang --trace lexer myprogram.fun
+
+<span class="comment"># Trace parser and type checker</span>
+funlang --trace parser,typecheck myprogram.fun
+
+<span class="comment"># Available phases: lexer, parser, typecheck, eval</span>
+funlang --trace lexer,parser,typecheck,eval myprogram.fun</code></pre>
+
+        <h2>Output Options</h2>
+
+        <h3>--emit (-o)</h3>
+        <p>Format and output source code. Comments are preserved.</p>
+
+        <pre><code><span class="comment"># Output to stdout</span>
+funlang --emit myprogram.fun
+
+<span class="comment"># Output to file</span>
+funlang --emit formatted.fun myprogram.fun
+funlang -o formatted.fun myprogram.fun</code></pre>
+
+        <div class="example">
+            <div class="example-header">Input (messy.fun)</div>
+            <pre><code>// Calculate sum
+let   x=1
+let y =   2
+x+y   // result</code></pre>
+        </div>
+        <div class="example">
+            <div class="example-header">Output (--emit)</div>
+            <pre><code>// Calculate sum
+let x = 1
+let y = 2
+x + y  // result</code></pre>
+        </div>
+
+        <h3>--no-color</h3>
+        <p>Disable ANSI color codes in output (useful for piping to files):</p>
+        <pre><code>funlang --no-color myprogram.fun > output.txt</code></pre>
+
+        <h2>Error Explanation</h2>
+
+        <h3>--explain</h3>
+        <p>Show detailed explanation for error codes:</p>
+
+        <pre><code><span class="comment"># Explain a specific error code</span>
+funlang --explain E202
+
+<span class="comment"># List all error codes</span>
+funlang --explain all</code></pre>
+
+        <h2>Logging Options</h2>
+
+        <h3>--log-level</h3>
+        <p>Set the logging verbosity level:</p>
+        <pre><code><span class="comment"># Available levels: debug, info, warning, error, fatal</span>
+funlang --log-level debug myprogram.fun
+funlang --log-level warning myprogram.fun</code></pre>
+
+        <h3>--log-file</h3>
+        <p>Write logs to a file:</p>
+        <pre><code>funlang --log-file debug.log --log-level debug myprogram.fun</code></pre>
+
+        <h2>Examples</h2>
+
+        <h3>Quick Evaluation</h3>
+        <pre><code><span class="comment"># Simple arithmetic</span>
+funlang -e "2 + 2"
+<span class="comment"># => 4</span>
+
+<span class="comment"># Function definition and call</span>
+funlang -e "let square = fun x -> x * x in square 5"
+<span class="comment"># => 25</span>
+
+<span class="comment"># List operations</span>
+funlang -e "[1; 2; 3]"
+<span class="comment"># => [1; 2; 3]</span></code></pre>
+
+        <h3>Debugging a Program</h3>
+        <pre><code><span class="comment"># See what tokens are generated</span>
+funlang --show-tokens myprogram.fun
+
+<span class="comment"># Check the parsed AST</span>
+funlang --show-ast myprogram.fun
+
+<span class="comment"># Verify type inference</span>
+funlang --show-types myprogram.fun
+
+<span class="comment"># Full debug mode</span>
+funlang -d myprogram.fun</code></pre>
+
+        <h3>Formatting Code</h3>
+        <pre><code><span class="comment"># Format and display</span>
+funlang --emit messy.fun
+
+<span class="comment"># Format and save</span>
+funlang --emit clean.fun messy.fun
+
+<span class="comment"># Format in place (using shell)</span>
+funlang --emit > temp.fun messy.fun && mv temp.fun messy.fun</code></pre>
+
+        <h3>Production Usage</h3>
+        <pre><code><span class="comment"># Run without colors (for CI/CD)</span>
+funlang --no-color program.fun
+
+<span class="comment"># Log errors to file</span>
+funlang --log-file errors.log --log-level error program.fun</code></pre>
+
+        <h2>Exit Codes</h2>
+
+        <table>
+            <tr><th>Code</th><th>Meaning</th></tr>
+            <tr><td><code>0</code></td><td>Success</td></tr>
+            <tr><td><code>1</code></td><td>Runtime error</td></tr>
+            <tr><td><code>2</code></td><td>Parse error</td></tr>
+            <tr><td><code>3</code></td><td>Type error</td></tr>
+            <tr><td><code>4</code></td><td>File not found</td></tr>
+        </table>
+
+        <div class="page-nav">
+            <a href="building.html" class="prev">Building</a>
+            <a href="basics.html" class="next">Basics</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

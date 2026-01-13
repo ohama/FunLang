@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithms - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Implementation Algorithms</h1>
+
+        <p>This section explains the key algorithms used in FunLang's implementation. Understanding these algorithms provides insight into how the language works internally.</p>
+
+        <h2 id="hindley-milner">Hindley-Milner Type Inference</h2>
+
+        <p>FunLang uses the <strong>Hindley-Milner (HM)</strong> type system with <strong>Algorithm W</strong> for type inference. This allows the compiler to automatically infer types without explicit annotations.</p>
+
+        <h3>Key Features</h3>
+        <ul>
+            <li><strong>Type inference</strong> - No type annotations required</li>
+            <li><strong>Let-polymorphism</strong> - Functions can be polymorphic</li>
+            <li><strong>Principal types</strong> - The most general type is always inferred</li>
+            <li><strong>Decidable</strong> - Type inference always terminates</li>
+        </ul>
+
+        <h3>Type Definitions</h3>
+
+        <h4>Monotype (Simple Types)</h4>
+        <pre><code><span class="comment">// Monotype grammar</span>
+<span class="type">&tau;</span> ::= int                    <span class="comment">-- Integer type</span>
+    | bool                   <span class="comment">-- Boolean type</span>
+    | string                 <span class="comment">-- String type</span>
+    | unit                   <span class="comment">-- Unit type</span>
+    | <span class="type">&alpha;</span>                      <span class="comment">-- Type variable</span>
+    | <span class="type">&tau;&#8321;</span> &rarr; <span class="type">&tau;&#8322;</span>                <span class="comment">-- Function type</span>
+    | list <span class="type">&tau;</span>                 <span class="comment">-- List type</span>
+    | (<span class="type">&tau;&#8321;</span>, <span class="type">&tau;&#8322;</span>, ...)          <span class="comment">-- Tuple type</span></code></pre>
+
+        <h4>Polytype (Type Schemes)</h4>
+        <pre><code><span class="comment">// Polytype (quantified type)</span>
+<span class="type">&sigma;</span> ::= <span class="type">&tau;</span>                      <span class="comment">-- Monotype</span>
+    | <span class="keyword">&forall;</span><span class="type">&alpha;&#8321;</span>...<span class="type">&alpha;&#8345;</span>. <span class="type">&tau;</span>            <span class="comment">-- Quantified type</span>
+
+<span class="comment">// Examples:</span>
+<span class="keyword">&forall;</span><span class="type">&alpha;</span>. <span class="type">&alpha;</span> &rarr; <span class="type">&alpha;</span>             <span class="comment">// identity function type</span>
+<span class="keyword">&forall;</span><span class="type">&alpha;</span>. list <span class="type">&alpha;</span> &rarr; int       <span class="comment">// length function type</span></code></pre>
+
+        <h3>Core Operations</h3>
+
+        <h4>1. Substitution</h4>
+        <p>A mapping from type variables to types:</p>
+        <pre><code>S = [<span class="type">&alpha;&#8321;</span> &mapsto; <span class="type">&tau;&#8321;</span>, <span class="type">&alpha;&#8322;</span> &mapsto; <span class="type">&tau;&#8322;</span>, ...]
+
+<span class="comment">// Application rules:</span>
+S(int) = int
+S(<span class="type">&alpha;</span>) = S(<span class="type">&alpha;</span>) if <span class="type">&alpha;</span> &isin; dom(S), else <span class="type">&alpha;</span>
+S(<span class="type">&tau;&#8321;</span> &rarr; <span class="type">&tau;&#8322;</span>) = S(<span class="type">&tau;&#8321;</span>) &rarr; S(<span class="type">&tau;&#8322;</span>)
+S(list <span class="type">&tau;</span>) = list S(<span class="type">&tau;</span>)
+
+<span class="comment">// Composition:</span>
+(S&#8321; &compfn; S&#8322;)(<span class="type">&tau;</span>) = S&#8321;(S&#8322;(<span class="type">&tau;</span>))</code></pre>
+
+        <h4>2. Free Type Variables</h4>
+        <pre><code>FV(int) = &empty;
+FV(<span class="type">&alpha;</span>) = {<span class="type">&alpha;</span>}
+FV(<span class="type">&tau;&#8321;</span> &rarr; <span class="type">&tau;&#8322;</span>) = FV(<span class="type">&tau;&#8321;</span>) &cup; FV(<span class="type">&tau;&#8322;</span>)
+FV(<span class="keyword">&forall;</span><span class="type">&alpha;</span>.<span class="type">&tau;</span>) = FV(<span class="type">&tau;</span>) - {<span class="type">&alpha;</span>}
+FV(&Gamma;) = &cup;{FV(<span class="type">&sigma;</span>) | x:<span class="type">&sigma;</span> &isin; &Gamma;}</code></pre>
+
+        <h4>3. Generalization</h4>
+        <p>Convert a type to a type scheme by quantifying free variables not in the environment:</p>
+        <pre><code>generalize(&Gamma;, <span class="type">&tau;</span>) = <span class="keyword">&forall;</span><span class="type">&alpha;&#8321;</span>...<span class="type">&alpha;&#8345;</span>.<span class="type">&tau;</span>
+  where {<span class="type">&alpha;&#8321;</span>,...,<span class="type">&alpha;&#8345;</span>} = FV(<span class="type">&tau;</span>) - FV(&Gamma;)</code></pre>
+
+        <h4>4. Instantiation</h4>
+        <p>Create a fresh instance from a type scheme:</p>
+        <pre><code>instantiate(<span class="keyword">&forall;</span><span class="type">&alpha;&#8321;</span>...<span class="type">&alpha;&#8345;</span>.<span class="type">&tau;</span>) = [<span class="type">&alpha;&#8321;</span>&mapsto;<span class="type">&beta;&#8321;</span>,...,<span class="type">&alpha;&#8345;</span>&mapsto;<span class="type">&beta;&#8345;</span>]<span class="type">&tau;</span>
+  where <span class="type">&beta;&#8321;</span>,...,<span class="type">&beta;&#8345;</span> are fresh type variables</code></pre>
+
+        <h3>Unification Algorithm</h3>
+
+        <p>Finds a substitution that makes two types equal:</p>
+
+        <pre><code>unify : Type &rarr; Type &rarr; Result&lt;Substitution, Error&gt;
+
+<span class="comment">// Rules:</span>
+unify(<span class="type">&alpha;</span>, <span class="type">&tau;</span>) =
+    if <span class="type">&alpha;</span> = <span class="type">&tau;</span> then &empty;
+    else if <span class="type">&alpha;</span> &isin; FV(<span class="type">&tau;</span>) then Error <span class="string">"occurs check"</span>
+    else [<span class="type">&alpha;</span> &mapsto; <span class="type">&tau;</span>]
+
+unify(<span class="type">&tau;</span>, <span class="type">&alpha;</span>) = unify(<span class="type">&alpha;</span>, <span class="type">&tau;</span>)
+
+unify(int, int) = &empty;
+unify(bool, bool) = &empty;
+unify(string, string) = &empty;
+
+unify(<span class="type">&tau;&#8321;</span> &rarr; <span class="type">&tau;&#8322;</span>, <span class="type">&tau;&#8321;'</span> &rarr; <span class="type">&tau;&#8322;'</span>) =
+    S&#8321; = unify(<span class="type">&tau;&#8321;</span>, <span class="type">&tau;&#8321;'</span>)
+    S&#8322; = unify(S&#8321;(<span class="type">&tau;&#8322;</span>), S&#8321;(<span class="type">&tau;&#8322;'</span>))
+    return S&#8322; &compfn; S&#8321;
+
+unify(list <span class="type">&tau;</span>, list <span class="type">&tau;'</span>) = unify(<span class="type">&tau;</span>, <span class="type">&tau;'</span>)
+
+unify(<span class="type">&tau;&#8321;</span>, <span class="type">&tau;&#8322;</span>) = Error <span class="string">"type mismatch"</span> otherwise</code></pre>
+
+        <div class="note">
+            <div class="note-title">Occurs Check</div>
+            <p>The occurs check prevents infinite types like <code>&alpha; = list &alpha;</code>, which would expand infinitely.</p>
+        </div>
+
+        <h3>Algorithm W</h3>
+
+        <p>The main type inference algorithm:</p>
+
+        <pre><code>W : TypeEnv &rarr; Expr &rarr; Result&lt;Substitution &times; Type, Error&gt;</code></pre>
+
+        <h4>Inference Rules</h4>
+
+        <div class="example">
+            <div class="example-header">Literals</div>
+            <pre><code>W(&Gamma;, n)     = (&empty;, int)      <span class="comment">// integer literal</span>
+W(&Gamma;, true)  = (&empty;, bool)     <span class="comment">// boolean literal</span>
+W(&Gamma;, false) = (&empty;, bool)
+W(&Gamma;, "s")   = (&empty;, string)   <span class="comment">// string literal</span>
+W(&Gamma;, ())    = (&empty;, unit)     <span class="comment">// unit literal</span></code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Variables</div>
+            <pre><code>W(&Gamma;, x) =
+    if x &notin; dom(&Gamma;) then Error <span class="string">"unbound variable"</span>
+    else (&empty;, instantiate(&Gamma;(x)))</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Lambda Expressions</div>
+            <pre><code>W(&Gamma;, <span class="keyword">fun</span> x -> e) =
+    <span class="type">&alpha;</span> = fresh type variable
+    (S, <span class="type">&tau;</span>) = W(&Gamma; &cup; {x: <span class="type">&alpha;</span>}, e)
+    return (S, S(<span class="type">&alpha;</span>) &rarr; <span class="type">&tau;</span>)</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Function Application</div>
+            <pre><code>W(&Gamma;, e&#8321; e&#8322;) =
+    (S&#8321;, <span class="type">&tau;&#8321;</span>) = W(&Gamma;, e&#8321;)
+    (S&#8322;, <span class="type">&tau;&#8322;</span>) = W(S&#8321;(&Gamma;), e&#8322;)
+    <span class="type">&alpha;</span> = fresh type variable
+    S&#8323; = unify(S&#8322;(<span class="type">&tau;&#8321;</span>), <span class="type">&tau;&#8322;</span> &rarr; <span class="type">&alpha;</span>)
+    return (S&#8323; &compfn; S&#8322; &compfn; S&#8321;, S&#8323;(<span class="type">&alpha;</span>))</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Let Expressions (Polymorphism)</div>
+            <pre><code>W(&Gamma;, <span class="keyword">let</span> x = e&#8321; <span class="keyword">in</span> e&#8322;) =
+    (S&#8321;, <span class="type">&tau;&#8321;</span>) = W(&Gamma;, e&#8321;)
+    <span class="type">&sigma;</span> = generalize(S&#8321;(&Gamma;), <span class="type">&tau;&#8321;</span>)   <span class="comment">// generalize here!</span>
+    (S&#8322;, <span class="type">&tau;&#8322;</span>) = W(S&#8321;(&Gamma;) &cup; {x: <span class="type">&sigma;</span>}, e&#8322;)
+    return (S&#8322; &compfn; S&#8321;, <span class="type">&tau;&#8322;</span>)</code></pre>
+        </div>
+
+        <h3>Let-Polymorphism Example</h3>
+
+        <p>Generalization in <code>let</code> enables polymorphism:</p>
+
+        <pre><code><span class="keyword">let</span> id = <span class="keyword">fun</span> x -> x <span class="keyword">in</span>
+(id <span class="number">1</span>, id <span class="literal">true</span>)    <span class="comment">// OK: id is &forall;&alpha;. &alpha; &rarr; &alpha;</span></code></pre>
+
+        <p>Step-by-step:</p>
+        <ol>
+            <li>Infer <code>id</code> type: <code>&alpha; &rarr; &alpha;</code></li>
+            <li>Generalize: <code>&forall;&alpha;. &alpha; &rarr; &alpha;</code></li>
+            <li><code>id 1</code>: instantiate to <code>&beta; &rarr; &beta;</code>, unify with <code>int</code>, result: <code>int</code></li>
+            <li><code>id true</code>: instantiate to <code>&gamma; &rarr; &gamma;</code>, unify with <code>bool</code>, result: <code>bool</code></li>
+            <li>Final type: <code>(int, bool)</code></li>
+        </ol>
+
+        <h3>References</h3>
+        <ul>
+            <li>Damas, L., Milner, R. (1982). "Principal type-schemes for functional programs"</li>
+            <li>Pierce, B.C. (2002). "Types and Programming Languages"</li>
+        </ul>
+
+        <hr>
+
+        <h2 id="pattern-analysis">Pattern Matching Analysis</h2>
+
+        <p>FunLang implements <strong>Maranget's Usefulness algorithm</strong> for checking pattern matching exhaustiveness and redundancy.</p>
+
+        <h3>Goals</h3>
+        <ul>
+            <li><strong>Exhaustiveness</strong> - Warn if some values aren't matched</li>
+            <li><strong>Redundancy</strong> - Warn if a pattern can never match</li>
+        </ul>
+
+        <h3>Pattern Representation</h3>
+
+        <pre><code><span class="comment">// Simplified pattern for analysis</span>
+<span class="keyword">type</span> SimplePattern =
+    | SPWildcard                                    <span class="comment">// _ or variable</span>
+    | SPLiteral of Literal                          <span class="comment">// 1, true, "str"</span>
+    | SPConstructor of string * SimplePattern list  <span class="comment">// Name args</span>
+    | SPOr of SimplePattern list                    <span class="comment">// For output</span>
+
+<span class="comment">// Pattern row: a list of patterns (one per column)</span>
+<span class="keyword">type</span> PatternRow = SimplePattern list
+
+<span class="comment">// Pattern matrix: list of rows</span>
+<span class="keyword">type</span> PatternMatrix = PatternRow list</code></pre>
+
+        <h3>Usefulness Algorithm</h3>
+
+        <p>A pattern vector is <strong>useful</strong> against a matrix if there exists a value that:</p>
+        <ul>
+            <li>Matches the vector</li>
+            <li>Doesn't match any row in the matrix</li>
+        </ul>
+
+        <pre><code><span class="keyword">let rec</span> isUseful (matrix: PatternMatrix) (vector: PatternVector) : bool =
+    <span class="keyword">match</span> vector with
+    <span class="comment">// Base case: empty vector</span>
+    | [] -> matrix |> List.isEmpty
+
+    <span class="comment">// Empty matrix: any non-empty vector is useful</span>
+    | _ when List.isEmpty matrix -> true
+
+    <span class="comment">// Wildcard: check signature completeness</span>
+    | SPWildcard :: rest ->
+        <span class="keyword">let</span> headCtors = getHeadConstructors matrix
+        <span class="keyword">if</span> isComplete headCtors then
+            <span class="comment">// Check usefulness for each constructor</span>
+            allCtors |> List.exists (<span class="keyword">fun</span> (name, arity) ->
+                <span class="keyword">let</span> matrix' = specialize name arity matrix
+                <span class="keyword">let</span> vector' = List.replicate arity SPWildcard @ rest
+                isUseful matrix' vector')
+        <span class="keyword">else</span>
+            <span class="comment">// Incomplete: check default matrix</span>
+            isUseful (defaultMatrix matrix) rest
+
+    <span class="comment">// Constructor: specialize for this constructor</span>
+    | SPConstructor (name, args) :: rest ->
+        <span class="keyword">let</span> matrix' = specialize name (List.length args) matrix
+        <span class="keyword">let</span> vector' = args @ rest
+        isUseful matrix' vector'</code></pre>
+
+        <h3>Matrix Operations</h3>
+
+        <h4>Specialize</h4>
+        <p>Filter and expand the matrix for a specific constructor:</p>
+
+        <pre><code><span class="keyword">let</span> specialize (ctor: string) (arity: int) (matrix: PatternMatrix) =
+    matrix |> List.choose (<span class="keyword">fun</span> row ->
+        <span class="keyword">match</span> row with
+        | SPConstructor (name, args) :: rest when name = ctor ->
+            <span class="comment">// Matching: expand args</span>
+            Some (args @ rest)
+        | SPWildcard :: rest ->
+            <span class="comment">// Wildcard: expand to `arity` wildcards</span>
+            Some (List.replicate arity SPWildcard @ rest)
+        | _ ->
+            <span class="comment">// Non-matching: remove</span>
+            None)</code></pre>
+
+        <h4>Default Matrix</h4>
+        <p>Keep only wildcard rows:</p>
+
+        <pre><code><span class="keyword">let</span> defaultMatrix (matrix: PatternMatrix) =
+    matrix |> List.choose (<span class="keyword">fun</span> row ->
+        <span class="keyword">match</span> row with
+        | SPWildcard :: rest -> Some rest
+        | _ -> None)</code></pre>
+
+        <h3>Example: Exhaustiveness Check</h3>
+
+        <div class="example">
+            <div class="example-header">Non-exhaustive Pattern</div>
+            <pre><code><span class="keyword">type</span> Option 'a = None | Some of 'a
+
+<span class="keyword">let</span> getValue opt =
+    <span class="keyword">match</span> opt <span class="keyword">with</span>
+    | Some x -> x
+    <span class="comment">// Missing: | None -> ...</span></code></pre>
+            <pre><code><span class="warning">Warning: Non-exhaustive pattern match
+  Missing case(s): None</span></code></pre>
+        </div>
+
+        <p><strong>Analysis:</strong></p>
+        <ol>
+            <li>Matrix = <code>[[Some _]]</code></li>
+            <li>Check if <code>[_]</code> is useful against this matrix</li>
+            <li>Constructors = <code>{None, Some}</code></li>
+            <li><code>None</code> not in matrix head constructors</li>
+            <li>Result: Non-exhaustive, missing <code>None</code></li>
+        </ol>
+
+        <h3>Example: Redundancy Check</h3>
+
+        <div class="example">
+            <div class="example-header">Redundant Pattern</div>
+            <pre><code><span class="keyword">match</span> x <span class="keyword">with</span>
+| <span class="literal">true</span> -> <span class="number">1</span>
+| <span class="literal">false</span> -> <span class="number">2</span>
+| _ -> <span class="number">3</span>    <span class="comment">// Redundant!</span></code></pre>
+            <pre><code><span class="warning">Warning: Pattern 3 is redundant (never matches)</span></code></pre>
+        </div>
+
+        <p><strong>Analysis:</strong></p>
+        <ol>
+            <li>Build matrix incrementally: <code>[[true]]</code>, then <code>[[true], [false]]</code></li>
+            <li>Check if <code>[_]</code> is useful against <code>[[true], [false]]</code></li>
+            <li>Bool has complete signature: <code>{true, false}</code></li>
+            <li>All constructors covered &rarr; wildcard not useful</li>
+            <li>Result: Pattern 3 is redundant</li>
+        </ol>
+
+        <h3>References</h3>
+        <ul>
+            <li>Maranget, Luc (2007). "Warnings for Pattern Matching"</li>
+        </ul>
+
+        <hr>
+
+        <h2 id="indentation">Indentation Processing</h2>
+
+        <p>FunLang supports Python/Haskell-style significant indentation for block syntax.</p>
+
+        <h3>Architecture</h3>
+
+        <pre><code>Source Code
+    &darr;
+[Lexer (FsLex)] &rarr; Raw tokens with NEWLINE
+    &darr;
+[Indentation Processor] &rarr; Tokens with INDENT/DEDENT
+    &darr;
+[Parser (FsYacc)] &rarr; AST
+    &darr;
+[Interpreter] &rarr; Value</code></pre>
+
+        <h3>State Machine</h3>
+
+        <pre><code><span class="keyword">type</span> IndentState = {
+    IndentStack: int list    <span class="comment">// Stack of column levels</span>
+    ParenDepth: int          <span class="comment">// Nesting depth of () and []</span>
+    AtLineStart: bool        <span class="comment">// Next token starts a line</span>
+    CurrentLine: int         <span class="comment">// For error messages</span>
+}</code></pre>
+
+        <h3>Algorithm</h3>
+
+        <pre><code><span class="keyword">For each</span> token with position (tok, pos):
+
+<span class="number">1.</span> Handle NEWLINE token:
+   <span class="keyword">if</span> ParenDepth > 0 then skip
+   <span class="keyword">else</span> set AtLineStart = true
+
+<span class="number">2.</span> Handle other tokens:
+   a. Update ParenDepth for ( ) [ ]
+   b. <span class="keyword">if</span> inside parens then emit token (no indent processing)
+   c. <span class="keyword">if</span> at line start then:
+      col = pos.Column
+
+      <span class="keyword">Case</span>: col > stack.top
+        &rarr; Push col onto stack
+        &rarr; Emit INDENT, then token
+
+      <span class="keyword">Case</span>: col = stack.top
+        &rarr; Emit NEWLINE (separator), then token
+
+      <span class="keyword">Case</span>: col < stack.top
+        &rarr; Pop stack until col matches
+        &rarr; Emit DEDENT for each pop, then token
+
+<span class="number">3.</span> At EOF:
+   &rarr; Emit DEDENT for each level above base
+   &rarr; Emit EOF</code></pre>
+
+        <h3>Example Trace</h3>
+
+        <div class="example">
+            <div class="example-header">Input</div>
+            <pre><code><span class="keyword">let</span> x =
+    <span class="number">10</span>
+    <span class="number">20</span>
+x</code></pre>
+        </div>
+
+        <table>
+            <tr><th>Token</th><th>Pos</th><th>Stack</th><th>Action</th><th>Output</th></tr>
+            <tr><td><code>LET</code></td><td>(1,1)</td><td>[]</td><td>First token</td><td><code>LET</code>, stack=[1]</td></tr>
+            <tr><td><code>IDENT "x"</code></td><td>(1,5)</td><td>[1]</td><td>Not line start</td><td><code>IDENT "x"</code></td></tr>
+            <tr><td><code>EQ</code></td><td>(1,7)</td><td>[1]</td><td>Not line start</td><td><code>EQ</code></td></tr>
+            <tr><td><code>NEWLINE</code></td><td>(1,8)</td><td>[1]</td><td>Set AtLineStart</td><td>(nothing)</td></tr>
+            <tr><td><code>INT 10</code></td><td>(2,5)</td><td>[1]</td><td>col=5 > top=1</td><td><code>INDENT INT</code>, stack=[5,1]</td></tr>
+            <tr><td><code>NEWLINE</code></td><td>(2,7)</td><td>[5,1]</td><td>Set AtLineStart</td><td>(nothing)</td></tr>
+            <tr><td><code>INT 20</code></td><td>(3,5)</td><td>[5,1]</td><td>col=5 = top=5</td><td><code>NEWLINE INT</code></td></tr>
+            <tr><td><code>NEWLINE</code></td><td>(3,7)</td><td>[5,1]</td><td>Set AtLineStart</td><td>(nothing)</td></tr>
+            <tr><td><code>IDENT "x"</code></td><td>(4,1)</td><td>[5,1]</td><td>col=1 < top=5</td><td><code>DEDENT IDENT</code>, stack=[1]</td></tr>
+            <tr><td><code>EOF</code></td><td>(5,1)</td><td>[1]</td><td>Close remaining</td><td><code>EOF</code></td></tr>
+        </table>
+
+        <div class="example">
+            <div class="example-header">Final Token Stream</div>
+            <pre><code>LET IDENT EQ INDENT INT NEWLINE INT DEDENT IDENT EOF</code></pre>
+        </div>
+
+        <h3>Block Transformation</h3>
+
+        <p>The parser transforms indented blocks into nested <code>let</code> expressions:</p>
+
+        <div class="example">
+            <div class="example-header">Input</div>
+            <pre><code><span class="keyword">let</span> x = <span class="number">10</span>
+<span class="keyword">let</span> y = <span class="number">20</span>
+x + y</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Transformed AST</div>
+            <pre><code>ELet("x", <span class="number">10</span>, ELet("y", <span class="number">20</span>, x + y))</code></pre>
+        </div>
+
+        <h3>Parentheses Exception</h3>
+
+        <p>Indentation is ignored inside parentheses and brackets:</p>
+
+        <pre><code><span class="keyword">let</span> list = [
+    <span class="number">1</span>,
+        <span class="number">2</span>,    <span class="comment">// indentation doesn't matter here</span>
+    <span class="number">3</span>
+]</code></pre>
+
+        <hr>
+
+        <h2 id="ast-emit">AST Emit (Source Formatter)</h2>
+
+        <p>The <code>--emit</code> (or <code>-o</code>) option parses source code into an AST and reformats it back to clean, consistently formatted source code.</p>
+
+        <h3>Features</h3>
+        <ul>
+            <li><strong>Consistent formatting</strong> - Standardized indentation and spacing</li>
+            <li><strong>Comment preservation</strong> - Comments are maintained in output</li>
+            <li><strong>Minimal parentheses</strong> - Only adds parentheses when necessary for precedence</li>
+        </ul>
+
+        <h3>Usage</h3>
+
+        <pre><code><span class="comment"># Format and display</span>
+funlang --emit messy.fun
+
+<span class="comment"># Format and save to file</span>
+funlang --emit clean.fun messy.fun
+funlang -o clean.fun messy.fun</code></pre>
+
+        <h3>Pipeline</h3>
+
+        <pre><code>Source Code
+    &darr;
+[Lexer] &rarr; Tokens + Comments (separate)
+    &darr;
+[Parser] &rarr; AST (with position info)
+    &darr;
+[Formatter] &rarr; Match comments to AST nodes
+    &darr;
+Formatted Output (with comments)</code></pre>
+
+        <h3 id="comment-preservation">Comment Preservation</h3>
+
+        <p>Preserving comments during formatting is non-trivial because comments are not part of the AST.</p>
+
+        <h4>Comment Buffer Mechanism</h4>
+
+        <p>FsLex can only return one token at a time. To capture comments with the following NEWLINE token, a buffer mechanism is used:</p>
+
+        <pre><code><span class="comment">// In Lexer.fsl</span>
+<span class="keyword">let mutable private</span> commentBuffer: (string * int * int) option = None
+
+<span class="comment">// When // is encountered:</span>
+and lineComment startLine startCol acc = parse
+    | newline {
+        <span class="comment">// Store comment in buffer</span>
+        commentBuffer <- Some (acc.ToString(), startLine, startCol)
+        NEWLINE  <span class="comment">// Return NEWLINE token</span>
+    }
+    | _ {
+        acc.Append(lexeme) |> ignore
+        lineComment startLine startCol acc lexbuf
+    }</code></pre>
+
+        <h4>Comment Classification</h4>
+
+        <table>
+            <tr><th>Type</th><th>Condition</th><th>Example</th></tr>
+            <tr>
+                <td><strong>Trailing</strong></td>
+                <td>Same line as code</td>
+                <td><code>let x = 1  // comment</code></td>
+            </tr>
+            <tr>
+                <td><strong>Leading</strong></td>
+                <td>Before code on next line</td>
+                <td><code>// comment<br>let x = 1</code></td>
+            </tr>
+        </table>
+
+        <h4>Matching Algorithm</h4>
+
+        <pre><code><span class="keyword">let rec</span> formatWithComments indent expr comments =
+    <span class="keyword">let</span> exprLine = expr.Pos.Line
+
+    <span class="comment">// 1. Separate leading comments (before this expression)</span>
+    <span class="keyword">let</span> (leading, remaining) =
+        comments |> List.partition (<span class="keyword">fun</span> c -> c.Pos.Line < exprLine)
+
+    <span class="comment">// 2. Separate trailing comment (same line)</span>
+    <span class="keyword">let</span> (trailingOpt, childComments) =
+        <span class="keyword">let</span> sameLine = remaining |> List.tryFind (<span class="keyword">fun</span> c -> c.Pos.Line = exprLine)
+        <span class="keyword">let</span> rest = remaining |> List.filter (<span class="keyword">fun</span> c -> c.Pos.Line <> exprLine)
+        (sameLine, rest)
+
+    <span class="comment">// 3. Format leading comments</span>
+    <span class="keyword">let</span> leadingStr =
+        leading
+        |> List.sortBy (<span class="keyword">fun</span> c -> c.Pos.Line)
+        |> List.map (<span class="keyword">fun</span> c -> sprintf "%s//%s\n" spaces c.Text)
+        |> String.concat ""
+
+    <span class="comment">// 4. Format expression (recursively handle child comments)</span>
+    <span class="keyword">let</span> exprStr = formatExpr indent expr trailingOpt childComments
+
+    leadingStr + exprStr</code></pre>
+
+        <h4>Example</h4>
+
+        <div class="example">
+            <div class="example-header">Input</div>
+            <pre><code><span class="comment">// comment1</span>
+<span class="keyword">let</span> x = <span class="number">1</span>
+<span class="comment">// comment2</span>
+<span class="keyword">let</span> y = <span class="number">2</span>  <span class="comment">// trailing</span>
+x + y</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Comment Matching</div>
+            <pre><code>comment1 (line 1) &rarr; Leading for `let x` (line 2)
+comment2 (line 3) &rarr; Leading for `let y` (line 4)
+trailing (line 4) &rarr; Trailing for `let y` (line 4)</code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Output (Preserved)</div>
+            <pre><code><span class="comment">// comment1</span>
+<span class="keyword">let</span> x = <span class="number">1</span>
+<span class="comment">// comment2</span>
+<span class="keyword">let</span> y = <span class="number">2</span>  <span class="comment">// trailing</span>
+x + y</code></pre>
+        </div>
+
+        <h3 id="operator-precedence">Operator Precedence</h3>
+
+        <p>The formatter handles operator precedence to insert parentheses only when necessary:</p>
+
+        <table>
+            <tr><th>Precedence</th><th>Operators</th><th>Associativity</th></tr>
+            <tr><td>1 (lowest)</td><td><code>||</code></td><td>Left</td></tr>
+            <tr><td>2</td><td><code>&&</code></td><td>Left</td></tr>
+            <tr><td>3</td><td><code>=</code>, <code><></code></td><td>Non-assoc</td></tr>
+            <tr><td>4</td><td><code><</code>, <code>></code>, <code><=</code>, <code>>=</code></td><td>Non-assoc</td></tr>
+            <tr><td>5</td><td><code>+</code>, <code>-</code></td><td>Left</td></tr>
+            <tr><td>6 (highest)</td><td><code>*</code>, <code>/</code>, <code>%</code></td><td>Left</td></tr>
+        </table>
+
+        <div class="example">
+            <div class="example-header">Parentheses Handling</div>
+            <pre><code><span class="comment">// No parentheses needed (precedence correct)</span>
+<span class="number">1</span> + <span class="number">2</span> * <span class="number">3</span>  &rarr;  <span class="number">1</span> + <span class="number">2</span> * <span class="number">3</span>
+
+<span class="comment">// Parentheses needed</span>
+(<span class="number">1</span> + <span class="number">2</span>) * <span class="number">3</span>  &rarr;  (<span class="number">1</span> + <span class="number">2</span>) * <span class="number">3</span></code></pre>
+        </div>
+
+        <div class="page-nav">
+            <a href="errors.html" class="prev">Errors & Warnings</a>
+            <a href="grammar.html" class="next">Grammar</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

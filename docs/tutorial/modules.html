@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modules - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Module System</h1>
+
+        <p>FunLang's module system allows you to organize code into reusable units with explicit exports and qualified access.</p>
+
+        <h2 id="basics">Module Basics</h2>
+
+        <h3>Defining a Module</h3>
+        <p>Modules are defined using the <code>module</code> keyword:</p>
+
+        <div class="example">
+            <div class="example-header">Basic module</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Math</span> =
+  <span class="keyword">export</span> add, multiply
+
+  <span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+  <span class="keyword">let</span> multiply = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x * y
+
+<span class="type">Math</span>.add <span class="number">2</span> <span class="number">3</span></code></pre>
+            <div class="example-result">=> 5</div>
+        </div>
+
+        <h3>Module Structure</h3>
+        <p>A module consists of:</p>
+        <ul>
+            <li><strong>Name</strong>: Module names start with uppercase (e.g., <code>Math</code>, <code>Utils</code>)</li>
+            <li><strong>Export list</strong>: Declares which items are publicly accessible</li>
+            <li><strong>Body</strong>: Contains let bindings and type definitions</li>
+        </ul>
+
+        <pre><code><span class="keyword">module</span> <span class="type">ModuleName</span> =
+  <span class="keyword">export</span> item1, item2, ...   <span class="comment">// export declaration</span>
+
+  <span class="keyword">let</span> item1 = ...            <span class="comment">// exported</span>
+  <span class="keyword">let</span> item2 = ...            <span class="comment">// exported</span>
+  <span class="keyword">let</span> helper = ...           <span class="comment">// private (not exported)</span></code></pre>
+
+        <h2 id="exports">Exports</h2>
+
+        <h3>Export Declaration</h3>
+        <p>The <code>export</code> keyword lists items that are publicly accessible:</p>
+
+        <div class="example">
+            <div class="example-header">Public and private items</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Utils</span> =
+  <span class="keyword">export</span> double, square    <span class="comment">// only these are public</span>
+
+  <span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>      <span class="comment">// public</span>
+  <span class="keyword">let</span> square = <span class="keyword">fun</span> x -> x * x      <span class="comment">// public</span>
+  <span class="keyword">let</span> helper = <span class="keyword">fun</span> x -> x + <span class="number">1</span>      <span class="comment">// private</span>
+
+<span class="type">Utils</span>.double <span class="number">5</span></code></pre>
+            <div class="example-result">=> 10</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            Items not in the export list are private to the module. Attempting to access them from outside will result in an error.
+        </div>
+
+        <h3>Multiple Exports</h3>
+        <div class="example">
+            <div class="example-header">Exporting multiple items</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Calculator</span> =
+  <span class="keyword">export</span> add, subtract, multiply, divide
+
+  <span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+  <span class="keyword">let</span> subtract = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x - y
+  <span class="keyword">let</span> multiply = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x * y
+  <span class="keyword">let</span> divide = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x / y
+
+<span class="type">Calculator</span>.subtract <span class="number">10</span> <span class="number">3</span></code></pre>
+            <div class="example-result">=> 7</div>
+        </div>
+
+        <h2 id="qualified">Qualified Names</h2>
+
+        <h3>Accessing Module Members</h3>
+        <p>Use dot notation to access exported module members:</p>
+
+        <pre><code><span class="comment">// ModuleName.memberName</span>
+<span class="type">Math</span>.add <span class="number">1</span> <span class="number">2</span>
+<span class="type">Utils</span>.double <span class="number">5</span>
+<span class="type">Calculator</span>.multiply <span class="number">3</span> <span class="number">4</span></code></pre>
+
+        <h3>Multiple Modules</h3>
+        <p>You can define and use multiple modules in the same file:</p>
+
+        <div class="example">
+            <div class="example-header">Multiple modules</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Math</span> =
+  <span class="keyword">export</span> square
+
+  <span class="keyword">let</span> square = <span class="keyword">fun</span> x -> x * x
+
+<span class="keyword">module</span> <span class="type">Utils</span> =
+  <span class="keyword">export</span> double
+
+  <span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+
+<span class="comment">// Use functions from both modules</span>
+<span class="type">Math</span>.square (<span class="type">Utils</span>.double <span class="number">3</span>)</code></pre>
+            <div class="example-result">=> 36</div>
+        </div>
+
+        <h3>Combining Module Functions</h3>
+        <div class="example">
+            <div class="example-header">Using modules together</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Math</span> =
+  <span class="keyword">export</span> add, multiply
+
+  <span class="keyword">let</span> add = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x + y
+  <span class="keyword">let</span> multiply = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y -> x * y
+
+<span class="keyword">module</span> <span class="type">Utils</span> =
+  <span class="keyword">export</span> double
+
+  <span class="keyword">let</span> double = <span class="keyword">fun</span> x -> x * <span class="number">2</span>
+
+<span class="comment">// Compute: (2 + 3) * double(4) = 5 * 8 = 40</span>
+<span class="type">Math</span>.multiply (<span class="type">Math</span>.add <span class="number">2</span> <span class="number">3</span>) (<span class="type">Utils</span>.double <span class="number">4</span>)</code></pre>
+            <div class="example-result">=> 40</div>
+        </div>
+
+        <h3>Recursive Functions in Modules</h3>
+        <p>Modules support recursive functions with <code>let rec</code>:</p>
+
+        <div class="example">
+            <div class="example-header">Recursive module function</div>
+            <pre><code><span class="keyword">module</span> <span class="type">Math</span> =
+  <span class="keyword">export</span> factorial, fibonacci
+
+  <span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+    <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+    <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)
+
+  <span class="keyword">let rec</span> fibonacci = <span class="keyword">fun</span> n ->
+    <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> n
+    <span class="keyword">else</span> fibonacci (n - <span class="number">1</span>) + fibonacci (n - <span class="number">2</span>)
+
+(<span class="type">Math</span>.factorial <span class="number">5</span>, <span class="type">Math</span>.fibonacci <span class="number">10</span>)</code></pre>
+            <div class="example-result">=> (120, 55)</div>
+        </div>
+
+        <h3>Practical Example: String Utilities</h3>
+        <div class="example">
+            <div class="example-header">String module</div>
+            <pre><code><span class="keyword">module</span> <span class="type">StringUtils</span> =
+  <span class="keyword">export</span> greet, exclaim
+
+  <span class="keyword">let</span> greet = <span class="keyword">fun</span> name -> <span class="string">"Hello, "</span> ^ name ^ <span class="string">"!"</span>
+  <span class="keyword">let</span> exclaim = <span class="keyword">fun</span> s -> s ^ <span class="string">"!!"</span>
+
+<span class="type">StringUtils</span>.greet <span class="string">"FunLang"</span></code></pre>
+            <div class="example-result">=> "Hello, FunLang!"</div>
+        </div>
+
+        <h2>Best Practices</h2>
+
+        <div class="tip">
+            <div class="note-title">Module Design Tips</div>
+            <ul>
+                <li><strong>Explicit exports</strong>: Only export what needs to be public</li>
+                <li><strong>Meaningful names</strong>: Use descriptive module and function names</li>
+                <li><strong>Single responsibility</strong>: Each module should have a focused purpose</li>
+                <li><strong>Helper functions</strong>: Keep implementation details private</li>
+            </ul>
+        </div>
+
+        <h3>Good Module Design</h3>
+        <pre><code><span class="comment">// Good: focused module with clear exports</span>
+<span class="keyword">module</span> <span class="type">ListOps</span> =
+  <span class="keyword">export</span> map, filter, fold
+
+  <span class="comment">// Public API</span>
+  <span class="keyword">let rec</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> xs -> ...
+  <span class="keyword">let rec</span> filter = <span class="keyword">fun</span> pred -> <span class="keyword">fun</span> xs -> ...
+  <span class="keyword">let rec</span> fold = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> acc -> <span class="keyword">fun</span> xs -> ...
+
+  <span class="comment">// Private helpers</span>
+  <span class="keyword">let</span> helper1 = ...
+  <span class="keyword">let</span> helper2 = ...</code></pre>
+
+        <h2>Current Limitations</h2>
+
+        <div class="warning">
+            <div class="note-title">v0.5.0 Limitations</div>
+            <p>The current module system (Phase 1 MVP) has some limitations:</p>
+            <ul>
+                <li><strong>No nested modules</strong>: Modules cannot contain other modules</li>
+                <li><strong>Single file only</strong>: Modules must be in the same file as the code that uses them</li>
+                <li><strong>No <code>open</code>/<code>import</code></strong>: Cannot import modules into current scope</li>
+                <li><strong>No self-reference</strong>: Module functions cannot call other functions from the same module using qualified names</li>
+            </ul>
+            <p>These features are planned for future versions.</p>
+        </div>
+
+        <div class="page-nav">
+            <a href="types.html" class="prev">Types</a>
+            <a href="examples.html" class="next">Examples</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>FunLang Tutorial</h1>
+
+        <p>Welcome to the FunLang tutorial! FunLang is a statically-typed functional programming language with Hindley-Milner type inference, designed for learning functional programming concepts.</p>
+
+        <h2>Features</h2>
+        <ul>
+            <li><strong>First-class functions</strong> - Functions are values that can be passed around</li>
+            <li><strong>Pattern matching</strong> - Powerful destructuring of data</li>
+            <li><strong>Algebraic data types</strong> - Define your own types with discriminated unions</li>
+            <li><strong>Static type inference</strong> - Types are inferred automatically (Hindley-Milner)</li>
+            <li><strong>Indentation-based syntax</strong> - Clean, Python-like syntax without braces</li>
+            <li><strong>Module system</strong> - Organize code into reusable modules</li>
+        </ul>
+
+        <h2>Installation</h2>
+
+        <h3>Requirements</h3>
+        <p>.NET 9.0 or later is required to build and run FunLang.</p>
+
+        <h3>Build from Source</h3>
+        <pre><code><span class="comment"># Clone the repository</span>
+git clone https://github.com/your-repo/FunLang.git
+cd FunLang
+
+<span class="comment"># Build</span>
+dotnet build
+
+<span class="comment"># Run a FunLang file</span>
+dotnet run --project src/FunLang -- myprogram.fun</code></pre>
+
+        <h2>Hello World</h2>
+        <p>Let's start with the simplest FunLang program:</p>
+
+        <div class="example">
+            <div class="example-header">hello.fun</div>
+            <pre><code><span class="string">"Hello, FunLang!"</span></code></pre>
+            <div class="example-result">=> "Hello, FunLang!"</div>
+        </div>
+
+        <h3>Running FunLang</h3>
+        <pre><code><span class="comment"># Run a file</span>
+dotnet run --project src/FunLang -- hello.fun
+
+<span class="comment"># Evaluate an expression directly</span>
+dotnet run --project src/FunLang -- -e <span class="string">"1 + 2 * 3"</span>
+
+<span class="comment"># Start interactive REPL</span>
+dotnet run --project src/FunLang -- -i</code></pre>
+
+        <h2>Quick Example</h2>
+        <p>Here's a taste of what FunLang looks like:</p>
+
+        <div class="example">
+            <div class="example-header">Factorial function</div>
+            <pre><code><span class="keyword">let rec</span> factorial = <span class="keyword">fun</span> n ->
+  <span class="keyword">if</span> n <= <span class="number">1</span> <span class="keyword">then</span> <span class="number">1</span>
+  <span class="keyword">else</span> n * factorial (n - <span class="number">1</span>)
+
+factorial <span class="number">5</span></code></pre>
+            <div class="example-result">=> 120</div>
+        </div>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            FunLang uses indentation-based syntax like Python. No braces or semicolons needed!
+        </div>
+
+        <h2>CLI Options</h2>
+        <table>
+            <tr><th>Option</th><th>Description</th></tr>
+            <tr><td><code>file.fun</code></td><td>Run a FunLang file</td></tr>
+            <tr><td><code>-e "expr"</code></td><td>Evaluate expression</td></tr>
+            <tr><td><code>-i</code></td><td>Interactive REPL</td></tr>
+            <tr><td><code>--show-tokens</code></td><td>Display lexer tokens</td></tr>
+            <tr><td><code>--show-ast</code></td><td>Display parsed AST</td></tr>
+            <tr><td><code>--show-types</code></td><td>Display inferred types</td></tr>
+            <tr><td><code>--emit</code></td><td>Output formatted source</td></tr>
+        </table>
+
+        <div class="page-nav">
+            <div class="placeholder"></div>
+            <a href="basics.html" class="next">Basics</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

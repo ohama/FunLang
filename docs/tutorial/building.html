@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Building FunLang</h1>
+
+        <p>This guide covers how to build, run, and develop FunLang from source.</p>
+
+        <h2>Requirements</h2>
+
+        <h3>Required</h3>
+        <ul>
+            <li><strong>.NET 9.0 SDK</strong> or later</li>
+        </ul>
+
+        <h3>Included Dependencies</h3>
+        <p>These are automatically restored by <code>dotnet restore</code>:</p>
+        <ul>
+            <li><strong>FsLexYacc</strong> - Lexer/Parser generator (F# port of lex/yacc)</li>
+            <li><strong>Argu</strong> - Command-line argument parsing</li>
+            <li><strong>Serilog</strong> - Structured logging</li>
+            <li><strong>Expecto</strong> + <strong>FsCheck</strong> - Testing framework</li>
+        </ul>
+
+        <h2>Build Commands</h2>
+
+        <h3>Basic Build</h3>
+        <pre><code><span class="comment"># Clone the repository</span>
+git clone https://github.com/your-repo/FunLang.git
+cd FunLang
+
+<span class="comment"># Restore dependencies</span>
+dotnet restore
+
+<span class="comment"># Build the project</span>
+dotnet build
+
+<span class="comment"># Verify build succeeded</span>
+dotnet run --project src/FunLang -- --version</code></pre>
+
+        <h3>Build Configurations</h3>
+        <table>
+            <tr><th>Command</th><th>Description</th></tr>
+            <tr><td><code>dotnet build</code></td><td>Debug build (default)</td></tr>
+            <tr><td><code>dotnet build -c Release</code></td><td>Release build (optimized)</td></tr>
+            <tr><td><code>dotnet clean</code></td><td>Clean build artifacts</td></tr>
+            <tr><td><code>dotnet restore</code></td><td>Restore NuGet packages</td></tr>
+        </table>
+
+        <h3>Publish (Standalone Binary)</h3>
+        <pre><code><span class="comment"># Create a self-contained executable</span>
+dotnet publish -c Release -r linux-x64 --self-contained
+
+<span class="comment"># Or for other platforms:</span>
+dotnet publish -c Release -r win-x64 --self-contained
+dotnet publish -c Release -r osx-x64 --self-contained
+dotnet publish -c Release -r osx-arm64 --self-contained</code></pre>
+
+        <h2>Running FunLang</h2>
+
+        <h3>Development Mode</h3>
+        <pre><code><span class="comment"># Run a file</span>
+dotnet run --project src/FunLang -- myprogram.fun
+
+<span class="comment"># Evaluate an expression</span>
+dotnet run --project src/FunLang -- -e "1 + 2 * 3"
+
+<span class="comment"># Interactive REPL</span>
+dotnet run --project src/FunLang -- -i</code></pre>
+
+        <h3>After Publishing</h3>
+        <pre><code><span class="comment"># The executable will be in:</span>
+./bin/Release/net9.0/linux-x64/publish/FunLang
+
+<span class="comment"># Run directly</span>
+./FunLang myprogram.fun
+./FunLang -e "1 + 2"
+./FunLang -i</code></pre>
+
+        <h2>Running Tests</h2>
+
+        <h3>All Tests</h3>
+        <pre><code><span class="comment"># Run all tests</span>
+dotnet test
+
+<span class="comment"># Or using Expecto directly (more options)</span>
+dotnet run --project tests/FunLang.Tests</code></pre>
+
+        <h3>Filtered Tests</h3>
+        <pre><code><span class="comment"># Filter by test list name (substring match)</span>
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "Lexer"
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "Parser"
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "Type"
+dotnet run --project tests/FunLang.Tests -- --filter-test-list "File-Based"
+
+<span class="comment"># Filter by test case name</span>
+dotnet run --project tests/FunLang.Tests -- --filter-test-case "fibonacci"
+dotnet run --project tests/FunLang.Tests -- --filter-test-case "factorial"</code></pre>
+
+        <h3>Test Options</h3>
+        <table>
+            <tr><th>Option</th><th>Description</th></tr>
+            <tr><td><code>--debug</code></td><td>Verbose output</td></tr>
+            <tr><td><code>--parallel</code></td><td>Run tests in parallel</td></tr>
+            <tr><td><code>--list-tests</code></td><td>List all test names</td></tr>
+            <tr><td><code>--filter-test-list "X"</code></td><td>Filter by test list name</td></tr>
+            <tr><td><code>--filter-test-case "X"</code></td><td>Filter by test case name</td></tr>
+        </table>
+
+        <h2>Project Structure</h2>
+
+        <pre><code>FunLang/
+├── src/FunLang/              <span class="comment"># Main source code</span>
+│   ├── Options.fs            <span class="comment"># CLI argument definitions</span>
+│   ├── Logging.fs            <span class="comment"># Logging utilities</span>
+│   ├── Errors.fs             <span class="comment"># Error types and formatting</span>
+│   ├── Ast.fs                <span class="comment"># Abstract Syntax Tree</span>
+│   ├── Types.fs              <span class="comment"># Type definitions</span>
+│   ├── Lexer.fsl             <span class="comment"># Lexer rules (FsLex)</span>
+│   ├── Parser.fsy            <span class="comment"># Parser grammar (FsYacc)</span>
+│   ├── Indentation.fs        <span class="comment"># Indentation processing</span>
+│   ├── TypeInfer.fs          <span class="comment"># Type inference (Algorithm W)</span>
+│   ├── PatternAnalysis.fs    <span class="comment"># Pattern exhaustiveness</span>
+│   ├── Interpreter.fs        <span class="comment"># Evaluator</span>
+│   ├── Formatter.fs          <span class="comment"># Source code formatter</span>
+│   ├── Repl.fs               <span class="comment"># Interactive REPL</span>
+│   └── Program.fs            <span class="comment"># Entry point</span>
+│
+├── tests/FunLang.Tests/      <span class="comment"># Test suite</span>
+│   ├── LexerTests.fs         <span class="comment"># Lexer tests</span>
+│   ├── ParserTests.fs        <span class="comment"># Parser tests</span>
+│   ├── TypeTests.fs          <span class="comment"># Type inference tests</span>
+│   ├── InterpreterTests.fs   <span class="comment"># Evaluation tests</span>
+│   └── FileBasedTests.fs     <span class="comment"># File-based integration tests</span>
+│
+├── tests/file-tests/         <span class="comment"># Test files</span>
+│   ├── eval-tests/           <span class="comment"># Evaluation tests</span>
+│   ├── parse-tests/          <span class="comment"># Parsing tests</span>
+│   ├── error-tests/          <span class="comment"># Error message tests</span>
+│   ├── warning-tests/        <span class="comment"># Pattern warning tests</span>
+│   └── format-tests/         <span class="comment"># Formatter tests</span>
+│
+├── docs/                     <span class="comment"># Documentation</span>
+│   ├── tutorial/             <span class="comment"># This tutorial</span>
+│   ├── grammar.md            <span class="comment"># Language grammar</span>
+│   └── *.md                  <span class="comment"># Other docs</span>
+│
+└── CLAUDE.md                 <span class="comment"># Development guidelines</span></code></pre>
+
+        <h2>Build Pipeline</h2>
+
+        <p>FunLang uses FsLexYacc to generate the lexer and parser. The build pipeline:</p>
+
+        <pre><code><span class="comment"># 1. FsYacc generates Parser.fs from Parser.fsy</span>
+Parser.fsy  →  Parser.fs
+
+<span class="comment"># 2. FsLex generates Lexer.fs from Lexer.fsl</span>
+Lexer.fsl   →  Lexer.fs
+
+<span class="comment"># 3. F# compiler compiles everything</span>
+*.fs        →  FunLang.dll</code></pre>
+
+        <div class="note">
+            <div class="note-title">Important</div>
+            <code>Parser.fs</code> must be compiled before <code>Lexer.fs</code> because the lexer references token types defined by the parser.
+        </div>
+
+        <h2>Development Workflow</h2>
+
+        <h3>Watch Mode</h3>
+        <pre><code><span class="comment"># Automatically rebuild on file changes</span>
+dotnet watch run --project src/FunLang -- myprogram.fun</code></pre>
+
+        <h3>Debug Mode</h3>
+        <pre><code><span class="comment"># Show all debug information</span>
+dotnet run --project src/FunLang -- -d myprogram.fun
+
+<span class="comment"># Show specific phases</span>
+dotnet run --project src/FunLang -- --show-tokens myprogram.fun
+dotnet run --project src/FunLang -- --show-ast myprogram.fun
+dotnet run --project src/FunLang -- --show-types myprogram.fun</code></pre>
+
+        <h2>Version Management</h2>
+
+        <p>Use the version upgrade script to release new versions:</p>
+
+        <pre><code><span class="comment"># Patch release: 0.5.0 → 0.5.1</span>
+./upgrade_version.sh patch
+
+<span class="comment"># Minor release: 0.5.0 → 0.6.0</span>
+./upgrade_version.sh minor
+
+<span class="comment"># Major release: 0.5.0 → 1.0.0</span>
+./upgrade_version.sh major
+
+<span class="comment"># With auto-push to remote</span>
+./upgrade_version.sh minor --push</code></pre>
+
+        <p>The script automatically:</p>
+        <ol>
+            <li>Bumps version in <code>VERSION</code> file</li>
+            <li>Generates changelog from git commits</li>
+            <li>Updates <code>CHANGELOG.md</code></li>
+            <li>Creates git commit and tag (<code>vX.Y.Z</code>)</li>
+            <li>Pushes to remote (with <code>--push</code> flag)</li>
+        </ol>
+
+        <h2>Troubleshooting</h2>
+
+        <h3>Parser/Lexer Not Regenerating</h3>
+        <pre><code><span class="comment"># Clean and rebuild</span>
+dotnet clean
+dotnet build</code></pre>
+
+        <h3>Missing Dependencies</h3>
+        <pre><code><span class="comment"># Restore all packages</span>
+dotnet restore</code></pre>
+
+        <h3>Test Failures After Changes</h3>
+        <pre><code><span class="comment"># Run tests with verbose output</span>
+dotnet run --project tests/FunLang.Tests -- --debug</code></pre>
+
+        <div class="page-nav">
+            <a href="index.html" class="prev">Introduction</a>
+            <a href="cli.html" class="next">CLI Reference</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

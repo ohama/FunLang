@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basics - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Language Basics</h1>
+
+        <p>This section covers the fundamental building blocks of FunLang: literals, operators, variables, and comments.</p>
+
+        <h2 id="literals">Literals</h2>
+        <p>FunLang supports several primitive types:</p>
+
+        <h3>Integers</h3>
+        <pre><code><span class="number">42</span>          <span class="comment">// positive integer</span>
+<span class="number">-17</span>         <span class="comment">// negative integer</span>
+<span class="number">0</span>           <span class="comment">// zero</span></code></pre>
+
+        <h3>Booleans</h3>
+        <pre><code><span class="keyword">true</span>        <span class="comment">// boolean true</span>
+<span class="keyword">false</span>       <span class="comment">// boolean false</span></code></pre>
+
+        <h3>Strings</h3>
+        <pre><code><span class="string">"Hello"</span>     <span class="comment">// string literal</span>
+<span class="string">"Hello, World!"</span>
+<span class="string">""</span>          <span class="comment">// empty string</span></code></pre>
+
+        <h3>Unit</h3>
+        <pre><code>()          <span class="comment">// unit value (like void)</span></code></pre>
+
+        <h2 id="operators">Operators</h2>
+
+        <h3>Arithmetic Operators</h3>
+        <table>
+            <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+            <tr><td><code>+</code></td><td>Addition</td><td><code>1 + 2</code> => 3</td></tr>
+            <tr><td><code>-</code></td><td>Subtraction</td><td><code>5 - 3</code> => 2</td></tr>
+            <tr><td><code>*</code></td><td>Multiplication</td><td><code>4 * 3</code> => 12</td></tr>
+            <tr><td><code>/</code></td><td>Division</td><td><code>10 / 3</code> => 3</td></tr>
+            <tr><td><code>%</code></td><td>Modulo</td><td><code>10 % 3</code> => 1</td></tr>
+        </table>
+
+        <h3>Comparison Operators</h3>
+        <table>
+            <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+            <tr><td><code>=</code></td><td>Equal</td><td><code>1 = 1</code> => true</td></tr>
+            <tr><td><code>&lt;&gt;</code></td><td>Not equal</td><td><code>1 &lt;&gt; 2</code> => true</td></tr>
+            <tr><td><code>&lt;</code></td><td>Less than</td><td><code>1 &lt; 2</code> => true</td></tr>
+            <tr><td><code>&gt;</code></td><td>Greater than</td><td><code>2 &gt; 1</code> => true</td></tr>
+            <tr><td><code>&lt;=</code></td><td>Less or equal</td><td><code>1 &lt;= 1</code> => true</td></tr>
+            <tr><td><code>&gt;=</code></td><td>Greater or equal</td><td><code>2 &gt;= 1</code> => true</td></tr>
+        </table>
+
+        <h3>Logical Operators</h3>
+        <table>
+            <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+            <tr><td><code>&amp;&amp;</code></td><td>Logical AND</td><td><code>true &amp;&amp; false</code> => false</td></tr>
+            <tr><td><code>||</code></td><td>Logical OR</td><td><code>true || false</code> => true</td></tr>
+            <tr><td><code>not</code></td><td>Logical NOT</td><td><code>not true</code> => false</td></tr>
+        </table>
+
+        <h3>String Operators</h3>
+        <table>
+            <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+            <tr><td><code>^</code></td><td>Concatenation</td><td><code>"Hello" ^ " World"</code> => "Hello World"</td></tr>
+        </table>
+
+        <h3>Operator Precedence</h3>
+        <p>From highest to lowest:</p>
+        <ol>
+            <li>Function application (left to right)</li>
+            <li><code>not</code> (unary)</li>
+            <li><code>*</code>, <code>/</code>, <code>%</code></li>
+            <li><code>+</code>, <code>-</code>, <code>^</code></li>
+            <li><code>::</code> (cons, right associative)</li>
+            <li><code>=</code>, <code>&lt;&gt;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+            <li><code>&amp;&amp;</code></li>
+            <li><code>||</code></li>
+        </ol>
+
+        <h2 id="variables">Variables</h2>
+        <p>Variables are bound using <code>let</code>. All bindings are immutable.</p>
+
+        <div class="example">
+            <div class="example-header">Variable binding</div>
+            <pre><code><span class="keyword">let</span> x = <span class="number">42</span>
+<span class="keyword">let</span> name = <span class="string">"FunLang"</span>
+<span class="keyword">let</span> isAwesome = <span class="keyword">true</span>
+
+x + <span class="number">8</span></code></pre>
+            <div class="example-result">=> 50</div>
+        </div>
+
+        <h3>Nested Let Bindings</h3>
+        <p>You can nest let bindings using indentation:</p>
+
+        <div class="example">
+            <div class="example-header">Nested bindings</div>
+            <pre><code><span class="keyword">let</span> result =
+  <span class="keyword">let</span> x = <span class="number">10</span>
+  <span class="keyword">let</span> y = <span class="number">20</span>
+  x + y
+
+result</code></pre>
+            <div class="example-result">=> 30</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            FunLang uses indentation-based syntax. The body of a let binding must be indented relative to the <code>let</code> keyword.
+        </div>
+
+        <h3>Shadowing</h3>
+        <p>You can rebind a variable name, which shadows the previous binding:</p>
+
+        <div class="example">
+            <div class="example-header">Variable shadowing</div>
+            <pre><code><span class="keyword">let</span> x = <span class="number">10</span>
+<span class="keyword">let</span> x = x + <span class="number">5</span>  <span class="comment">// shadows previous x</span>
+x</code></pre>
+            <div class="example-result">=> 15</div>
+        </div>
+
+        <h2 id="comments">Comments</h2>
+        <p>Single-line comments start with <code>//</code>:</p>
+
+        <pre><code><span class="comment">// This is a comment</span>
+<span class="keyword">let</span> x = <span class="number">42</span>  <span class="comment">// inline comment</span>
+
+<span class="comment">// Multi-line comments</span>
+<span class="comment">// use multiple // lines</span>
+<span class="comment">// like this</span>
+<span class="keyword">let</span> y = <span class="number">10</span></code></pre>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            Comments are preserved when using the <code>--emit</code> formatter option.
+        </div>
+
+        <div class="page-nav">
+            <a href="index.html" class="prev">Introduction</a>
+            <a href="data-structures.html" class="next">Data Structures</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
