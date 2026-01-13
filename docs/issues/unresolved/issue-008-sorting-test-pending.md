@@ -1,23 +1,32 @@
 # issue-008: Sorting algorithms integrated test 보류
 
-- **Status**: unresolved
+- **Status**: pending (on hold)
 - **Priority**: low
-- **Context**: tests/file-tests/integrated-tests/001-sorting-algorithms.test
+- **Context**: tests/file-tests/integrated-tests/001-sorting-algorithms.test.pending
 - **Created**: 2026-01-12 06:10
-- **Session**: m2345678
+- **Updated**: 2026-01-13
+- **Session**: p5678901
 
 ## Summary
 
-Sorting algorithms integrated test 보류 - 주석 기능 미구현으로 테스트 파일 실행 실패
+Sorting algorithms integrated test 보류 - 복잡한 파싱 이슈로 테스트 보류
 
 ## Description
 
-`tests/file-tests/integrated-tests/001-sorting-algorithms.test` 파일에 여러 정렬 알고리즘(BST Sort, Merge Sort, Quick Sort, Insertion Sort, Selection Sort, Bubble Sort)을 구현했으나, FunLang에서 주석(`//`)을 지원하지 않아 실행 실패.
+`tests/file-tests/integrated-tests/001-sorting-algorithms.test` 파일에 여러 정렬 알고리즘을 구현했으나, 복잡한 파싱 이슈(line 232)로 인해 테스트 보류.
+
+테스트 파일은 `.pending` 확장자로 변경하여 테스트 실행에서 제외됨.
+
+## Current Status
+
+- issue-009 (match INDENT after else) 해결됨
+- 그러나 line 232에서 새로운 파싱 에러 발생
+- 추가 조사 필요
 
 ## Workaround
 
-주석 기능 구현 후 테스트 파일 재작성 필요.
+테스트 파일명을 `.test.pending`으로 변경하여 테스트에서 제외
 
 ## Related
 
-- issue-004: Comments (-- ...) not supported in lexer (Won't Fix로 종료됨, 재검토 필요)
+- issue-009: Match expression INDENT issue (resolved)

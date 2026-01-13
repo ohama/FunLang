@@ -1,0 +1,16 @@
+// --COMMAND: dotnet run --project src/FunLang -- %s
+// --INPUT
+// issue-009: else match with indented cases (using Option type)
+type Option 'a = None | Some of 'a
+
+let test = fun flag -> fun x ->
+  if flag then 0
+  else match x with
+       | None -> 1
+       | Some n -> n + 10
+
+test false (Some 5)
+
+// --EXPECTED
+
+15

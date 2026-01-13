@@ -108,10 +108,7 @@ let processIndentationWithPositions (tokens: TokenWithPos list) : Result<TokenWi
             // If inside parens (before this token), just output the token
             if state.ParenDepth > 0 then
                 loop { state with ParenDepth = newParenDepth } rest ((tok, pos) :: output)
-            // Handle open paren specially - it starts paren mode, no indent processing
-            elif isOpenParen tok then
-                loop { state with ParenDepth = newParenDepth; AtLineStart = false } rest ((tok, pos) :: output)
-            // If at line start, check indentation
+            // If at line start, check indentation (including for open parens)
             elif state.AtLineStart then
                 let col = pos.Column
                 match state.IndentStack with

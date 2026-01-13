@@ -95,7 +95,7 @@ let parse_error_rich = Some (fun (ctxt: ParseErrorContext<_>) ->
 /// Create a Located value from parseState and a node
 let inline locate (parseState: FSharp.Text.Parsing.IParseState) (node: 'T) : Located<'T> =
     let pos = parseState.InputStartPosition 1
-    { Node = node; Pos = { Line = pos.Line; Column = pos.Column; File = None } }
+    { Node = node; Pos = { Line = pos.Line + 1; Column = pos.Column + 1; File = None } }
 
 /// Create a Located value with no position (for synthesized nodes)
 let inline noLoc (node: 'T) : Located<'T> =
@@ -202,8 +202,8 @@ prog:
 // =============================================================================
 
 program:
-    | top_level_body                        { { TypeDefs = []; MainExpr = Some (noLoc (blockToExpr $1)) } }
-    | type_def_or_list top_level_body       { { TypeDefs = $1; MainExpr = Some (noLoc (blockToExpr $2)) } }
+    | top_level_body                        { { TypeDefs = []; MainExpr = Some (locate parseState (blockToExpr $1)) } }
+    | type_def_or_list top_level_body       { { TypeDefs = $1; MainExpr = Some (locate parseState (blockToExpr $2)) } }
     | type_def_or_list                      { { TypeDefs = $1; MainExpr = None } }
 ;
 
@@ -330,10 +330,12 @@ match_case:
     | PIPE pattern WHEN expr ARROW nl_opt expr         { (locate parseState $2, Some (locate parseState $4), locate parseState $7) }
 ;
 
-// Handle NEWLINE before first PIPE (for indented match)
+// Handle NEWLINE/INDENT before first PIPE (for indented match)
 match_cases_start:
     | match_cases                           { $1 }
     | NEWLINE match_cases                   { $2 }
+    | NEWLINE INDENT match_cases DEDENT     { $3 }
+    | INDENT match_cases DEDENT             { $2 }
 ;
 
 pattern:
@@ -401,45 +403,45 @@ block_body:
 // =============================================================================
 
 cons_expr:
-    | or_expr DOUBLECOLON cons_expr     { ECons(locate parseState $1, locate parseState $3) }
-    | or_expr                           { $1 }
+    | or_expr DOUBLECOLON nl_opt cons_expr     { ECons(locate parseState $1, locate parseState $4) }
+    | or_expr                                  { $1 }
 ;
 
 or_expr:
-    | or_expr OR_KW and_expr            { EBinaryOp(Or, locate parseState $1, locate parseState $3) }
-    | and_expr                          { $1 }
+    | or_expr OR_KW nl_opt and_expr            { EBinaryOp(Or, locate parseState $1, locate parseState $4) }
+    | and_expr                                 { $1 }
 ;
 
 and_expr:
-    | and_expr AND_KW eq_expr           { EBinaryOp(And, locate parseState $1, locate parseState $3) }
-    | eq_expr                           { $1 }
+    | and_expr AND_KW nl_opt eq_expr           { EBinaryOp(And, locate parseState $1, locate parseState $4) }
+    | eq_expr                                  { $1 }
 ;
 
 eq_expr:
-    | eq_expr EQ cmp_expr               { EBinaryOp(Eq, locate parseState $1, locate parseState $3) }
-    | eq_expr NEQ cmp_expr              { EBinaryOp(Neq, locate parseState $1, locate parseState $3) }
-    | cmp_expr                          { $1 }
+    | eq_expr EQ nl_opt cmp_expr               { EBinaryOp(Eq, locate parseState $1, locate parseState $4) }
+    | eq_expr NEQ nl_opt cmp_expr              { EBinaryOp(Neq, locate parseState $1, locate parseState $4) }
+    | cmp_expr                                 { $1 }
 ;
 
 cmp_expr:
-    | cmp_expr LT add_expr              { EBinaryOp(Lt, locate parseState $1, locate parseState $3) }
-    | cmp_expr GT add_expr              { EBinaryOp(Gt, locate parseState $1, locate parseState $3) }
-    | cmp_expr LTE add_expr             { EBinaryOp(Lte, locate parseState $1, locate parseState $3) }
-    | cmp_expr GTE add_expr             { EBinaryOp(Gte, locate parseState $1, locate parseState $3) }
-    | add_expr                          { $1 }
+    | cmp_expr LT nl_opt add_expr              { EBinaryOp(Lt, locate parseState $1, locate parseState $4) }
+    | cmp_expr GT nl_opt add_expr              { EBinaryOp(Gt, locate parseState $1, locate parseState $4) }
+    | cmp_expr LTE nl_opt add_expr             { EBinaryOp(Lte, locate parseState $1, locate parseState $4) }
+    | cmp_expr GTE nl_opt add_expr             { EBinaryOp(Gte, locate parseState $1, locate parseState $4) }
+    | add_expr                                 { $1 }
 ;
 
 add_expr:
-    | add_expr PLUS mul_expr            { EBinaryOp(Add, locate parseState $1, locate parseState $3) }
-    | add_expr MINUS mul_expr           { EBinaryOp(Sub, locate parseState $1, locate parseState $3) }
-    | mul_expr                          { $1 }
+    | add_expr PLUS nl_opt mul_expr            { EBinaryOp(Add, locate parseState $1, locate parseState $4) }
+    | add_expr MINUS nl_opt mul_expr           { EBinaryOp(Sub, locate parseState $1, locate parseState $4) }
+    | mul_expr                                 { $1 }
 ;
 
 mul_expr:
-    | mul_expr STAR unary_expr          { EBinaryOp(Mul, locate parseState $1, locate parseState $3) }
-    | mul_expr SLASH unary_expr         { EBinaryOp(Div, locate parseState $1, locate parseState $3) }
-    | mul_expr PERCENT unary_expr       { EBinaryOp(Mod, locate parseState $1, locate parseState $3) }
-    | unary_expr                        { $1 }
+    | mul_expr STAR nl_opt unary_expr          { EBinaryOp(Mul, locate parseState $1, locate parseState $4) }
+    | mul_expr SLASH nl_opt unary_expr         { EBinaryOp(Div, locate parseState $1, locate parseState $4) }
+    | mul_expr PERCENT nl_opt unary_expr       { EBinaryOp(Mod, locate parseState $1, locate parseState $4) }
+    | unary_expr                               { $1 }
 ;
 
 unary_expr:

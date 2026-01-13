@@ -1,10 +1,11 @@
 # issue-009: Match expression INDENT issue after else
 
-- **Status**: unresolved
+- **Status**: resolved
 - **Priority**: medium
-- **Context**: Parser.fsy, tests/file-tests/integrated-tests/001-sorting-algorithms.test
+- **Context**: Parser.fsy
 - **Created**: 2026-01-12
-- **Session**: current
+- **Resolved**: 2026-01-13
+- **Session**: p5678901
 
 ## Summary
 
@@ -54,6 +55,20 @@ match_cases_start:
 1. `else` 다음에 블록 스타일 사용
 2. 또는 match를 별도 let binding으로 분리
 
+## Resolution
+
+`WITH` 토큰 다음에 NEWLINE 없이 바로 INDENT가 오는 경우를 처리하는 규칙 추가:
+
+```fsy
+match_cases_start:
+    | match_cases                           { $1 }
+    | NEWLINE match_cases                   { $2 }
+    | NEWLINE INDENT match_cases DEDENT     { $3 }
+    | INDENT match_cases DEDENT             { $2 }  // 추가됨
+```
+
+테스트: `tests/file-tests/eval-tests/018-else-match-indent.test`
+
 ## Related
 
-- issue-008: Sorting algorithms integrated test (이 문제로 인해 여전히 실패)
+- issue-008: Sorting algorithms integrated test (별도 이슈로 보류 중)
