@@ -147,6 +147,32 @@ let describe = fun b ->
   | false -> "no"
 ```
 
+### WebAssembly Compilation
+
+Compile FunLang programs to **WebAssembly (WASM)** for portable, high-performance execution:
+
+```bash
+# Compile to WASM binary
+funlang --target wasm -o output.wasm program.fun
+
+# Compile expression to WASM
+funlang --target wasm -o output.wasm -e "1 + 2 * 3"
+
+# Output WAT text format (for debugging)
+funlang --target wat -o output.wat program.fun
+
+# Run with wasmtime
+wasmtime --invoke main output.wasm
+```
+
+**Supported features:**
+- Integer and boolean literals
+- Arithmetic: `+`, `-`, `*`, `/`, `%`
+- Comparison: `<`, `>`, `<=`, `>=`, `=`, `<>`
+- Logical: `and`, `or`, `not`
+- Let bindings (compiled to WASM locals)
+- If/then/else (compiled to WASM if blocks)
+
 ### Module System
 
 Organize code into **modules** with explicit exports and qualified access:
@@ -233,7 +259,7 @@ type Tree 'a = Leaf of 'a | Node of Tree 'a * Tree 'a
 ## CLI Options
 
 ```bash
-funlang <file>              # Run a file
+funlang <file>              # Run a file (interpreter)
 funlang -e "<expr>"         # Evaluate expression
 funlang -i                  # Interactive REPL
 funlang --emit              # Output formatted source to stdout
@@ -242,6 +268,10 @@ funlang --show-tokens       # Display lexer tokens
 funlang --show-ast          # Display parsed AST
 funlang --show-types        # Display inferred types
 funlang -d                  # Full debug mode
+
+# WASM Compilation
+funlang --target wasm -o out.wasm <file>  # Compile to WASM binary
+funlang --target wat -o out.wat <file>    # Compile to WAT text format
 ```
 
 ### Source Formatting (`--emit`)
@@ -288,6 +318,7 @@ See `docs/emit-algorithm.md` for implementation details.
 - `docs/indentation.md` - Indentation-based parsing
 - `docs/TYPE_SYSTEM_ALGORITHM.md` - Type inference (Algorithm W)
 - `docs/module-system-design.md` - Module system design specification
+- `docs/wasm-backend.md` - WebAssembly compilation backend
 
 ### Examples
 The `tests/file-tests/` directory contains many examples:
@@ -300,11 +331,13 @@ The `tests/file-tests/` directory contains many examples:
 | `warning-tests/` | Pattern matching warnings |
 | `format-tests/` | Source formatting (`--emit`) tests |
 | `integrated-tests/` | Complex programs (sorting algorithms) |
+| `wasm-tests/` | WASM compilation tests (77 tests) |
 
 **Notable examples:**
 - `eval-tests/006-fibonacci.test` - Fibonacci with recursion
 - `eval-tests/016-list-map.test` - Custom List type with map
 - `eval-tests/017-tree-type.test` - Binary tree operations
+- `wasm-tests/104-fibonacci-like.test` - Fibonacci-like calculation compiled to WASM
 
 ## Development
 
