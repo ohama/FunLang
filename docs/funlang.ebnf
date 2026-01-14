@@ -1,6 +1,7 @@
 (* =========================================================================== *)
 (*                        FunLang Grammar Specification                        *)
 (*                              EBNF Notation                                  *)
+(*                            Version: v0.6.0                                  *)
 (* =========================================================================== *)
 (*                                                                             *)
 (*  Notation:                                                                  *)
@@ -32,10 +33,11 @@ alpha           = letter | underscore ;
 alphanumeric    = alpha | digit ;
 
 
-(* --- 1.2 Whitespace --- *)
+(* --- 1.2 Whitespace & Comments --- *)
 
 whitespace      = ' ' | '\t' | '\r' ;
 newline         = '\n' ;
+line_comment    = "//" { any_char_except_newline } newline ;
 
 
 (* --- 1.3 Literals --- *)
@@ -67,7 +69,10 @@ keyword         = "let" | "rec" | "in"
                 | "match" | "with" | "when"
                 | "type" | "of"
                 | "and" | "or" | "not"
-                | "true" | "false" ;
+                | "true" | "false"
+                (* Module system keywords *)
+                | "module" | "export" | "import"
+                | "open" | "qualified" | "as" | "hiding" ;
 
 
 (* --- 1.6 Operators --- *)
@@ -86,11 +91,15 @@ cons_op         = "::" ;
 
 arrow           = "->" ;
 
+dot             = '.' ;
+
+dotdot          = ".." ;
+
 
 (* --- 1.7 Delimiters --- *)
 
 delimiter       = '(' | ')' | '[' | ']'
-                | ',' | ';' | ':' | '|' | '_' ;
+                | ',' | ';' | ':' | '|' | '_' | '.' ;
 
 
 (* --- 1.8 Special Tokens --- *)
@@ -108,21 +117,85 @@ EOF             = (* end of file *) ;
 
 (* --- 2.1 Program --- *)
 
-program         = [ type_definitions ] [ expression ] EOF ;
+program         = [ module_decls ]
+                  [ import_decls ]
+                  [ type_definitions ]
+                  [ top_level_body ]
+                  EOF ;
 
 type_definitions = type_def { NEWLINE type_def } [ NEWLINE ] ;
 
 
-(* --- 2.2 Type Definitions --- *)
+(* --- 2.2 Module System --- *)
 
-type_def        = "type" identifier { type_variable } '=' constructor_list ;
+(* Module declarations *)
+module_decls    = module_decl { NEWLINE module_decl } ;
+
+module_decl     = "module" identifier '=' INDENT module_body DEDENT ;
+
+module_body     = [ export_decl ]
+                  [ import_decls ]
+                  module_items ;
+
+(* Export declarations *)
+export_decl     = "export" export_list NEWLINE ;
+
+export_list     = export_item { ',' export_item } ;
+
+export_item     = identifier
+                  (* export a value: export add, multiply *)
+                | "type" identifier
+                  (* export opaque type: export type MyType *)
+                | "type" identifier '(' ".." ')'
+                  (* export type with all constructors: export type Option(..) *)
+                | "type" identifier '(' constructor_name_list ')'
+                  (* export specific constructors: export type Result(Ok, Error) *)
+                | '*'
+                  (* export all: export * *)
+                ;
+
+constructor_name_list = identifier { ',' identifier } ;
+
+(* Module items *)
+module_items    = module_item { NEWLINE module_item } ;
+
+module_item     = "let" identifier '=' expression
+                | "let" "rec" identifier '=' expression
+                | type_def ;
+
+(* Import declarations *)
+import_decls    = import_decl { import_decl } ;
+
+import_decl     = "open" qualified_path NEWLINE
+                  (* open Math → brings all exports into scope *)
+                | "import" qualified_path '(' import_items ')' NEWLINE
+                  (* import Math (add, multiply) → selective import *)
+                | "import" "qualified" qualified_path "as" identifier NEWLINE
+                  (* import qualified Math as M → M.add *)
+                | "open" qualified_path "hiding" '(' import_items ')' NEWLINE
+                  (* open Math hiding (add) → all except add *)
+                ;
+
+import_items    = identifier { ',' identifier } ;
+
+(* Qualified path for module access *)
+qualified_path  = identifier { '.' identifier } ;
+                  (* Math, Outer.Inner, Std.Collections.List *)
+
+
+(* --- 2.3 Type Definitions --- *)
+
+type_def        = "type" identifier { type_variable } '=' constructor_list
+                | "type" identifier { type_variable } '=' INDENT piped_constructor_list DEDENT ;
 
 constructor_list = constructor_def { '|' constructor_def } ;
+
+piped_constructor_list = '|' constructor_def { NEWLINE '|' constructor_def } ;
 
 constructor_def = identifier [ "of" type_expr ] ;
 
 
-(* --- 2.3 Type Expressions --- *)
+(* --- 2.4 Type Expressions --- *)
 
 type_expr       = type_tuple ;
 
@@ -140,7 +213,17 @@ type_atom       = type_variable
                 | '(' type_expr ')' ;
 
 
-(* --- 2.4 Expressions --- *)
+(* --- 2.5 Top-level Body --- *)
+
+top_level_body  = top_level_item { NEWLINE top_level_item } ;
+
+top_level_item  = "let" identifier '=' expression
+                  (* block-local binding, no 'in' *)
+                | "let" "rec" identifier '=' expression
+                | expression ;
+
+
+(* --- 2.6 Expressions --- *)
 
 expression      = let_expr
                 | let_rec_expr
@@ -150,13 +233,14 @@ expression      = let_expr
                 | block_expr
                 | cons_expr ;
 
-let_expr        = "let" identifier '=' expression "in" expression ;
+let_expr        = "let" identifier '=' expression "in" [ NEWLINE ] expression ;
 
-let_rec_expr    = "let" "rec" identifier '=' expression "in" expression ;
+let_rec_expr    = "let" "rec" identifier '=' expression "in" [ NEWLINE ] expression ;
 
-if_expr         = "if" expression "then" expression "else" expression ;
+if_expr         = "if" expression "then" [ NEWLINE ] expression
+                  [ NEWLINE ] "else" [ NEWLINE ] expression ;
 
-lambda_expr     = "fun" identifier arrow expression ;
+lambda_expr     = "fun" identifier arrow [ NEWLINE ] expression ;
 
 match_expr      = "match" expression "with" match_cases ;
 
@@ -170,21 +254,25 @@ block_item      = "let" identifier '=' expression
                 | expression ;
 
 
-(* --- 2.5 Pattern Matching --- *)
+(* --- 2.7 Pattern Matching --- *)
 
-match_cases     = [ NEWLINE ] match_case { match_case } ;
+match_cases     = [ NEWLINE ] match_case { [ NEWLINE ] match_case } ;
 
-match_case      = '|' pattern [ guard ] arrow expression [ NEWLINE ] ;
+match_case      = '|' pattern [ guard ] arrow [ NEWLINE ] expression ;
 
 guard           = "when" expression ;
 
 
-(* --- 2.6 Patterns --- *)
+(* --- 2.8 Patterns --- *)
 
 pattern         = cons_pattern ;
 
 cons_pattern    = identifier pattern_atom
                   (* constructor application: Some x, Cons (h, t) *)
+                | qualified_path pattern_atom
+                  (* qualified constructor: Option.Some x *)
+                | qualified_path
+                  (* qualified nullary constructor: Option.None *)
                 | pattern_atom cons_op cons_pattern
                   (* cons pattern: h :: t *)
                 | pattern_atom ;
@@ -211,27 +299,27 @@ pattern_atom    = '_'
                   (* list: [a], [a; b; c] *)
 
 
-(* --- 2.7 Expression Precedence Hierarchy --- *)
+(* --- 2.9 Expression Precedence Hierarchy --- *)
 
-cons_expr       = or_expr [ cons_op cons_expr ] ;
+cons_expr       = or_expr [ cons_op [ NEWLINE ] cons_expr ] ;
                   (* right-associative: 1 :: 2 :: [] *)
 
-or_expr         = and_expr { "or" and_expr } ;
+or_expr         = and_expr { "or" [ NEWLINE ] and_expr } ;
                   (* left-associative *)
 
-and_expr        = equality_expr { "and" equality_expr } ;
+and_expr        = equality_expr { "and" [ NEWLINE ] equality_expr } ;
                   (* left-associative *)
 
-equality_expr   = comparison_expr { ( '=' | "==" | "!=" | "<>" ) comparison_expr } ;
+equality_expr   = comparison_expr { ( '=' | "==" | "!=" | "<>" ) [ NEWLINE ] comparison_expr } ;
                   (* left-associative *)
 
-comparison_expr = additive_expr { ( '<' | '>' | "<=" | ">=" ) additive_expr } ;
+comparison_expr = additive_expr { ( '<' | '>' | "<=" | ">=" ) [ NEWLINE ] additive_expr } ;
                   (* left-associative *)
 
-additive_expr   = multiplicative_expr { ( '+' | '-' ) multiplicative_expr } ;
+additive_expr   = multiplicative_expr { ( '+' | '-' ) [ NEWLINE ] multiplicative_expr } ;
                   (* left-associative *)
 
-multiplicative_expr = unary_expr { ( '*' | '/' | '%' ) unary_expr } ;
+multiplicative_expr = unary_expr { ( '*' | '/' | '%' ) [ NEWLINE ] unary_expr } ;
                   (* left-associative *)
 
 unary_expr      = '-' unary_expr
@@ -244,12 +332,14 @@ application_expr = atom { atom } ;
                   (* left-associative: f x y = (f x) y *)
 
 
-(* --- 2.8 Atomic Expressions --- *)
+(* --- 2.10 Atomic Expressions --- *)
 
 atom            = integer
                 | boolean
                 | string
                 | identifier
+                | qualified_path
+                  (* qualified variable: Math.add, Outer.Inner.value *)
                 | unit
                 | '(' expression ')'
                   (* parenthesized *)
@@ -280,6 +370,7 @@ atom            = integer
      7    * / %                  left            Multiplication / Division / Modulo
      8    - not                  right (unary)   Negation / Logical not
      9    function application   left            f x y = (f x) y
+    10    . (dot)                left            Qualified access (Math.add)
 *)
 
 
@@ -332,4 +423,43 @@ atom            = integer
        let b = 20
        a + b
    in result                       (* = 30 *)
+
+   (* Comments *)
+   // This is a single-line comment
+   let x = 42  // inline comment
+
+   (* =============================== *)
+   (* Module System (v0.5.0+)         *)
+   (* =============================== *)
+
+   (* Module declaration *)
+   module Math =
+       export add, multiply
+
+       let add = fun x -> fun y -> x + y
+       let multiply = fun x -> fun y -> x * y
+
+   (* Qualified access *)
+   Math.add 1 2                    (* = 3 *)
+   Math.multiply 3 4               (* = 12 *)
+
+   (* Module with type definition *)
+   module Option =
+       export type Option(..), none, some
+
+       type Option 'a = None | Some of 'a
+
+       let none = None
+       let some = fun x -> Some x
+
+   (* Using qualified constructor in pattern *)
+   match value with
+   | Option.None -> "empty"
+   | Option.Some x -> "has value"
+
+   (* Import declarations (syntax only, not yet implemented) *)
+   open Math                       (* brings all exports into scope *)
+   import Math (add)               (* selective import *)
+   import qualified Math as M      (* qualified import: M.add *)
+   open Math hiding (multiply)     (* import all except multiply *)
 *)
