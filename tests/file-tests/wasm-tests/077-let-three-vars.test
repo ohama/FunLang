@@ -1,0 +1,10 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_077-let-three-vars.wasm %s && wasmtime --invoke main /tmp/funlang_077-let-three-vars.wasm
+// --INPUT
+let a = 1 in
+let b = 2 in
+let c = 3 in
+a + b + c
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+6

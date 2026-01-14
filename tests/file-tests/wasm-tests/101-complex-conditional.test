@@ -1,0 +1,11 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_101-complex-conditional.wasm %s && wasmtime --invoke main /tmp/funlang_101-complex-conditional.wasm
+// --INPUT
+let x = 25 in
+let y = 10 in
+let sum = x + y in
+let diff = x - y in
+if sum > 30 and diff > 10 then sum * diff else sum + diff
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+525

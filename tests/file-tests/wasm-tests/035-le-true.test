@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_035-le-true.wasm %s && wasmtime --invoke main /tmp/funlang_035-le-true.wasm
+// --INPUT
+3 <= 5
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+1

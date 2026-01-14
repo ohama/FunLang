@@ -1,0 +1,17 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_110-many-locals.wasm %s && wasmtime --invoke main /tmp/funlang_110-many-locals.wasm
+// --INPUT
+let a = 1 in
+let b = 2 in
+let c = 3 in
+let d = 4 in
+let e = 5 in
+let f = 6 in
+let g = 7 in
+let h = 8 in
+let i = 9 in
+let j = 10 in
+a + b + c + d + e + f + g + h + i + j
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+55

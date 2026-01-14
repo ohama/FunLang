@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_014-mul-simple.wasm %s && wasmtime --invoke main /tmp/funlang_014-mul-simple.wasm
+// --INPUT
+6 * 7
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+42

@@ -1,0 +1,10 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_102-sign-function.wasm %s && wasmtime --invoke main /tmp/funlang_102-sign-function.wasm
+// --INPUT
+let x = -42 in
+if x > 0 then 1
+else if x < 0 then -1
+else 0
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+-1

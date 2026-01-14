@@ -1,0 +1,12 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_106-boolean-expression.wasm %s && wasmtime --invoke main /tmp/funlang_106-boolean-expression.wasm
+// --INPUT
+let a = 10 in
+let b = 20 in
+let c = 15 in
+if (a < b and b > c) or (c = 15) then
+  if a + c < b then 1 else 2
+else 0
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+2

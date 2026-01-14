@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_022-parentheses.wasm %s && wasmtime --invoke main /tmp/funlang_022-parentheses.wasm
+// --INPUT
+(1 + 2) * 3
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+9

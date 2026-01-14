@@ -1,0 +1,10 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_078-let-complex-expr.wasm %s && wasmtime --invoke main /tmp/funlang_078-let-complex-expr.wasm
+// --INPUT
+let x = 5 in
+let y = 3 in
+let z = x * y in
+(x + y) * z
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+120

@@ -1,0 +1,12 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_103-clamp-value.wasm %s && wasmtime --invoke main /tmp/funlang_103-clamp-value.wasm
+// --INPUT
+let value = 150 in
+let minVal = 0 in
+let maxVal = 100 in
+if value < minVal then minVal
+else if value > maxVal then maxVal
+else value
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+100

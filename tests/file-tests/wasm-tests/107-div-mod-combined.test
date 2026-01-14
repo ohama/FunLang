@@ -1,0 +1,11 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_107-div-mod-combined.wasm %s && wasmtime --invoke main /tmp/funlang_107-div-mod-combined.wasm
+// --INPUT
+let n = 123 in
+let d = 10 in
+let quotient = n / d in
+let remainder = n % d in
+quotient * d + remainder
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+123

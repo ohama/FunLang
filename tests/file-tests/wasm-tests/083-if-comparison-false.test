@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_083-if-comparison-false.wasm %s && wasmtime --invoke main /tmp/funlang_083-if-comparison-false.wasm
+// --INPUT
+if 3 > 5 then 100 else 200
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+200

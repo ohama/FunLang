@@ -1,0 +1,8 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_089-if-abs.wasm %s && wasmtime --invoke main /tmp/funlang_089-if-abs.wasm
+// --INPUT
+let x = -5 in
+if x < 0 then -x else x
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+5

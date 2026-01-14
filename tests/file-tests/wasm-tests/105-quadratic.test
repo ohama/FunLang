@@ -1,0 +1,12 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_105-quadratic.wasm %s && wasmtime --invoke main /tmp/funlang_105-quadratic.wasm
+// --INPUT
+// Calculate x^2 + 2x + 1 for x = 5
+let x = 5 in
+let a = 1 in
+let b = 2 in
+let c = 1 in
+a * x * x + b * x + c
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+36

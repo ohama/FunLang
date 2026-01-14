@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_050-and-true-true.wasm %s && wasmtime --invoke main /tmp/funlang_050-and-true-true.wasm
+// --INPUT
+true and true
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+1

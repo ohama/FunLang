@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_072-let-multiple.wasm %s && wasmtime --invoke main /tmp/funlang_072-let-multiple.wasm
+// --INPUT
+let x = 10 in let y = 20 in x + y
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+30

@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_003-integer-negative.wasm %s && wasmtime --invoke main /tmp/funlang_003-integer-negative.wasm
+// --INPUT
+-123
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+-123

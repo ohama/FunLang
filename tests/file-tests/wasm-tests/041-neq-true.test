@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_041-neq-true.wasm %s && wasmtime --invoke main /tmp/funlang_041-neq-true.wasm
+// --INPUT
+10 <> 20
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+1

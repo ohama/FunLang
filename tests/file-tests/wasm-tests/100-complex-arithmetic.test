@@ -1,0 +1,10 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_100-complex-arithmetic.wasm %s && wasmtime --invoke main /tmp/funlang_100-complex-arithmetic.wasm
+// --INPUT
+let a = 10 in
+let b = 20 in
+let c = 30 in
+(a + b) * c - (a * b)
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+700

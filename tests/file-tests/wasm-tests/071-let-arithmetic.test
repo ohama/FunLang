@@ -1,0 +1,7 @@
+// --COMMAND: dotnet run --project src/FunLang -- --target wasm --output /tmp/funlang_071-let-arithmetic.wasm %s && wasmtime --invoke main /tmp/funlang_071-let-arithmetic.wasm
+// --INPUT
+let x = 10 in x + 5
+
+// --EXPECTED
+warning: using `--invoke` with a function that returns values is experimental and may break in the future
+15
