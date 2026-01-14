@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interpreter - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>Interpreter Mode</h1>
+
+        <p>FunLang runs as an interpreter by default, executing code immediately without compilation. This is the fastest way to develop and test FunLang programs.</p>
+
+        <h2>Running Modes</h2>
+
+        <h3>Execute a File</h3>
+        <p>Run a FunLang source file directly:</p>
+        <pre><code><span class="comment"># Run a .fun file</span>
+funlang program.fun
+
+<span class="comment"># Example</span>
+echo 'let x = 10 in x * 2' > test.fun
+funlang test.fun
+<span class="comment"># => 20</span></code></pre>
+
+        <h3>Evaluate an Expression</h3>
+        <p>Use <code>-e</code> to evaluate a single expression:</p>
+        <pre><code><span class="comment"># Evaluate expression directly</span>
+funlang -e "1 + 2 * 3"
+<span class="comment"># => 7</span>
+
+funlang -e "let square = fun x -> x * x in square 5"
+<span class="comment"># => 25</span>
+
+<span class="comment"># Multi-line with shell</span>
+funlang -e "
+let rec factorial = fun n ->
+  if n <= 1 then 1
+  else n * factorial (n - 1)
+in factorial 10
+"
+<span class="comment"># => 3628800</span></code></pre>
+
+        <h3>Interactive REPL</h3>
+        <p>Use <code>-i</code> to start an interactive Read-Eval-Print Loop:</p>
+        <pre><code><span class="comment"># Start REPL</span>
+funlang -i
+
+<span class="comment"># In REPL:</span>
+> let x = 10
+val x : int = 10
+
+> let y = 20
+val y : int = 20
+
+> x + y
+val it : int = 30
+
+> let double = fun x -> x * 2
+val double : int -> int = &lt;function&gt;
+
+> double 21
+val it : int = 42</code></pre>
+
+        <div class="tip">
+            <div class="note-title">REPL Tips</div>
+            <ul>
+                <li>Bindings persist across expressions</li>
+                <li>Use <code>Ctrl+D</code> or type <code>exit</code> to quit</li>
+                <li>Previous result is bound to <code>it</code></li>
+            </ul>
+        </div>
+
+        <h2>Debug Options</h2>
+
+        <p>Use these options to inspect how your code is processed:</p>
+
+        <h3>--show-tokens</h3>
+        <p>Display lexer output (tokenization):</p>
+        <pre><code>funlang --show-tokens -e "1 + 2"
+
+<span class="comment"># Output:</span>
+Tokens:
+  INT(1) PLUS INT(2) EOF</code></pre>
+
+        <h3>--show-ast</h3>
+        <p>Display the Abstract Syntax Tree:</p>
+        <pre><code>funlang --show-ast -e "let x = 1 in x + 2"
+
+<span class="comment"># Output:</span>
+AST:
+  Let("x",
+    Int(1),
+    BinaryOp(Add,
+      Var("x"),
+      Int(2)))</code></pre>
+
+        <h3>--show-types</h3>
+        <p>Display inferred types:</p>
+        <pre><code>funlang --show-types -e "fun x -> x + 1"
+
+<span class="comment"># Output:</span>
+Types:
+  (fun x -> x + 1) : int -> int</code></pre>
+
+        <h3>Combining Options</h3>
+        <pre><code><span class="comment"># Show everything</span>
+funlang --show-tokens --show-ast --show-types -e "1 + 2"
+
+<span class="comment"># Debug a file</span>
+funlang --show-ast --show-types program.fun</code></pre>
+
+        <h2>Output Options</h2>
+
+        <h3>--emit / -o</h3>
+        <p>Format and emit the source code (pretty-print):</p>
+        <pre><code><span class="comment"># Pretty-print to stdout</span>
+funlang --emit program.fun
+
+<span class="comment"># Save formatted output to file</span>
+funlang -o formatted.fun program.fun</code></pre>
+
+        <h3>--no-color</h3>
+        <p>Disable colored output (useful for piping):</p>
+        <pre><code>funlang --no-color program.fun > output.txt</code></pre>
+
+        <h2>Error Handling</h2>
+
+        <h3>--explain</h3>
+        <p>Get detailed explanations for errors:</p>
+        <pre><code>funlang --explain -e "1 + true"
+
+<span class="comment"># Output:</span>
+error[E101]: Type mismatch
+  --> &lt;expr&gt;:1:5
+  |
+1 | 1 + true
+  |     ^^^^
+  = expected: int
+  = found: bool
+
+  Explanation:
+  The + operator requires both operands to be integers.
+  You provided an integer (1) and a boolean (true).</code></pre>
+
+        <h2>Logging</h2>
+
+        <h3>--log-level</h3>
+        <p>Set verbosity level (<code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>):</p>
+        <pre><code><span class="comment"># Show debug information</span>
+funlang --log-level debug program.fun
+
+<span class="comment"># Only show errors</span>
+funlang --log-level error program.fun</code></pre>
+
+        <h3>--log-file</h3>
+        <p>Write logs to a file:</p>
+        <pre><code>funlang --log-file debug.log --log-level debug program.fun</code></pre>
+
+        <h2>Comparison with WASM</h2>
+
+        <table>
+            <tr><th>Feature</th><th>Interpreter</th><th>WASM Compilation</th></tr>
+            <tr><td>Startup time</td><td>Instant</td><td>Requires compilation step</td></tr>
+            <tr><td>Execution speed</td><td>Moderate</td><td>Fast (native)</td></tr>
+            <tr><td>Full language support</td><td>Yes</td><td>Limited (MVP)</td></tr>
+            <tr><td>REPL support</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Debug output</td><td>Yes</td><td>No</td></tr>
+            <tr><td>Portability</td><td>Requires FunLang</td><td>Any WASM runtime</td></tr>
+        </table>
+
+        <div class="note">
+            <div class="note-title">When to Use Each</div>
+            <ul>
+                <li><strong>Interpreter</strong>: Development, testing, REPL exploration, full language features</li>
+                <li><strong>WASM</strong>: Deployment, browser execution, performance-critical simple expressions</li>
+            </ul>
+        </div>
+
+        <h2>Quick Reference</h2>
+
+        <table>
+            <tr><th>Command</th><th>Description</th></tr>
+            <tr><td><code>funlang file.fun</code></td><td>Run a file</td></tr>
+            <tr><td><code>funlang -e "expr"</code></td><td>Evaluate expression</td></tr>
+            <tr><td><code>funlang -i</code></td><td>Interactive REPL</td></tr>
+            <tr><td><code>funlang --show-ast</code></td><td>Show AST</td></tr>
+            <tr><td><code>funlang --show-types</code></td><td>Show types</td></tr>
+            <tr><td><code>funlang --show-tokens</code></td><td>Show tokens</td></tr>
+            <tr><td><code>funlang --emit</code></td><td>Pretty-print code</td></tr>
+            <tr><td><code>funlang --explain</code></td><td>Detailed errors</td></tr>
+        </table>
+
+        <div class="page-nav">
+            <a href="cli.html" class="prev">CLI Reference</a>
+            <a href="wasm.html" class="next">WASM Compilation</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.6.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

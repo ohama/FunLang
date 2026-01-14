@@ -18,6 +18,14 @@ class NavSidebar extends HTMLElement {
             </div>
 
             <div class="nav-section">
+                <div class="nav-section-title">Usage</div>
+                <ul class="nav-list">
+                    <li><a href="interpreter.html">Interpreter</a></li>
+                    <li><a href="wasm.html">WASM Compilation</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
                 <div class="nav-section-title">Language</div>
                 <ul class="nav-list">
                     <li><a href="basics.html">Basics</a></li>
@@ -26,7 +34,6 @@ class NavSidebar extends HTMLElement {
                     <li><a href="control-flow.html">Control Flow</a></li>
                     <li><a href="types.html">Types</a></li>
                     <li><a href="modules.html">Modules</a></li>
-                    <li><a href="wasm.html">WASM Compilation</a></li>
                     <li><a href="examples.html">Examples</a></li>
                 </ul>
             </div>
