@@ -360,6 +360,343 @@ flatten tree</code></pre>
             <div class="example-result">=> (15, 120, 120, 80)</div>
         </div>
 
+        <h2 id="sorting">Sorting Algorithms</h2>
+
+        <p>These sorting algorithms demonstrate recursion, pattern matching, and higher-order functions working together. All examples are fully tested.</p>
+
+        <h3>Insertion Sort</h3>
+        <div class="example">
+            <div class="example-header">insertion_sort.fun</div>
+            <pre><code><span class="comment">// Helper functions</span>
+<span class="keyword">let</span> head = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | h :: _ -> h
+  | _ -> <span class="number">0</span>
+
+<span class="keyword">let</span> tail = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | _ :: t -> t
+  | _ -> []
+
+<span class="comment">// Insert element in sorted position</span>
+<span class="keyword">let rec</span> insert = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> [x]
+  | _ ->
+    <span class="keyword">match</span> x <= head xs <span class="keyword">with</span>
+    | <span class="keyword">true</span> -> x :: xs
+    | <span class="keyword">false</span> -> (head xs) :: insert x (tail xs)
+
+<span class="comment">// Insertion sort: recursively insert each element</span>
+<span class="keyword">let rec</span> insertionSort = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | _ -> insert (head xs) (insertionSort (tail xs))
+
+insertionSort [<span class="number">64</span>; <span class="number">34</span>; <span class="number">25</span>; <span class="number">12</span>; <span class="number">22</span>; <span class="number">11</span>; <span class="number">90</span>]</code></pre>
+            <div class="example-result">=> [11; 12; 22; 25; 34; 64; 90]</div>
+        </div>
+
+        <h3>Merge Sort</h3>
+        <div class="example">
+            <div class="example-header">merge_sort.fun</div>
+            <pre><code><span class="comment">// Helper functions</span>
+<span class="keyword">let</span> head = <span class="keyword">fun</span> xs -> <span class="keyword">match</span> xs <span class="keyword">with</span> | h :: _ -> h | _ -> <span class="number">0</span>
+<span class="keyword">let</span> tail = <span class="keyword">fun</span> xs -> <span class="keyword">match</span> xs <span class="keyword">with</span> | _ :: t -> t | _ -> []
+
+<span class="keyword">let rec</span> length = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | _ -> <span class="number">1</span> + length (tail xs)
+
+<span class="comment">// Take first n elements</span>
+<span class="keyword">let rec</span> take = <span class="keyword">fun</span> n -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> n <= <span class="number">0</span> <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> []
+  | <span class="keyword">false</span> ->
+    <span class="keyword">match</span> xs <span class="keyword">with</span>
+    | [] -> []
+    | _ -> (head xs) :: take (n - <span class="number">1</span>) (tail xs)
+
+<span class="comment">// Drop first n elements</span>
+<span class="keyword">let rec</span> drop = <span class="keyword">fun</span> n -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> n <= <span class="number">0</span> <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> xs
+  | <span class="keyword">false</span> ->
+    <span class="keyword">match</span> xs <span class="keyword">with</span>
+    | [] -> []
+    | _ -> drop (n - <span class="number">1</span>) (tail xs)
+
+<span class="comment">// Merge two sorted lists</span>
+<span class="keyword">let rec</span> merge = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | _ ->
+    <span class="keyword">match</span> ys <span class="keyword">with</span>
+    | [] -> xs
+    | _ ->
+      <span class="keyword">match</span> head xs <= head ys <span class="keyword">with</span>
+      | <span class="keyword">true</span> -> (head xs) :: merge (tail xs) ys
+      | <span class="keyword">false</span> -> (head ys) :: merge xs (tail ys)
+
+<span class="comment">// Merge sort: divide, sort, merge</span>
+<span class="keyword">let rec</span> mergeSort = <span class="keyword">fun</span> xs ->
+  <span class="keyword">let</span> n = length xs
+  <span class="keyword">match</span> n <= <span class="number">1</span> <span class="keyword">with</span>
+  | <span class="keyword">true</span> -> xs
+  | <span class="keyword">false</span> ->
+    <span class="keyword">let</span> half = n / <span class="number">2</span>
+    <span class="keyword">let</span> left = take half xs
+    <span class="keyword">let</span> right = drop half xs
+    merge (mergeSort left) (mergeSort right)
+
+mergeSort [<span class="number">64</span>; <span class="number">34</span>; <span class="number">25</span>; <span class="number">12</span>; <span class="number">22</span>; <span class="number">11</span>; <span class="number">90</span>]</code></pre>
+            <div class="example-result">=> [11; 12; 22; 25; 34; 64; 90]</div>
+        </div>
+
+        <h3>Quick Sort</h3>
+        <div class="example">
+            <div class="example-header">quick_sort.fun</div>
+            <pre><code><span class="comment">// Helper functions</span>
+<span class="keyword">let</span> head = <span class="keyword">fun</span> xs -> <span class="keyword">match</span> xs <span class="keyword">with</span> | h :: _ -> h | _ -> <span class="number">0</span>
+<span class="keyword">let</span> tail = <span class="keyword">fun</span> xs -> <span class="keyword">match</span> xs <span class="keyword">with</span> | _ :: t -> t | _ -> []
+
+<span class="keyword">let rec</span> length = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | _ -> <span class="number">1</span> + length (tail xs)
+
+<span class="keyword">let rec</span> append = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | _ -> (head xs) :: append (tail xs) ys
+
+<span class="keyword">let rec</span> filter = <span class="keyword">fun</span> pred -> <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | _ ->
+    <span class="keyword">match</span> pred (head xs) <span class="keyword">with</span>
+    | <span class="keyword">true</span> -> (head xs) :: filter pred (tail xs)
+    | <span class="keyword">false</span> -> filter pred (tail xs)
+
+<span class="comment">// Quick sort: partition around pivot</span>
+<span class="keyword">let rec</span> quickSort = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> []
+  | _ ->
+    <span class="keyword">let</span> n = length xs
+    <span class="keyword">match</span> n = <span class="number">1</span> <span class="keyword">with</span>
+    | <span class="keyword">true</span> -> xs
+    | <span class="keyword">false</span> ->
+      <span class="keyword">let</span> pivot = head xs
+      <span class="keyword">let</span> rest = tail xs
+      <span class="keyword">let</span> smaller = filter (<span class="keyword">fun</span> x -> x <= pivot) rest
+      <span class="keyword">let</span> larger = filter (<span class="keyword">fun</span> x -> x > pivot) rest
+      append (quickSort smaller) (pivot :: quickSort larger)
+
+quickSort [<span class="number">64</span>; <span class="number">34</span>; <span class="number">25</span>; <span class="number">12</span>; <span class="number">22</span>; <span class="number">11</span>; <span class="number">90</span>]</code></pre>
+            <div class="example-result">=> [11; 12; 22; 25; 34; 64; 90]</div>
+        </div>
+
+        <h3>Tree Sort (Binary Search Tree)</h3>
+        <div class="example">
+            <div class="example-header">tree_sort.fun</div>
+            <pre><code><span class="comment">// Binary search tree type</span>
+<span class="keyword">type</span> <span class="type">Tree</span> <span class="type">'a</span> = <span class="type">Leaf</span> | <span class="type">Node</span> <span class="keyword">of</span> <span class="type">'a</span> * <span class="type">Tree</span> <span class="type">'a</span> * <span class="type">Tree</span> <span class="type">'a</span>
+
+<span class="keyword">let rec</span> append = <span class="keyword">fun</span> xs -> <span class="keyword">fun</span> ys ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> ys
+  | h :: t -> h :: append t ys
+
+<span class="comment">// Insert value into BST</span>
+<span class="keyword">let rec</span> insert = <span class="keyword">fun</span> t -> <span class="keyword">fun</span> x ->
+  <span class="keyword">match</span> t <span class="keyword">with</span>
+  | <span class="type">Leaf</span> -> <span class="type">Node</span> (x, <span class="type">Leaf</span>, <span class="type">Leaf</span>)
+  | <span class="type">Node</span> (v, left, right) ->
+    <span class="keyword">if</span> x <= v
+    <span class="keyword">then</span> <span class="type">Node</span> (v, insert left x, right)
+    <span class="keyword">else</span> <span class="type">Node</span> (v, left, insert right x)
+
+<span class="comment">// In-order traversal (produces sorted list)</span>
+<span class="keyword">let rec</span> inorder = <span class="keyword">fun</span> t ->
+  <span class="keyword">match</span> t <span class="keyword">with</span>
+  | <span class="type">Leaf</span> -> []
+  | <span class="type">Node</span> (v, left, right) ->
+    append (inorder left) (append [v] (inorder right))
+
+<span class="comment">// Build BST from list</span>
+<span class="keyword">let rec</span> buildTree = <span class="keyword">fun</span> xs ->
+  <span class="keyword">match</span> xs <span class="keyword">with</span>
+  | [] -> <span class="type">Leaf</span>
+  | h :: t -> insert (buildTree t) h
+
+<span class="comment">// Tree sort: build tree, then traverse</span>
+<span class="keyword">let</span> treeSort = <span class="keyword">fun</span> xs -> inorder (buildTree xs)
+
+treeSort [<span class="number">3</span>; <span class="number">1</span>; <span class="number">4</span>; <span class="number">1</span>; <span class="number">5</span>; <span class="number">9</span>; <span class="number">2</span>; <span class="number">6</span>]</code></pre>
+            <div class="example-result">=> [1; 1; 2; 3; 4; 5; 6; 9]</div>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Sorting Algorithm Comparison</div>
+            <table>
+                <tr><th>Algorithm</th><th>Best Case</th><th>Average</th><th>Worst Case</th><th>Style</th></tr>
+                <tr><td>Insertion Sort</td><td>O(n)</td><td>O(n²)</td><td>O(n²)</td><td>Simple</td></tr>
+                <tr><td>Merge Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n log n)</td><td>Divide & Conquer</td></tr>
+                <tr><td>Quick Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n²)</td><td>Divide & Conquer</td></tr>
+                <tr><td>Tree Sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n²)</td><td>Tree-based</td></tr>
+            </table>
+        </div>
+
+        <h2 id="interpreter">Expression Interpreter</h2>
+
+        <p>A simple arithmetic expression interpreter demonstrating recursive types and pattern matching.</p>
+
+        <div class="example">
+            <div class="example-header">expression_interpreter.fun</div>
+            <pre><code><span class="comment">// Expression AST</span>
+<span class="keyword">type</span> <span class="type">Expr</span> =
+  | <span class="type">Num</span> <span class="keyword">of</span> <span class="type">int</span>
+  | <span class="type">Add</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Sub</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Mul</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Div</span> <span class="keyword">of</span> <span class="type">Expr</span> * <span class="type">Expr</span>
+  | <span class="type">Neg</span> <span class="keyword">of</span> <span class="type">Expr</span>
+
+<span class="comment">// Evaluate expression to integer</span>
+<span class="keyword">let rec</span> eval = <span class="keyword">fun</span> expr ->
+  <span class="keyword">match</span> expr <span class="keyword">with</span>
+  | <span class="type">Num</span> n -> n
+  | <span class="type">Add</span> (a, b) -> eval a + eval b
+  | <span class="type">Sub</span> (a, b) -> eval a - eval b
+  | <span class="type">Mul</span> (a, b) -> eval a * eval b
+  | <span class="type">Div</span> (a, b) -> eval a / eval b
+  | <span class="type">Neg</span> e -> <span class="number">0</span> - eval e
+
+<span class="comment">// Count operations in expression</span>
+<span class="keyword">let rec</span> countOps = <span class="keyword">fun</span> expr ->
+  <span class="keyword">match</span> expr <span class="keyword">with</span>
+  | <span class="type">Num</span> _ -> <span class="number">0</span>
+  | <span class="type">Add</span> (a, b) -> <span class="number">1</span> + countOps a + countOps b
+  | <span class="type">Sub</span> (a, b) -> <span class="number">1</span> + countOps a + countOps b
+  | <span class="type">Mul</span> (a, b) -> <span class="number">1</span> + countOps a + countOps b
+  | <span class="type">Div</span> (a, b) -> <span class="number">1</span> + countOps a + countOps b
+  | <span class="type">Neg</span> e -> <span class="number">1</span> + countOps e
+
+<span class="comment">// Calculate depth of expression tree</span>
+<span class="keyword">let rec</span> depth = <span class="keyword">fun</span> expr ->
+  <span class="keyword">match</span> expr <span class="keyword">with</span>
+  | <span class="type">Num</span> _ -> <span class="number">1</span>
+  | <span class="type">Neg</span> e -> <span class="number">1</span> + depth e
+  | <span class="type">Add</span> (a, b) ->
+    <span class="keyword">let</span> da = depth a
+    <span class="keyword">let</span> db = depth b
+    <span class="number">1</span> + (<span class="keyword">if</span> da > db <span class="keyword">then</span> da <span class="keyword">else</span> db)
+  | <span class="type">Sub</span> (a, b) ->
+    <span class="keyword">let</span> da = depth a
+    <span class="keyword">let</span> db = depth b
+    <span class="number">1</span> + (<span class="keyword">if</span> da > db <span class="keyword">then</span> da <span class="keyword">else</span> db)
+  | <span class="type">Mul</span> (a, b) ->
+    <span class="keyword">let</span> da = depth a
+    <span class="keyword">let</span> db = depth b
+    <span class="number">1</span> + (<span class="keyword">if</span> da > db <span class="keyword">then</span> da <span class="keyword">else</span> db)
+  | <span class="type">Div</span> (a, b) ->
+    <span class="keyword">let</span> da = depth a
+    <span class="keyword">let</span> db = depth b
+    <span class="number">1</span> + (<span class="keyword">if</span> da > db <span class="keyword">then</span> da <span class="keyword">else</span> db)
+
+<span class="comment">// Example: (3 + 4) * (10 - 2) = 7 * 8 = 56</span>
+<span class="keyword">let</span> expr = <span class="type">Mul</span> (<span class="type">Add</span> (<span class="type">Num</span> <span class="number">3</span>, <span class="type">Num</span> <span class="number">4</span>), <span class="type">Sub</span> (<span class="type">Num</span> <span class="number">10</span>, <span class="type">Num</span> <span class="number">2</span>))
+
+(eval expr, countOps expr, depth expr)</code></pre>
+            <div class="example-result">=> (56, 3, 3)</div>
+        </div>
+
+        <h2 id="calculator">Calculator with Error Handling</h2>
+
+        <div class="example">
+            <div class="example-header">safe_calculator.fun</div>
+            <pre><code><span class="comment">// Result type for error handling</span>
+<span class="keyword">type</span> <span class="type">Result</span> <span class="type">'a</span> = <span class="type">Ok</span> <span class="keyword">of</span> <span class="type">'a</span> | <span class="type">Err</span> <span class="keyword">of</span> <span class="type">string</span>
+
+<span class="comment">// Safe arithmetic operations</span>
+<span class="keyword">let</span> safeDiv = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y ->
+  <span class="keyword">if</span> y = <span class="number">0</span> <span class="keyword">then</span> <span class="type">Err</span> <span class="string">"division by zero"</span>
+  <span class="keyword">else</span> <span class="type">Ok</span> (x / y)
+
+<span class="keyword">let</span> safeMod = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y ->
+  <span class="keyword">if</span> y = <span class="number">0</span> <span class="keyword">then</span> <span class="type">Err</span> <span class="string">"modulo by zero"</span>
+  <span class="keyword">else</span> <span class="type">Ok</span> (x % y)
+
+<span class="comment">// Chain operations with Result</span>
+<span class="keyword">let</span> bind = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> result ->
+  <span class="keyword">match</span> result <span class="keyword">with</span>
+  | <span class="type">Ok</span> x -> f x
+  | <span class="type">Err</span> msg -> <span class="type">Err</span> msg
+
+<span class="keyword">let</span> map = <span class="keyword">fun</span> f -> <span class="keyword">fun</span> result ->
+  <span class="keyword">match</span> result <span class="keyword">with</span>
+  | <span class="type">Ok</span> x -> <span class="type">Ok</span> (f x)
+  | <span class="type">Err</span> msg -> <span class="type">Err</span> msg
+
+<span class="comment">// Calculate: (100 / x) % y</span>
+<span class="keyword">let</span> calculate = <span class="keyword">fun</span> x -> <span class="keyword">fun</span> y ->
+  bind (safeMod x) (safeDiv <span class="number">100</span> y)
+
+<span class="comment">// Test cases</span>
+<span class="keyword">let</span> result1 = calculate <span class="number">10</span> <span class="number">3</span>    <span class="comment">// Ok: (100 / 3) % 10 = 33 % 10 = 3</span>
+<span class="keyword">let</span> result2 = calculate <span class="number">10</span> <span class="number">0</span>    <span class="comment">// Err: division by zero</span>
+<span class="keyword">let</span> result3 = calculate <span class="number">0</span> <span class="number">5</span>     <span class="comment">// Err: modulo by zero</span>
+
+(result1, result2, result3)</code></pre>
+            <div class="example-result">=> (Ok 3, Err "division by zero", Err "modulo by zero")</div>
+        </div>
+
+        <h2 id="state-machine">Simple State Machine</h2>
+
+        <div class="example">
+            <div class="example-header">state_machine.fun</div>
+            <pre><code><span class="comment">// Traffic light state machine</span>
+<span class="keyword">type</span> <span class="type">Light</span> = <span class="type">Red</span> | <span class="type">Yellow</span> | <span class="type">Green</span>
+
+<span class="comment">// Transition to next state</span>
+<span class="keyword">let</span> next = <span class="keyword">fun</span> light ->
+  <span class="keyword">match</span> light <span class="keyword">with</span>
+  | <span class="type">Red</span> -> <span class="type">Green</span>
+  | <span class="type">Green</span> -> <span class="type">Yellow</span>
+  | <span class="type">Yellow</span> -> <span class="type">Red</span>
+
+<span class="comment">// Run n transitions</span>
+<span class="keyword">let rec</span> runSteps = <span class="keyword">fun</span> n -> <span class="keyword">fun</span> state ->
+  <span class="keyword">if</span> n <= <span class="number">0</span> <span class="keyword">then</span> state
+  <span class="keyword">else</span> runSteps (n - <span class="number">1</span>) (next state)
+
+<span class="comment">// Collect all states in n steps</span>
+<span class="keyword">let rec</span> collectStates = <span class="keyword">fun</span> n -> <span class="keyword">fun</span> state ->
+  <span class="keyword">if</span> n <= <span class="number">0</span> <span class="keyword">then</span> []
+  <span class="keyword">else</span> state :: collectStates (n - <span class="number">1</span>) (next state)
+
+<span class="comment">// Duration in seconds for each light</span>
+<span class="keyword">let</span> duration = <span class="keyword">fun</span> light ->
+  <span class="keyword">match</span> light <span class="keyword">with</span>
+  | <span class="type">Red</span> -> <span class="number">30</span>
+  | <span class="type">Green</span> -> <span class="number">25</span>
+  | <span class="type">Yellow</span> -> <span class="number">5</span>
+
+<span class="comment">// Total cycle time</span>
+<span class="keyword">let rec</span> totalTime = <span class="keyword">fun</span> states ->
+  <span class="keyword">match</span> states <span class="keyword">with</span>
+  | [] -> <span class="number">0</span>
+  | h :: t -> duration h + totalTime t
+
+<span class="keyword">let</span> cycle = collectStates <span class="number">6</span> <span class="type">Red</span>
+<span class="keyword">let</span> cycleTime = totalTime cycle
+
+(cycle, cycleTime)</code></pre>
+            <div class="example-result">=> ([Red; Green; Yellow; Red; Green; Yellow], 120)</div>
+        </div>
+
         <div class="tip">
             <div class="note-title">Try it yourself!</div>
             <p>Save any of these examples to a <code>.fun</code> file and run with:</p>
@@ -367,12 +704,12 @@ flatten tree</code></pre>
         </div>
 
         <div class="page-nav">
-            <a href="modules.html" class="prev">Modules</a>
+            <a href="wasm.html" class="prev">WASM Compilation</a>
             <div class="placeholder"></div>
         </div>
 
         <footer>
-            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+            <p>FunLang v0.6.0 | A functional programming language for learning</p>
         </footer>
     </main>
 

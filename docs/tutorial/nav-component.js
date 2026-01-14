@@ -5,7 +5,7 @@ class NavSidebar extends HTMLElement {
         <nav class="sidebar">
             <div class="sidebar-header">
                 <h1><a href="index.html">FunLang</a></h1>
-                <span class="version">v0.5.0 Tutorial</span>
+                <span class="version">v0.6.0 Tutorial</span>
             </div>
 
             <div class="nav-section">
@@ -26,6 +26,7 @@ class NavSidebar extends HTMLElement {
                     <li><a href="control-flow.html">Control Flow</a></li>
                     <li><a href="types.html">Types</a></li>
                     <li><a href="modules.html">Modules</a></li>
+                    <li><a href="wasm.html">WASM Compilation</a></li>
                     <li><a href="examples.html">Examples</a></li>
                 </ul>
             </div>

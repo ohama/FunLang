@@ -22,6 +22,7 @@
             <li><strong>Static type inference</strong> - Types are inferred automatically (Hindley-Milner)</li>
             <li><strong>Indentation-based syntax</strong> - Clean, Python-like syntax without braces</li>
             <li><strong>Module system</strong> - Organize code into reusable modules</li>
+            <li><strong>WASM compilation</strong> - Compile to WebAssembly for portable execution</li>
         </ul>
 
         <h2>Installation</h2>
@@ -83,6 +84,9 @@ factorial <span class="number">5</span></code></pre>
             <tr><td><code>file.fun</code></td><td>Run a FunLang file</td></tr>
             <tr><td><code>-e "expr"</code></td><td>Evaluate expression</td></tr>
             <tr><td><code>-i</code></td><td>Interactive REPL</td></tr>
+            <tr><td><code>--target wasm</code></td><td>Compile to WebAssembly binary</td></tr>
+            <tr><td><code>--target wat</code></td><td>Compile to WebAssembly text</td></tr>
+            <tr><td><code>--output path</code></td><td>Output file for compilation</td></tr>
             <tr><td><code>--show-tokens</code></td><td>Display lexer tokens</td></tr>
             <tr><td><code>--show-ast</code></td><td>Display parsed AST</td></tr>
             <tr><td><code>--show-types</code></td><td>Display inferred types</td></tr>
@@ -95,7 +99,7 @@ factorial <span class="number">5</span></code></pre>
         </div>
 
         <footer>
-            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+            <p>FunLang v0.6.0 | A functional programming language for learning</p>
         </footer>
     </main>
 

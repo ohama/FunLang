@@ -66,6 +66,8 @@ val it : int = 84
             <tr><td><code>--no-color</code></td><td></td><td>Disable colored output</td></tr>
             <tr><td><code>--no-prelude</code></td><td></td><td>Don't load standard prelude</td></tr>
             <tr><td><code>--emit</code></td><td><code>-o</code></td><td>Emit formatted source code</td></tr>
+            <tr><td><code>--target</code></td><td><code>-t</code></td><td>Compilation target (interpret|wasm|wat)</td></tr>
+            <tr><td><code>--output</code></td><td></td><td>Output file for WASM compilation</td></tr>
             <tr><td><code>--explain</code></td><td></td><td>Show error explanation</td></tr>
             <tr><td><code>--log-level</code></td><td></td><td>Set log level</td></tr>
             <tr><td><code>--log-file</code></td><td></td><td>Write logs to file</td></tr>
@@ -253,6 +255,41 @@ funlang --no-color program.fun
 <span class="comment"># Log errors to file</span>
 funlang --log-file errors.log --log-level error program.fun</code></pre>
 
+        <h2>WASM Compilation</h2>
+
+        <p>FunLang can compile programs to WebAssembly for portable execution.</p>
+
+        <h3>--target</h3>
+        <p>Set the compilation target:</p>
+        <pre><code><span class="comment"># Compile to WASM binary</span>
+funlang --target wasm --output program.wasm -e "1 + 2 * 3"
+
+<span class="comment"># Compile to WAT text format (for debugging)</span>
+funlang --target wat --output program.wat -e "1 + 2 * 3"
+
+<span class="comment"># Default: interpret (no compilation)</span>
+funlang -e "1 + 2 * 3"</code></pre>
+
+        <h3>--output</h3>
+        <p>Specify output file path (required for WASM compilation):</p>
+        <pre><code><span class="comment"># Compile expression</span>
+funlang --target wasm --output hello.wasm -e "let x = 10 in x * 2"
+
+<span class="comment"># Compile file</span>
+funlang --target wasm --output program.wasm myprogram.fun</code></pre>
+
+        <h3>Running WASM Output</h3>
+        <pre><code><span class="comment"># Using wasmtime</span>
+wasmtime --invoke main program.wasm
+
+<span class="comment"># Using wasmer</span>
+wasmer run program.wasm --invoke main</code></pre>
+
+        <div class="tip">
+            <div class="note-title">Tip</div>
+            See the <a href="wasm.html">WASM Compilation</a> tutorial for detailed examples and supported features.
+        </div>
+
         <h2>Exit Codes</h2>
 
         <table>
@@ -270,7 +307,7 @@ funlang --log-file errors.log --log-level error program.fun</code></pre>
         </div>
 
         <footer>
-            <p>FunLang v0.5.0 | A functional programming language for learning</p>
+            <p>FunLang v0.6.0 | A functional programming language for learning</p>
         </footer>
     </main>
 

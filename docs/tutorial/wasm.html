@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM Compilation - FunLang Tutorial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav-sidebar></nav-sidebar>
+
+    <main class="main-content">
+        <h1>WASM Compilation</h1>
+
+        <p>FunLang can compile programs to WebAssembly (WASM), allowing you to run FunLang code in browsers, serverless environments, or any WASM runtime like wasmtime.</p>
+
+        <div class="tip">
+            <div class="note-title">Note</div>
+            WASM compilation is currently MVP (Minimum Viable Product). It supports basic expressions but not all FunLang features yet.
+        </div>
+
+        <h2>Quick Start</h2>
+
+        <h3>Compile to WASM Binary</h3>
+        <pre><code><span class="comment"># Compile an expression to WASM</span>
+funlang --target wasm --output hello.wasm -e <span class="string">"1 + 2 * 3"</span>
+
+<span class="comment"># Run with wasmtime</span>
+wasmtime --invoke main hello.wasm
+<span class="comment"># Output: 7</span></code></pre>
+
+        <h3>Compile to WAT Text Format</h3>
+        <p>WAT (WebAssembly Text) is a human-readable format useful for debugging:</p>
+        <pre><code><span class="comment"># Generate WAT text format</span>
+funlang --target wat --output hello.wat -e <span class="string">"1 + 2 * 3"</span>
+
+<span class="comment"># View the generated WAT</span>
+cat hello.wat</code></pre>
+
+        <div class="example">
+            <div class="example-header">Generated WAT</div>
+            <pre><code>(module
+  (func $main  (result i32)
+    i32.const 1
+    i32.const 2
+    i32.const 3
+    i32.mul
+    i32.add
+  )
+  (export "main" (func $main))
+)</code></pre>
+        </div>
+
+        <h2>CLI Options</h2>
+
+        <table>
+            <tr><th>Option</th><th>Description</th></tr>
+            <tr><td><code>--target wasm</code></td><td>Compile to WASM binary format (.wasm)</td></tr>
+            <tr><td><code>--target wat</code></td><td>Compile to WAT text format (.wat)</td></tr>
+            <tr><td><code>--output &lt;path&gt;</code></td><td>Output file path (required for compilation)</td></tr>
+        </table>
+
+        <h2>Examples</h2>
+
+        <h3>Arithmetic Expressions</h3>
+        <div class="example">
+            <div class="example-header">Compile and Run</div>
+            <pre><code><span class="comment"># Basic arithmetic</span>
+funlang --target wasm --output calc.wasm -e <span class="string">"10 + 20 * 3"</span>
+wasmtime --invoke main calc.wasm
+<span class="comment"># => 70</span>
+
+<span class="comment"># Division and modulo</span>
+funlang --target wasm --output div.wasm -e <span class="string">"17 / 5"</span>
+wasmtime --invoke main div.wasm
+<span class="comment"># => 3</span>
+
+funlang --target wasm --output mod.wasm -e <span class="string">"17 % 5"</span>
+wasmtime --invoke main mod.wasm
+<span class="comment"># => 2</span></code></pre>
+        </div>
+
+        <h3>Let Bindings</h3>
+        <p>Local variables are compiled to WASM local variables:</p>
+        <div class="example">
+            <div class="example-header">Variable Binding</div>
+            <pre><code>funlang --target wasm --output vars.wasm -e <span class="string">"let x = 10 in let y = 20 in x + y"</span>
+wasmtime --invoke main vars.wasm
+<span class="comment"># => 30</span></code></pre>
+        </div>
+
+        <div class="example">
+            <div class="example-header">Generated WAT</div>
+            <pre><code>(module
+  (func $main  (result i32)
+    (local $local_0 i32)
+    (local $local_1 i32)
+    i32.const 10
+    local.set 0        <span class="comment">;; x = 10</span>
+    i32.const 20
+    local.set 1        <span class="comment">;; y = 20</span>
+    local.get 0        <span class="comment">;; get x</span>
+    local.get 1        <span class="comment">;; get y</span>
+    i32.add            <span class="comment">;; x + y</span>
+  )
+  (export "main" (func $main))
+)</code></pre>
+        </div>
+
+        <h3>Conditional Expressions</h3>
+        <p>If/then/else compiles to WASM if blocks:</p>
+        <div class="example">
+            <div class="example-header">Conditional</div>
+            <pre><code>funlang --target wasm --output cond.wasm -e <span class="string">"if 5 > 3 then 100 else 200"</span>
+wasmtime --invoke main cond.wasm
+<span class="comment"># => 100</span>
+
+<span class="comment"># Complex condition</span>
+funlang --target wasm --output max.wasm -e <span class="string">"let a = 15 in let b = 20 in if a > b then a else b"</span>
+wasmtime --invoke main max.wasm
+<span class="comment"># => 20</span></code></pre>
+        </div>
+
+        <h3>Comparison and Logical Operators</h3>
+        <div class="example">
+            <div class="example-header">Comparisons</div>
+            <pre><code><span class="comment"># Boolean result as int (1 = true, 0 = false)</span>
+funlang --target wasm --output cmp.wasm -e <span class="string">"10 > 5"</span>
+wasmtime --invoke main cmp.wasm
+<span class="comment"># => 1</span>
+
+funlang --target wasm --output eq.wasm -e <span class="string">"10 = 10"</span>
+wasmtime --invoke main eq.wasm
+<span class="comment"># => 1</span>
+
+<span class="comment"># Logical operators</span>
+funlang --target wasm --output and.wasm -e <span class="string">"true and false"</span>
+wasmtime --invoke main and.wasm
+<span class="comment"># => 0</span>
+
+funlang --target wasm --output or.wasm -e <span class="string">"true or false"</span>
+wasmtime --invoke main or.wasm
+<span class="comment"># => 1</span></code></pre>
+        </div>
+
+        <h3>Compiling Files</h3>
+        <p>You can also compile FunLang source files:</p>
+        <div class="example">
+            <div class="example-header">program.fun</div>
+            <pre><code><span class="keyword">let</span> x = <span class="number">10</span>
+<span class="keyword">let</span> y = <span class="number">20</span>
+<span class="keyword">let</span> z = <span class="number">30</span>
+x + y + z</code></pre>
+        </div>
+        <pre><code>funlang --target wasm --output program.wasm program.fun
+wasmtime --invoke main program.wasm
+<span class="comment"># => 60</span></code></pre>
+
+        <h2>Supported Features</h2>
+
+        <h3>Currently Supported</h3>
+        <table>
+            <tr><th>Feature</th><th>Example</th><th>Status</th></tr>
+            <tr><td>Integer literals</td><td><code>42</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Boolean literals</td><td><code>true</code>, <code>false</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Arithmetic</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Comparison</td><td><code><</code>, <code>></code>, <code><=</code>, <code>>=</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Equality</td><td><code>=</code>, <code><></code></td><td class="supported">Supported</td></tr>
+            <tr><td>Logical</td><td><code>and</code>, <code>or</code>, <code>not</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Let bindings</td><td><code>let x = 1 in ...</code></td><td class="supported">Supported</td></tr>
+            <tr><td>If/then/else</td><td><code>if c then t else e</code></td><td class="supported">Supported</td></tr>
+            <tr><td>Negation</td><td><code>-x</code></td><td class="supported">Supported</td></tr>
+        </table>
+
+        <h3>Not Yet Supported</h3>
+        <table>
+            <tr><th>Feature</th><th>Reason</th></tr>
+            <tr><td>Lambda functions</td><td>Requires closure support and memory management</td></tr>
+            <tr><td>Recursive functions</td><td>Requires function table and indirect calls</td></tr>
+            <tr><td>Lists</td><td>Requires linear memory and GC</td></tr>
+            <tr><td>Tuples</td><td>Requires linear memory</td></tr>
+            <tr><td>Pattern matching</td><td>Requires complex control flow compilation</td></tr>
+            <tr><td>User-defined types</td><td>Requires memory layout design</td></tr>
+            <tr><td>Strings</td><td>Requires linear memory for string data</td></tr>
+            <tr><td>Module system</td><td>Requires multi-module WASM linking</td></tr>
+        </table>
+
+        <div class="warning">
+            <div class="note-title">Warning</div>
+            If you try to compile unsupported features, you'll get a clear error message:
+            <pre><code>funlang --target wasm --output test.wasm -e "fun x -> x + 1"
+
+error[E303]: WASM compilation: unsupported feature 'lambda functions'
+  --> :1:5
+  |
+1 | fun x -> x + 1
+  |     ^
+   = help: This feature requires closures or memory management</code></pre>
+        </div>
+
+        <h2>Running WASM</h2>
+
+        <h3>Using wasmtime</h3>
+        <p><a href="https://wasmtime.dev/">wasmtime</a> is a fast, secure WASM runtime:</p>
+        <pre><code><span class="comment"># Install wasmtime</span>
+curl https://wasmtime.dev/install.sh -sSf | bash
+
+<span class="comment"># Run compiled WASM</span>
+wasmtime --invoke main program.wasm</code></pre>
+
+        <h3>Using wasmer</h3>
+        <p><a href="https://wasmer.io/">wasmer</a> is another popular WASM runtime:</p>
+        <pre><code><span class="comment"># Install wasmer</span>
+curl https://get.wasmer.io -sSfL | sh
+
+<span class="comment"># Run compiled WASM</span>
+wasmer run program.wasm --invoke main</code></pre>
+
+        <h3>In the Browser</h3>
+        <p>You can load and run the compiled WASM in a browser:</p>
+        <div class="example">
+            <div class="example-header">run.html</div>
+            <pre><code>&lt;script&gt;
+async function runWasm() {
+    const response = await fetch('program.wasm');
+    const bytes = await response.arrayBuffer();
+    const { instance } = await WebAssembly.instantiate(bytes);
+
+    const result = instance.exports.main();
+    console.log('Result:', result);
+}
+runWasm();
+&lt;/script&gt;</code></pre>
+        </div>
+
+        <h3>In Node.js</h3>
+        <pre><code><span class="comment">// run.js</span>
+const fs = require('fs');
+const wasmBuffer = fs.readFileSync('program.wasm');
+
+WebAssembly.instantiate(wasmBuffer).then(result => {
+    const main = result.instance.exports.main;
+    console.log('Result:', main());
+});</code></pre>
+
+        <h2>How It Works</h2>
+
+        <h3>Compilation Pipeline</h3>
+        <pre><code>FunLang Source  →  Parse (AST)  →  Type Check  →  WASM IR  →  Binary
+     ↓                  ↓               ↓             ↓           ↓
+ "1 + 2"         EBinaryOp(...)      int          [I32Const,   0x00 0x61
+                                                   I32Add]     0x73 0x6d...</code></pre>
+
+        <h3>WASM Basics</h3>
+        <p>WASM is a stack-based virtual machine. FunLang expressions compile to stack operations:</p>
+
+        <table>
+            <tr><th>FunLang</th><th>WASM Instructions</th></tr>
+            <tr><td><code>42</code></td><td><code>i32.const 42</code></td></tr>
+            <tr><td><code>true</code></td><td><code>i32.const 1</code></td></tr>
+            <tr><td><code>false</code></td><td><code>i32.const 0</code></td></tr>
+            <tr><td><code>a + b</code></td><td><code>[a]; [b]; i32.add</code></td></tr>
+            <tr><td><code>a - b</code></td><td><code>[a]; [b]; i32.sub</code></td></tr>
+            <tr><td><code>a * b</code></td><td><code>[a]; [b]; i32.mul</code></td></tr>
+            <tr><td><code>a / b</code></td><td><code>[a]; [b]; i32.div_s</code></td></tr>
+            <tr><td><code>a < b</code></td><td><code>[a]; [b]; i32.lt_s</code></td></tr>
+            <tr><td><code>not a</code></td><td><code>[a]; i32.eqz</code></td></tr>
+            <tr><td><code>-a</code></td><td><code>i32.const 0; [a]; i32.sub</code></td></tr>
+            <tr><td><code>let x = e in body</code></td><td><code>[e]; local.set x; [body]</code></td></tr>
+            <tr><td><code>x</code> (variable)</td><td><code>local.get x</code></td></tr>
+            <tr><td><code>if c then t else e</code></td><td><code>[c]; if (result i32) [t] else [e] end</code></td></tr>
+        </table>
+
+        <h2>Future Plans</h2>
+
+        <p>The WASM backend will be extended in future versions:</p>
+        <ul>
+            <li><strong>Phase 2</strong>: Function definitions (non-recursive)</li>
+            <li><strong>Phase 3</strong>: Recursive functions (function table)</li>
+            <li><strong>Phase 4</strong>: Linear memory for tuples/lists</li>
+            <li><strong>Phase 5</strong>: Closures (runtime support)</li>
+            <li><strong>Phase 6</strong>: Garbage collection</li>
+        </ul>
+
+        <div class="page-nav">
+            <a href="modules.html" class="prev">Modules</a>
+            <a href="examples.html" class="next">Examples</a>
+        </div>
+
+        <footer>
+            <p>FunLang v0.6.0 | A functional programming language for learning</p>
+        </footer>
+    </main>
+
+    <script src="nav-component.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
