@@ -24,6 +24,8 @@ type CliArgs =
     | No_Prelude
     | Explain of codes: string
     | [<AltCommandLine("-o")>] Emit of path: string option
+    | [<AltCommandLine("-t")>] Target of target: string
+    | Output of path: string
     | Version
 
     interface IArgParserTemplate with
@@ -45,6 +47,8 @@ type CliArgs =
             | No_Prelude -> "Don't load standard prelude"
             | Explain _ -> "Show error explanation (e.g., --explain E202 or --explain all)"
             | Emit _ -> "Emit formatted source code (--emit for stdout, --emit file.fun for file)"
+            | Target _ -> "Compilation target (interpret|wasm|wat). Default: interpret"
+            | Output _ -> "Output file path for WASM compilation (required with --target wasm/wat)"
             | Version -> "Show version"
 
 // =============================================================================
@@ -66,7 +70,14 @@ let parsePhase (s: string) : Logging.Phase option =
     | "parser" -> Some Logging.Parser
     | "typecheck" | "type" -> Some Logging.TypeCheck
     | "eval" | "interpreter" -> Some Logging.Eval
+    | "compile" -> Some Logging.Compile
     | _ -> None
+
+let parseTarget (s: string) : Logging.CompileTarget =
+    match s.ToLowerInvariant() with
+    | "wasm" -> Logging.Wasm
+    | "wat" -> Logging.Wat
+    | "interpret" | _ -> Logging.Interpret
 
 let parseOptions (results: ParseResults<CliArgs>) : Logging.RunOptions =
     let tracePhases =
@@ -97,6 +108,11 @@ let parseOptions (results: ParseResults<CliArgs>) : Logging.RunOptions =
                 Some (results.TryGetResult Emit |> Option.flatten)
             else
                 None
+        Target =
+            results.TryGetResult Target
+            |> Option.map parseTarget
+            |> Option.defaultValue Logging.Interpret
+        OutputPath = results.TryGetResult Output
     }
 
 // =============================================================================

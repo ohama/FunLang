@@ -43,6 +43,9 @@
     <Compile Include="Errors.fs" />
     <Compile Include="Suggestions.fs" />
     <Compile Include="Types.fs" />
+    <Compile Include="WasmTypes.fs" />
+    <Compile Include="WasmCompiler.fs" />
+    <Compile Include="WasmEmitter.fs" />
     <Compile Include="Unification.fs" />
     <Compile Include="PatternAnalysis.fs" />
     <Compile Include="NameResolution.fs" />

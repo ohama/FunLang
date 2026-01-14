@@ -13,6 +13,8 @@ open FunLang.Logging
 open FunLang.Options
 open FunLang.ErrorFormatter
 open FunLang.PatternAnalysis
+open FunLang.WasmCompiler
+open FunLang.WasmEmitter
 
 module Diag = FunLang.Diagnostic
 module Fmt = FunLang.Formatter
@@ -315,6 +317,79 @@ let run (opts: RunOptions) (input: string) =
     else
         runExpr opts input
 
+/// Compile to WASM
+let runCompile (opts: RunOptions) (target: CompileTarget) (outputPath: string) (input: string) =
+    logInfo Compile "Starting WASM compilation"
+
+    match tokenizeWithPositions input with
+    | Error e ->
+        logError Lexer e.Message
+        displayError input e
+        1
+    | Ok tokensWithPos ->
+        logInfo Lexer (sprintf "Tokenization complete: %d tokens" (List.length tokensWithPos))
+
+        match parseProgramWithPositions tokensWithPos with
+        | Error e ->
+            logError Parser e
+            eprintfn "Parse error: %s" e
+            1
+        | Ok program ->
+            logInfo Parser "Parsing complete"
+
+            match program.MainExpr with
+            | None ->
+                eprintfn "Error: No main expression to compile"
+                1
+            | Some ast ->
+                // Type check first (optional but recommended)
+                logInfo TypeCheck "Type checking before compilation"
+                match infer Map.empty ast with
+                | Error e ->
+                    logError TypeCheck (formatTypeError e)
+                    displayTypeError input e
+                    1
+                | Ok _ ->
+                    logInfo TypeCheck "Type check passed"
+
+                    // Compile to WASM IR
+                    logInfo Compile "Compiling to WASM IR"
+                    match compileProgram program with
+                    | Error e ->
+                        logError Compile e.Message
+                        displayError input e
+                        1
+                    | Ok wasmMod ->
+                        logInfo Compile (sprintf "WASM IR generated: %d functions" (List.length wasmMod.Functions))
+
+                        // Emit to file based on target
+                        let result =
+                            match target with
+                            | Wasm ->
+                                logInfo Compile (sprintf "Writing WASM binary to %s" outputPath)
+                                writeBinary outputPath wasmMod
+                            | Wat ->
+                                logInfo Compile (sprintf "Writing WAT text to %s" outputPath)
+                                writeWat outputPath wasmMod
+                            | Interpret ->
+                                // Should not reach here
+                                Error {
+                                    Kind = RuntimeError ("Invalid target for compilation", None)
+                                    Message = "Cannot compile with 'interpret' target"
+                                    Hint = Some "Use --target wasm or --target wat"
+                                    Position = None
+                                }
+
+                        match result with
+                        | Ok () ->
+                            logInfo Compile (sprintf "Compilation successful: %s" outputPath)
+                            printfn "Written to: %s" outputPath
+                            0
+                        | Error e ->
+                            logError Compile e.Message
+                            displayError input e
+                            1
+
 /// Run REPL mode
 let runRepl (opts: RunOptions) =
     printfn "FunLang Interactive Mode (v%s)" version
@@ -429,23 +504,44 @@ let main argv =
 
             logInfo Runtime "FunLang starting"
 
+            // Check if we're compiling to WASM
+            let isCompiling = opts.Target <> Interpret
+
+            // Helper to run or compile based on target
+            let runOrCompile (input: string) =
+                match opts.Target with
+                | Interpret ->
+                    run opts input
+                | Wasm | Wat ->
+                    match opts.OutputPath with
+                    | Some outputPath ->
+                        runCompile opts opts.Target outputPath input
+                    | None ->
+                        eprintfn "Error: --target wasm/wat requires --output <path>"
+                        eprintfn "Usage: funlang --target wasm --output output.wasm -e \"1 + 2\""
+                        1
+
             match getInputSource results with
             | FileInput path ->
                 logInfo Runtime (sprintf "Reading file: %s" path)
                 if IO.File.Exists path then
                     let content = IO.File.ReadAllText path
-                    run opts content
+                    runOrCompile content
                 else
                     eprintfn "Error: File not found: %s" path
                     1
 
             | ExpressionInput expr ->
                 logInfo Runtime (sprintf "Evaluating expression: %s" expr)
-                run opts expr
+                runOrCompile expr
 
             | ReplMode ->
-                logInfo Runtime "Starting REPL mode"
-                runRepl opts
+                if isCompiling then
+                    eprintfn "Error: Cannot use --target wasm with REPL mode"
+                    1
+                else
+                    logInfo Runtime "Starting REPL mode"
+                    runRepl opts
 
             | NoInput ->
                 // Show help if no input provided

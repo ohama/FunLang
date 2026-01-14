@@ -13,6 +13,7 @@ type Phase =
     | TypeCheck
     | Eval
     | Runtime
+    | Compile
 
 let phaseToString = function
     | Lexer -> "LEXER"
@@ -20,6 +21,16 @@ let phaseToString = function
     | TypeCheck -> "TYPECHECK"
     | Eval -> "EVAL"
     | Runtime -> "RUNTIME"
+    | Compile -> "COMPILE"
+
+// =============================================================================
+// Compile Target
+// =============================================================================
+
+type CompileTarget =
+    | Interpret   // default: interpret (no compilation)
+    | Wasm        // compile to .wasm binary
+    | Wat         // compile to .wat text format (for debugging)
 
 // =============================================================================
 // Run Options
@@ -39,6 +50,8 @@ type RunOptions = {
     NoColor: bool
     NoPrelude: bool
     EmitPath: string option option  // None = not used, Some None = stdout, Some (Some path) = file
+    Target: CompileTarget           // Interpret (default), Wasm, or Wat
+    OutputPath: string option       // Output file path for WASM compilation
 }
 
 let defaultOptions = {
@@ -55,6 +68,8 @@ let defaultOptions = {
     NoColor = false
     NoPrelude = false
     EmitPath = None
+    Target = Interpret
+    OutputPath = None
 }
 
 // =============================================================================
