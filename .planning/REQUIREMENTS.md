@@ -107,18 +107,49 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INDENT-* | TBD | Pending |
-| ADT-* | TBD | Pending |
-| GADT-* | TBD | Pending |
-| REC-* | TBD | Pending |
-| MOD-* | TBD | Pending |
-| EXC-* | TBD | Pending |
+| INDENT-01 | Phase 1 | Pending |
+| INDENT-02 | Phase 1 | Pending |
+| INDENT-03 | Phase 1 | Pending |
+| INDENT-04 | Phase 1 | Pending |
+| INDENT-05 | Phase 1 | Pending |
+| INDENT-06 | Phase 1 | Pending |
+| INDENT-07 | Phase 1 | Pending |
+| INDENT-08 | Phase 1 | Pending |
+| ADT-01 | Phase 2 | Pending |
+| ADT-02 | Phase 2 | Pending |
+| ADT-03 | Phase 2 | Pending |
+| ADT-04 | Phase 2 | Pending |
+| ADT-05 | Phase 2 | Pending |
+| ADT-06 | Phase 2 | Pending |
+| ADT-07 | Phase 2 | Pending |
+| GADT-01 | Phase 4 | Pending |
+| GADT-02 | Phase 4 | Pending |
+| GADT-03 | Phase 4 | Pending |
+| GADT-04 | Phase 4 | Pending |
+| REC-01 | Phase 3 | Pending |
+| REC-02 | Phase 3 | Pending |
+| REC-03 | Phase 3 | Pending |
+| REC-04 | Phase 3 | Pending |
+| REC-05 | Phase 3 | Pending |
+| REC-06 | Phase 3 | Pending |
+| REC-07 | Phase 3 | Pending |
+| MOD-01 | Phase 5 | Pending |
+| MOD-02 | Phase 5 | Pending |
+| MOD-03 | Phase 5 | Pending |
+| MOD-04 | Phase 5 | Pending |
+| MOD-05 | Phase 5 | Pending |
+| MOD-06 | Phase 5 | Pending |
+| EXC-01 | Phase 6 | Pending |
+| EXC-02 | Phase 6 | Pending |
+| EXC-03 | Phase 6 | Pending |
+| EXC-04 | Phase 6 | Pending |
+| EXC-05 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 33 total
-- Mapped to phases: 0
-- Unmapped: 33 ⚠️
+- Mapped to phases: 33
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-25*
-*Last updated: 2026-02-25 after initial definition*
+*Last updated: 2026-02-25 after roadmap creation*
