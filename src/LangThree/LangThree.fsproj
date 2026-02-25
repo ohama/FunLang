@@ -81,6 +81,9 @@
     <!-- 10. Generated lexer file (FsLex generates in source directory) -->
     <Compile Include="Lexer.fs" />
 
+    <!-- 10.5. Indent filter for indentation-based syntax (depends on Parser tokens) -->
+    <Compile Include="IndentFilter.fs" />
+
     <!-- 11. Format utilities (uses Parser tokens and Lexer) -->
     <Compile Include="Format.fs" />
 
