@@ -29,9 +29,10 @@ let type_var = '\'' letter (letter | digit | '_')*
 
 // Lexer rules
 rule tokenize = parse
-    | whitespace+   { tokenize lexbuf }           // Skip whitespace
+    | ' '+          { tokenize lexbuf }                    // Spaces: skip
+    | '\t'          { failwith "Tab character not allowed, use spaces" }
     | newline       { lexbuf.EndPos <- lexbuf.EndPos.NextLine
-                      tokenize lexbuf }           // Skip newlines, update position
+                      read_indent 0 lexbuf }           // Enter indent counting state
     | digit+        { NUMBER (Int32.Parse(lexeme lexbuf)) }  // Integer literal
     // Keywords MUST come before identifier pattern
     | "true"        { TRUE }
@@ -71,10 +72,8 @@ rule tokenize = parse
     | ':'           { COLON }      // v6.0: Type annotation
     // Phase 5: Arrow for lambda expressions
     | "->"          { ARROW }
-    // Comments (MUST come before operators to match first)
-    | "//" [^ '\n' '\r']* newline  { lexbuf.EndPos <- lexbuf.EndPos.NextLine;
-                                      tokenize lexbuf }   // Single-line comment with newline
-    | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment at EOF
+    // Comments: don't consume newline so it triggers NEWLINE token
+    | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment (newline handled separately)
     | "(*"          { block_comment 1 lexbuf }   // Start block comment, depth=1
     // Single-char operators
     | '+'           { PLUS }
@@ -103,6 +102,12 @@ and block_comment depth = parse
                 block_comment depth lexbuf }           // Continue on newline, update position
     | eof     { failwith "Unterminated comment" }      // Error on EOF
     | _       { block_comment depth lexbuf }           // Skip any other char
+
+// Indent counting after newline
+and read_indent col = parse
+    | ' '     { read_indent (col + 1) lexbuf }         // Count space, continue
+    | '\t'    { failwith "Tab character not allowed, use spaces" }
+    | ""      { NEWLINE col }                          // Return NEWLINE with indent count
 
 // String literal handler with escape sequences
 and read_string buf = parse
