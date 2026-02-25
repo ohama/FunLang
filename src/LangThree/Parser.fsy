@@ -42,6 +42,10 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token COLON
 %token TYPE_INT TYPE_BOOL TYPE_STRING TYPE_LIST
 %token <string> TYPE_VAR
+// Indentation tokens
+%token <int> NEWLINE   // NEWLINE with column position
+%token INDENT          // Indentation increase
+%token DEDENT          // Indentation decrease
 %token EOF
 
 // Precedence declarations (lowest to highest)
