@@ -2,6 +2,9 @@
 module Parser
 type token = 
   | EOF
+  | DEDENT
+  | INDENT
+  | NEWLINE of (int)
   | TYPE_VAR of (string)
   | TYPE_INT
   | TYPE_BOOL
@@ -45,6 +48,9 @@ type token =
   | NUMBER of (int)
 type tokenId = 
     | TOKEN_EOF
+    | TOKEN_DEDENT
+    | TOKEN_INDENT
+    | TOKEN_NEWLINE
     | TOKEN_TYPE_VAR
     | TOKEN_TYPE_INT
     | TOKEN_TYPE_BOOL
