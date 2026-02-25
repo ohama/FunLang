@@ -52,3 +52,26 @@ let processNewlineTests = testList "IndentFilter.processNewline" [
             "Should throw for misaligned indent"
     }
 ]
+
+[<Tests>]
+let filterTests = testList "IndentFilter.filter" [
+    test "passes through non-NEWLINE tokens" {
+        let input = [Parser.LET; Parser.IDENT "x"; Parser.EQUALS; Parser.NUMBER 1]
+        let output = filter defaultConfig input |> Seq.toList
+        Expect.equal output input "Should pass through unchanged"
+    }
+
+    test "converts NEWLINE to INDENT on deeper" {
+        let input = [Parser.LET; Parser.IDENT "x"; Parser.EQUALS; Parser.NEWLINE 4; Parser.NUMBER 1]
+        let output = filter defaultConfig input |> Seq.toList
+        let expected = [Parser.LET; Parser.IDENT "x"; Parser.EQUALS; Parser.INDENT; Parser.NUMBER 1]
+        Expect.equal output expected "NEWLINE(4) should become INDENT"
+    }
+
+    test "emits DEDENT at end for open indents" {
+        let input = [Parser.LET; Parser.NEWLINE 4; Parser.NUMBER 1; Parser.EOF]
+        let output = filter defaultConfig input |> Seq.toList
+        let expected = [Parser.LET; Parser.INDENT; Parser.NUMBER 1; Parser.DEDENT; Parser.EOF]
+        Expect.equal output expected "Should emit DEDENT before EOF"
+    }
+]

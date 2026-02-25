@@ -47,3 +47,27 @@ let processNewline (state: FilterState) (col: int) : FilterState * Parser.token 
 
     let (tokens, newStack) = unwind [] state.IndentStack
     ({ state with IndentStack = newStack }, tokens)
+
+/// Filter a token stream, converting NEWLINE(col) to INDENT/DEDENT
+let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq =
+    seq {
+        let mutable state = initialState
+
+        for token in tokens do
+            match token with
+            | Parser.NEWLINE col ->
+                let (newState, emitted) = processNewline state col
+                state <- { newState with LineNum = state.LineNum + 1 }
+                yield! emitted
+
+            | Parser.EOF ->
+                // Emit DEDENTs for all open indents before EOF
+                while state.IndentStack.Length > 1 do
+                    let (newState, _) = processNewline state 0
+                    state <- newState
+                    yield Parser.DEDENT
+                yield Parser.EOF
+
+            | other ->
+                yield other
+    }
