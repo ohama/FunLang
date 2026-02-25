@@ -1,0 +1,18 @@
+# Worktrees
+.worktrees/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Build outputs
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
