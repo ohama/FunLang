@@ -73,6 +73,8 @@ Expr:
     | MATCH Expr WITH MatchClauses   { Match($2, $4, ruleSpan parseState 1 4) }
     // Let expression - lowest precedence
     | LET IDENT EQUALS Expr IN Expr  { Let($2, $4, $6, ruleSpan parseState 1 6) }
+    // Indentation-based let: let x = <indent>expr<dedent>
+    | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Var("()", symSpan parseState 6), ruleSpan parseState 1 6) }
     // Phase 1 (v3.0): Let with pattern binding
     | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
