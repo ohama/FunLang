@@ -1,0 +1,121 @@
+{
+open System
+open FSharp.Text.Lexing
+open Parser  // Import token types from generated Parser module
+
+// Helper to get lexeme as string
+let lexeme (lexbuf: LexBuffer<_>) =
+    LexBuffer<_>.LexemeString lexbuf
+
+/// Initialize position tracking for the lexbuf
+let setInitialPos (lexbuf: LexBuffer<_>) (filename: string) =
+    lexbuf.EndPos <- {
+        pos_fname = filename
+        pos_lnum = 1
+        pos_bol = 0
+        pos_cnum = 0
+        pos_orig_lnum = 1
+    }
+}
+
+// Character class definitions
+let digit = ['0'-'9']
+let whitespace = [' ' '\t']
+let newline = ('\n' | '\r' '\n')
+let letter = ['a'-'z' 'A'-'Z']
+let ident_start = letter | '_'
+let ident_char = letter | digit | '_'
+let type_var = '\'' letter (letter | digit | '_')*
+
+// Lexer rules
+rule tokenize = parse
+    | ' '+          { tokenize lexbuf }                    // Spaces: skip
+    | '\t'          { failwith "Tab character not allowed, use spaces" }
+    | newline       { lexbuf.EndPos <- lexbuf.EndPos.NextLine
+                      read_indent 0 lexbuf }           // Enter indent counting state
+    | digit+        { NUMBER (Int32.Parse(lexeme lexbuf)) }  // Integer literal
+    // Keywords MUST come before identifier pattern
+    | "true"        { TRUE }
+    | "false"       { FALSE }
+    | "if"          { IF }
+    | "then"        { THEN }
+    | "else"        { ELSE }
+    | "let"         { LET }
+    | "in"          { IN }
+    // Phase 5: Function keywords
+    | "fun"         { FUN }
+    | "rec"         { REC }
+    // Phase 3 (v3.0): Pattern matching keywords
+    | "match"       { MATCH }
+    | "with"        { WITH }
+    // v6.0: Type keywords for type annotations
+    | "int"         { TYPE_INT }
+    | "bool"        { TYPE_BOOL }
+    | "string"      { TYPE_STRING }
+    | "list"        { TYPE_LIST }
+    // Phase 1 (v3.0): Wildcard pattern (must come before identifier)
+    | '_'           { UNDERSCORE }
+    // v6.0: Type variables ('a, 'b, etc.)
+    | type_var      { TYPE_VAR (lexeme lexbuf) }
+    // Identifier: starts with letter or underscore (but _ alone is UNDERSCORE)
+    | ident_start ident_char* { IDENT (lexeme lexbuf) }
+    // String literals (before multi-char operators)
+    | '"'           { read_string (System.Text.StringBuilder()) lexbuf }
+    // Multi-char operators MUST come before single-char
+    | "<="          { LE }
+    | ">="          { GE }
+    | "<>"          { NE }
+    | "&&"          { AND }
+    | "||"          { OR }
+    // Phase 2 (v3.0): Cons operator
+    | "::"          { CONS }
+    | ':'           { COLON }      // v6.0: Type annotation
+    // Phase 5: Arrow for lambda expressions
+    | "->"          { ARROW }
+    // Comments: don't consume newline so it triggers NEWLINE token
+    | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment (newline handled separately)
+    | "(*"          { block_comment 1 lexbuf }   // Start block comment, depth=1
+    // Single-char operators
+    | '+'           { PLUS }
+    | '-'           { MINUS }
+    | '*'           { STAR }
+    | '/'           { SLASH }
+    | '<'           { LT }
+    | '>'           { GT }
+    | '('           { LPAREN }
+    | ')'           { RPAREN }
+    | '='           { EQUALS }
+    | ','           { COMMA }
+    // Phase 2 (v3.0): List brackets
+    | '['           { LBRACKET }
+    | ']'           { RBRACKET }
+    // Phase 3 (v3.0): Pipe for match clauses
+    | '|'           { PIPE }
+    | eof           { EOF }                       // End of input
+
+// Block comment handler with nesting support
+and block_comment depth = parse
+    | "(*"    { block_comment (depth + 1) lexbuf }     // Nested open: increase depth
+    | "*)"    { if depth = 1 then tokenize lexbuf     // Close: if depth=1, return to tokenize
+                else block_comment (depth - 1) lexbuf } // else decrease depth
+    | newline { lexbuf.EndPos <- lexbuf.EndPos.NextLine
+                block_comment depth lexbuf }           // Continue on newline, update position
+    | eof     { failwith "Unterminated comment" }      // Error on EOF
+    | _       { block_comment depth lexbuf }           // Skip any other char
+
+// Indent counting after newline
+and read_indent col = parse
+    | ' '     { read_indent (col + 1) lexbuf }         // Count space, continue
+    | '\t'    { failwith "Tab character not allowed, use spaces" }
+    | ""      { NEWLINE col }                          // Return NEWLINE with indent count
+
+// String literal handler with escape sequences
+and read_string buf = parse
+    | '"'           { STRING (buf.ToString()) }
+    | "\\n"         { buf.Append('\n') |> ignore; read_string buf lexbuf }
+    | "\\t"         { buf.Append('\t') |> ignore; read_string buf lexbuf }
+    | "\\\\"        { buf.Append('\\') |> ignore; read_string buf lexbuf }
+    | "\\\""        { buf.Append('\"') |> ignore; read_string buf lexbuf }
+    | newline       { failwith "Newline in string literal" }
+    | eof           { failwith "Unterminated string literal" }
+    | _             { buf.Append(lexeme lexbuf) |> ignore; read_string buf lexbuf }

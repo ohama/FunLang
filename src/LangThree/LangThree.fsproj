@@ -1,0 +1,111 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    LangThree - F# Language Implementation
+
+    BUILD ORDER (CRITICAL):
+    =======================
+    1. Ast.fs         - AST type definitions (Discriminated Unions)
+    2. Type.fs        - Type system definitions (Type, Scheme, TypeEnv)
+    3. Elaborate.fs   - Type expression elaboration (converts TypeExpr to Type)
+    4. Diagnostic.fs  - Error representation types (depends on Type.fs, Ast.fs)
+    5. Unify.fs       - Unification algorithm (depends on Type.fs, Diagnostic.fs)
+    6. Infer.fs       - Inference helpers (depends on Type.fs, Unify.fs, Diagnostic.fs)
+    7. Bidir.fs       - Bidirectional type checker (depends on Infer.fs)
+    8. TypeCheck.fs   - Type checking integration (depends on Infer.fs)
+    9. Parser.fsy     - fsyacc specification (generates Parser.fs, Parser.fsi)
+    10. Lexer.fsl     - fslex specification (generates Lexer.fs)
+    11. Parser.fsi    - Generated parser signature
+    12. Parser.fs     - Generated parser implementation
+    13. Lexer.fs      - Generated lexer implementation
+    14. Format.fs     - Formatting utilities
+    15. Eval.fs       - Evaluator (pattern matching on AST)
+    16. Program.fs    - Main entry point
+
+    WHY THIS ORDER:
+    - Lexer.fsl opens Parser to access token types (NUMBER, EOF, etc.)
+    - Parser must be generated BEFORE Lexer can compile
+    - F# requires files to be ordered by dependency (no forward references)
+
+    COMMON PITFALL:
+    If you get "Parser module not found" or "NUMBER is not defined",
+    check that FsYacc comes BEFORE FsLex in the ItemGroup below.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>LangThree</RootNamespace>
+    <AssemblyName>LangThree</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 1. AST definitions (manually written) -->
+    <Compile Include="Ast.fs" />
+
+    <!-- 2. Type system definitions (manually written) -->
+    <Compile Include="Type.fs" />
+
+    <!-- 2.5. Elaboration module (converts TypeExpr to Type) -->
+    <Compile Include="Elaborate.fs" />
+
+    <!-- 3. Diagnostic types (manually written, depends on Type.fs and Ast.fs) -->
+    <Compile Include="Diagnostic.fs" />
+
+    <!-- 4. Unification module (manually written, depends on Type.fs, Diagnostic.fs) -->
+    <Compile Include="Unify.fs" />
+
+    <!-- 5. Inference module (manually written, depends on Type.fs, Unify.fs, Diagnostic.fs) -->
+    <Compile Include="Infer.fs" />
+
+    <!-- 5.5. Bidirectional type checker (depends on Infer.fs for helpers) -->
+    <Compile Include="Bidir.fs" />
+
+    <!-- 6. Type checking integration (manually written, depends on Infer.fs) -->
+    <Compile Include="TypeCheck.fs" />
+
+    <!-- 7. Parser generator - MUST come before Lexer -->
+    <FsYacc Include="Parser.fsy">
+      <OtherFlags>--module Parser</OtherFlags>
+    </FsYacc>
+
+    <!-- 8. Lexer generator - depends on Parser tokens -->
+    <FsLex Include="Lexer.fsl">
+      <OtherFlags>--module Lexer --unicode</OtherFlags>
+    </FsLex>
+
+    <!-- 9. Generated parser files (FsYacc generates in source directory) -->
+    <Compile Include="Parser.fsi" />
+    <Compile Include="Parser.fs" />
+
+    <!-- 10. Generated lexer file (FsLex generates in source directory) -->
+    <Compile Include="Lexer.fs" />
+
+    <!-- 10.5. Indent filter for indentation-based syntax (depends on Parser tokens) -->
+    <Compile Include="IndentFilter.fs" />
+
+    <!-- 11. Format utilities (uses Parser tokens and Lexer) -->
+    <Compile Include="Format.fs" />
+
+    <!-- 12. Evaluator (uses Ast, used by Program) -->
+    <Compile Include="Eval.fs" />
+
+    <!-- 13. Prelude loading (uses Eval) -->
+    <Compile Include="Prelude.fs" />
+
+    <!-- 14. REPL implementation (uses Eval) -->
+    <Compile Include="Repl.fs" />
+
+    <!-- 15. CLI argument parsing (uses Argu) -->
+    <Compile Include="Cli.fs" />
+
+    <!-- 16. Main program -->
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FsLexYacc" Version="11.3.0" />
+    <PackageReference Include="Argu" Version="6.2.5" />
+  </ItemGroup>
+
+</Project>
