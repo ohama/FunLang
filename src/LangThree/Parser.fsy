@@ -55,9 +55,11 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %nonassoc EQUALS LT GT LE GE NE
 %right CONS    // Right-associative: 1 :: 2 :: [] = 1 :: (2 :: [])
 
-// Start symbol and its type
+// Start symbols and their types
 %start start
 %type <Ast.Expr> start
+%start parseModule
+%type <Ast.Module> parseModule
 
 %%
 
@@ -209,3 +211,24 @@ AtomicType:
     | TYPE_VAR                      { TEVar($1) }
     | AtomicType TYPE_LIST          { TEList($1) }
     | LPAREN TypeExpr RPAREN        { $2 }
+
+// Phase 1 (INDENT-05): Module-level declarations
+// Module: Top-level entry point for multi-declaration files
+// Accepts multiple top-level let bindings at column 0
+parseModule:
+    | Decls EOF                     { Module($1, ruleSpan parseState 1 2) }
+    | EOF                           { EmptyModule(ruleSpan parseState 1 1) }
+
+// Decls: Sequence of declarations
+Decls:
+    | Decl                          { [$1] }
+    | Decl Decls                    { $1 :: $2 }
+
+// Decl: Single top-level declaration
+// Top-level declarations must be at column 0
+// Each declaration can have indented body using INDENT/DEDENT
+Decl:
+    | LET IDENT EQUALS Expr NEWLINE
+        { LetDecl($2, $4, ruleSpan parseState 1 5) }
+    | LET IDENT EQUALS INDENT Expr DEDENT NEWLINE
+        { LetDecl($2, $5, ruleSpan parseState 1 7) }

@@ -159,3 +159,24 @@ let patternSpanOf (pat: Pattern) : Span =
     match pat with
     | VarPat(_, s) | WildcardPat s | TuplePat(_, s) -> s
     | ConsPat(_, _, s) | EmptyListPat s | ConstPat(_, s) -> s
+
+/// Module-level declaration
+/// Phase 1 (INDENT-05): Module-level declarations
+type Decl =
+    | LetDecl of name: string * body: Expr * Span
+
+/// Module: Top-level container for declarations
+/// Phase 1 (INDENT-05): Module structure for multi-declaration files
+type Module =
+    | Module of decls: Decl list * Span
+    | EmptyModule of Span
+
+/// Extract span from Decl
+let declSpanOf (decl: Decl) : Span =
+    match decl with
+    | LetDecl(_, _, s) -> s
+
+/// Extract span from Module
+let moduleSpanOf (m: Module) : Span =
+    match m with
+    | Module(_, s) | EmptyModule s -> s
