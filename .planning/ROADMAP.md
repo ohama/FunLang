@@ -32,9 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. User writes code with tabs and receives clear error message "tabs not allowed, use spaces"
   5. User makes indentation error and receives clear error message with expected vs actual indent
 
+**Plans**: 3 plans
+
 Plans:
-- `docs/plans/2026-02-25-indentation-syntax-design.md` - Design document for indentation-based syntax
-- `docs/plans/2026-02-25-indentation-syntax-implementation.md` - Implementation plan with 10 tasks (complete)
+- [ ] 01-01-PLAN.md — Add context-aware indentation processing for match expressions with pipe alignment
+- [ ] 01-02-PLAN.md — Enable multi-line function application with indented argument grouping
+- [ ] 01-03-PLAN.md — Improve indentation error messages and add configurable indent width validation
 
 ### Phase 2: Algebraic Data Types
 **Goal**: Users can define and use sum types with exhaustive pattern matching
@@ -117,7 +120,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Indentation-Based Syntax | 1/1 | In Progress | - |
+| 1. Indentation-Based Syntax | 0/3 | Ready to execute | - |
 | 2. Algebraic Data Types | 0/? | Not started | - |
 | 3. Records | 0/? | Not started | - |
 | 4. Generalized Algebraic Data Types | 0/? | Not started | - |
@@ -126,4 +129,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 ---
 *Roadmap created: 2026-02-25*
-*Last updated: 2026-02-25*
+*Last updated: 2026-03-02*
