@@ -57,7 +57,13 @@ let processNewline (state: FilterState) (col: int) : FilterState * Parser.token 
     let (tokens, newStack) = unwind [] state.IndentStack
     ({ state with IndentStack = newStack }, tokens)
 
-/// Check if a token is an atom (can start or be part of function application)
+/// Check if a token could be a function being applied
+let canBeFunction (token: Parser.token) : bool =
+    match token with
+    | Parser.IDENT _ | Parser.RPAREN -> true
+    | _ -> false
+
+/// Check if a token is an atom (can be an argument)
 let isAtom (token: Parser.token) : bool =
     match token with
     | Parser.NUMBER _ | Parser.IDENT _ | Parser.TRUE | Parser.FALSE
@@ -74,14 +80,18 @@ let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser
             state
 
     // Check if we're entering a function application context
+    // Only enter if we're not already in one
     let enteringFunctionApp =
-        match stateWithMatchContext.PrevToken, nextToken with
-        | Some prevTok, Some nextTok when isAtom prevTok && isAtom nextTok ->
-            // Previous token was an atom, newline, now another atom at deeper indent
-            match stateWithMatchContext.IndentStack with
-            | topIndent :: _ when col > topIndent -> true
+        match stateWithMatchContext.Context with
+        | InFunctionApp _ :: _ -> false  // Already in function app
+        | _ ->
+            match stateWithMatchContext.PrevToken, nextToken with
+            | Some prevTok, Some nextTok when canBeFunction prevTok && isAtom nextTok ->
+                // Previous token could be a function, newline, now an atom at deeper indent
+                match stateWithMatchContext.IndentStack with
+                | topIndent :: _ when col > topIndent -> true
+                | _ -> false
             | _ -> false
-        | _ -> false
 
     // First, check if we need to process normal indentation (INDENT/DEDENT)
     // This updates the indent stack and context

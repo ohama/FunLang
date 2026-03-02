@@ -95,12 +95,14 @@ type tokenId =
     | TOKEN_end_of_input
     | TOKEN_error
 type nonTerminalId = 
+    | NONTERM__startparseModule
     | NONTERM__startstart
     | NONTERM_start
     | NONTERM_Expr
     | NONTERM_Term
     | NONTERM_Factor
     | NONTERM_AppExpr
+    | NONTERM_AppArgs
     | NONTERM_Atom
     | NONTERM_ExprList
     | NONTERM_TuplePattern
@@ -114,6 +116,10 @@ type nonTerminalId =
     | NONTERM_TupleType
     | NONTERM_TupleTypeList
     | NONTERM_AtomicType
+    | NONTERM_parseModule
+    | NONTERM_Decls
+    | NONTERM_Decl
+    | NONTERM_ParamList
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int
 
@@ -125,4 +131,5 @@ val prodIdxToNonTerminal: int -> nonTerminalId
 
 /// This function gets the name of a token as a string
 val token_to_string: token -> string
+val parseModule : (FSharp.Text.Lexing.LexBuffer<'cty> -> token) -> FSharp.Text.Lexing.LexBuffer<'cty> -> (Ast.Module) 
 val start : (FSharp.Text.Lexing.LexBuffer<'cty> -> token) -> FSharp.Text.Lexing.LexBuffer<'cty> -> (Ast.Expr) 
