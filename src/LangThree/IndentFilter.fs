@@ -15,6 +15,7 @@ let defaultConfig = { IndentWidth = 4; StrictWidth = false }
 type SyntaxContext =
     | TopLevel
     | InMatch of baseColumn: int        // Match expression with pipe alignment
+    | InFunctionApp of baseColumn: int  // Multi-line function application
 
 /// State maintained during filtering
 type FilterState = {
@@ -22,10 +23,11 @@ type FilterState = {
     LineNum: int                // Current line number for errors
     Context: SyntaxContext list // Stack of syntax contexts for nesting
     JustSawMatch: bool          // Flag: did we just see MATCH token?
+    PrevToken: Parser.token option  // Previous token for function app detection
 }
 
 /// Initial state
-let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false }
+let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; PrevToken = None }
 
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
@@ -55,8 +57,25 @@ let processNewline (state: FilterState) (col: int) : FilterState * Parser.token 
     let (tokens, newStack) = unwind [] state.IndentStack
     ({ state with IndentStack = newStack }, tokens)
 
+/// Check if a token is an atom (can start or be part of function application)
+let isAtom (token: Parser.token) : bool =
+    match token with
+    | Parser.NUMBER _ | Parser.IDENT _ | Parser.TRUE | Parser.FALSE
+    | Parser.STRING _ | Parser.LPAREN -> true
+    | _ -> false
+
 /// Process NEWLINE with context awareness for special indentation rules
 let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser.token option) : FilterState * Parser.token list =
+    // Check if we're entering a function application context
+    let enteringFunctionApp =
+        match state.PrevToken, nextToken with
+        | Some prevTok, Some nextTok when isAtom prevTok && isAtom nextTok ->
+            // Previous token was an atom, newline, now another atom at deeper indent
+            match state.IndentStack with
+            | topIndent :: _ when col > topIndent -> true
+            | _ -> false
+        | _ -> false
+
     // Check if we're in a match context and the next token is a pipe
     match state.Context with
     | InMatch baseCol :: _ when nextToken = Some Parser.PIPE ->
@@ -66,8 +85,22 @@ let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser
                 $"Match pipe must align with 'match' keyword at column {baseCol}, found at column {col}"))
         // Pipe aligns correctly, don't change indent stack
         (state, [])
+    | InFunctionApp baseCol :: rest when col <= baseCol ->
+        // Exiting function app - emit DEDENT
+        let stateAfterExit = { state with Context = rest }
+        // Process normal indentation
+        let (newState, tokens) = processNewline stateAfterExit col
+        (newState, Parser.DEDENT :: tokens)
+    | _ when enteringFunctionApp ->
+        // Entering multi-line function application
+        let baseCol = List.head state.IndentStack
+        let newState = { state with Context = InFunctionApp baseCol :: state.Context }
+        (newState, [Parser.INDENT])
+    | InFunctionApp _ :: _ ->
+        // Still in function app, don't process indentation normally
+        (state, [])
     | _ ->
-        // Not in match context or not a pipe, use normal processing
+        // Not in match or function app context, use normal processing
         let (newState, tokens) = processNewline state col
         // If we just saw MATCH, enter match context with the current indent level
         let finalState =
@@ -82,6 +115,12 @@ let updateContextOnDedent (state: FilterState) : FilterState =
     match state.Context with
     | InMatch baseCol :: rest ->
         // If current indent level is at or below match base, exit context
+        if state.IndentStack.Head <= baseCol then
+            { state with Context = rest }
+        else
+            state
+    | InFunctionApp baseCol :: rest ->
+        // If current indent level is at or below function app base, exit context
         if state.IndentStack.Head <= baseCol then
             { state with Context = rest }
         else
@@ -120,7 +159,7 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
 
             | Parser.MATCH ->
                 // Mark that we just saw MATCH, will enter context on next NEWLINE
-                state <- { state with JustSawMatch = true }
+                state <- { state with JustSawMatch = true; PrevToken = Some token }
                 yield token
 
             | Parser.DEDENT ->
@@ -129,6 +168,7 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 yield token
 
             | other ->
+                state <- { state with PrevToken = Some other }
                 yield other
 
             index <- index + 1

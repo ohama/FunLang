@@ -125,7 +125,15 @@ Factor:
 // Uses Atom to avoid ambiguity: "f -1" is subtraction, "f (-1)" is app with negative
 AppExpr:
     | AppExpr Atom       { App($1, $2, ruleSpan parseState 1 2) }
+    | AppExpr INDENT AppArgs DEDENT
+        { List.fold (fun acc arg -> App(acc, arg, ruleSpan parseState 1 4))
+                    $1 $3 }
     | Atom               { $1 }
+
+// Multi-line function application arguments
+AppArgs:
+    | Atom               { [$1] }
+    | Atom AppArgs       { $1 :: $2 }
 
 // Atom: The most basic expressions, no operators
 // Used as function arguments in application
