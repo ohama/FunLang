@@ -200,9 +200,9 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
             | Parser.EOF ->
                 // Emit DEDENTs for all open indents before EOF
                 while state.IndentStack.Length > 1 do
-                    let (newState, _) = processNewline config state 0
+                    let (newState, tokens) = processNewline config state 0
                     state <- newState
-                    yield Parser.DEDENT
+                    yield! tokens
                 yield Parser.EOF
 
             | Parser.MATCH ->
