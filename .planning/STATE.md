@@ -12,26 +12,26 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 1 of 6 (Indentation-Based Syntax)
 Plan: 2 of ? in current phase
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-04-PLAN.md (Module-Level Declarations)
+Last activity: 2026-03-02 — Completed 01-02-PLAN.md (Multi-line Function Application)
 
 Progress: [██░░░░░░░░] ~10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 10.5 min
-- Total execution time: 0.35 hours
+- Total plans completed: 3
+- Average duration: 11.3 min
+- Total execution time: 0.57 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 2 | 21 min | 10.5 min |
+| 01 | 3 | 34 min | 11.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min), 01-04 (12min)
-- Trend: Consistent velocity ~10 min/plan
+- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min)
+- Trend: Consistent velocity ~11 min/plan
 
 *Updated after each plan completion*
 
@@ -50,6 +50,11 @@ Recent decisions affecting current work:
 - Enter match context before processing newline to enable pipe alignment validation
 - Pop match contexts automatically when dedenting below their base level
 - Pipes in match expressions align with 'match' keyword column, not indented from it
+
+**From 01-02 (Multi-line Function Application):**
+- canBeFunction (IDENT | RPAREN) identifies function positions, isAtom identifies argument positions
+- Prevent re-entering InFunctionApp context when already in one to avoid nested INDENT tokens
+- Consume newlines within function app context (emit no tokens) to allow multi-line arguments without extra INDENT/DEDENT
 
 **From 01-04 (Module-Level Declarations):**
 - Module and Decl types separate from Expr for clear file structure
@@ -79,10 +84,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-02 (01-04-PLAN execution)
-Stopped at: Completed 01-04-PLAN.md successfully
+Last session: 2026-03-02 (01-02-PLAN execution)
+Stopped at: Completed 01-02-PLAN.md successfully
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-02*
+*Last updated: 2026-03-02 08:53 UTC*
