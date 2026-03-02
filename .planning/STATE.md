@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 1 of 6 (Indentation-Based Syntax)
-Plan: 1 of ? in current phase
+Plan: 2 of ? in current phase
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-01-PLAN.md (Match Expression Indentation)
+Last activity: 2026-03-02 — Completed 01-04-PLAN.md (Module-Level Declarations)
 
-Progress: [█░░░░░░░░░] ~5%
+Progress: [██░░░░░░░░] ~10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 9 min
-- Total execution time: 0.15 hours
+- Total plans completed: 2
+- Average duration: 10.5 min
+- Total execution time: 0.35 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 1 | 9 min | 9 min |
+| 01 | 2 | 21 min | 10.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min)
-- Trend: First plan completed
+- Last 5 plans: 01-01 (9min), 01-04 (12min)
+- Trend: Consistent velocity ~10 min/plan
 
 *Updated after each plan completion*
 
@@ -51,6 +51,11 @@ Recent decisions affecting current work:
 - Pop match contexts automatically when dedenting below their base level
 - Pipes in match expressions align with 'match' keyword column, not indented from it
 
+**From 01-04 (Module-Level Declarations):**
+- Module and Decl types separate from Expr for clear file structure
+- Function declarations desugar to nested lambdas (let f x y = e → let f = fun x -> fun y -> e)
+- IndentFilter removes same-level NEWLINEs - rely on token boundaries in grammar
+
 ### Pending Todos
 
 None yet.
@@ -60,6 +65,9 @@ None yet.
 **Phase 1 dependencies:**
 - Indentation lexer state management (Python algorithm well-documented, low risk)
 - Spaces-only enforcement critical for correctness
+
+**From 01-04:**
+- **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
@@ -71,8 +79,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-02 (01-01-PLAN execution)
-Stopped at: Completed 01-01-PLAN.md successfully
+Last session: 2026-03-02 (01-04-PLAN execution)
+Stopped at: Completed 01-04-PLAN.md successfully
 Resume file: None
 
 ---
