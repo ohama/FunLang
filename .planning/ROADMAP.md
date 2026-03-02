@@ -32,12 +32,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. User writes code with tabs and receives clear error message "tabs not allowed, use spaces"
   5. User makes indentation error and receives clear error message with expected vs actual indent
 
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Add context-aware indentation processing for match expressions with pipe alignment
 - [ ] 01-02-PLAN.md — Enable multi-line function application with indented argument grouping
 - [ ] 01-03-PLAN.md — Improve indentation error messages and add configurable indent width validation
+- [ ] 01-04-PLAN.md — Support module-level declarations with multiple top-level let bindings
 
 ### Phase 2: Algebraic Data Types
 **Goal**: Users can define and use sum types with exhaustive pattern matching
