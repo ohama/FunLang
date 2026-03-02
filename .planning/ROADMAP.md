@@ -50,10 +50,14 @@ Plans:
   3. User writes incomplete pattern match and receives exhaustiveness warning with missing cases
   4. User writes unreachable pattern and receives redundancy warning
   5. User can define recursive types (e.g., `type Tree = Leaf | Node of Tree * int * Tree`)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- TBD during planning
+- [ ] 02-01-PLAN.md — AST and parser foundation for type declarations with F# discriminated union syntax
+- [ ] 02-02-PLAN.md — Type system extension with TData constructor and ConstructorEnv
+- [ ] 02-03-PLAN.md — Constructor pattern type checking and ConstructorEnv integration
+- [ ] 02-04-PLAN.md — Exhaustiveness checking with Maranget usefulness algorithm (TDD)
+- [ ] 02-05-PLAN.md — Runtime evaluation of ADT values with DataValue and integration tests
 
 ### Phase 3: Records
 **Goal**: Users can define and use record types with field access and immutable updates
@@ -122,7 +126,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Indentation-Based Syntax | 4/4 | ✓ Complete | 2026-03-02 |
-| 2. Algebraic Data Types | 0/? | Not started | - |
+| 2. Algebraic Data Types | 0/5 | Not started | - |
 | 3. Records | 0/? | Not started | - |
 | 4. Generalized Algebraic Data Types | 0/? | Not started | - |
 | 5. Module System | 0/? | Not started | - |
