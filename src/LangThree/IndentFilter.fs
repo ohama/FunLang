@@ -32,8 +32,25 @@ let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustS
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
 
+/// Format expected indent levels for error messages
+let formatExpectedIndents (stack: int list) : string =
+    match stack with
+    | [] -> "0"
+    | [single] -> string single
+    | multiple ->
+        let levels = multiple |> List.rev |> List.map string |> String.concat ", "
+        $"one of [{levels}] or a new indent level"
+
+/// Validate indent width matches configured expectations
+let validateIndentWidth (config: IndentConfig) (col: int) : unit =
+    if config.StrictWidth && col > 0 && col % config.IndentWidth <> 0 then
+        raise (IndentationError(0, $"Indentation must be a multiple of {config.IndentWidth}, found {col}"))
+
 /// Process a NEWLINE token and generate INDENT/DEDENT as needed
-let processNewline (state: FilterState) (col: int) : FilterState * Parser.token list =
+let processNewline (config: IndentConfig) (state: FilterState) (col: int) : FilterState * Parser.token list =
+    // Validate indent width if configured
+    validateIndentWidth config col
+
     let rec unwind acc stack =
         match stack with
         | [] ->
@@ -51,8 +68,9 @@ let processNewline (state: FilterState) (col: int) : FilterState * Parser.token 
         | _ ->
             // col > top but we've been unwinding (emitted DEDENTs)
             // This means col doesn't match any level in the stack
+            let expected = formatExpectedIndents state.IndentStack
             raise (IndentationError(state.LineNum,
-                $"Invalid indentation: column {col} doesn't match any level in stack"))
+                $"Invalid indentation at line {state.LineNum}, column {col}. Expected {expected}"))
 
     let (tokens, newStack) = unwind [] state.IndentStack
     ({ state with IndentStack = newStack }, tokens)
@@ -71,7 +89,7 @@ let isAtom (token: Parser.token) : bool =
     | _ -> false
 
 /// Process NEWLINE with context awareness for special indentation rules
-let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser.token option) : FilterState * Parser.token list =
+let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: int) (nextToken: Parser.token option) : FilterState * Parser.token list =
     // If we just saw MATCH, enter match context with current indent level BEFORE processing
     let stateWithMatchContext =
         if state.JustSawMatch then
@@ -100,7 +118,7 @@ let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser
         | InFunctionApp baseCol :: rest when col <= baseCol ->
             // Exiting function app - emit DEDENT
             let stateAfterExit = { stateWithMatchContext with Context = rest }
-            let (newState, tokens) = processNewline stateAfterExit col
+            let (newState, tokens) = processNewline config stateAfterExit col
             (newState, Parser.DEDENT :: tokens)
         | _ when enteringFunctionApp ->
             // Entering multi-line function application
@@ -112,7 +130,7 @@ let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser
             (stateWithMatchContext, [])
         | _ ->
             // Process normal indentation
-            let (newState, tokens) = processNewline stateWithMatchContext col
+            let (newState, tokens) = processNewline config stateWithMatchContext col
             // Update context based on DEDENTs (pop match contexts if dedented below them)
             let updatedState =
                 if List.contains Parser.DEDENT tokens then
@@ -133,7 +151,7 @@ let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser
         // Validate pipe alignment with match base column
         if col <> baseCol then
             raise (IndentationError(stateAfterIndent.LineNum,
-                $"Match pipe must align with 'match' keyword at column {baseCol}, found at column {col}"))
+                $"Match pipe at line {stateAfterIndent.LineNum}, column {col} must align with 'match' keyword at column {baseCol}"))
         // Pipe aligns correctly, don't emit the indent tokens (pipe doesn't change level)
         (stateAfterIndent, [])
     | _ ->
@@ -175,14 +193,14 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                     |> List.skip (index + 1)
                     |> List.tryFind (fun t -> match t with Parser.NEWLINE _ -> false | _ -> true)
 
-                let (newState, emitted) = processNewlineWithContext state col nextToken
+                let (newState, emitted) = processNewlineWithContext config state col nextToken
                 state <- { newState with LineNum = state.LineNum + 1 }
                 yield! emitted
 
             | Parser.EOF ->
                 // Emit DEDENTs for all open indents before EOF
                 while state.IndentStack.Length > 1 do
-                    let (newState, _) = processNewline state 0
+                    let (newState, _) = processNewline config state 0
                     state <- newState
                     yield Parser.DEDENT
                 yield Parser.EOF
