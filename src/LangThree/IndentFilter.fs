@@ -11,14 +11,21 @@ type IndentConfig = {
 /// Default configuration: 4 spaces, not strict
 let defaultConfig = { IndentWidth = 4; StrictWidth = false }
 
+/// Syntax context for tracking multi-line constructs
+type SyntaxContext =
+    | TopLevel
+    | InMatch of baseColumn: int        // Match expression with pipe alignment
+
 /// State maintained during filtering
 type FilterState = {
-    IndentStack: int list  // Stack of indent levels, starts with [0]
-    LineNum: int           // Current line number for errors
+    IndentStack: int list       // Stack of indent levels, starts with [0]
+    LineNum: int                // Current line number for errors
+    Context: SyntaxContext list // Stack of syntax contexts for nesting
+    JustSawMatch: bool          // Flag: did we just see MATCH token?
 }
 
 /// Initial state
-let initialState = { IndentStack = [0]; LineNum = 1 }
+let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false }
 
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
@@ -48,15 +55,58 @@ let processNewline (state: FilterState) (col: int) : FilterState * Parser.token 
     let (tokens, newStack) = unwind [] state.IndentStack
     ({ state with IndentStack = newStack }, tokens)
 
+/// Process NEWLINE with context awareness for special indentation rules
+let processNewlineWithContext (state: FilterState) (col: int) (nextToken: Parser.token option) : FilterState * Parser.token list =
+    // Check if we're in a match context and the next token is a pipe
+    match state.Context with
+    | InMatch baseCol :: _ when nextToken = Some Parser.PIPE ->
+        // Validate pipe alignment with match base column
+        if col <> baseCol then
+            raise (IndentationError(state.LineNum,
+                $"Match pipe must align with 'match' keyword at column {baseCol}, found at column {col}"))
+        // Pipe aligns correctly, don't change indent stack
+        (state, [])
+    | _ ->
+        // Not in match context or not a pipe, use normal processing
+        let (newState, tokens) = processNewline state col
+        // If we just saw MATCH, enter match context with the current indent level
+        let finalState =
+            if newState.JustSawMatch then
+                { newState with Context = InMatch state.IndentStack.Head :: newState.Context; JustSawMatch = false }
+            else
+                newState
+        (finalState, tokens)
+
+/// Update context stack based on DEDENTs
+let updateContextOnDedent (state: FilterState) : FilterState =
+    match state.Context with
+    | InMatch baseCol :: rest ->
+        // If current indent level is at or below match base, exit context
+        if state.IndentStack.Head <= baseCol then
+            { state with Context = rest }
+        else
+            state
+    | _ -> state
+
 /// Filter a token stream, converting NEWLINE(col) to INDENT/DEDENT
 let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq =
     seq {
         let mutable state = initialState
+        let tokenList = tokens |> Seq.toList
+        let mutable index = 0
 
-        for token in tokens do
+        while index < tokenList.Length do
+            let token = tokenList.[index]
+
             match token with
             | Parser.NEWLINE col ->
-                let (newState, emitted) = processNewline state col
+                // Look ahead to next non-NEWLINE token
+                let nextToken =
+                    tokenList
+                    |> List.skip (index + 1)
+                    |> List.tryFind (fun t -> match t with Parser.NEWLINE _ -> false | _ -> true)
+
+                let (newState, emitted) = processNewlineWithContext state col nextToken
                 state <- { newState with LineNum = state.LineNum + 1 }
                 yield! emitted
 
@@ -68,6 +118,18 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                     yield Parser.DEDENT
                 yield Parser.EOF
 
+            | Parser.MATCH ->
+                // Mark that we just saw MATCH, will enter context on next NEWLINE
+                state <- { state with JustSawMatch = true }
+                yield token
+
+            | Parser.DEDENT ->
+                // Update context when dedenting
+                state <- updateContextOnDedent state
+                yield token
+
             | other ->
                 yield other
+
+            index <- index + 1
     }
