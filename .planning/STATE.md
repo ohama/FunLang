@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 1 of 6 (Indentation-Based Syntax)
-Plan: 2 of ? in current phase
+Plan: 3 of ? in current phase
 Status: In progress
-Last activity: 2026-03-02 — Completed 01-02-PLAN.md (Multi-line Function Application)
+Last activity: 2026-03-02 — Completed 01-03-PLAN.md (Improved Error Messages)
 
-Progress: [██░░░░░░░░] ~10%
+Progress: [██░░░░░░░░] ~15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 11.3 min
-- Total execution time: 0.57 hours
+- Total plans completed: 4
+- Average duration: 9.3 min
+- Total execution time: 0.63 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 | 3 | 34 min | 11.3 min |
+| 01 | 4 | 37 min | 9.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min)
-- Trend: Consistent velocity ~11 min/plan
+- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min)
+- Trend: Improving velocity, simple plan executed efficiently
 
 *Updated after each plan completion*
 
@@ -61,6 +61,12 @@ Recent decisions affecting current work:
 - Function declarations desugar to nested lambdas (let f x y = e → let f = fun x -> fun y -> e)
 - IndentFilter removes same-level NEWLINEs - rely on token boundaries in grammar
 
+**From 01-03 (Improved Error Messages):**
+- formatExpectedIndents shows all valid indent levels from stack plus "or a new indent level" hint
+- validateIndentWidth enforces multiples only when StrictWidth=true (strict mode for style guides, lenient for development)
+- EOF handling must emit all DEDENTs returned by processNewline in a single call (not one per loop iteration)
+- Error message format: context-specific description with line number, actual column, and expected values
+
 ### Pending Todos
 
 None yet.
@@ -84,10 +90,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-02 (01-02-PLAN execution)
-Stopped at: Completed 01-02-PLAN.md successfully
+Last session: 2026-03-02 (01-03-PLAN execution)
+Stopped at: Completed 01-03-PLAN.md successfully
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-02 08:53 UTC*
+*Last updated: 2026-03-02 08:59 UTC*
