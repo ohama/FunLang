@@ -107,14 +107,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INDENT-01 | Phase 1 | Pending |
-| INDENT-02 | Phase 1 | Pending |
-| INDENT-03 | Phase 1 | Pending |
-| INDENT-04 | Phase 1 | Pending |
-| INDENT-05 | Phase 1 | Pending |
-| INDENT-06 | Phase 1 | Pending |
-| INDENT-07 | Phase 1 | Pending |
-| INDENT-08 | Phase 1 | Pending |
+| INDENT-01 | Phase 1 | Complete |
+| INDENT-02 | Phase 1 | Complete |
+| INDENT-03 | Phase 1 | Complete |
+| INDENT-04 | Phase 1 | Complete |
+| INDENT-05 | Phase 1 | Complete |
+| INDENT-06 | Phase 1 | Complete |
+| INDENT-07 | Phase 1 | Complete |
+| INDENT-08 | Phase 1 | Complete |
 | ADT-01 | Phase 2 | Pending |
 | ADT-02 | Phase 2 | Pending |
 | ADT-03 | Phase 2 | Pending |
