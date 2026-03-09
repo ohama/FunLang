@@ -8,6 +8,20 @@ open Diagnostic
 open Infer  // Reuse freshVar, instantiate, generalize
 
 // ============================================================================
+// GADT Detection
+// ============================================================================
+
+/// Detect if a match involves GADT constructors
+let isGadtMatch (ctorEnv: ConstructorEnv) (clauses: MatchClause list) : bool =
+    clauses |> List.exists (fun (pat, _) ->
+        match pat with
+        | ConstructorPat(name, _, _) ->
+            match Map.tryFind name ctorEnv with
+            | Some info -> info.IsGadt
+            | None -> false
+        | _ -> false)
+
+// ============================================================================
 // Bidirectional Type Checking
 // ============================================================================
 // Core algorithm with synthesis (⇒) and checking (⇐) modes
@@ -257,6 +271,17 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     // === Match expression ===
     | Match (scrutinee, clauses, span) ->
+        // GADT matches require type annotation (must go through check mode)
+        if isGadtMatch ctorEnv clauses then
+            let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
+            let scrutTyStr = formatType (apply s1 scrutTy)
+            raise (TypeException {
+                Kind = GadtAnnotationRequired scrutTyStr
+                Span = span
+                Term = Some expr
+                ContextStack = ctx
+                Trace = []
+            })
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
         let folder (s, idx) (pat, expr) =
