@@ -170,6 +170,7 @@ PatternList:
 
 Pattern:
     | LPAREN PatternList RPAREN   { TuplePat($2, ruleSpan parseState 1 3) }
+    | LPAREN Pattern RPAREN       { $2 }   // Parenthesized pattern (e.g., Some (Some x))
     | IDENT                       {
         // Uppercase = constructor (e.g., None, True), lowercase = variable
         if System.Char.IsUpper($1.[0]) then

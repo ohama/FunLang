@@ -340,6 +340,44 @@ let integrationTests = testList "Integration" [
         | other -> failtest (sprintf "Cons type mismatch: %A" other)
     }
 
+    // Phase 2 (ADT-03): Constructor pattern type checking tests
+    // Helper to parse and type check a module
+    let parseAndTypeCheck (input: string) =
+        let m = parseModule input
+        TypeCheck.typeCheckModule m
+
+    test "testMatchOnSimpleADT" {
+        let input = "type Color = Red | Green | Blue\n\nlet toInt c =\n    match c with\n    | Red -> 1\n    | Green -> 2\n    | Blue -> 3\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok _ -> ()
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testMatchOnParametricADT" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet getOrZero opt =\n    match opt with\n    | None -> 0\n    | Some x -> x\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok _ -> ()
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testMatchWithNestedConstructors" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet unwrapTwice opt =\n    match opt with\n    | None -> 0\n    | Some (Some x) -> x\n    | Some None -> 0\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok _ -> ()
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testConstructorArityMismatch" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet bad opt =\n    match opt with\n    | None x -> 1\n    | Some -> 0\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Error _ -> ()  // Should fail with arity mismatch
+        | Ok _ -> failtest "Expected type error for arity mismatch"
+    }
+
     test "testMixedSingleAndMultiLine" {
         let input = "let f = fun x -> fun y -> fun z -> x + y + z\nlet result = f 1\n    2\n    3\n"
         let result = parseModule input

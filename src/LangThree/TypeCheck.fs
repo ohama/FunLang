@@ -5,6 +5,7 @@ open Unify
 open Infer
 open Bidir
 open Ast
+open Elaborate
 open Diagnostic
 
 /// Initial type environment with Prelude function type schemes
@@ -63,6 +64,41 @@ let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic> =
     try
         let ty = synthTop initialTypeEnv expr
         Ok(ty)
+    with
+    | TypeException err ->
+        Error(typeErrorToDiagnostic err)
+
+/// Type check a module: build ConstructorEnv from type declarations,
+/// then type check all let declarations with constructor environment
+/// Returns Ok(unit) on success, Error(Diagnostic) on type error
+let typeCheckModule (m: Module) : Result<unit, Diagnostic> =
+    try
+        match m with
+        | EmptyModule _ -> Ok ()
+        | Module (decls, _) ->
+            // Build constructor environment from type declarations
+            let ctorEnv =
+                decls
+                |> List.choose (function
+                    | Decl.TypeDecl td -> Some td
+                    | _ -> None)
+                |> List.map elaborateTypeDecl
+                |> List.fold (fun acc map ->
+                    Map.fold (fun acc' k v -> Map.add k v acc') acc map) Map.empty
+
+            // Type check let declarations sequentially, accumulating type environment
+            let _finalEnv =
+                decls
+                |> List.choose (function
+                    | LetDecl(n, e, _) -> Some(n, e)
+                    | _ -> None)
+                |> List.fold (fun (env: TypeEnv) (name, body) ->
+                    let s, ty = Bidir.synth ctorEnv [] env body
+                    let ty' = apply s ty
+                    let scheme = generalize (applyEnv s env) ty'
+                    Map.add name scheme env) initialTypeEnv
+
+            Ok ()
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
