@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 6 (Generalized Algebraic Data Types)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 04-01-PLAN.md (GADT foundation)
+Last activity: 2026-03-09 -- Completed 04-02-PLAN.md (GADT elaboration)
 
-Progress: [██████████░░░░░░░░░░] 50% (3/6 phases + 1/5 plans in phase 4)
+Progress: [██████████░░░░░░░░░░] 53% (3/6 phases + 2/5 plans in phase 4)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 4.9 min
-- Total execution time: 1.15 hours
+- Total plans completed: 15
+- Average duration: 4.8 min
+- Total execution time: 1.22 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [██████████░░░░░░░░░░] 50% (3/
 | 01 | 4 | 37 min | 9.3 min |
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
-| 04 | 1 | 3 min | 3.0 min |
+| 04 | 2 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-05 (2min), 03-06 (2min), 03-07 (4min), 04-01 (3min)
-- Trend: Consistent ~3min average for data structure and parser plans
+- Last 5 plans: 03-06 (2min), 03-07 (4min), 04-01 (3min), 04-02 (4min)
+- Trend: Consistent ~3-4min average for type system elaboration plans
 
 *Updated after each plan completion*
 
@@ -122,6 +122,11 @@ Recent decisions affecting current work:
 - Existential vars = arg type vars minus result type vars
 - GADT error codes use E04xx range (E0401-E0403)
 
+**From 04-02 (GADT Elaboration):**
+- Constructor-local type vars get fresh indices via freshTypeVarIndex, extending paramMap per-constructor
+- IsGadt sweep: if any constructor uses GADT syntax, ALL constructors marked IsGadt=true
+- inferTypeFromPatterns builds generic type from TData name for GADT constructors (exhaustiveness)
+
 ### Pending Todos
 
 None yet.
@@ -145,10 +150,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 4 started)
-Stopped at: Completed 04-01-PLAN.md (GADT foundation)
+Last session: 2026-03-09 (Phase 4 in progress)
+Stopped at: Completed 04-02-PLAN.md (GADT elaboration)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 06:51 UTC*
+*Last updated: 2026-03-09 06:57 UTC*
