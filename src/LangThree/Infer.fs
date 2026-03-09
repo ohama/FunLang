@@ -83,6 +83,16 @@ let rec inferPattern (pat: Pattern): TypeEnv * Type =
     | ConstPat (BoolConst _, _) ->
         (Map.empty, TBool)
 
+    // Phase 2 (ADT): Constructor pattern
+    | ConstructorPat (_, argPat, _) ->
+        match argPat with
+        | Some pat ->
+            let argEnv, _argTy = inferPattern pat
+            // Return fresh type var; actual type resolution happens via ConstructorEnv (future)
+            (argEnv, freshVar())
+        | None ->
+            (Map.empty, freshVar())
+
 /// <summary>
 /// DEPRECATED: Use Bidir.synth instead.
 /// Context-aware version of Algorithm W inference.
@@ -265,6 +275,16 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
             (compose s''' (compose s'' (compose s' s)), idx + 1)
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
+
+    // === Constructor (Phase 2 ADT) ===
+    | Constructor (_, argOpt, _) ->
+        match argOpt with
+        | Some arg ->
+            let s, _argTy = inferWithContext ctx env arg
+            // Return fresh type var; actual type resolution via ConstructorEnv (future)
+            (s, freshVar())
+        | None ->
+            (empty, freshVar())
 
     // === LetPat (INFER-14) ===
     | LetPat (pat, value, body, span) ->

@@ -56,6 +56,9 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPE_STRING -> "TYPE_STRING"
     | Parser.TYPE_LIST -> "TYPE_LIST"
     | Parser.TYPE_VAR s -> sprintf "TYPE_VAR(%s)" s
+    | Parser.INDENT -> "INDENT"
+    | Parser.DEDENT -> "DEDENT"
+    | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n
     | Parser.EOF -> "EOF"
 
 /// Format a list of tokens as a space-separated string
@@ -118,6 +121,8 @@ let rec formatAst (expr: Ast.Expr) : string =
             |> List.map (fun (pat, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
             |> String.concat "; "
         sprintf "Match (%s, [%s])" (formatAst scrut) formattedClauses
+    | Ast.Constructor (name, None, _) -> sprintf "Constructor \"%s\"" name
+    | Ast.Constructor (name, Some arg, _) -> sprintf "Constructor (\"%s\", %s)" name (formatAst arg)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =
@@ -146,3 +151,5 @@ and formatPattern (pat: Ast.Pattern) : string =
         | Ast.BoolConst b -> sprintf "ConstPat (BoolConst %b)" b
     | Ast.EmptyListPat _ -> "EmptyListPat"
     | Ast.ConsPat (h, t, _) -> sprintf "ConsPat (%s, %s)" (formatPattern h) (formatPattern t)
+    | Ast.ConstructorPat (name, None, _) -> sprintf "ConstructorPat \"%s\"" name
+    | Ast.ConstructorPat (name, Some arg, _) -> sprintf "ConstructorPat (\"%s\", %s)" name (formatPattern arg)
