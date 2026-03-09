@@ -8,6 +8,7 @@
     <Compile Include="ExhaustiveTests.fs" />
     <Compile Include="IntegrationTests.fs" />
     <Compile Include="RecordTests.fs" />
+    <Compile Include="GadtTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
