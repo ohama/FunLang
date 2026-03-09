@@ -56,6 +56,10 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPE_STRING -> "TYPE_STRING"
     | Parser.TYPE_LIST -> "TYPE_LIST"
     | Parser.TYPE_VAR s -> sprintf "TYPE_VAR(%s)" s
+    // Phase 2 (ADT-01): Type declaration tokens
+    | Parser.TYPE -> "TYPE"
+    | Parser.OF -> "OF"
+    | Parser.AND_KW -> "AND_KW"
     | Parser.EOF -> "EOF"
 
 /// Format a list of tokens as a space-separated string
@@ -131,6 +135,7 @@ and formatTypeExpr (te: Ast.TypeExpr) : string =
         let formatted = ts |> List.map formatTypeExpr |> String.concat ", "
         sprintf "TETuple [%s]" formatted
     | Ast.TEVar name -> sprintf "TEVar \"%s\"" name
+    | Ast.TEName name -> sprintf "TEName \"%s\"" name
 
 /// Format Pattern as string
 and formatPattern (pat: Ast.Pattern) : string =

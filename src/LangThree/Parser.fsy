@@ -42,6 +42,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token COLON
 %token TYPE_INT TYPE_BOOL TYPE_STRING TYPE_LIST
 %token <string> TYPE_VAR
+// Phase 2 (ADT-01): Type declaration tokens
+%token TYPE OF AND_KW
 // Indentation tokens
 %token <int> NEWLINE   // NEWLINE with column position
 %token INDENT          // Indentation increase
@@ -217,8 +219,35 @@ AtomicType:
     | TYPE_BOOL                     { TEBool }
     | TYPE_STRING                   { TEString }
     | TYPE_VAR                      { TEVar($1) }
+    | IDENT                         { TEName($1) }  // Phase 2 (ADT-01): Named types (Tree, Option, etc.)
     | AtomicType TYPE_LIST          { TEList($1) }
     | LPAREN TypeExpr RPAREN        { $2 }
+
+// Phase 2 (ADT-01): Type declaration grammar rules
+// Supports: type T = C1 | C2 of ty
+// Supports: type T 'a = C1 | C2 of 'a
+// Supports: type T = ... and U = ... (mutually recursive)
+TypeDeclaration:
+    | TYPE IDENT TypeParams EQUALS Constructors TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $5, ruleSpan parseState 1 5) :: $6 }
+    | TYPE IDENT TypeParams EQUALS PIPE Constructors TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $6, ruleSpan parseState 1 6) :: $7 }
+
+TypeParams:
+    |                          { [] }
+    | TYPE_VAR TypeParams      { $1 :: $2 }
+
+Constructors:
+    | Constructor                       { [$1] }
+    | Constructor PIPE Constructors     { $1 :: $3 }
+
+Constructor:
+    | IDENT                             { Ast.ConstructorDecl($1, None, symSpan parseState 1) }
+    | IDENT OF TypeExpr                 { Ast.ConstructorDecl($1, Some $3, ruleSpan parseState 1 3) }
+
+TypeDeclContinuation:
+    |                                   { [] }
+    | AND_KW TypeDeclaration            { $2 }
 
 // Phase 1 (INDENT-05): Module-level declarations
 // Module: Top-level entry point for multi-declaration files
@@ -231,6 +260,9 @@ parseModule:
 Decls:
     | Decl                          { [$1] }
     | Decl Decls                    { $1 :: $2 }
+    // Phase 2 (ADT-01): Type declarations (possibly mutually recursive)
+    | TypeDeclaration               { List.map Ast.Decl.TypeDecl $1 }
+    | TypeDeclaration Decls         { (List.map Ast.Decl.TypeDecl $1) @ $2 }
 
 // Decl: Single top-level declaration
 // Top-level declarations must be at column 0

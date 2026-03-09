@@ -48,6 +48,10 @@ rule tokenize = parse
     // Phase 3 (v3.0): Pattern matching keywords
     | "match"       { MATCH }
     | "with"        { WITH }
+    // Phase 2 (ADT-01): Type declaration keywords
+    | "type"        { TYPE }
+    | "of"          { OF }
+    | "and"         { AND_KW }
     // v6.0: Type keywords for type annotations
     | "int"         { TYPE_INT }
     | "bool"        { TYPE_BOOL }

@@ -52,6 +52,12 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
             let vars' = Map.add name idx vars
             (TVar idx, vars')
 
+    | TEName _name ->
+        // Named type (e.g., Tree, Option) - will be resolved in Phase 2 type checking
+        // For now, treat as a fresh type variable (placeholder)
+        let idx = freshTypeVarIndex()
+        (TVar idx, vars)
+
 /// Elaborate single type expression with fresh scope
 /// Each call starts with empty type variable environment
 let elaborateTypeExpr (te: TypeExpr): Type =

@@ -122,6 +122,7 @@ and TypeExpr =
     | TEArrow of TypeExpr * TypeExpr      // T1 -> T2 (right-associative)
     | TETuple of TypeExpr list            // T1 * T2 * ... (n >= 2)
     | TEVar of string                     // 'a, 'b (includes apostrophe)
+    | TEName of string                    // Named type: Tree, Option, etc. (Phase 2 ADT-01)
 
 /// Type declaration AST for algebraic data types (discriminated unions)
 /// Phase 2 (ADT-01): F# discriminated union syntax
