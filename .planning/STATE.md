@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-02 — Phase 1 complete (4/4 plans, verified)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-09 — Completed 02-01-PLAN.md (Type Declaration Parsing)
 
-Progress: [██░░░░░░░░] 17%
+Progress: [███░░░░░░░] 21%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 9.3 min
-- Total execution time: 0.63 hours
+- Total execution time: 0.78 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
+| 02 | 1 | 9 min | 9 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min)
-- Trend: Improving velocity, simple plan executed efficiently
+- Last 5 plans: 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-01 (9min)
+- Trend: Consistent velocity around 9 min/plan
 
 *Updated after each plan completion*
 
@@ -67,6 +68,12 @@ Recent decisions affecting current work:
 - EOF handling must emit all DEDENTs returned by processNewline in a single call (not one per loop iteration)
 - Error message format: context-specific description with line number, actual column, and expected values
 
+**From 02-01 (Type Declaration Parsing):**
+- AND_KW token (not AND) avoids conflict with existing && operator token
+- TypeDeclContinuation uses IDENT directly (F# syntax: `and U = ...` not `and type U = ...`)
+- TEName variant added to TypeExpr for named type references (Tree, Option)
+- Type declarations support both inline and INDENT/DEDENT indented constructor lists
+
 ### Pending Todos
 
 None yet.
@@ -80,6 +87,9 @@ None yet.
 **From 01-04:**
 - **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
+**From 02-01:**
+- TEName elaboration is a placeholder (fresh TVar) - needs proper named type resolution in 02-02/02-03
+
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
 - Rigid type variable scope checking needed
@@ -90,10 +100,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-02 (Phase 1 execution complete)
-Stopped at: Phase 1 verified, ready for Phase 2
+Last session: 2026-03-09 00:51 UTC
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-02 08:59 UTC*
+*Last updated: 2026-03-09 00:51 UTC*
