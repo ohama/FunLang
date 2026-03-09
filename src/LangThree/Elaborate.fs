@@ -58,6 +58,14 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
         let idx = freshTypeVarIndex()
         (TVar idx, vars)
 
+    | TEData (name, args) ->
+        // Parameterized named type (e.g., int expr) - Phase 4 GADT
+        let folder (acc, env) t =
+            let (ty, env') = elaborateWithVars env t
+            (ty :: acc, env')
+        let (revTypes, finalVars) = List.fold folder ([], vars) args
+        (TData(name, List.rev revTypes), finalVars)
+
 /// Elaborate single type expression with fresh scope
 /// Each call starts with empty type variable environment
 let elaborateTypeExpr (te: TypeExpr): Type =
@@ -81,6 +89,8 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
     | Ast.TEList te -> TList (substTypeExprWithMap paramMap te)
     | Ast.TEArrow (t1, t2) -> TArrow (substTypeExprWithMap paramMap t1, substTypeExprWithMap paramMap t2)
     | Ast.TETuple ts -> TTuple (List.map (substTypeExprWithMap paramMap) ts)
+    | Ast.TEData(name, args) ->
+        TData(name, List.map (substTypeExprWithMap paramMap) args)
 
 /// Elaborate a type declaration into ConstructorEnv entries
 /// Example: type Option 'a = None | Some of 'a
@@ -102,16 +112,41 @@ let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.Type
 
     // Elaborate each constructor
     constructors
-    |> List.map (fun (Ast.ConstructorDecl(ctorName, dataTypeOpt, _)) ->
-        let argType = dataTypeOpt |> Option.map substTypeExpr
-        let info = {
-            TypeParams = typeParamVars
-            ArgType = argType
-            ResultType = resultType
-            IsGadt = false
-            ExistentialVars = []
-        }
-        (ctorName, info))
+    |> List.map (fun ctor ->
+        match ctor with
+        | Ast.ConstructorDecl(ctorName, dataTypeOpt, _) ->
+            let argType = dataTypeOpt |> Option.map substTypeExpr
+            let info = {
+                TypeParams = typeParamVars
+                ArgType = argType
+                ResultType = resultType
+                IsGadt = false
+                ExistentialVars = []
+            }
+            (ctorName, info)
+        | Ast.GadtConstructorDecl(ctorName, argTypes, retType, _) ->
+            let argType =
+                match argTypes with
+                | [] -> None
+                | [t] -> Some (substTypeExpr t)
+                | ts -> Some (TTuple (List.map substTypeExpr ts))
+            let gadtResultType = substTypeExpr retType
+            // Determine existential vars: type params that appear in args but not in result
+            let resultVars = Type.freeVars gadtResultType
+            let argVars =
+                match argType with
+                | Some t -> Type.freeVars t
+                | None -> Set.empty
+            let existentials = Set.difference argVars resultVars |> Set.toList
+            let isGadt = gadtResultType <> resultType
+            let info = {
+                TypeParams = typeParamVars
+                ArgType = argType
+                ResultType = gadtResultType
+                IsGadt = isGadt
+                ExistentialVars = existentials
+            }
+            (ctorName, info))
     |> Map.ofList
 
 /// Elaborate a record type declaration into RecordTypeInfo

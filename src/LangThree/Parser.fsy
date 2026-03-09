@@ -260,6 +260,7 @@ AtomicType:
     | TYPE_VAR                      { TEVar($1) }
     | IDENT                         { TEName($1) }  // Phase 2 (ADT-01): Named types (Tree, Option, etc.)
     | AtomicType TYPE_LIST          { TEList($1) }
+    | AtomicType IDENT              { Ast.TEData($2, [$1]) }  // Phase 4 (GADT): Type application (e.g., int expr)
     | LPAREN TypeExpr RPAREN        { $2 }
 
 // Phase 2 (ADT-01): Type declaration grammar rules
@@ -291,6 +292,16 @@ Constructors:
 Constructor:
     | IDENT                             { Ast.ConstructorDecl($1, None, symSpan parseState 1) }
     | IDENT OF TypeExpr                 { Ast.ConstructorDecl($1, Some $3, ruleSpan parseState 1 3) }
+    // Phase 4 (GADT): GADT constructor syntax - Name : ArgTypes -> ReturnType
+    | IDENT COLON TypeExpr
+        { let rec splitGadt (te: Ast.TypeExpr) =
+              match te with
+              | Ast.TEArrow(args, ret) ->
+                  let argList = match args with Ast.TETuple ts -> ts | t -> [t]
+                  (argList, ret)
+              | t -> ([], t)
+          let (args, ret) = splitGadt $3
+          Ast.GadtConstructorDecl($1, args, ret, ruleSpan parseState 1 3) }
 
 TypeDeclContinuation:
     |                                   { [] }

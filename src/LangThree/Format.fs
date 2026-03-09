@@ -163,6 +163,9 @@ and formatTypeExpr (te: Ast.TypeExpr) : string =
         sprintf "TETuple [%s]" formatted
     | Ast.TEVar name -> sprintf "TEVar \"%s\"" name
     | Ast.TEName name -> sprintf "TEName \"%s\"" name
+    | Ast.TEData (name, args) ->
+        let formatted = args |> List.map formatTypeExpr |> String.concat ", "
+        sprintf "TEData (\"%s\", [%s])" name formatted
 
 /// Format Pattern as string
 and formatPattern (pat: Ast.Pattern) : string =
