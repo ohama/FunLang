@@ -13,7 +13,7 @@ LangThree transforms FunLang v6.0 into a practical ML-style functional language 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Indentation-Based Syntax** - F# style offside rule parsing foundation
-- [ ] **Phase 2: Algebraic Data Types** - Sum types with pattern matching and type parameters
+- [x] **Phase 2: Algebraic Data Types** - Sum types with pattern matching and type parameters
 - [ ] **Phase 3: Records** - Named product types with field access and copy-update syntax
 - [ ] **Phase 4: Generalized Algebraic Data Types** - Type refinement and indexed type families
 - [ ] **Phase 5: Module System** - F# style code organization with namespaces
@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Indentation-Based Syntax | 4/4 | ✓ Complete | 2026-03-02 |
-| 2. Algebraic Data Types | 5/6 | Gap closure | - |
+| 2. Algebraic Data Types | 6/6 | ✓ Complete | 2026-03-09 |
 | 3. Records | 0/? | Not started | - |
 | 4. Generalized Algebraic Data Types | 0/? | Not started | - |
 | 5. Module System | 0/? | Not started | - |

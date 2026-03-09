@@ -20,13 +20,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Algebraic Data Types
 
-- [ ] **ADT-01**: Sum types with multiple constructors (`type Option = None | Some of 'a`)
-- [ ] **ADT-02**: Constructor syntax & pattern matching
-- [ ] **ADT-03**: Exhaustiveness checking (missing pattern 경고)
-- [ ] **ADT-04**: Redundancy checking (unreachable pattern 경고)
-- [ ] **ADT-05**: Type parameters (`'a`, `'b` 등)
-- [ ] **ADT-06**: Recursive type definitions (자기 참조)
-- [ ] **ADT-07**: Mutually recursive types (`type ... and ...`)
+- [x] **ADT-01**: Sum types with multiple constructors (`type Option = None | Some of 'a`)
+- [x] **ADT-02**: Constructor syntax & pattern matching
+- [x] **ADT-03**: Exhaustiveness checking (missing pattern 경고)
+- [x] **ADT-04**: Redundancy checking (unreachable pattern 경고)
+- [x] **ADT-05**: Type parameters (`'a`, `'b` 등)
+- [x] **ADT-06**: Recursive type definitions (자기 참조)
+- [x] **ADT-07**: Mutually recursive types (`type ... and ...`)
 
 ### Generalized Algebraic Data Types
 
@@ -115,13 +115,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INDENT-06 | Phase 1 | Complete |
 | INDENT-07 | Phase 1 | Complete |
 | INDENT-08 | Phase 1 | Complete |
-| ADT-01 | Phase 2 | Pending |
-| ADT-02 | Phase 2 | Pending |
-| ADT-03 | Phase 2 | Pending |
-| ADT-04 | Phase 2 | Pending |
-| ADT-05 | Phase 2 | Pending |
-| ADT-06 | Phase 2 | Pending |
-| ADT-07 | Phase 2 | Pending |
+| ADT-01 | Phase 2 | Complete |
+| ADT-02 | Phase 2 | Complete |
+| ADT-03 | Phase 2 | Complete |
+| ADT-04 | Phase 2 | Complete |
+| ADT-05 | Phase 2 | Complete |
+| ADT-06 | Phase 2 | Complete |
+| ADT-07 | Phase 2 | Complete |
 | GADT-01 | Phase 4 | Pending |
 | GADT-02 | Phase 4 | Pending |
 | GADT-03 | Phase 4 | Pending |
