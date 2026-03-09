@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 6 of 7 (Exceptions)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 06-02-PLAN.md
+Last activity: 2026-03-09 -- Completed 06-03-PLAN.md
 
-Progress: [██████████████████░░] 78% (26/? plans complete)
+Progress: [███████████████████░] 82% (27/? plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26
+- Total plans completed: 27
 - Average duration: 4.2 min
-- Total execution time: 1.96 hours
+- Total execution time: 2.04 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [██████████████████░░] 78% (26
 | 04 | 5 | 16 min | 3.2 min |
 | 05 | 5 | 25 min | 5.0 min |
 
-| 06 | 2 | 10 min | 5.0 min |
+| 06 | 3 | 15 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-03 (4min), 05-04 (5min), 05-05 (12min), 06-01 (5min), 06-02 (5min)
-- Trend: Exception type checking completed, fixed 06-01 test gap
+- Last 5 plans: 05-04 (5min), 05-05 (12min), 06-01 (5min), 06-02 (5min), 06-03 (5min)
+- Trend: Exception runtime complete, one plan remaining (integration tests)
 
 *Updated after each plan completion*
 
@@ -182,6 +182,11 @@ Recent decisions affecting current work:
 - ExceptionDecl uses same singleton/continuation pattern as OpenDecl in parser
 - raise uses Atom (not AppExpr) to avoid ambiguity with constructor application
 
+**From 06-03 (Exception Runtime):**
+- LangThreeException carries Value directly (DataValue at runtime), reuses matchPattern/evalMatchClauses
+- When guards evaluated in extended env after pattern bindings; skip clause if not BoolValue true
+- InTry indent context mirrors InMatch exactly (pipe alignment, DEDENT popping, JustSawTry flag)
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -214,7 +219,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 06-02-PLAN.md (Exception Type Checking)
+Stopped at: Completed 06-03-PLAN.md (Exception Runtime Evaluation)
 Resume file: None
 
 ---
