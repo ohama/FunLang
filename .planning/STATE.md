@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-02 — Phase 1 complete (4/4 plans, verified)
+Plan: 4 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-09 — Completed 02-04-PLAN.md (exhaustiveness checking)
 
-Progress: [██░░░░░░░░] 17%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 9.3 min
-- Total execution time: 0.63 hours
+- Total plans completed: 5
+- Average duration: 8.0 min
+- Total execution time: 0.67 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
+| 02 | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min)
-- Trend: Improving velocity, simple plan executed efficiently
+- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-04 (3min)
+- Trend: Consistent velocity, TDD plans execute efficiently
 
 *Updated after each plan completion*
 
@@ -67,6 +68,11 @@ Recent decisions affecting current work:
 - EOF handling must emit all DEDENTs returned by processNewline in a single call (not one per loop iteration)
 - Error message format: context-specific description with line number, actual column, and expected values
 
+**From 02-04 (Exhaustiveness Checking):**
+- Self-contained CasePat type decoupled from AST Pattern for independent testing
+- Constructor sets passed explicitly (functional style) rather than global registry
+- Maranget usefulness algorithm with complete/incomplete signature branching
+
 ### Pending Todos
 
 None yet.
@@ -90,10 +96,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-02 (Phase 1 execution complete)
-Stopped at: Phase 1 verified, ready for Phase 2
+Last session: 2026-03-09 (Phase 2 plan 04 complete)
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-02 08:59 UTC*
+*Last updated: 2026-03-09 01:10 UTC*
