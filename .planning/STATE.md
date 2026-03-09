@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 6 in progress - Exceptions.
+**Current focus:** Phase 6 complete - Exceptions. Ready for Phase 7.
 
 ## Current Position
 
 Phase: 6 of 7 (Exceptions)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-09 -- Completed 06-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-03-09 -- Completed 06-04-PLAN.md
 
-Progress: [███████████████████░] 82% (27/? plans complete)
+Progress: [████████████████████] 85% (28/33 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 27
-- Average duration: 4.2 min
-- Total execution time: 2.04 hours
+- Total plans completed: 28
+- Average duration: 4.4 min
+- Total execution time: 2.24 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [███████████████████░] 82% (27
 | 04 | 5 | 16 min | 3.2 min |
 | 05 | 5 | 25 min | 5.0 min |
 
-| 06 | 3 | 15 min | 5.0 min |
+| 06 | 4 | 27 min | 6.8 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-04 (5min), 05-05 (12min), 06-01 (5min), 06-02 (5min), 06-03 (5min)
-- Trend: Exception runtime complete, one plan remaining (integration tests)
+- Last 5 plans: 05-05 (12min), 06-01 (5min), 06-02 (5min), 06-03 (5min), 06-04 (12min)
+- Trend: Phase 6 complete. 4 bugs found and fixed during integration testing.
 
 *Updated after each plan completion*
 
@@ -187,6 +187,12 @@ Recent decisions affecting current work:
 - When guards evaluated in extended env after pattern bindings; skip clause if not BoolValue true
 - InTry indent context mirrors InMatch exactly (pipe alignment, DEDENT popping, JustSawTry flag)
 
+**From 06-04 (Exception Integration Tests):**
+- TExn unification case was missing in Unify.fs (bug fix)
+- InTry context popping uses strict < (not <=) because try body DEDENTs back to try level before pipes
+- Try-with re-raises exception when no handler matches (enables nested try-with)
+- typeCheckDecls fold now threads ctorEnv/recEnv so open directive propagates constructors
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -219,7 +225,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 06-03-PLAN.md (Exception Runtime Evaluation)
+Stopped at: Completed 06-04-PLAN.md (Exception Integration Tests) -- Phase 6 complete
 Resume file: None
 
 ---
