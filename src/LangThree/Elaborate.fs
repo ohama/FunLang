@@ -64,6 +64,24 @@ let elaborateTypeExpr (te: TypeExpr): Type =
     let (ty, _) = elaborateWithVars Map.empty te
     ty
 
+/// Substitute type expressions using a parameter map (shared helper for type/record elaboration)
+/// Maps type variable names to TVar indices and resolves named types
+let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : Type =
+    match te with
+    | Ast.TEVar v ->
+        match Map.tryFind v paramMap with
+        | Some idx -> TVar idx
+        | None -> failwithf "Unbound type parameter: %s" v
+    | Ast.TEName n ->
+        // Named type reference (e.g., Tree in recursive ADT, or other types)
+        TData(n, [])
+    | Ast.TEInt -> TInt
+    | Ast.TEBool -> TBool
+    | Ast.TEString -> TString
+    | Ast.TEList te -> TList (substTypeExprWithMap paramMap te)
+    | Ast.TEArrow (t1, t2) -> TArrow (substTypeExprWithMap paramMap t1, substTypeExprWithMap paramMap t2)
+    | Ast.TETuple ts -> TTuple (List.map (substTypeExprWithMap paramMap) ts)
+
 /// Elaborate a type declaration into ConstructorEnv entries
 /// Example: type Option 'a = None | Some of 'a
 /// Returns: Map with "None" -> {TypeParams=[0]; ArgType=None; ResultType=TData("Option",[TVar 0])}
@@ -80,22 +98,7 @@ let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.Type
     let typeParamVars = typeParams |> List.mapi (fun i _ -> i)
     let resultType = TData(name, List.map TVar typeParamVars)
 
-    // Elaborate a TypeExpr within the context of this type declaration
-    // Uses paramMap for type variables, produces TData for named type references
-    let rec substTypeExpr = function
-        | Ast.TEVar v ->
-            match Map.tryFind v paramMap with
-            | Some idx -> TVar idx
-            | None -> failwithf "Unbound type parameter: %s" v
-        | Ast.TEName n ->
-            // Named type reference (e.g., Tree in recursive ADT, or other types)
-            TData(n, [])
-        | Ast.TEInt -> TInt
-        | Ast.TEBool -> TBool
-        | Ast.TEString -> TString
-        | Ast.TEList te -> TList (substTypeExpr te)
-        | Ast.TEArrow (t1, t2) -> TArrow (substTypeExpr t1, substTypeExpr t2)
-        | Ast.TETuple ts -> TTuple (List.map substTypeExpr ts)
+    let substTypeExpr = substTypeExprWithMap paramMap
 
     // Elaborate each constructor
     constructors
@@ -108,6 +111,25 @@ let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.Type
         }
         (ctorName, info))
     |> Map.ofList
+
+/// Elaborate a record type declaration into RecordTypeInfo
+/// Phase 3 (Records): Maps record fields to typed metadata
+let elaborateRecordDecl (Ast.RecordDecl(name, typeParams, fields, _)) : string * RecordTypeInfo =
+    let paramMap =
+        typeParams
+        |> List.mapi (fun i p ->
+            let varName = if p.StartsWith("'") then p else "'" + p
+            (varName, i))
+        |> Map.ofList
+    let typeParamVars = typeParams |> List.mapi (fun i _ -> i)
+    let resultType = TData(name, List.map TVar typeParamVars)
+    let fieldInfos =
+        fields |> List.mapi (fun idx (Ast.RecordFieldDecl(fname, ftype, isMut, _)) ->
+            { Name = fname
+              FieldType = substTypeExprWithMap paramMap ftype
+              IsMutable = isMut
+              Index = idx })
+    (name, { TypeParams = typeParamVars; Fields = fieldInfos; ResultType = resultType })
 
 /// Elaborate multiple type expressions sharing the same scope
 /// Used for curried function parameters: fun (x: 'a) (y: 'a) -> ...

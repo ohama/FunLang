@@ -21,6 +21,14 @@ type TypeErrorKind =
     | NotAFunction of ty: Type
     | UnboundConstructor of name: string
     | ArityMismatch of constructor: string * expected: int * actual: int
+    // Phase 3 (Records): Record-specific error kinds
+    | UnboundField of recordType: string * fieldName: string
+    | DuplicateFieldName of fieldName: string
+    | MissingFields of recordType: string * missing: string list
+    | ImmutableFieldAssignment of recordType: string * fieldName: string
+    | DuplicateRecordField of fieldName: string * type1: string * type2: string
+    | NotARecord of typeName: string
+    | FieldAccessOnNonRecord of ty: Type
     // Warning kinds (W-prefixed codes)
     | NonExhaustiveMatch of missingPatterns: string list
     | RedundantPattern of index: int
@@ -182,6 +190,42 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0306",
             sprintf "Constructor %s expects %d argument(s) but was given %d" ctor expected actual,
             Some "Check the number of arguments to the constructor"
+
+        | UnboundField (recordType, fieldName) ->
+            Some "E0307",
+            sprintf "Record type %s has no field named '%s'" recordType fieldName,
+            Some "Check the field name matches the record type definition"
+
+        | DuplicateFieldName fieldName ->
+            Some "E0308",
+            sprintf "Duplicate field name '%s' in record expression" fieldName,
+            Some "Each field can only appear once in a record expression"
+
+        | MissingFields (recordType, missing) ->
+            let fieldsStr = missing |> String.concat ", "
+            Some "E0309",
+            sprintf "Record type %s is missing fields: %s" recordType fieldsStr,
+            Some "Provide values for all required fields"
+
+        | ImmutableFieldAssignment (recordType, fieldName) ->
+            Some "E0310",
+            sprintf "Field '%s' of record type %s is immutable and cannot be assigned" fieldName recordType,
+            Some "Mark the field as mutable in the type declaration to allow assignment"
+
+        | DuplicateRecordField (fieldName, type1, type2) ->
+            Some "E0311",
+            sprintf "Field '%s' is defined in both record types %s and %s" fieldName type1 type2,
+            Some "Use explicit type annotation to disambiguate"
+
+        | NotARecord typeName ->
+            Some "E0312",
+            sprintf "'%s' is not a record type" typeName,
+            Some "Only record types support field access and update syntax"
+
+        | FieldAccessOnNonRecord ty ->
+            Some "E0313",
+            sprintf "Cannot access field on non-record type %s" (formatType ty),
+            Some "Field access is only supported on record types"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "

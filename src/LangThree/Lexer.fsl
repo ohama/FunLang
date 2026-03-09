@@ -95,6 +95,11 @@ rule tokenize = parse
     | ']'           { RBRACKET }
     // Phase 3 (v3.0): Pipe for match clauses
     | '|'           { PIPE }
+    // Phase 3 (Records): Record syntax tokens
+    | '{'           { LBRACE }
+    | '}'           { RBRACE }
+    | ';'           { SEMICOLON }
+    | '.'           { DOT }
     | eof           { EOF }                       // End of input
 
 // Block comment handler with nesting support
