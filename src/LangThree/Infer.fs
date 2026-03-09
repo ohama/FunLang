@@ -84,6 +84,12 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
     | ConstPat (BoolConst _, _) ->
         (Map.empty, TBool)
 
+    | RecordPat (fields, _) ->
+        let envTys = fields |> List.map (fun (_, pat) -> inferPattern ctorEnv pat)
+        let env = envTys |> List.map fst |> List.fold (fun acc m -> Map.fold (fun a k v -> Map.add k v a) acc m) Map.empty
+        // Record pattern type is a fresh type var (actual type resolution happens during unification in Match)
+        (env, freshVar())
+
     | ConstructorPat (name, argPatOpt, _) ->
         match Map.tryFind name ctorEnv with
         | None ->

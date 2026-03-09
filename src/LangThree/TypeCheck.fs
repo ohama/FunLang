@@ -121,7 +121,7 @@ let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
                     | LetDecl(n, e, _) -> Some(n, e)
                     | _ -> None)
                 |> List.fold (fun (env: TypeEnv) (name, body) ->
-                    let s, ty = Bidir.synth ctorEnv [] env body
+                    let s, ty = Bidir.synth ctorEnv Map.empty [] env body
                     let ty' = apply s ty
                     let scheme = generalize (applyEnv s env) ty'
                     Map.add name scheme env) initialTypeEnv
