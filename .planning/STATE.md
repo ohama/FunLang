@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 3 complete. Ready for Phase 4 - GADT
+**Current focus:** Phase 4 - GADT (Generalized Algebraic Data Types)
 
 ## Current Position
 
-Phase: 3 of 6 (Records) -- COMPLETE
-Plan: 7 of 7 in current phase
-Status: Phase complete
-Last activity: 2026-03-09 -- Completed 03-07-PLAN.md (mutable field semantics)
+Phase: 4 of 6 (Generalized Algebraic Data Types)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-09 -- Completed 04-01-PLAN.md (GADT foundation)
 
-Progress: [██████████░░░░░░░░░░] 50% (3/6 phases)
+Progress: [██████████░░░░░░░░░░] 50% (3/6 phases + 1/5 plans in phase 4)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 5.1 min
-- Total execution time: 1.1 hours
+- Total plans completed: 14
+- Average duration: 4.9 min
+- Total execution time: 1.15 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [██████████░░░░░░░░░░] 50% (3/
 | 01 | 4 | 37 min | 9.3 min |
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
+| 04 | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (4min), 03-04 (4min), 03-05 (2min), 03-06 (2min), 03-07 (4min)
-- Trend: Record phase plans executing quickly, consistent ~3min average
+- Last 5 plans: 03-05 (2min), 03-06 (2min), 03-07 (4min), 04-01 (3min)
+- Trend: Consistent ~3min average for data structure and parser plans
 
 *Updated after each plan completion*
 
@@ -113,6 +114,14 @@ Recent decisions affecting current work:
 - RecordValue uses Map<string, Value ref> for mutable field support
 - Module-level let for sequencing mutations in tests (no in keyword at module level)
 
+**From 04-01 (GADT Foundation):**
+- GadtConstructorDecl AST node with argTypes list and explicit returnType
+- TEData TypeExpr variant for parameterized named types (int expr) separate from TEName
+- ConstructorInfo extended with IsGadt bool and ExistentialVars int list
+- GADT constructor parsed via splitGadt: single grammar rule to avoid LALR conflicts
+- Existential vars = arg type vars minus result type vars
+- GADT error codes use E04xx range (E0401-E0403)
+
 ### Pending Todos
 
 None yet.
@@ -136,10 +145,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 3 complete)
-Stopped at: Completed 03-07-PLAN.md (Phase 3 Records complete)
+Last session: 2026-03-09 (Phase 4 started)
+Stopped at: Completed 04-01-PLAN.md (GADT foundation)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 06:19 UTC*
+*Last updated: 2026-03-09 06:51 UTC*
