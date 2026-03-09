@@ -127,6 +127,12 @@ Recent decisions affecting current work:
 - IsGadt sweep: if any constructor uses GADT syntax, ALL constructors marked IsGadt=true
 - inferTypeFromPatterns builds generic type from TData name for GADT constructors (exhaustiveness)
 
+**From 04-03 (GADT Type Refinement):**
+- Local constraints from unifying scrutinee with constructor return type stay branch-local (not composed into global subst)
+- Each branch gets independent local constraints -- no cross-branch leakage
+- Body substitution propagates (may resolve globally-scoped type variables)
+- isGadtMatch guard dispatches GADT vs regular ADT match handling
+
 **From 04-04 (GADT Exhaustiveness Filtering):**
 - Two-phase type inference: generic type for constructor lookup, specific type for GADT filtering
 - filterPossibleConstructors: structural type arg comparison, conservative when type variables present
@@ -156,7 +162,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09 (Phase 4 in progress)
-Stopped at: Completed 04-04-PLAN.md (GADT exhaustiveness filtering)
+Stopped at: Completed 04-03-PLAN.md (GADT type refinement)
 Resume file: None
 
 ---
