@@ -330,10 +330,16 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 3 (Records) + Phase 5 (Modules): Field access / qualified access
     | FieldAccess (expr, fieldName, _) ->
-        match expr with
-        | Var (name, _) when Map.containsKey name moduleEnv ->
+        // Helper to extract module name from Var or Constructor (uppercase idents parsed as Constructor)
+        let tryGetModuleName e =
+            match e with
+            | Var (name, _) when Map.containsKey name moduleEnv -> Some name
+            | Constructor (name, None, _) when Map.containsKey name moduleEnv -> Some name
+            | _ -> None
+        match tryGetModuleName expr with
+        | Some modName ->
             // Module qualified access: Module.member
-            let modEnv = Map.find name moduleEnv
+            let modEnv = Map.find modName moduleEnv
             match Map.tryFind fieldName modEnv.Values with
             | Some value -> value
             | None ->
@@ -344,13 +350,15 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                     match Map.tryFind fieldName modEnv.SubModules with
                     | Some _subMod ->
                         // Submodule access without further member -- error
-                        failwithf "Module %s.%s is a module, not a value" name fieldName
+                        failwithf "Module %s.%s is a module, not a value" modName fieldName
                     | None ->
-                        failwithf "Module %s has no member or constructor %s" name fieldName
+                        failwithf "Module %s has no member or constructor %s" modName fieldName
+        | None ->
+        match expr with
         | FieldAccess (innerExpr, innerField, _) ->
             // Chained access: A.B.c where A.B is a submodule
-            match innerExpr with
-            | Var (modName, _) when Map.containsKey modName moduleEnv ->
+            match tryGetModuleName innerExpr with
+            | Some modName ->
                 let outerMod = Map.find modName moduleEnv
                 match Map.tryFind innerField outerMod.SubModules with
                 | Some innerMod ->
@@ -369,7 +377,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         | Some valueRef -> !valueRef
                         | None -> failwithf "Field not found: %s" fieldName
                     | _ -> failwithf "Field access on non-record/module value: %s" (formatValue v)
-            | _ ->
+            | None ->
                 // Regular record field access on chained expression
                 let v = eval recEnv moduleEnv env expr
                 match v with
@@ -467,5 +475,28 @@ let rec evalModuleDecls
                     (env'', modEnv)
                 | None -> (env, modEnv)  // Already caught by type checker
             | _ -> (env, modEnv)  // Multi-segment open paths: v2
-        | _ -> (env, modEnv)  // TypeDecl, RecordTypeDecl handled elsewhere
+        | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
+            // Register constructor values/functions in the environment
+            let dummySpan = unknownSpan
+            let env' =
+                ctors |> List.fold (fun acc ctor ->
+                    let cname =
+                        match ctor with
+                        | ConstructorDecl(n, _, _) -> n
+                        | GadtConstructorDecl(n, _, _, _) -> n
+                    let hasArg =
+                        match ctor with
+                        | ConstructorDecl(_, Some _, _) -> true
+                        | GadtConstructorDecl(_, args, _, _) -> not (List.isEmpty args)
+                        | _ -> false
+                    if hasArg then
+                        // Constructor with argument: register as a function that wraps arg in DataValue
+                        let param = "__ctorArg"
+                        let body = Constructor(cname, Some(Var(param, dummySpan)), dummySpan)
+                        Map.add cname (FunctionValue(param, body, acc)) acc
+                    else
+                        // Nullary constructor: register as a value
+                        Map.add cname (DataValue(cname, None)) acc) env
+            (env', modEnv)
+        | _ -> (env, modEnv)  // RecordTypeDecl handled elsewhere
     ) (initialEnv, moduleEnv)

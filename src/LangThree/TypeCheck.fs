@@ -299,6 +299,132 @@ let validateUniqueRecordFields (decls: Decl list) =
             Term = None; ContextStack = []; Trace = [] })
     | [] -> ()
 
+/// Collect all module names referenced via qualified access in an expression.
+/// Returns set of module names that are accessed as Module.member.
+let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : Set<string> =
+    match expr with
+    | FieldAccess(Constructor(modName, None, _), _, _) when Map.containsKey modName modules ->
+        Set.singleton modName
+    | FieldAccess(FieldAccess(Constructor(modName, None, _), subMod, _), _, _) when Map.containsKey modName modules ->
+        Set.singleton modName
+    | Let(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
+    | LetPat(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
+    | LetRec(_, _, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
+    | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectModuleRefs modules body
+    | App(f, arg, _) -> Set.union (collectModuleRefs modules f) (collectModuleRefs modules arg)
+    | If(c, t, e, _) -> Set.unionMany [collectModuleRefs modules c; collectModuleRefs modules t; collectModuleRefs modules e]
+    | Match(s, clauses, _) ->
+        let clauseRefs = clauses |> List.map (fun (_, body) -> collectModuleRefs modules body)
+        Set.unionMany (collectModuleRefs modules s :: clauseRefs)
+    | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _)
+    | Equal(a, b, _) | NotEqual(a, b, _) | LessThan(a, b, _) | GreaterThan(a, b, _)
+    | LessEqual(a, b, _) | GreaterEqual(a, b, _) | And(a, b, _) | Or(a, b, _) | Cons(a, b, _) ->
+        Set.union (collectModuleRefs modules a) (collectModuleRefs modules b)
+    | Negate(e, _) | Annot(e, _, _) -> collectModuleRefs modules e
+    | Tuple(es, _) | List(es, _) -> es |> List.map (collectModuleRefs modules) |> Set.unionMany
+    | FieldAccess(e, _, _) -> collectModuleRefs modules e
+    | RecordExpr(_, fields, _) -> fields |> List.map (fun (_, e) -> collectModuleRefs modules e) |> Set.unionMany
+    | RecordUpdate(src, fields, _) ->
+        Set.unionMany (collectModuleRefs modules src :: (fields |> List.map (fun (_, e) -> collectModuleRefs modules e)))
+    | SetField(e, _, v, _) -> Set.union (collectModuleRefs modules e) (collectModuleRefs modules v)
+    | Constructor(_, Some arg, _) -> collectModuleRefs modules arg
+    | _ -> Set.empty
+
+/// Rewrite qualified module access in an expression tree.
+/// Converts Module.member patterns to direct references so Bidir.synth can handle them.
+let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) : Expr =
+    match expr with
+    // Module.member where member is a value/function
+    | FieldAccess(Constructor(modName, None, _), fieldName, span) when Map.containsKey modName modules ->
+        let exports = Map.find modName modules
+        // Check if fieldName is a constructor in the module
+        if Map.containsKey fieldName exports.CtorEnv then
+            Constructor(fieldName, None, span)
+        else
+            Var(fieldName, span)
+
+    // Outer.Inner.member (chained module access)
+    | FieldAccess(FieldAccess(Constructor(modName, None, s1), subModName, s2), fieldName, span)
+        when Map.containsKey modName modules ->
+        let outerExports = Map.find modName modules
+        match Map.tryFind subModName outerExports.SubModules with
+        | Some innerExports ->
+            if Map.containsKey fieldName innerExports.CtorEnv then
+                Constructor(fieldName, None, span)
+            else
+                Var(fieldName, span)
+        | None -> expr  // Let type checker report the error
+
+    // App(Module.Ctor, arg) -- constructor application via qualified access
+    | App(FieldAccess(Constructor(modName, None, _), ctorName, s2), arg, appSpan)
+        when Map.containsKey modName modules ->
+        let exports = Map.find modName modules
+        let rewrittenArg = rewriteModuleAccess modules arg
+        if Map.containsKey ctorName exports.CtorEnv then
+            // Rewrite to Constructor with argument (not App of nullary Constructor)
+            Constructor(ctorName, Some rewrittenArg, appSpan)
+        else
+            App(Var(ctorName, s2), rewrittenArg, appSpan)
+
+    // Recurse into subexpressions
+    | Let(n, rhs, body, s) -> Let(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | LetPat(p, rhs, body, s) -> LetPat(p, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | LetRec(n, p, rhs, body, s) -> LetRec(n, p, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | Lambda(p, body, s) -> Lambda(p, rewriteModuleAccess modules body, s)
+    | LambdaAnnot(p, t, body, s) -> LambdaAnnot(p, t, rewriteModuleAccess modules body, s)
+    | App(f, arg, s) -> App(rewriteModuleAccess modules f, rewriteModuleAccess modules arg, s)
+    | If(c, t, e, s) -> If(rewriteModuleAccess modules c, rewriteModuleAccess modules t, rewriteModuleAccess modules e, s)
+    | Match(scr, clauses, s) ->
+        Match(rewriteModuleAccess modules scr,
+              clauses |> List.map (fun (p, body) -> (p, rewriteModuleAccess modules body)), s)
+    | Add(a, b, s) -> Add(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Subtract(a, b, s) -> Subtract(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Multiply(a, b, s) -> Multiply(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Divide(a, b, s) -> Divide(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Equal(a, b, s) -> Equal(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | NotEqual(a, b, s) -> NotEqual(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | LessThan(a, b, s) -> LessThan(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | GreaterThan(a, b, s) -> GreaterThan(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | LessEqual(a, b, s) -> LessEqual(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | GreaterEqual(a, b, s) -> GreaterEqual(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | And(a, b, s) -> And(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Or(a, b, s) -> Or(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Cons(a, b, s) -> Cons(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Negate(e, s) -> Negate(rewriteModuleAccess modules e, s)
+    | Annot(e, t, s) -> Annot(rewriteModuleAccess modules e, t, s)
+    | Tuple(es, s) -> Tuple(es |> List.map (rewriteModuleAccess modules), s)
+    | List(es, s) -> List(es |> List.map (rewriteModuleAccess modules), s)
+    | FieldAccess(e, f, s) -> FieldAccess(rewriteModuleAccess modules e, f, s)
+    | RecordExpr(base_, fields, s) ->
+        RecordExpr(base_, fields |> List.map (fun (n, e) -> (n, rewriteModuleAccess modules e)), s)
+    | RecordUpdate(src, fields, s) ->
+        RecordUpdate(rewriteModuleAccess modules src, fields |> List.map (fun (n, e) -> (n, rewriteModuleAccess modules e)), s)
+    | SetField(e, f, v, s) -> SetField(rewriteModuleAccess modules e, f, rewriteModuleAccess modules v, s)
+    | Constructor(n, Some arg, s) -> Constructor(n, Some(rewriteModuleAccess modules arg), s)
+    | _ -> expr  // Literals, Var, Constructor(None), EmptyList -- no rewrite needed
+
+/// Merge module exports into type/constructor environments for qualified access type checking.
+let mergeModuleExportsForTypeCheck
+    (modules: Map<string, ModuleExports>)
+    (referencedModules: Set<string>)
+    (env: TypeEnv) (ctorEnv: ConstructorEnv) (recEnv: RecordEnv)
+    : TypeEnv * ConstructorEnv * RecordEnv =
+    referencedModules
+    |> Set.fold (fun (e, c, r) modName ->
+        match Map.tryFind modName modules with
+        | Some exports ->
+            let e' = Map.fold (fun acc k v -> Map.add k v acc) e exports.TypeEnv
+            let c' = Map.fold (fun acc k v -> Map.add k v acc) c exports.CtorEnv
+            let r' = Map.fold (fun acc k v -> Map.add k v acc) r exports.RecEnv
+            // Also merge submodule exports
+            exports.SubModules
+            |> Map.fold (fun (e2, c2, r2) _ subExports ->
+                let e3 = Map.fold (fun acc k v -> Map.add k v acc) e2 subExports.TypeEnv
+                let c3 = Map.fold (fun acc k v -> Map.add k v acc) c2 subExports.CtorEnv
+                let r3 = Map.fold (fun acc k v -> Map.add k v acc) r2 subExports.RecEnv
+                (e3, c3, r3)) (e', c', r')
+        | None -> (e, c, r)) (env, ctorEnv, recEnv)
+
 /// Type check declarations sequentially, building up environments and collecting warnings.
 /// Returns (typeEnv, ctorEnv, recEnv, modules, warnings)
 let rec typeCheckDecls
@@ -334,8 +460,14 @@ let rec typeCheckDecls
         |> List.fold (fun (env, mods, warns) decl ->
             match decl with
             | LetDecl(name, body, _) ->
-                // Type check the let binding
-                let s, ty = Bidir.synth ctorEnv recEnv [] env body
+                // Resolve qualified module access before type checking
+                let refsInBody = collectModuleRefs mods body
+                let rewrittenBody = rewriteModuleAccess mods body
+                let (envForSynth, ctorEnvForSynth, recEnvForSynth) =
+                    if Set.isEmpty refsInBody then (env, ctorEnv, recEnv)
+                    else mergeModuleExportsForTypeCheck mods refsInBody env ctorEnv recEnv
+                // Type check the let binding (with module-resolved body)
+                let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
                 let ty' = apply s ty
                 let scheme = generalize (applyEnv s env) ty'
                 let env' = Map.add name scheme env
@@ -403,7 +535,12 @@ let rec typeCheckDecls
                     |> List.fold (fun (e, ms, ws) d ->
                         match d with
                         | LetDecl(n, body, _) ->
-                            let s, ty = Bidir.synth ctorEnv recEnv [] e body
+                            let refsInBody = collectModuleRefs ms body
+                            let rewrittenBody = rewriteModuleAccess ms body
+                            let (eForSynth, cForSynth, rForSynth) =
+                                if Set.isEmpty refsInBody then (e, ctorEnv, recEnv)
+                                else mergeModuleExportsForTypeCheck ms refsInBody e ctorEnv recEnv
+                            let s, ty = Bidir.synth cForSynth rForSynth [] eForSynth rewrittenBody
                             let ty' = apply s ty
                             let scheme = generalize (applyEnv s e) ty'
                             let matchWarnings = checkMatchWarnings ctorEnv body
