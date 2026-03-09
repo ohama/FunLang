@@ -279,6 +279,67 @@ let integrationTests = testList "Integration" [
         | _ -> failtest (sprintf "Expected ADT with leading pipe, got: %A" result)
     }
 
+    // Phase 2 (ADT-02): Type elaboration tests
+    test "testElaborateSimpleADT" {
+        // type Bool = True | False
+        let decl = Ast.TypeDecl("Bool", [], [
+            Ast.ConstructorDecl("True", None, Ast.unknownSpan)
+            Ast.ConstructorDecl("False", None, Ast.unknownSpan)
+        ], Ast.unknownSpan)
+
+        let ctorEnv = Elaborate.elaborateTypeDecl decl
+
+        // Check True constructor
+        match Map.tryFind "True" ctorEnv with
+        | Some { TypeParams = []; ArgType = None; ResultType = Type.TData("Bool", []) } -> ()
+        | other -> failtest (sprintf "True constructor type mismatch: %A" other)
+
+        // Check False constructor
+        match Map.tryFind "False" ctorEnv with
+        | Some { TypeParams = []; ArgType = None; ResultType = Type.TData("Bool", []) } -> ()
+        | other -> failtest (sprintf "False constructor type mismatch: %A" other)
+    }
+
+    test "testElaborateParametricADT" {
+        // type Option 'a = None | Some of 'a
+        let decl = Ast.TypeDecl("Option", ["'a"], [
+            Ast.ConstructorDecl("None", None, Ast.unknownSpan)
+            Ast.ConstructorDecl("Some", Some(Ast.TEVar "'a"), Ast.unknownSpan)
+        ], Ast.unknownSpan)
+
+        let ctorEnv = Elaborate.elaborateTypeDecl decl
+
+        // Check None
+        match Map.tryFind "None" ctorEnv with
+        | Some { TypeParams = [0]; ArgType = None; ResultType = Type.TData("Option", [Type.TVar 0]) } -> ()
+        | other -> failtest (sprintf "None type mismatch: %A" other)
+
+        // Check Some
+        match Map.tryFind "Some" ctorEnv with
+        | Some { TypeParams = [0]; ArgType = Some(Type.TVar 0); ResultType = Type.TData("Option", [Type.TVar 0]) } -> ()
+        | other -> failtest (sprintf "Some type mismatch: %A" other)
+    }
+
+    test "testElaborateRecursiveADT" {
+        // type IntList = Nil | Cons of int * IntList
+        let decl = Ast.TypeDecl("IntList", [], [
+            Ast.ConstructorDecl("Nil", None, Ast.unknownSpan)
+            Ast.ConstructorDecl("Cons", Some(Ast.TETuple [Ast.TEInt; Ast.TEName "IntList"]), Ast.unknownSpan)
+        ], Ast.unknownSpan)
+
+        let ctorEnv = Elaborate.elaborateTypeDecl decl
+
+        // Check Nil
+        match Map.tryFind "Nil" ctorEnv with
+        | Some { ArgType = None; ResultType = Type.TData("IntList", []) } -> ()
+        | other -> failtest (sprintf "Nil type mismatch: %A" other)
+
+        // Check Cons has tuple argument with int and TData("IntList", [])
+        match Map.tryFind "Cons" ctorEnv with
+        | Some { ArgType = Some(Type.TTuple [Type.TInt; Type.TData("IntList", [])]); ResultType = Type.TData("IntList", []) } -> ()
+        | other -> failtest (sprintf "Cons type mismatch: %A" other)
+    }
+
     test "testMixedSingleAndMultiLine" {
         let input = "let f = fun x -> fun y -> fun z -> x + y + z\nlet result = f 1\n    2\n    3\n"
         let result = parseModule input
