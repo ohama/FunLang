@@ -440,6 +440,100 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
         let s4 = check ctorEnv recEnv (InIfElse span :: ctx) (applyEnv (compose s3 s12) env) elseExpr (apply (compose s3 s12) expected)
         compose s4 (compose s3 s12)
 
+    // === GADT Match in check mode: local type refinement per branch ===
+    | Match (scrutinee, clauses, span) when isGadtMatch ctorEnv clauses ->
+        let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
+
+        let folder (s, idx) (pat, body) =
+            let clauseCtx = InMatchClause(idx, span) :: ctx
+            match pat with
+            | ConstructorPat(name, argPatOpt, patSpan) ->
+                match Map.tryFind name ctorEnv with
+                | Some ctorInfo when ctorInfo.IsGadt ->
+                    // === GADT branch with type refinement ===
+
+                    // 1. Instantiate constructor type params with fresh vars
+                    let freshVars = ctorInfo.TypeParams |> List.map (fun _ -> freshVar())
+                    let ctorSubst = List.zip ctorInfo.TypeParams freshVars |> Map.ofList
+                    let ctorResultType = apply ctorSubst ctorInfo.ResultType
+                    let ctorArgType = ctorInfo.ArgType |> Option.map (apply ctorSubst)
+
+                    // 2. Compute local constraints by unifying scrutinee with constructor return type
+                    let currentScrutTy = apply s scrutTy
+                    let localS = unifyWithContext clauseCtx [] patSpan currentScrutTy ctorResultType
+
+                    // 3. Identify existential fresh vars (constructor-local type params)
+                    let existentialFreshVars =
+                        ctorInfo.ExistentialVars
+                        |> List.choose (fun origIdx ->
+                            List.zip ctorInfo.TypeParams freshVars
+                            |> List.tryFind (fun (p, _) -> p = origIdx)
+                            |> Option.map snd)
+                        |> List.choose (fun tv ->
+                            match tv with TVar n -> Some n | _ -> None)
+
+                    // 4. Bind pattern variables from constructor argument
+                    let combinedLocalS, patEnv =
+                        match (ctorArgType, argPatOpt) with
+                        | (Some argTy, Some argPat) ->
+                            let patEnv, patTy = inferPattern ctorEnv argPat
+                            let localArgTy = apply localS argTy
+                            let patS = unifyWithContext clauseCtx [] patSpan localArgTy patTy
+                            let patEnv' = Map.map (fun _ scheme -> applyScheme (compose patS localS) scheme) patEnv
+                            (compose patS localS, patEnv')
+                        | (None, None) -> (localS, Map.empty)
+                        | (None, Some _) ->
+                            raise (TypeException {
+                                Kind = ArityMismatch(name, 0, 1); Span = patSpan
+                                Term = None; ContextStack = clauseCtx; Trace = [] })
+                        | (Some _, None) ->
+                            raise (TypeException {
+                                Kind = ArityMismatch(name, 1, 0); Span = patSpan
+                                Term = None; ContextStack = clauseCtx; Trace = [] })
+
+                    // 5. Build branch environment with pattern bindings + refined types
+                    let branchEnv =
+                        Map.fold (fun acc k v -> Map.add k v acc)
+                            (applyEnv (compose combinedLocalS s) env)
+                            patEnv
+
+                    // 6. Check branch body against refined expected type
+                    let refinedExpected = apply (compose combinedLocalS s) expected
+                    let bodyS = check ctorEnv recEnv clauseCtx branchEnv body refinedExpected
+
+                    // 7. Check existential escape: result type must not mention existential vars
+                    let resultTy = apply bodyS refinedExpected
+                    for ev in existentialFreshVars do
+                        if Set.contains ev (freeVars resultTy) then
+                            raise (TypeException {
+                                Kind = ExistentialEscape ev
+                                Span = span; Term = None
+                                ContextStack = clauseCtx; Trace = [] })
+
+                    // 8. Local constraints stay local -- only body substitution propagates
+                    (compose bodyS s, idx + 1)
+
+                | _ ->
+                    // Regular ADT constructor in a mixed GADT type
+                    let patEnv, patTy = inferPattern ctorEnv pat
+                    let s' = unifyWithContext clauseCtx [] span (apply s scrutTy) patTy
+                    let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
+                                        (applyEnv s' (applyEnv s env)) patEnv
+                    let bodyS = check ctorEnv recEnv clauseCtx clauseEnv body (apply (compose s' s) expected)
+                    (compose bodyS (compose s' s), idx + 1)
+
+            | _ ->
+                // Non-constructor pattern (wildcard, var, etc.)
+                let patEnv, patTy = inferPattern ctorEnv pat
+                let s' = unifyWithContext clauseCtx [] span (apply s scrutTy) patTy
+                let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
+                                    (applyEnv s' (applyEnv s env)) patEnv
+                let bodyS = check ctorEnv recEnv clauseCtx clauseEnv body (apply (compose s' s) expected)
+                (compose bodyS (compose s' s), idx + 1)
+
+        let finalS, _ = List.fold folder (s1, 0) clauses
+        finalS
+
     // === Fallback subsumption (BIDIR-06) ===
     | _ ->
         let s, actual = synth ctorEnv recEnv ctx env expr
