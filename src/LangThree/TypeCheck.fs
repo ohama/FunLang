@@ -94,15 +94,18 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | Negate(e, _) | Annot(e, _, _) -> collectMatches e
     | Tuple(es, _) | List(es, _) -> es |> List.collect collectMatches
     | Constructor(_, Some arg, _) -> collectMatches arg
+    | RecordExpr(_, fields, _) -> fields |> List.collect (fun (_, e) -> collectMatches e)
+    | FieldAccess(e, _, _) -> collectMatches e
+    | RecordUpdate(src, fields, _) -> collectMatches src @ (fields |> List.collect (fun (_, e) -> collectMatches e))
     | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
-/// Type check a module: build ConstructorEnv from type declarations,
-/// then type check all let declarations with constructor environment.
-/// Returns Ok(warnings) on success, Error(Diagnostic) on type error.
-let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
+/// Type check a module: build ConstructorEnv and RecordEnv from type declarations,
+/// then type check all let declarations with both environments.
+/// Returns Ok(warnings, RecordEnv) on success, Error(Diagnostic) on type error.
+let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv, Diagnostic> =
     try
         match m with
-        | EmptyModule _ -> Ok []
+        | EmptyModule _ -> Ok ([], Map.empty)
         | Module (decls, _) ->
             // Build constructor environment from type declarations
             let ctorEnv =
@@ -114,6 +117,39 @@ let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
                 |> List.fold (fun acc map ->
                     Map.fold (fun acc' k v -> Map.add k v acc') acc map) Map.empty
 
+            // Build record environment from record type declarations
+            let recEnv =
+                decls
+                |> List.choose (function
+                    | Decl.RecordTypeDecl rd -> Some rd
+                    | _ -> None)
+                |> List.map elaborateRecordDecl
+                |> List.fold (fun acc (name, info) -> Map.add name info acc) Map.empty
+
+            // Validate globally unique field names across all record types
+            let allFieldsWithSpans =
+                decls
+                |> List.choose (function
+                    | Decl.RecordTypeDecl (Ast.RecordDecl(typeName, _, fields, _)) ->
+                        Some (typeName, fields)
+                    | _ -> None)
+                |> List.collect (fun (typeName, fields) ->
+                    fields |> List.map (fun (Ast.RecordFieldDecl(fname, _, _, fieldSpan)) ->
+                        (fname, typeName, fieldSpan)))
+            let fieldCounts =
+                allFieldsWithSpans
+                |> List.groupBy (fun (fname, _, _) -> fname)
+                |> List.filter (fun (_, occurrences) -> List.length occurrences > 1)
+            match fieldCounts with
+            | (fieldName, occurrences) :: _ ->
+                let (_, type1, _) = occurrences.[0]
+                let (_, type2, span2) = occurrences.[1]
+                raise (TypeException {
+                    Kind = DuplicateRecordField(fieldName, type1, type2)
+                    Span = span2
+                    Term = None; ContextStack = []; Trace = [] })
+            | [] -> ()
+
             // Type check let declarations sequentially, accumulating type environment
             let _finalEnv =
                 decls
@@ -121,7 +157,7 @@ let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
                     | LetDecl(n, e, _) -> Some(n, e)
                     | _ -> None)
                 |> List.fold (fun (env: TypeEnv) (name, body) ->
-                    let s, ty = Bidir.synth ctorEnv Map.empty [] env body
+                    let s, ty = Bidir.synth ctorEnv recEnv [] env body
                     let ty' = apply s ty
                     let scheme = generalize (applyEnv s env) ty'
                     Map.add name scheme env) initialTypeEnv
@@ -191,7 +227,7 @@ let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
 
                     scrWarnings |> List.rev)
 
-            Ok warnings
+            Ok (warnings, recEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
