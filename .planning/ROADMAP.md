@@ -2,7 +2,7 @@
 
 ## Overview
 
-LangThree transforms FunLang v6.0 into a practical ML-style functional language with F# syntax and modern type system features. The roadmap progresses through six phases: first establishing indentation-based parsing (foundation for all syntax), then building out the type system with ADTs and GADTs (core expressiveness), adding records (practical data structures), implementing modules (code organization), and finally exceptions (error handling). Each phase delivers a complete, verifiable capability that builds toward the core value: a usable functional language with modern type system features and F#-style syntax.
+LangThree transforms FunLang v6.0 into a practical ML-style functional language with F# syntax and modern type system features. The roadmap progresses through seven phases: first establishing indentation-based parsing (foundation for all syntax), then building out the type system with ADTs and GADTs (core expressiveness), adding records (practical data structures), implementing modules (code organization), exceptions (error handling), and finally optimized pattern matching compilation to decision trees. Each phase delivers a complete, verifiable capability that builds toward the core value: a usable functional language with modern type system features and F#-style syntax.
 
 ## Phases
 
@@ -18,6 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Generalized Algebraic Data Types** - Type refinement and indexed type families
 - [ ] **Phase 5: Module System** - F# style code organization with namespaces
 - [ ] **Phase 6: Exceptions** - F# style error handling with try-with expressions
+- [ ] **Phase 7: Pattern Matching Compilation** - Decision tree compilation per Jules Jacobs algorithm
 
 ## Phase Details
 
@@ -133,10 +134,30 @@ Plans:
 Plans:
 - TBD during planning
 
+### Phase 7: Pattern Matching Compilation
+**Goal**: Pattern matching compiles to efficient decision trees with no redundant tests
+**Depends on**: Phase 2 (ADT pattern matching), Phase 4 (GADT pattern matching)
+**Requirements**: PMATCH-01, PMATCH-02, PMATCH-03, PMATCH-04
+**Success Criteria** (what must be TRUE):
+  1. Match expressions compile to binary decision trees instead of naive sequential testing
+  2. No redundant constructor tests are generated (each constructor tested at most once per path)
+  3. Heuristic selects test variable that minimizes clause duplication across branches
+  4. Exhaustiveness and redundancy checking integrated with decision tree generation
+  5. Existing pattern matching behavior unchanged (semantic equivalence)
+**Plans**: TBD
+
+Plans:
+- TBD during planning
+
+**Reference**: Jules Jacobs, "How to compile pattern matching" (2021)
+- Algorithm: binary match# generation with clause splitting (cases a/b/c)
+- Heuristic: select test present in maximum number of other clauses
+- Paper: https://julesjacobs.com/notes/patternmatching/patternmatching.pdf
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -146,6 +167,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Generalized Algebraic Data Types | 5/5 | Complete | 2026-03-09 |
 | 5. Module System | 0/5 | Not started | - |
 | 6. Exceptions | 0/? | Not started | - |
+| 7. Pattern Matching Compilation | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-25*

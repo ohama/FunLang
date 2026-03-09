@@ -5,6 +5,9 @@ type token =
   | DEDENT
   | INDENT
   | NEWLINE of (int)
+  | MODULE
+  | NAMESPACE
+  | OPEN
   | MUTABLE
   | LARROW
   | LBRACE
@@ -60,6 +63,9 @@ type tokenId =
     | TOKEN_DEDENT
     | TOKEN_INDENT
     | TOKEN_NEWLINE
+    | TOKEN_MODULE
+    | TOKEN_NAMESPACE
+    | TOKEN_OPEN
     | TOKEN_MUTABLE
     | TOKEN_LARROW
     | TOKEN_LBRACE
@@ -149,6 +155,7 @@ type nonTerminalId =
     | NONTERM_RecordExprInner
     | NONTERM_RecordFieldBindings
     | NONTERM_RecordPatFields
+    | NONTERM_QualifiedIdent
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int
 

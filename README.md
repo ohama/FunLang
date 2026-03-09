@@ -101,6 +101,36 @@ let result =
     | DivisionByZero msg -> 0
 ```
 
+## References
+
+### Pattern Matching Compilation
+
+Jules Jacobs, "How to compile pattern matching" (2021)
+- PDF: https://julesjacobs.com/notes/patternmatching/patternmatching.pdf
+- Scala impl: https://julesjacobs.com/notes/patternmatching/pmatch.sc
+- Based on: Maranget 2008 "Compiling pattern matching to good decision trees"
+
+ML 스타일 패턴 매칭을 decision tree로 컴파일하는 알고리즘. 불필요한 테스트를 절대 생성하지 않으면서 코드 중복을 최소화하는 휴리스틱 사용.
+
+**알고리즘 요약:**
+
+1. 변수 패턴(`a is y`)을 RHS로 이동 (`let y = a in e`)
+2. 첫 번째 clause에서 테스트할 생성자 패턴 선택 (휴리스틱: 다른 clause에 가장 많이 등장하는 것)
+3. 이진 match 생성: `match# a with | C(a1,...,an) => [A] | _ => [B]`
+4. 각 clause를 A/B로 분류:
+   - (a) `a is C(...)` → 확장하여 A에 추가
+   - (b) `a is D(...)` (D≠C) → B에 추가
+   - (c) `a` 테스트 없음 → A와 B 모두에 추가
+5. [A]와 [B]를 재귀적으로 처리
+
+**종료 조건:** clause 리스트 비었으면 에러(비완전), 첫 clause가 비었으면 매칭 성공.
+
+**휴리스틱:** case (c)에서 clause가 A/B 양쪽에 복제되므로, 가장 많은 clause에 등장하는 테스트를 선택하여 중복 최소화.
+
+**타입 활용:** 가능한 생성자 집합 추적 → exhaustiveness/redundancy 검사에 활용 가능.
+
+> LangThree에서 패턴 매칭 변환/최적화 시 이 알고리즘을 적용할 것.
+
 ## Development
 
 ```bash

@@ -62,6 +62,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **EXC-04**: Pattern matching on exception types
 - [ ] **EXC-05**: `when` guards in exception handlers
 
+### Pattern Matching Compilation
+
+- [ ] **PMATCH-01**: Decision tree compilation (match → binary decision tree, no redundant tests)
+- [ ] **PMATCH-02**: Clause splitting (cases a/b/c per Jules Jacobs algorithm)
+- [ ] **PMATCH-03**: Heuristic test selection (maximize shared tests across clauses)
+- [ ] **PMATCH-04**: Semantic equivalence (decision tree produces same results as naive matching)
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -144,10 +151,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EXC-03 | Phase 6 | Pending |
 | EXC-04 | Phase 6 | Pending |
 | EXC-05 | Phase 6 | Pending |
+| PMATCH-01 | Phase 7 | Pending |
+| PMATCH-02 | Phase 7 | Pending |
+| PMATCH-03 | Phase 7 | Pending |
+| PMATCH-04 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 33 total
-- Mapped to phases: 33
+- v1 requirements: 37 total
+- Mapped to phases: 37
 - Unmapped: 0 ✓
 
 ---
