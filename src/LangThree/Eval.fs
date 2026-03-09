@@ -328,14 +328,64 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         let typeName = resolveRecordTypeName recEnv fieldNames
         RecordValue (typeName, fieldValues)
 
-    // Phase 3 (Records): Field access
+    // Phase 3 (Records) + Phase 5 (Modules): Field access / qualified access
     | FieldAccess (expr, fieldName, _) ->
-        match eval recEnv moduleEnv env expr with
-        | RecordValue (_, fields) ->
-            match Map.tryFind fieldName fields with
-            | Some valueRef -> !valueRef
-            | None -> failwithf "Field not found: %s" fieldName
-        | v -> failwithf "Field access on non-record value: %s" (formatValue v)
+        match expr with
+        | Var (name, _) when Map.containsKey name moduleEnv ->
+            // Module qualified access: Module.member
+            let modEnv = Map.find name moduleEnv
+            match Map.tryFind fieldName modEnv.Values with
+            | Some value -> value
+            | None ->
+                match Map.tryFind fieldName modEnv.CtorEnv with
+                | Some ctorValue -> ctorValue
+                | None ->
+                    // Could be a submodule reference for further chained access
+                    match Map.tryFind fieldName modEnv.SubModules with
+                    | Some _subMod ->
+                        // Submodule access without further member -- error
+                        failwithf "Module %s.%s is a module, not a value" name fieldName
+                    | None ->
+                        failwithf "Module %s has no member or constructor %s" name fieldName
+        | FieldAccess (innerExpr, innerField, _) ->
+            // Chained access: A.B.c where A.B is a submodule
+            match innerExpr with
+            | Var (modName, _) when Map.containsKey modName moduleEnv ->
+                let outerMod = Map.find modName moduleEnv
+                match Map.tryFind innerField outerMod.SubModules with
+                | Some innerMod ->
+                    match Map.tryFind fieldName innerMod.Values with
+                    | Some value -> value
+                    | None ->
+                        match Map.tryFind fieldName innerMod.CtorEnv with
+                        | Some ctorValue -> ctorValue
+                        | None -> failwithf "Module %s.%s has no member %s" modName innerField fieldName
+                | None ->
+                    // innerField is not a submodule, try evaluating as record field access
+                    let v = eval recEnv moduleEnv env expr
+                    match v with
+                    | RecordValue (_, fields) ->
+                        match Map.tryFind fieldName fields with
+                        | Some valueRef -> !valueRef
+                        | None -> failwithf "Field not found: %s" fieldName
+                    | _ -> failwithf "Field access on non-record/module value: %s" (formatValue v)
+            | _ ->
+                // Regular record field access on chained expression
+                let v = eval recEnv moduleEnv env expr
+                match v with
+                | RecordValue (_, fields) ->
+                    match Map.tryFind fieldName fields with
+                    | Some valueRef -> !valueRef
+                    | None -> failwithf "Field not found: %s" fieldName
+                | _ -> failwithf "Field access on non-record value: %s" (formatValue v)
+        | _ ->
+            // Regular record field access
+            match eval recEnv moduleEnv env expr with
+            | RecordValue (_, fields) ->
+                match Map.tryFind fieldName fields with
+                | Some valueRef -> !valueRef
+                | None -> failwithf "Field not found: %s" fieldName
+            | v -> failwithf "Field access on non-record value: %s" (formatValue v)
 
     // Phase 3 (Records): Copy-and-update (record update)
     | RecordUpdate (source, updates, _) ->
@@ -363,3 +413,59 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 /// Convenience function for top-level evaluation
 let evalExpr (expr: Expr) : Value =
     eval Map.empty Map.empty emptyEnv expr
+
+/// Evaluate module declarations, building value and module environments
+let rec evalModuleDecls
+    (recEnv: RecordEnv)
+    (moduleEnv: Map<string, ModuleValueEnv>)
+    (initialEnv: Env)
+    (decls: Decl list)
+    : Env * Map<string, ModuleValueEnv> =
+    decls
+    |> List.fold (fun (env, modEnv) decl ->
+        match decl with
+        | LetDecl(name, body, _) ->
+            let value = eval recEnv modEnv env body
+            (Map.add name value env, modEnv)
+        | ModuleDecl(name, innerDecls, _) ->
+            let innerEnv, innerModEnv = evalModuleDecls recEnv modEnv env innerDecls
+            // Extract only the bindings added by this module (not inherited from parent)
+            let moduleValues =
+                innerEnv
+                |> Map.filter (fun k _ -> not (Map.containsKey k env))
+            // Collect constructors from TypeDecl siblings inside this module
+            let ctorNames =
+                innerDecls |> List.collect (fun d ->
+                    match d with
+                    | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
+                        ctors |> List.collect (fun ctor ->
+                            match ctor with
+                            | ConstructorDecl(cname, _, _) -> [cname]
+                            | GadtConstructorDecl(cname, _, _, _) -> [cname])
+                    | _ -> [])
+            let ctorEnv =
+                ctorNames
+                |> List.choose (fun cname ->
+                    Map.tryFind cname innerEnv |> Option.map (fun v -> (cname, v)))
+                |> Map.ofList
+            let modValEnv = {
+                Values = moduleValues
+                CtorEnv = ctorEnv
+                RecEnv = recEnv  // Share parent recEnv
+                SubModules = innerModEnv
+            }
+            (env, Map.add name modValEnv modEnv)
+        | OpenDecl(path, _) ->
+            match path with
+            | [name] ->
+                match Map.tryFind name modEnv with
+                | Some modValEnv ->
+                    // Merge values into current env
+                    let env' = Map.fold (fun acc k v -> Map.add k v acc) env modValEnv.Values
+                    // Also merge constructors so they're accessible unqualified
+                    let env'' = Map.fold (fun acc k v -> Map.add k v acc) env' modValEnv.CtorEnv
+                    (env'', modEnv)
+                | None -> (env, modEnv)  // Already caught by type checker
+            | _ -> (env, modEnv)  // Multi-segment open paths: v2
+        | _ -> (env, modEnv)  // TypeDecl, RecordTypeDecl handled elsewhere
+    ) (initialEnv, moduleEnv)
