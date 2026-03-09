@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 02-01-PLAN.md (Type Declaration Parsing)
+Last activity: 2026-03-09 — Completed 02-02-PLAN.md (Type System Extension)
 
-Progress: [███░░░░░░░] 21%
+Progress: [████░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 9.3 min
-- Total execution time: 0.78 hours
+- Total plans completed: 6
+- Average duration: 8.5 min
+- Total execution time: 0.83 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
-| 02 | 1 | 9 min | 9 min |
+| 02 | 2 | 12 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-01 (9min)
-- Trend: Consistent velocity around 9 min/plan
+- Last 5 plans: 01-02 (13min), 01-03 (3min), 01-04 (12min), 02-01 (9min), 02-02 (3min)
+- Trend: Consistent velocity, fast plans for well-scoped type system work
 
 *Updated after each plan completion*
 
@@ -74,6 +74,11 @@ Recent decisions affecting current work:
 - TEName variant added to TypeExpr for named type references (Tree, Option)
 - Type declarations support both inline and INDENT/DEDENT indented constructor lists
 
+**From 02-02 (Type System Extension):**
+- TEName in elaborateTypeDecl produces TData(name, []) for recursive/named type references
+- TData unification requires same name and same arity, then unifies args pairwise
+- ConstructorEnv maps constructor names to ConstructorInfo with TypeParams, ArgType, ResultType
+
 ### Pending Todos
 
 None yet.
@@ -88,7 +93,7 @@ None yet.
 - **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
 **From 02-01:**
-- TEName elaboration is a placeholder (fresh TVar) - needs proper named type resolution in 02-02/02-03
+- TEName elaboration is a placeholder (fresh TVar) in main elaborateWithVars - needs proper named type resolution in 02-03/02-04
 
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
@@ -100,10 +105,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 00:51 UTC
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-09 00:57 UTC
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 00:51 UTC*
+*Last updated: 2026-03-09 00:57 UTC*
