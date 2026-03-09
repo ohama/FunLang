@@ -129,10 +129,13 @@ Plans:
   3. User can catch exceptions with `try...with` expressions
   4. User can pattern match on exception types in handlers
   5. User can use `when` guards in exception handlers to filter cases
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- TBD during planning
+- [ ] 06-01-PLAN.md — AST, Type, Diagnostic, Lexer, Parser foundation and MatchClause 3-tuple migration
+- [ ] 06-02-PLAN.md — Exception elaboration, type checking (raise, try-with, when guards), exhaustiveness
+- [ ] 06-03-PLAN.md — Runtime evaluation (raise, try-with, when guards) and IndentFilter InTry context
+- [ ] 06-04-PLAN.md — Comprehensive exception integration tests (EXC-01 through EXC-05) with bug fixes
 
 ### Phase 7: Pattern Matching Compilation
 **Goal**: Pattern matching compiles to efficient decision trees with no redundant tests
@@ -166,9 +169,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Records | 7/7 | Complete | 2026-03-09 |
 | 4. Generalized Algebraic Data Types | 5/5 | Complete | 2026-03-09 |
 | 5. Module System | 5/5 | Complete | 2026-03-09 |
-| 6. Exceptions | 0/? | Not started | - |
+| 6. Exceptions | 0/4 | Not started | - |
 | 7. Pattern Matching Compilation | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-25*
-*Last updated: 2026-03-09 (Phase 5 complete)*
+*Last updated: 2026-03-09 (Phase 6 planned)*
