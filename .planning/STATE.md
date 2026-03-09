@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-09 — Completed 02-04-PLAN.md (exhaustiveness checking)
+Plan: 6 of 6 in current phase
+Status: Phase complete
+Last activity: 2026-03-09 — Completed 02-06-PLAN.md (exhaustiveness wiring)
 
-Progress: [███░░░░░░░] 25%
+Progress: [████░░░░░░] 35%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 8.0 min
-- Total execution time: 0.67 hours
+- Total plans completed: 6
+- Average duration: 7.5 min
+- Total execution time: 0.75 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
-| 02 | 1 | 3 min | 3.0 min |
+| 02 | 2 | 8 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-04 (3min)
-- Trend: Consistent velocity, TDD plans execute efficiently
+- Last 5 plans: 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-04 (3min), 02-06 (5min)
+- Trend: Consistent velocity, gap closure plans execute efficiently
 
 *Updated after each plan completion*
 
@@ -73,6 +73,11 @@ Recent decisions affecting current work:
 - Constructor sets passed explicitly (functional style) rather than global registry
 - Maranget usefulness algorithm with complete/incomplete signature branching
 
+**From 02-06 (Exhaustiveness Wiring):**
+- Infer scrutinee type from constructor patterns rather than re-synthesizing (avoids scope issues)
+- W-prefix for warning codes to distinguish from E-prefix error codes
+- typeCheckModule returns Result<Diagnostic list, Diagnostic> (warnings on success)
+
 ### Pending Todos
 
 None yet.
@@ -96,10 +101,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 2 plan 04 complete)
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-03-09 (Phase 2 plan 06 complete)
+Stopped at: Completed 02-06-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 01:10 UTC*
+*Last updated: 2026-03-09 04:44 UTC*
