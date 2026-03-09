@@ -47,6 +47,99 @@ let initialTypeEnv: TypeEnv =
         "tl", Scheme([0], TArrow(TList(TVar 0), TList(TVar 0)))
     ]
 
+/// Module exports: collected type/constructor/record environments from a module
+type ModuleExports = {
+    TypeEnv: TypeEnv
+    CtorEnv: ConstructorEnv
+    RecEnv: RecordEnv
+    SubModules: Map<string, ModuleExports>
+}
+
+let emptyModuleExports = {
+    TypeEnv = Map.empty; CtorEnv = Map.empty
+    RecEnv = Map.empty; SubModules = Map.empty
+}
+
+/// Merge module exports into current environments (for open directives)
+let openModuleExports (exports: ModuleExports)
+                      (typeEnv: TypeEnv) (ctorEnv: ConstructorEnv) (recEnv: RecordEnv)
+    : TypeEnv * ConstructorEnv * RecordEnv =
+    let typeEnv' = Map.fold (fun acc k v -> Map.add k v acc) typeEnv exports.TypeEnv
+    let ctorEnv' = Map.fold (fun acc k v -> Map.add k v acc) ctorEnv exports.CtorEnv
+    let recEnv' = Map.fold (fun acc k v -> Map.add k v acc) recEnv exports.RecEnv
+    (typeEnv', ctorEnv', recEnv')
+
+/// Resolve a module path in the modules map, raising E0502 if not found
+let resolveModule (modules: Map<string, ModuleExports>) (path: string list) (span: Span) : ModuleExports =
+    let rec resolve (mods: Map<string, ModuleExports>) (remaining: string list) =
+        match remaining with
+        | [] -> failwith "empty module path"
+        | [name] ->
+            match Map.tryFind name mods with
+            | Some exports -> exports
+            | None ->
+                raise (TypeException {
+                    Kind = UnresolvedModule name
+                    Span = span; Term = None; ContextStack = []; Trace = [] })
+        | name :: rest ->
+            match Map.tryFind name mods with
+            | Some exports -> resolve exports.SubModules rest
+            | None ->
+                raise (TypeException {
+                    Kind = UnresolvedModule name
+                    Span = span; Term = None; ContextStack = []; Trace = [] })
+    resolve modules path
+
+/// Detect circular module dependencies using DFS 3-color algorithm.
+/// Returns Some(cycle path) if circular dependency found, None otherwise.
+let detectCircularDeps (graph: Map<string, string list>) : string list option =
+    // Colors: 0=white (unvisited), 1=gray (in progress), 2=black (done)
+    let color = System.Collections.Generic.Dictionary<string, int>()
+    let parent = System.Collections.Generic.Dictionary<string, string option>()
+    for key in graph.Keys do
+        color.[key] <- 0
+        parent.[key] <- None
+
+    let rec dfs (node: string) : string list option =
+        color.[node] <- 1  // gray
+        let neighbors = match graph.TryGetValue(node) with | true, ns -> ns | _ -> []
+        let result =
+            neighbors |> List.tryPick (fun neighbor ->
+                match color.TryGetValue(neighbor) with
+                | true, 1 ->
+                    // Found cycle: reconstruct path
+                    Some [neighbor; node; neighbor]
+                | true, 0 ->
+                    parent.[neighbor] <- Some node
+                    dfs neighbor
+                | _ -> None)
+        color.[node] <- 2  // black
+        result
+
+    graph.Keys
+    |> Seq.tryPick (fun node ->
+        match color.[node] with
+        | 0 -> dfs node
+        | _ -> None)
+
+/// Build dependency graph from module declarations (collect open directives per module)
+let buildDependencyGraph (decls: Decl list) : Map<string, string list> =
+    let rec collectOpens (ds: Decl list) : string list =
+        ds |> List.collect (fun d ->
+            match d with
+            | OpenDecl(path, _) ->
+                match path with
+                | name :: _ -> [name]
+                | [] -> []
+            | _ -> [])
+    decls
+    |> List.choose (fun d ->
+        match d with
+        | ModuleDecl(name, innerDecls, _) ->
+            Some (name, collectOpens innerDecls)
+        | _ -> None)
+    |> Map.ofList
+
 /// Type check an expression using the initial type environment
 /// Returns Ok(type) on success, Error(message) on type error
 let typecheck (expr: Expr): Result<Type, string> =

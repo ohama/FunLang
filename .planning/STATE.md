@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 of 6 (Module System)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 05-01-PLAN.md (Module system foundation)
+Last activity: 2026-03-09 -- Completed 05-02-PLAN.md (Module parser grammar)
 
-Progress: [█████████████████░░░] 80% (4/6 phases + 1/5 plans in phase 5)
+Progress: [█████████████████░░░] 82% (4/6 phases + 2/5 plans in phase 5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
-- Average duration: 4.2 min
-- Total execution time: 1.41 hours
+- Total plans completed: 21
+- Average duration: 4.1 min
+- Total execution time: 1.44 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [█████████████████░░░] 80% (4/
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
 | 04 | 5 | 16 min | 3.2 min |
-| 05 | 1 | 2 min | 2.0 min |
+| 05 | 2 | 4 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (4min), 04-03 (2min), 04-04 (3min), 04-05 (4min), 05-01 (2min)
+- Last 5 plans: 04-03 (2min), 04-04 (3min), 04-05 (4min), 05-01 (2min), 05-02 (2min)
 - Trend: Consistent ~2-4min average for compiler plans
 
 *Updated after each plan completion*
@@ -150,6 +150,11 @@ Recent decisions affecting current work:
 - E05xx error code range for module system errors
 - Module system keywords (module, namespace, open) lexed before general identifier rule
 
+**From 05-02 (Module Parser Grammar):**
+- Top-level module/namespace rules placed before Decls EOF for LALR priority
+- Nested module uses EQUALS INDENT Decls DEDENT (top-level has no =)
+- Open directive and nested module follow singleton/continuation pattern in Decls
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -176,10 +181,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 5 plan 1 complete)
-Stopped at: Completed 05-01-PLAN.md (Module system foundation)
+Last session: 2026-03-09 (Phase 5 plan 2 complete)
+Stopped at: Completed 05-02-PLAN.md (Module parser grammar)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 07:51 UTC*
+*Last updated: 2026-03-09 07:55 UTC*
