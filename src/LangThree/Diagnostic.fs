@@ -38,9 +38,15 @@ type TypeErrorKind =
     | UnresolvedModule of name: string                 // E0502
     | DuplicateModuleName of name: string              // E0503
     | ForwardModuleReference of name: string           // E0504
+    // Phase 6 (Exceptions): Exception error kinds
+    | UndefinedExceptionConstructor of name: string              // E0601
+    | ExceptionArityMismatch of constructor: string * expected: int * actual: int  // E0602
+    | RaiseNotException of ty: Type                              // E0603
+    | WhenGuardNotBool of ty: Type                               // E0604
     // Warning kinds (W-prefixed codes)
     | NonExhaustiveMatch of missingPatterns: string list
     | RedundantPattern of index: int
+    | NonExhaustiveExceptionHandler of missingInfo: string       // W0003
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -271,6 +277,31 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0504",
             sprintf "Forward reference to module: %s" name,
             Some "Modules must be defined before they can be opened (top-to-bottom order)"
+
+        | UndefinedExceptionConstructor name ->
+            Some "E0601",
+            sprintf "Undefined exception constructor: %s" name,
+            Some "Make sure the exception is declared with 'exception' before use"
+
+        | ExceptionArityMismatch (ctor, expected, actual) ->
+            Some "E0602",
+            sprintf "Exception constructor %s expects %d argument(s) but was given %d" ctor expected actual,
+            Some "Check the number of arguments to the exception constructor"
+
+        | RaiseNotException ty ->
+            Some "E0603",
+            sprintf "Cannot raise non-exception type %s" (formatType ty),
+            Some "Only values of type exn can be raised"
+
+        | WhenGuardNotBool ty ->
+            Some "E0604",
+            sprintf "When guard must be bool but got %s" (formatType ty),
+            Some "The when guard expression must evaluate to a boolean"
+
+        | NonExhaustiveExceptionHandler missingInfo ->
+            Some "W0003",
+            sprintf "Non-exhaustive exception handler: %s" missingInfo,
+            Some "Add a catch-all handler or handle all possible exceptions"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "

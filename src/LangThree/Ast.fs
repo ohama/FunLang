@@ -96,6 +96,9 @@ type Expr =
     | RecordUpdate of source: Expr * fields: (string * Expr) list * span: Span
     // Phase 3 (Records-06): Mutable field assignment
     | SetField of expr: Expr * fieldName: string * value: Expr * span: Span
+    // Phase 6 (Exceptions): Raise and try-with
+    | Raise of expr: Expr * span: Span
+    | TryWith of body: Expr * handlers: MatchClause list * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -114,9 +117,9 @@ and Pattern =
     // Phase 3 (Records): Record pattern
     | RecordPat of fields: (string * Pattern) list * span: Span
 
-/// Match clause: pattern -> expression
-/// Phase 3 (v3.0)
-and MatchClause = Pattern * Expr
+/// Match clause: pattern -> when guard -> expression
+/// Phase 3 (v3.0), Phase 6: Extended with optional when guard
+and MatchClause = Pattern * Expr option * Expr
 
 /// Constant values for patterns
 /// Phase 3 (v3.0)
@@ -202,6 +205,7 @@ let spanOf (expr: Expr) : Span =
     | Constructor(_, _, s) -> s
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
     | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) | SetField(_, _, _, s) -> s
+    | Raise(_, s) | TryWith(_, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
@@ -221,6 +225,8 @@ type Decl =
     | ModuleDecl of name: string * decls: Decl list * Span
     | OpenDecl of path: string list * Span
     | NamespaceDecl of path: string list * decls: Decl list * Span
+    // Phase 6 (Exceptions): Exception declaration
+    | ExceptionDecl of name: string * dataType: TypeExpr option * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -239,6 +245,7 @@ let declSpanOf (decl: Decl) : Span =
     | ModuleDecl(_, _, s) -> s
     | OpenDecl(_, s) -> s
     | NamespaceDecl(_, _, s) -> s
+    | ExceptionDecl(_, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =

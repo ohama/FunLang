@@ -11,6 +11,7 @@ type Type =
     | TTuple of Type list            // tuple type 'a * 'b
     | TList of Type                  // list type 'a list
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
+    | TExn                                        // Exception base type
 
 /// Type scheme for polymorphism
 /// forall 'a 'b. 'a -> 'b -> 'a
@@ -70,6 +71,7 @@ let rec formatType = function
     | TData (name, args) ->
         let argStr = args |> List.map formatType |> String.concat ", "
         sprintf "%s<%s>" name argStr
+    | TExn -> "exn"
 
 /// Format type with normalized type variables ('a, 'b, 'c instead of raw indices)
 /// TVar 1000, TVar 1001 -> 'a, 'b (based on order of first appearance)
@@ -81,7 +83,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TTuple ts -> List.fold collectVars acc ts
         | TList t -> collectVars acc t
         | TData (_, args) -> List.fold collectVars acc args
-        | TInt | TBool | TString -> acc
+        | TInt | TBool | TString | TExn -> acc
 
     let vars = collectVars [] ty
     let varMap = vars |> List.mapi (fun i v -> (v, i)) |> Map.ofList
@@ -103,6 +105,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TData (name, args) ->
             let argStr = args |> List.map format |> String.concat ", "
             sprintf "%s<%s>" name argStr
+        | TExn -> "exn"
 
     format ty
 
@@ -123,6 +126,7 @@ let rec apply (s: Subst) = function
     | TInt -> TInt
     | TBool -> TBool
     | TString -> TString
+    | TExn -> TExn
     | TVar n ->
         match Map.tryFind n s with
         | Some t -> apply s t  // Recursive for transitive substitution
@@ -154,7 +158,7 @@ let applyEnv (s: Subst) (env: TypeEnv): TypeEnv =
 
 /// Collect free type variables in a type
 let rec freeVars = function
-    | TInt | TBool | TString -> Set.empty
+    | TInt | TBool | TString | TExn -> Set.empty
     | TVar n -> Set.singleton n
     | TArrow (t1, t2) -> Set.union (freeVars t1) (freeVars t2)
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany
