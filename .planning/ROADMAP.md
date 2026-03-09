@@ -70,15 +70,16 @@ Plans:
   3. User can access record fields via dot notation (`point.x`)
   4. User can create modified copy of record using copy-and-update syntax (`{ point with y = 3.0 }`)
   5. User can pattern match on record fields
-**Plans**: 6 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — AST nodes, type definitions, elaboration, diagnostics, and lexer tokens for records
+- [ ] 03-01-PLAN.md — AST nodes, type definitions, elaboration, diagnostics, lexer tokens, and parser token declarations
 - [ ] 03-02-PLAN.md — Parser grammar rules for record declarations, expressions, field access, and patterns
 - [ ] 03-03-PLAN.md — Type checker refactor with RecordEnv and record expression type checking
-- [ ] 03-04-PLAN.md — Evaluator support for record creation, field access, copy-and-update, and equality
+- [ ] 03-04-PLAN.md — Evaluator support for record creation (with type name resolution), field access, copy-and-update, and equality
 - [ ] 03-05-PLAN.md — Integration tests for all record features (REC-01 through REC-06) with bug fixes
-- [ ] 03-06-PLAN.md — Mutable fields (REC-07) across all compiler layers
+- [ ] 03-06-PLAN.md — Mutable field syntax: MUTABLE/LARROW tokens, SetField AST, parser rules, formatting
+- [ ] 03-07-PLAN.md — Mutable field semantics: type checking, ref-cell evaluation, and tests (REC-07)
 
 ### Phase 4: Generalized Algebraic Data Types
 **Goal**: Users can define GADTs with type refinement for type-safe DSLs
@@ -133,7 +134,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Indentation-Based Syntax | 4/4 | ✓ Complete | 2026-03-02 |
 | 2. Algebraic Data Types | 6/6 | ✓ Complete | 2026-03-09 |
-| 3. Records | 0/6 | Not started | - |
+| 3. Records | 0/7 | Not started | - |
 | 4. Generalized Algebraic Data Types | 0/? | Not started | - |
 | 5. Module System | 0/? | Not started | - |
 | 6. Exceptions | 0/? | Not started | - |
