@@ -317,6 +317,12 @@ TypeDeclContinuation:
 // Module: Top-level entry point for multi-declaration files
 // Accepts multiple top-level let bindings at column 0
 parseModule:
+    // Phase 5 (Modules): Top-level module declaration
+    | MODULE QualifiedIdent Decls EOF
+        { NamedModule($2, $3, ruleSpan parseState 1 4) }
+    // Phase 5 (Modules): Top-level namespace declaration
+    | NAMESPACE QualifiedIdent Decls EOF
+        { NamespacedModule($2, $3, ruleSpan parseState 1 4) }
     | Decls EOF                     { Module($1, ruleSpan parseState 1 2) }
     | EOF                           { EmptyModule(ruleSpan parseState 1 1) }
 
@@ -330,6 +336,16 @@ Decls:
     // Phase 3 (Records): Record type declarations
     | RecordDeclaration               { [Ast.Decl.RecordTypeDecl $1] }
     | RecordDeclaration Decls         { (Ast.Decl.RecordTypeDecl $1) :: $2 }
+    // Phase 5 (Modules): Nested module declaration
+    | MODULE IDENT EQUALS INDENT Decls DEDENT
+        { [ModuleDecl($2, $5, ruleSpan parseState 1 6)] }
+    | MODULE IDENT EQUALS INDENT Decls DEDENT Decls
+        { ModuleDecl($2, $5, ruleSpan parseState 1 6) :: $7 }
+    // Phase 5 (Modules): Open directive
+    | OPEN QualifiedIdent
+        { [OpenDecl($2, ruleSpan parseState 1 2)] }
+    | OPEN QualifiedIdent Decls
+        { OpenDecl($2, ruleSpan parseState 1 2) :: $3 }
 
 // Decl: Single top-level declaration
 // Top-level declarations must be at column 0
