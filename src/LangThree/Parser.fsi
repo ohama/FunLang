@@ -5,6 +5,10 @@ type token =
   | DEDENT
   | INDENT
   | NEWLINE of (int)
+  | EXCEPTION
+  | RAISE
+  | TRY
+  | WHEN
   | MODULE
   | NAMESPACE
   | OPEN
@@ -63,6 +67,10 @@ type tokenId =
     | TOKEN_DEDENT
     | TOKEN_INDENT
     | TOKEN_NEWLINE
+    | TOKEN_EXCEPTION
+    | TOKEN_RAISE
+    | TOKEN_TRY
+    | TOKEN_WHEN
     | TOKEN_MODULE
     | TOKEN_NAMESPACE
     | TOKEN_OPEN
