@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 5 complete - Module System. Ready for Phase 6.
+**Current focus:** Phase 6 in progress - Exceptions.
 
 ## Current Position
 
-Phase: 5 of 7 (Module System)
-Plan: 5 of 5 in current phase
-Status: Phase complete, verified
-Last activity: 2026-03-09 -- Phase 5 verified (5/5 must-haves pass)
+Phase: 6 of 7 (Exceptions)
+Plan: 1 of ? in current phase
+Status: In progress
+Last activity: 2026-03-09 -- Completed 06-01-PLAN.md
 
-Progress: [██████████████████░░] 71% (5/7 phases complete)
+Progress: [██████████████████░░] 75% (25/? plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
 - Average duration: 4.2 min
-- Total execution time: 1.79 hours
+- Total execution time: 1.88 hours
 
 **By Phase:**
 
@@ -33,9 +33,11 @@ Progress: [██████████████████░░] 71% (5/
 | 04 | 5 | 16 min | 3.2 min |
 | 05 | 5 | 25 min | 5.0 min |
 
+| 06 | 1 | 5 min | 5.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 05-01 (2min), 05-02 (2min), 05-03 (4min), 05-04 (5min), 05-05 (12min)
-- Trend: Integration test plan took longer due to 3 bug fixes discovered during testing
+- Last 5 plans: 05-02 (2min), 05-03 (4min), 05-04 (5min), 05-05 (12min), 06-01 (5min)
+- Trend: Foundation plan completed smoothly, cross-cutting MatchClause migration
 
 *Updated after each plan completion*
 
@@ -168,6 +170,13 @@ Recent decisions affecting current work:
 - rewriteModuleAccess converts FieldAccess(Constructor(modName), member) to Var/Constructor before synth
 - App(Module.Ctor, arg) rewrites to Constructor(name, Some arg) not App(Constructor(name, None), arg)
 
+**From 06-01 (Exception Foundation):**
+- MatchClause changed from Pattern * Expr to Pattern * Expr option * Expr (when guard slot)
+- TExn type for exception base type (open, no type parameters)
+- Exception error codes use E06xx range (E0601-E0604), W0003 for non-exhaustive handler
+- ExceptionDecl uses same singleton/continuation pattern as OpenDecl in parser
+- raise uses Atom (not AppExpr) to avoid ambiguity with constructor application
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -199,8 +208,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 5 verified)
-Stopped at: Phase 5 verified, ready for Phase 6 (Exceptions)
+Last session: 2026-03-09
+Stopped at: Completed 06-01-PLAN.md (Exception Foundation)
 Resume file: None
 
 ---
