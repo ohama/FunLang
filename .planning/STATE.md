@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 5 in progress - Module System
+**Current focus:** Phase 5 complete - Module System. Ready for Phase 6.
 
 ## Current Position
 
 Phase: 5 of 6 (Module System)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-09 -- Completed 05-04-PLAN.md (Module-aware evaluation)
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-03-09 -- Completed 05-05-PLAN.md (Module integration tests)
 
-Progress: [███████████████████░] 88% (4/6 phases + 4/5 plans in phase 5)
+Progress: [████████████████████] 92% (5/6 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 23
-- Average duration: 3.9 min
-- Total execution time: 1.59 hours
+- Total plans completed: 24
+- Average duration: 4.2 min
+- Total execution time: 1.79 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [███████████████████░] 88% (4/
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
 | 04 | 5 | 16 min | 3.2 min |
-| 05 | 4 | 13 min | 3.3 min |
+| 05 | 5 | 25 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-05 (4min), 05-01 (2min), 05-02 (2min), 05-03 (4min), 05-04 (5min)
-- Trend: Consistent ~2-5min average for compiler plans
+- Last 5 plans: 05-01 (2min), 05-02 (2min), 05-03 (4min), 05-04 (5min), 05-05 (12min)
+- Trend: Integration test plan took longer due to 3 bug fixes discovered during testing
 
 *Updated after each plan completion*
 
@@ -161,6 +161,13 @@ Recent decisions affecting current work:
 - evalModuleDecls is standalone let rec, not part of eval/evalMatchClauses and-group
 - Constructor names collected from both ConstructorDecl and GadtConstructorDecl in TypeDecl
 
+**From 05-05 (Module Integration Tests):**
+- AST rewriting approach for qualified module access (avoids threading modules through 47 synth/check call sites)
+- Uppercase idents parsed as Constructor nodes (not Var) -- both type checker and evaluator need to handle this for module dispatch
+- TypeDecl in evalModuleDecls must register constructors as FunctionValue/DataValue for qualified constructor access
+- rewriteModuleAccess converts FieldAccess(Constructor(modName), member) to Var/Constructor before synth
+- App(Module.Ctor, arg) rewrites to Constructor(name, Some arg) not App(Constructor(name, None), arg)
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -192,8 +199,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 5 plan 4 complete)
-Stopped at: Completed 05-04-PLAN.md (Module-aware evaluation)
+Last session: 2026-03-09 (Phase 5 complete)
+Stopped at: Completed 05-05-PLAN.md (Module integration tests) -- Phase 5 complete
 Resume file: None
 
 ---
