@@ -42,6 +42,50 @@ let rec synth (ctorEnv: ConstructorEnv) (ctx: InferContext list) (env: TypeEnv) 
                 Trace = []
             })
 
+    // === Constructor expressions (ADT) ===
+    | Constructor (name, argOpt, span) ->
+        match Map.tryFind name ctorEnv with
+        | None ->
+            // If not in ctorEnv, treat as unbound (may be used without type decl in eval-only tests)
+            // Return a fresh TData-like type
+            let resultTy = freshVar()
+            match argOpt with
+            | None -> (empty, resultTy)
+            | Some argExpr ->
+                let s, _argTy = synth ctorEnv ctx env argExpr
+                (s, apply s resultTy)
+        | Some ctorInfo ->
+            // Instantiate type params with fresh variables
+            let freshVars = ctorInfo.TypeParams |> List.map (fun _ -> freshVar())
+            let subst = List.zip ctorInfo.TypeParams freshVars |> Map.ofList
+            let resultType = apply subst ctorInfo.ResultType
+            match (ctorInfo.ArgType, argOpt) with
+            | (None, None) ->
+                // Nullary constructor (e.g., None)
+                (empty, resultType)
+            | (Some argType, Some argExpr) ->
+                // Constructor with argument (e.g., Some 42)
+                let expectedArgTy = apply subst argType
+                let s1, actualArgTy = synth ctorEnv ctx env argExpr
+                let s2 = unifyWithContext ctx [] span expectedArgTy actualArgTy
+                (compose s2 s1, apply (compose s2 s1) resultType)
+            | (None, Some _) ->
+                raise (TypeException {
+                    Kind = ArityMismatch (name, 0, 1)
+                    Span = span
+                    Term = Some expr
+                    ContextStack = ctx
+                    Trace = []
+                })
+            | (Some _, None) ->
+                raise (TypeException {
+                    Kind = ArityMismatch (name, 1, 0)
+                    Span = span
+                    Term = Some expr
+                    ContextStack = ctx
+                    Trace = []
+                })
+
     // === Application (BIDIR-03) ===
     | App (func, arg, span) ->
         let s1, funcTy = synth ctorEnv (InAppFun span :: ctx) env func
