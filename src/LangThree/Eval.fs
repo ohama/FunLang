@@ -19,6 +19,13 @@ let rec formatValue (v: Value) : string =
     | ListValue values ->
         let formattedElements = List.map formatValue values
         sprintf "[%s]" (String.concat ", " formattedElements)
+    | DataValue (name, None) -> name
+    | DataValue (name, Some v) ->
+        let argStr = formatValue v
+        // Wrap compound values in parens for clarity
+        let needsParens = match v with DataValue (_, Some _) | TupleValue _ -> true | _ -> false
+        if needsParens then sprintf "%s (%s)" name argStr
+        else sprintf "%s %s" name argStr
 
 /// Match a pattern against a value, returning bindings if successful
 let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list option =
@@ -49,6 +56,15 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
             | Some tailBindings -> Some (headBindings @ tailBindings)
             | None -> None
         | None -> None
+    // Phase 2 (ADT): Constructor pattern matching
+    | ConstructorPat (name, argPatOpt, _), DataValue (ctorName, argValOpt) ->
+        if name = ctorName then
+            match argPatOpt, argValOpt with
+            | None, None -> Some []  // Nullary constructor
+            | Some argPat, Some argVal -> matchPattern argPat argVal  // Constructor with argument
+            | _ -> None  // Arity mismatch
+        else
+            None  // Different constructor
     | _ -> None  // Type mismatch (e.g., TuplePat vs IntValue)
 
 /// Evaluate match clauses sequentially, returning first match
@@ -214,6 +230,11 @@ and eval (env: Env) (expr: Expr) : Value =
         | BoolValue true -> eval env thenBranch
         | BoolValue false -> eval env elseBranch
         | _ -> failwith "Type error: if condition must be boolean"
+
+    // Phase 2 (ADT): Constructor evaluation
+    | Constructor (name, argOpt, _) ->
+        let argValue = argOpt |> Option.map (eval env)
+        DataValue (name, argValue)
 
     // v6.0: Type annotations - erased at runtime
     | Annot (expr, _, _) ->
