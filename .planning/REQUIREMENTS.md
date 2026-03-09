@@ -30,10 +30,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Generalized Algebraic Data Types
 
-- [ ] **GADT-01**: Explicit constructor return types (`Int : int -> int expr`)
-- [ ] **GADT-02**: Type refinement in pattern matching
-- [ ] **GADT-03**: Existential types in constructors
-- [ ] **GADT-04**: Local type constraints
+- [x] **GADT-01**: Explicit constructor return types (`Int : int -> int expr`)
+- [x] **GADT-02**: Type refinement in pattern matching
+- [x] **GADT-03**: Existential types in constructors
+- [x] **GADT-04**: Local type constraints
 
 ### Records
 
@@ -122,10 +122,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ADT-05 | Phase 2 | Complete |
 | ADT-06 | Phase 2 | Complete |
 | ADT-07 | Phase 2 | Complete |
-| GADT-01 | Phase 4 | Pending |
-| GADT-02 | Phase 4 | Pending |
-| GADT-03 | Phase 4 | Pending |
-| GADT-04 | Phase 4 | Pending |
+| GADT-01 | Phase 4 | Complete |
+| GADT-02 | Phase 4 | Complete |
+| GADT-03 | Phase 4 | Complete |
+| GADT-04 | Phase 4 | Complete |
 | REC-01 | Phase 3 | Complete |
 | REC-02 | Phase 3 | Complete |
 | REC-03 | Phase 3 | Complete |
