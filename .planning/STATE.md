@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 6 of 7 (Exceptions)
-Plan: 1 of ? in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 06-01-PLAN.md
+Last activity: 2026-03-09 -- Completed 06-02-PLAN.md
 
-Progress: [██████████████████░░] 75% (25/? plans complete)
+Progress: [██████████████████░░] 78% (26/? plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25
+- Total plans completed: 26
 - Average duration: 4.2 min
-- Total execution time: 1.88 hours
+- Total execution time: 1.96 hours
 
 **By Phase:**
 
@@ -33,11 +33,11 @@ Progress: [██████████████████░░] 75% (25
 | 04 | 5 | 16 min | 3.2 min |
 | 05 | 5 | 25 min | 5.0 min |
 
-| 06 | 1 | 5 min | 5.0 min |
+| 06 | 2 | 10 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-02 (2min), 05-03 (4min), 05-04 (5min), 05-05 (12min), 06-01 (5min)
-- Trend: Foundation plan completed smoothly, cross-cutting MatchClause migration
+- Last 5 plans: 05-03 (4min), 05-04 (5min), 05-05 (12min), 06-01 (5min), 06-02 (5min)
+- Trend: Exception type checking completed, fixed 06-01 test gap
 
 *Updated after each plan completion*
 
@@ -170,6 +170,11 @@ Recent decisions affecting current work:
 - rewriteModuleAccess converts FieldAccess(Constructor(modName), member) to Var/Constructor before synth
 - App(Module.Ctor, arg) rewrites to Constructor(name, Some arg) not App(Constructor(name, None), arg)
 
+**From 06-02 (Exception Type Checking):**
+- Guarded patterns excluded from exhaustiveness matrix (guard may fail, so pattern doesn't guarantee coverage)
+- W0003 warning for try-with without catch-all handler (open type can't be exhaustively matched)
+- Exception constructors added to typeEnv as functions for higher-order use
+
 **From 06-01 (Exception Foundation):**
 - MatchClause changed from Pattern * Expr to Pattern * Expr option * Expr (when guard slot)
 - TExn type for exception base type (open, no type parameters)
@@ -209,7 +214,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 06-01-PLAN.md (Exception Foundation)
+Stopped at: Completed 06-02-PLAN.md (Exception Type Checking)
 Resume file: None
 
 ---
