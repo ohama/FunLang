@@ -151,3 +151,7 @@ and formatPattern (pat: Ast.Pattern) : string =
         | Ast.BoolConst b -> sprintf "ConstPat (BoolConst %b)" b
     | Ast.EmptyListPat _ -> "EmptyListPat"
     | Ast.ConsPat (h, t, _) -> sprintf "ConsPat (%s, %s)" (formatPattern h) (formatPattern t)
+    | Ast.ConstructorPat (name, argOpt, _) ->
+        match argOpt with
+        | None -> sprintf "ConstructorPat \"%s\"" name
+        | Some arg -> sprintf "ConstructorPat (\"%s\", %s)" name (formatPattern arg)

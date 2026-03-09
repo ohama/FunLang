@@ -170,7 +170,17 @@ PatternList:
 
 Pattern:
     | LPAREN PatternList RPAREN   { TuplePat($2, ruleSpan parseState 1 3) }
-    | IDENT                       { VarPat($1, symSpan parseState 1) }
+    | IDENT                       {
+        // Uppercase = constructor (e.g., None, True), lowercase = variable
+        if System.Char.IsUpper($1.[0]) then
+            ConstructorPat($1, None, symSpan parseState 1)
+        else
+            VarPat($1, symSpan parseState 1)
+    }
+    | IDENT Pattern               {
+        // Constructor with argument (e.g., Some x, Node left)
+        ConstructorPat($1, Some $2, ruleSpan parseState 1 2)
+    }
     | UNDERSCORE                  { WildcardPat(symSpan parseState 1) }
     // Phase 3 (v3.0): Extended patterns for match expressions
     | NUMBER                      { ConstPat(IntConst($1), symSpan parseState 1) }

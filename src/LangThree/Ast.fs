@@ -101,6 +101,8 @@ and Pattern =
     | ConsPat of Pattern * Pattern * span: Span     // Cons pattern: h :: t
     | EmptyListPat of span: Span                    // Empty list pattern: []
     | ConstPat of Constant * span: Span             // Constant pattern: 1, true, false
+    // Phase 2 (ADT-03): Constructor pattern for ADT matching
+    | ConstructorPat of name: string * argPattern: Pattern option * span: Span
 
 /// Match clause: pattern -> expression
 /// Phase 3 (v3.0)
@@ -179,6 +181,7 @@ let patternSpanOf (pat: Pattern) : Span =
     match pat with
     | VarPat(_, s) | WildcardPat s | TuplePat(_, s) -> s
     | ConsPat(_, _, s) | EmptyListPat s | ConstPat(_, s) -> s
+    | ConstructorPat(_, _, s) -> s
 
 /// Module-level declaration
 /// Phase 1 (INDENT-05): Module-level declarations
