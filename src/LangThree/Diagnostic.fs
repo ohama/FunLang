@@ -29,6 +29,10 @@ type TypeErrorKind =
     | DuplicateRecordField of fieldName: string * type1: string * type2: string
     | NotARecord of typeName: string
     | FieldAccessOnNonRecord of ty: Type
+    // Phase 4 (GADT): GADT-specific error kinds
+    | GadtAnnotationRequired of scrutineeType: string
+    | ExistentialEscape of varId: int
+    | GadtReturnTypeMismatch of constructor: string * expected: string * actual: string
     // Warning kinds (W-prefixed codes)
     | NonExhaustiveMatch of missingPatterns: string list
     | RedundantPattern of index: int
@@ -226,6 +230,21 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0313",
             sprintf "Cannot access field on non-record type %s" (formatType ty),
             Some "Field access is only supported on record types"
+
+        | GadtAnnotationRequired scrutineeType ->
+            Some "E0401",
+            sprintf "GADT match requires type annotation on scrutinee of type %s" scrutineeType,
+            Some "Add a type annotation to the match scrutinee: match (expr : Type) with ..."
+
+        | ExistentialEscape varId ->
+            Some "E0402",
+            sprintf "Existential type variable '%c escapes its scope" (char (97 + varId % 26)),
+            Some "Existential type variables from GADT pattern matches cannot escape the match branch"
+
+        | GadtReturnTypeMismatch (ctor, expected, actual) ->
+            Some "E0403",
+            sprintf "GADT constructor %s return type mismatch: expected %s but got %s" ctor expected actual,
+            Some "The constructor's return type must match the declared type"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "

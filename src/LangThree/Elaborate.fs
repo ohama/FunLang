@@ -108,6 +108,8 @@ let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.Type
             TypeParams = typeParamVars
             ArgType = argType
             ResultType = resultType
+            IsGadt = false
+            ExistentialVars = []
         }
         (ctorName, info))
     |> Map.ofList

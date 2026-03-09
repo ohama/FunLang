@@ -135,6 +135,7 @@ and TypeExpr =
     | TETuple of TypeExpr list            // T1 * T2 * ... (n >= 2)
     | TEVar of string                     // 'a, 'b (includes apostrophe)
     | TEName of string                    // Named type: Tree, Option, etc. (Phase 2 ADT-01)
+    | TEData of name: string * args: TypeExpr list  // Parameterized named type: int expr, 'a option (Phase 4 GADT)
 
 /// Type declaration AST for algebraic data types (discriminated unions)
 /// Phase 2 (ADT-01): F# discriminated union syntax
@@ -144,6 +145,7 @@ and TypeDecl =
 /// Constructor definition within a type declaration
 and ConstructorDecl =
     | ConstructorDecl of name: string * dataType: TypeExpr option * Span
+    | GadtConstructorDecl of name: string * argTypes: TypeExpr list * returnType: TypeExpr * Span
 
 /// Record field declaration
 /// Phase 3 (Records): Named, typed fields with optional mutability
@@ -181,6 +183,7 @@ let typeSpanOf (td: TypeDecl) : Span =
 let constructorSpanOf (cd: ConstructorDecl) : Span =
     match cd with
     | ConstructorDecl(_, _, s) -> s
+    | GadtConstructorDecl(_, _, _, s) -> s
 
 /// Extract span from any Expr
 let spanOf (expr: Expr) : Span =

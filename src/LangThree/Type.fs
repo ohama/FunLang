@@ -25,6 +25,8 @@ type ConstructorInfo = {
     TypeParams: int list        // Type variables [0] for 'a
     ArgType: Type option        // None for nullary constructors (e.g., None)
     ResultType: Type            // Always TData("TypeName", [TVar ...])
+    IsGadt: bool                // True if this is a GADT constructor with refined return type
+    ExistentialVars: int list   // Type variables existentially bound (not in result type)
 }
 
 /// Constructor environment: constructor name -> type information
