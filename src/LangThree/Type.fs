@@ -30,6 +30,26 @@ type ConstructorInfo = {
 /// Constructor environment: constructor name -> type information
 type ConstructorEnv = Map<string, ConstructorInfo>
 
+/// Record field type information
+/// Phase 3 (Records): field metadata for type checking
+type RecordFieldInfo = {
+    Name: string
+    FieldType: Type
+    IsMutable: bool
+    Index: int
+}
+
+/// Record type information
+/// Phase 3 (Records): full record type metadata
+type RecordTypeInfo = {
+    TypeParams: int list
+    Fields: RecordFieldInfo list
+    ResultType: Type
+}
+
+/// Record environment: record type name -> type information
+type RecordEnv = Map<string, RecordTypeInfo>
+
 /// Type substitution: type variable -> type
 type Subst = Map<int, Type>
 

@@ -90,6 +90,10 @@ type Expr =
     // v6.0: Type annotations
     | Annot of expr: Expr * typeExpr: TypeExpr * span: Span          // (e : T)
     | LambdaAnnot of param: string * paramType: TypeExpr * body: Expr * span: Span  // fun (x: T) -> e
+    // Phase 3 (Records): Record expressions
+    | RecordExpr of typeName: string option * fields: (string * Expr) list * span: Span
+    | FieldAccess of expr: Expr * fieldName: string * span: Span
+    | RecordUpdate of source: Expr * fields: (string * Expr) list * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -105,6 +109,8 @@ and Pattern =
     | ConstPat of Constant * span: Span             // Constant pattern: 1, true, false
     // Phase 2 (ADT): Constructor pattern for ADT matching
     | ConstructorPat of name: string * argPattern: Pattern option * span: Span
+    // Phase 3 (Records): Record pattern
+    | RecordPat of fields: (string * Pattern) list * span: Span
 
 /// Match clause: pattern -> expression
 /// Phase 3 (v3.0)
@@ -137,6 +143,16 @@ and TypeDecl =
 and ConstructorDecl =
     | ConstructorDecl of name: string * dataType: TypeExpr option * Span
 
+/// Record field declaration
+/// Phase 3 (Records): Named, typed fields with optional mutability
+and RecordFieldDecl =
+    | RecordFieldDecl of name: string * fieldType: TypeExpr * isMutable: bool * Span
+
+/// Record type declaration
+/// Phase 3 (Records): type T = { field1: Type1; field2: Type2 }
+and RecordDecl =
+    | RecordDecl of name: string * typeParams: string list * fields: RecordFieldDecl list * Span
+
 /// Value type for evaluation results
 /// Phase 4: Heterogeneous types (int and bool)
 /// Phase 5: FunctionValue for first-class functions (mutual recursion with Expr, Env)
@@ -148,6 +164,7 @@ and Value =
     | TupleValue of Value list  // v3.0: Tuple values
     | ListValue of Value list  // v3.0: List values
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
+    | RecordValue of typeName: string * fields: Map<string, Value>  // Phase 3 (Records): Record value
 
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value
@@ -179,6 +196,7 @@ let spanOf (expr: Expr) : Span =
     | Match(_, _, s) -> s
     | Constructor(_, _, s) -> s
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
+    | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
@@ -186,12 +204,14 @@ let patternSpanOf (pat: Pattern) : Span =
     | VarPat(_, s) | WildcardPat s | TuplePat(_, s) -> s
     | ConsPat(_, _, s) | EmptyListPat s | ConstPat(_, s) -> s
     | ConstructorPat(_, _, s) -> s
+    | RecordPat(_, s) -> s
 
 /// Module-level declaration
 /// Phase 1 (INDENT-05): Module-level declarations
 type Decl =
     | LetDecl of name: string * body: Expr * Span
     | TypeDecl of TypeDecl  // Phase 2 (ADT-01): Type declaration (discriminated union)
+    | RecordTypeDecl of RecordDecl  // Phase 3 (Records): Record type declaration
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -204,6 +224,7 @@ let declSpanOf (decl: Decl) : Span =
     match decl with
     | LetDecl(_, _, s) -> s
     | TypeDecl td -> typeSpanOf td
+    | RecordTypeDecl (RecordDecl(_, _, _, s)) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
