@@ -5,6 +5,9 @@ type token =
   | DEDENT
   | INDENT
   | NEWLINE of (int)
+  | TYPE
+  | OF
+  | AND_KW
   | TYPE_VAR of (string)
   | TYPE_INT
   | TYPE_BOOL
@@ -51,6 +54,9 @@ type tokenId =
     | TOKEN_DEDENT
     | TOKEN_INDENT
     | TOKEN_NEWLINE
+    | TOKEN_TYPE
+    | TOKEN_OF
+    | TOKEN_AND_KW
     | TOKEN_TYPE_VAR
     | TOKEN_TYPE_INT
     | TOKEN_TYPE_BOOL
@@ -116,6 +122,11 @@ type nonTerminalId =
     | NONTERM_TupleType
     | NONTERM_TupleTypeList
     | NONTERM_AtomicType
+    | NONTERM_TypeDeclaration
+    | NONTERM_TypeParams
+    | NONTERM_Constructors
+    | NONTERM_Constructor
+    | NONTERM_TypeDeclContinuation
     | NONTERM_parseModule
     | NONTERM_Decls
     | NONTERM_Decl

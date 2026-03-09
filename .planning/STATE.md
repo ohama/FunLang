@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 3 of 5 in current phase
+Plan: 5 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 02-03-PLAN.md (Constructor Pattern Type Checking)
+Last activity: 2026-03-09 -- Completed 02-05-PLAN.md (runtime evaluation of ADT values), 02-01 through 02-03 also complete
 
 Progress: [█████░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 8 min
-- Total execution time: 0.92 hours
+- Total execution time: 0.97 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
-| 02 | 3 | 17 min | 5.7 min |
+| 02 | 4 | 25 min | 6.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (3min), 01-04 (12min), 02-01 (9min), 02-02 (3min), 02-03 (5min)
+- Last 5 plans: 01-04 (12min), 02-01 (9min), 02-02 (3min), 02-03 (5min), 02-05 (8min)
 - Trend: Consistent velocity, fast plans for well-scoped type system work
 
 *Updated after each plan completion*
@@ -86,6 +86,12 @@ Recent decisions affecting current work:
 - typeCheckModule builds ConstructorEnv from type declarations before checking let declarations
 - Parenthesized pattern rule added for nested constructor patterns (e.g., Some (Some x))
 
+**From 02-05 (ADT Runtime Evaluation):**
+- Uppercase IDENT parsed as Constructor, lowercase as Var - simple lexer-level disambiguation
+- Constructor takes optional single argument (nullary vs unary); multi-field uses tuple
+- Tests skip type checking since ADT type infrastructure not yet complete (parallel plan dependency)
+- Stub ConstructorPat/Constructor handling added to Infer.fs for compilation compatibility
+
 ### Pending Todos
 
 None yet.
@@ -102,6 +108,10 @@ None yet.
 **From 02-01:**
 - TEName elaboration is a placeholder (fresh TVar) in main elaborateWithVars - needs proper named type resolution in 02-04
 
+**From 02-05:**
+- **Bidir.fs incomplete pattern warning:** Constructor variant in Expr causes FS0025 warning in Bidir.fs. Will be resolved when 02-03 adds Constructor handling to type checker.
+- **Module-level let rec:** Parser Decl grammar does not support `let rec` at module level. Tests work around this using `let rec ... in` expression form.
+
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
 - Rigid type variable scope checking needed
@@ -112,10 +122,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 01:04 UTC
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-03-09 01:14 UTC
+Stopped at: Completed 02-05-PLAN.md (merge with 02-01 through 02-03)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 01:04 UTC*
+*Last updated: 2026-03-09 01:14 UTC*

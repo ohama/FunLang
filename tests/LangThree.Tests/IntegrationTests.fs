@@ -378,6 +378,89 @@ let integrationTests = testList "Integration" [
         | Ok _ -> failtest "Expected type error for arity mismatch"
     }
 
+    // Phase 2 (ADT): Helper to parse and evaluate a module, returning final env
+    // Skips type checking since ADT type infrastructure is not yet complete
+    let parseAndEvalModule (input: string) : Ast.Env =
+        let m = parseModule input
+        match m with
+        | Ast.Module(decls, _) ->
+            decls |> List.fold (fun env decl ->
+                match decl with
+                | Ast.LetDecl(name, body, _) ->
+                    let value = Eval.eval env body
+                    Map.add name value env) Eval.emptyEnv
+        | Ast.EmptyModule _ -> Eval.emptyEnv
+
+    // Phase 2 (02-05): ADT evaluation integration tests
+
+    test "testADTNullaryConstructor" {
+        let input = "let x = None\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "x" env with
+        | Some (Ast.DataValue ("None", None)) -> ()
+        | other -> failtest $"Expected DataValue(None, None), got: %A{other}"
+    }
+
+    test "testADTConstructorWithArg" {
+        let input = "let x = Some 42\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "x" env with
+        | Some (Ast.DataValue ("Some", Some (Ast.IntValue 42))) -> ()
+        | other -> failtest $"Expected DataValue(Some, IntValue 42), got: %A{other}"
+    }
+
+    test "testADTPatternMatchingNullary" {
+        let input = "let x = None\nlet result =\n    match x with\n    | None -> 0\n    | Some y -> y\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "result" env with
+        | Some (Ast.IntValue 0) -> ()
+        | other -> failtest $"Expected IntValue 0, got: %A{other}"
+    }
+
+    test "testADTPatternMatchingWithData" {
+        let input = "let x = Some 42\nlet result =\n    match x with\n    | None -> 0\n    | Some y -> y\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "result" env with
+        | Some (Ast.IntValue 42) -> ()
+        | other -> failtest $"Expected IntValue 42, got: %A{other}"
+    }
+
+    test "testADTRecursiveTreeConstruction" {
+        // Build a tree and pattern match one level
+        let input = "let tree = Node (Leaf, 10, Leaf)\nlet result =\n    match tree with\n    | Leaf -> 0\n    | Node (left, value, right) -> value\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "result" env with
+        | Some (Ast.IntValue 10) -> ()
+        | other -> failtest $"Expected IntValue 10, got: %A{other}"
+    }
+
+    test "testADTRecursiveTreeEval" {
+        // Build a deeper tree and use let rec to sum it
+        let input = "let tree = Node (Leaf, 10, Node (Leaf, 20, Leaf))\nlet result = let rec sumTree t = match t with | Leaf -> 0 | Node (left, value, right) -> sumTree left + value + sumTree right in sumTree tree\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "result" env with
+        | Some (Ast.IntValue 30) -> ()
+        | other -> failtest $"Expected IntValue 30, got: %A{other}"
+    }
+
+    test "testADTFormatValue" {
+        let none = Ast.DataValue("None", None)
+        let some42 = Ast.DataValue("Some", Some (Ast.IntValue 42))
+        let leaf = Ast.DataValue("Leaf", None)
+        Expect.equal (Eval.formatValue none) "None" "Nullary constructor format"
+        Expect.equal (Eval.formatValue some42) "Some 42" "Constructor with int arg format"
+        Expect.equal (Eval.formatValue leaf) "Leaf" "Nullary constructor format"
+    }
+
+    test "testADTNestedConstructors" {
+        // Test nested constructor: Some (Some 1) - extract inner value via single-line match
+        let input = "let x = Some (Some 1)\nlet result = match x with | None -> 0 | Some inner -> match inner with | None -> 0 | Some n -> n\n"
+        let env = parseAndEvalModule input
+        match Map.tryFind "result" env with
+        | Some (Ast.IntValue 1) -> ()
+        | other -> failtest $"Expected IntValue 1, got: %A{other}"
+    }
+
     test "testMixedSingleAndMultiLine" {
         let input = "let f = fun x -> fun y -> fun z -> x + y + z\nlet result = f 1\n    2\n    3\n"
         let result = parseModule input

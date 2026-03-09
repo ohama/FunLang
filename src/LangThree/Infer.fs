@@ -314,6 +314,16 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
 
+    // === Constructor (Phase 2 ADT) ===
+    | Constructor (_, argOpt, _) ->
+        match argOpt with
+        | Some arg ->
+            let s, _argTy = inferWithContext ctx env arg
+            // Return fresh type var; actual type resolution via ConstructorEnv (future)
+            (s, freshVar())
+        | None ->
+            (empty, freshVar())
+
     // === LetPat (INFER-14) ===
     | LetPat (pat, value, body, span) ->
         // Infer value type

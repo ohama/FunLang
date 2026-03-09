@@ -60,6 +60,9 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPE -> "TYPE"
     | Parser.OF -> "OF"
     | Parser.AND_KW -> "AND_KW"
+    | Parser.INDENT -> "INDENT"
+    | Parser.DEDENT -> "DEDENT"
+    | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n
     | Parser.EOF -> "EOF"
 
 /// Format a list of tokens as a space-separated string
@@ -122,6 +125,8 @@ let rec formatAst (expr: Ast.Expr) : string =
             |> List.map (fun (pat, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
             |> String.concat "; "
         sprintf "Match (%s, [%s])" (formatAst scrut) formattedClauses
+    | Ast.Constructor (name, None, _) -> sprintf "Constructor \"%s\"" name
+    | Ast.Constructor (name, Some arg, _) -> sprintf "Constructor (\"%s\", %s)" name (formatAst arg)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

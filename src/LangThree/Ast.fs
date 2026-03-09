@@ -85,6 +85,8 @@ type Expr =
     | Cons of Expr * Expr * span: Span              // Cons operator: h :: t
     // Phase 3 (v3.0): Pattern Matching
     | Match of scrutinee: Expr * clauses: MatchClause list * span: Span
+    // Phase 2 (ADT): Constructor expression
+    | Constructor of name: string * arg: Expr option * span: Span
     // v6.0: Type annotations
     | Annot of expr: Expr * typeExpr: TypeExpr * span: Span          // (e : T)
     | LambdaAnnot of param: string * paramType: TypeExpr * body: Expr * span: Span  // fun (x: T) -> e
@@ -101,7 +103,7 @@ and Pattern =
     | ConsPat of Pattern * Pattern * span: Span     // Cons pattern: h :: t
     | EmptyListPat of span: Span                    // Empty list pattern: []
     | ConstPat of Constant * span: Span             // Constant pattern: 1, true, false
-    // Phase 2 (ADT-03): Constructor pattern for ADT matching
+    // Phase 2 (ADT): Constructor pattern for ADT matching
     | ConstructorPat of name: string * argPattern: Pattern option * span: Span
 
 /// Match clause: pattern -> expression
@@ -145,6 +147,7 @@ and Value =
     | StringValue of string   // v2.0: String values
     | TupleValue of Value list  // v3.0: Tuple values
     | ListValue of Value list  // v3.0: List values
+    | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
 
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value
@@ -174,6 +177,7 @@ let spanOf (expr: Expr) : Span =
     | Lambda(_, _, s) | App(_, _, s) -> s
     | Tuple(_, s) | EmptyList s | List(_, s) | Cons(_, _, s) -> s
     | Match(_, _, s) -> s
+    | Constructor(_, _, s) -> s
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
 
 /// Extract span from any Pattern
