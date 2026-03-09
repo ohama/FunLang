@@ -146,11 +146,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MOD-04 | Phase 5 | Complete |
 | MOD-05 | Phase 5 | Complete |
 | MOD-06 | Phase 5 | Complete |
-| EXC-01 | Phase 6 | Pending |
-| EXC-02 | Phase 6 | Pending |
-| EXC-03 | Phase 6 | Pending |
-| EXC-04 | Phase 6 | Pending |
-| EXC-05 | Phase 6 | Pending |
+| EXC-01 | Phase 6 | Complete |
+| EXC-02 | Phase 6 | Complete |
+| EXC-03 | Phase 6 | Complete |
+| EXC-04 | Phase 6 | Complete |
+| EXC-05 | Phase 6 | Complete |
 | PMATCH-01 | Phase 7 | Pending |
 | PMATCH-02 | Phase 7 | Pending |
 | PMATCH-03 | Phase 7 | Pending |

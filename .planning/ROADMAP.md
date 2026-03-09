@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Records** - Named product types with field access and copy-update syntax
 - [x] **Phase 4: Generalized Algebraic Data Types** - Type refinement and indexed type families
 - [x] **Phase 5: Module System** - F# style code organization with namespaces
-- [ ] **Phase 6: Exceptions** - F# style error handling with try-with expressions
+- [x] **Phase 6: Exceptions** - F# style error handling with try-with expressions
 - [ ] **Phase 7: Pattern Matching Compilation** - Decision tree compilation per Jules Jacobs algorithm
 
 ## Phase Details
@@ -169,9 +169,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Records | 7/7 | Complete | 2026-03-09 |
 | 4. Generalized Algebraic Data Types | 5/5 | Complete | 2026-03-09 |
 | 5. Module System | 5/5 | Complete | 2026-03-09 |
-| 6. Exceptions | 0/4 | Not started | - |
+| 6. Exceptions | 4/4 | Complete | 2026-03-09 |
 | 7. Pattern Matching Compilation | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-25*
-*Last updated: 2026-03-09 (Phase 6 planned)*
+*Last updated: 2026-03-09 (Phase 6 complete)*
