@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 5 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 02-05-PLAN.md (runtime evaluation of ADT values), 02-01 through 02-03 also complete
+Last activity: 2026-03-09 — Completed 02-04-PLAN.md (exhaustiveness checking)
 
-Progress: [█████░░░░░] 30%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 8 min
-- Total execution time: 0.97 hours
+- Total plans completed: 5
+- Average duration: 8.0 min
+- Total execution time: 0.67 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
-| 02 | 4 | 25 min | 6.3 min |
+| 02 | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (12min), 02-01 (9min), 02-02 (3min), 02-03 (5min), 02-05 (8min)
-- Trend: Consistent velocity, fast plans for well-scoped type system work
+- Last 5 plans: 01-01 (9min), 01-04 (12min), 01-02 (13min), 01-03 (3min), 02-04 (3min)
+- Trend: Consistent velocity, TDD plans execute efficiently
 
 *Updated after each plan completion*
 
@@ -43,9 +43,9 @@ Progress: [█████░░░░░] 30%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- F# 스타일 선택 (over OCaml) -- 들여쓰기 기반이 현대적, 단순함
-- GADT 포함 -- bidirectional checking 활용, 표현력 있는 타입 시스템
-- Functor 제외 -- 복잡도 대비 실용성 낮음
+- F# 스타일 선택 (over OCaml) — 들여쓰기 기반이 현대적, 단순함
+- GADT 포함 — bidirectional checking 활용, 표현력 있는 타입 시스템
+- Functor 제외 — 복잡도 대비 실용성 낮음
 
 **From 01-01 (Match Expression Indentation):**
 - Enter match context before processing newline to enable pipe alignment validation
@@ -59,7 +59,7 @@ Recent decisions affecting current work:
 
 **From 01-04 (Module-Level Declarations):**
 - Module and Decl types separate from Expr for clear file structure
-- Function declarations desugar to nested lambdas (let f x y = e -> let f = fun x -> fun y -> e)
+- Function declarations desugar to nested lambdas (let f x y = e → let f = fun x -> fun y -> e)
 - IndentFilter removes same-level NEWLINEs - rely on token boundaries in grammar
 
 **From 01-03 (Improved Error Messages):**
@@ -68,29 +68,10 @@ Recent decisions affecting current work:
 - EOF handling must emit all DEDENTs returned by processNewline in a single call (not one per loop iteration)
 - Error message format: context-specific description with line number, actual column, and expected values
 
-**From 02-01 (Type Declaration Parsing):**
-- AND_KW token (not AND) avoids conflict with existing && operator token
-- TypeDeclContinuation uses IDENT directly (F# syntax: `and U = ...` not `and type U = ...`)
-- TEName variant added to TypeExpr for named type references (Tree, Option)
-- Type declarations support both inline and INDENT/DEDENT indented constructor lists
-
-**From 02-02 (Type System Extension):**
-- TEName in elaborateTypeDecl produces TData(name, []) for recursive/named type references
-- TData unification requires same name and same arity, then unifies args pairwise
-- ConstructorEnv maps constructor names to ConstructorInfo with TypeParams, ArgType, ResultType
-
-**From 02-03 (Constructor Pattern Type Checking):**
-- Uppercase first char = constructor pattern, lowercase = variable pattern in parser
-- inferPattern takes ConstructorEnv param; existing callers pass Map.empty
-- ConstructorEnv threaded through all Bidir.synth/check calls
-- typeCheckModule builds ConstructorEnv from type declarations before checking let declarations
-- Parenthesized pattern rule added for nested constructor patterns (e.g., Some (Some x))
-
-**From 02-05 (ADT Runtime Evaluation):**
-- Uppercase IDENT parsed as Constructor, lowercase as Var - simple lexer-level disambiguation
-- Constructor takes optional single argument (nullary vs unary); multi-field uses tuple
-- Tests skip type checking since ADT type infrastructure not yet complete (parallel plan dependency)
-- Stub ConstructorPat/Constructor handling added to Infer.fs for compilation compatibility
+**From 02-04 (Exhaustiveness Checking):**
+- Self-contained CasePat type decoupled from AST Pattern for independent testing
+- Constructor sets passed explicitly (functional style) rather than global registry
+- Maranget usefulness algorithm with complete/incomplete signature branching
 
 ### Pending Todos
 
@@ -105,13 +86,6 @@ None yet.
 **From 01-04:**
 - **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
-**From 02-01:**
-- TEName elaboration is a placeholder (fresh TVar) in main elaborateWithVars - needs proper named type resolution in 02-04
-
-**From 02-05:**
-- **Bidir.fs incomplete pattern warning:** Constructor variant in Expr causes FS0025 warning in Bidir.fs. Will be resolved when 02-03 adds Constructor handling to type checker.
-- **Module-level let rec:** Parser Decl grammar does not support `let rec` at module level. Tests work around this using `let rec ... in` expression form.
-
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
 - Rigid type variable scope checking needed
@@ -122,10 +96,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 01:14 UTC
-Stopped at: Completed 02-05-PLAN.md (merge with 02-01 through 02-03)
+Last session: 2026-03-09 (Phase 2 plan 04 complete)
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 01:14 UTC*
+*Last updated: 2026-03-09 01:10 UTC*

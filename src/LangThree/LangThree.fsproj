@@ -58,7 +58,10 @@
     <!-- 5. Inference module (manually written, depends on Type.fs, Unify.fs, Diagnostic.fs) -->
     <Compile Include="Infer.fs" />
 
-    <!-- 5.5. Bidirectional type checker (depends on Infer.fs for helpers) -->
+    <!-- 5.5. Exhaustiveness checker (standalone, no dependencies on parser/lexer) -->
+    <Compile Include="Exhaustive.fs" />
+
+    <!-- 5.6. Bidirectional type checker (depends on Infer.fs for helpers) -->
     <Compile Include="Bidir.fs" />
 
     <!-- 6. Type checking integration (manually written, depends on Infer.fs) -->
