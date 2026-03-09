@@ -226,6 +226,54 @@ let recordTests = testList "Records" [
     ]
 
     // =====================================================
+    // REC-07: Mutable fields
+    // =====================================================
+
+    testList "REC-07: Mutable fields" [
+        test "mutable field assignment and read" {
+            let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 0; name = \"test\" }\n\nlet unused = c.count <- 5\n\nlet result = c.count\n"
+            let env = parseTypeCheckAndEval input
+            match Map.tryFind "result" env with
+            | Some (Ast.IntValue 5) -> ()
+            | other -> failtest (sprintf "Expected IntValue 5, got: %A" other)
+        }
+
+        test "immutable field assignment produces type error" {
+            let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 0; name = \"test\" }\n\nlet result = c.name <- \"new\"\n"
+            let result = parseAndTypeCheck input
+            match result with
+            | Error diag ->
+                if diag.Message.Contains("immutable") || diag.Message.Contains("Immutable") then ()
+                else failtest (sprintf "Expected ImmutableFieldAssignment error, got: %s" diag.Message)
+            | Ok _ -> failtest "Expected type error for immutable field assignment"
+        }
+
+        test "mutation visible through aliases (shared ref)" {
+            let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 0; name = \"test\" }\n\nlet c2 = c\n\nlet unused = c.count <- 10\n\nlet result = c2.count\n"
+            let env = parseTypeCheckAndEval input
+            match Map.tryFind "result" env with
+            | Some (Ast.IntValue 10) -> ()
+            | other -> failtest (sprintf "Expected IntValue 10 (shared mutation), got: %A" other)
+        }
+
+        test "read mutable field normally" {
+            let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 42; name = \"test\" }\n\nlet result = c.count\n"
+            let env = parseTypeCheckAndEval input
+            match Map.tryFind "result" env with
+            | Some (Ast.IntValue 42) -> ()
+            | other -> failtest (sprintf "Expected IntValue 42, got: %A" other)
+        }
+
+        test "copy-and-update does not share refs with original" {
+            let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 0; name = \"test\" }\n\nlet c2 = { c with count = 5 }\n\nlet unused = c2.count <- 99\n\nlet result = c.count\n"
+            let env = parseTypeCheckAndEval input
+            match Map.tryFind "result" env with
+            | Some (Ast.IntValue 0) -> ()
+            | other -> failtest (sprintf "Expected IntValue 0 (original unchanged after copy mutation), got: %A" other)
+        }
+    ]
+
+    // =====================================================
     // Error cases
     // =====================================================
 
