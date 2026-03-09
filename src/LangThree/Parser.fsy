@@ -228,10 +228,18 @@ AtomicType:
 // Supports: type T 'a = C1 | C2 of 'a
 // Supports: type T = ... and U = ... (mutually recursive)
 TypeDeclaration:
+    // Inline constructors: type T = A | B of int
     | TYPE IDENT TypeParams EQUALS Constructors TypeDeclContinuation
         { Ast.TypeDecl($2, $3, $5, ruleSpan parseState 1 5) :: $6 }
+    // Inline with leading pipe: type T = | A | B
     | TYPE IDENT TypeParams EQUALS PIPE Constructors TypeDeclContinuation
         { Ast.TypeDecl($2, $3, $6, ruleSpan parseState 1 6) :: $7 }
+    // Indented with leading pipe: type T =\n    | A\n    | B
+    | TYPE IDENT TypeParams EQUALS INDENT PIPE Constructors DEDENT TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $7, ruleSpan parseState 1 8) :: $9 }
+    // Indented without leading pipe: type T =\n    A\n    | B
+    | TYPE IDENT TypeParams EQUALS INDENT Constructors DEDENT TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $6, ruleSpan parseState 1 7) :: $8 }
 
 TypeParams:
     |                          { [] }
@@ -247,7 +255,11 @@ Constructor:
 
 TypeDeclContinuation:
     |                                   { [] }
-    | AND_KW TypeDeclaration            { $2 }
+    // Mutually recursive: and U = C1 | C2 (no TYPE keyword after and)
+    | AND_KW IDENT TypeParams EQUALS Constructors TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $5, ruleSpan parseState 1 5) :: $6 }
+    | AND_KW IDENT TypeParams EQUALS PIPE Constructors TypeDeclContinuation
+        { Ast.TypeDecl($2, $3, $6, ruleSpan parseState 1 6) :: $7 }
 
 // Phase 1 (INDENT-05): Module-level declarations
 // Module: Top-level entry point for multi-declaration files

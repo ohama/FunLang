@@ -188,6 +188,97 @@ let integrationTests = testList "Integration" [
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
     }
 
+    // Phase 2 (ADT-01): Type declaration parsing tests
+    // Helper to extract TypeDecl details from a Decl
+    let extractTypeDecl (d: Ast.Decl) =
+        match d with
+        | Ast.Decl.TypeDecl(Ast.TypeDecl(name, tparams, ctors, _)) -> (name, tparams, ctors)
+        | _ -> failwith "Expected TypeDecl"
+
+    test "testParseSimpleADT" {
+        let input = "type Color = Red | Green | Blue\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module([d], _) ->
+            let (name, tparams, ctors) = extractTypeDecl d
+            Expect.equal name "Color" "Type name should be Color"
+            Expect.equal tparams [] "Should have no type params"
+            Expect.equal (List.length ctors) 3 "Should have 3 constructors"
+            match ctors with
+            | [Ast.ConstructorDecl("Red", None, _)
+               Ast.ConstructorDecl("Green", None, _)
+               Ast.ConstructorDecl("Blue", None, _)] -> ()
+            | _ -> failtest (sprintf "Unexpected constructors: %A" ctors)
+        | _ -> failtest (sprintf "Expected simple ADT, got: %A" result)
+    }
+
+    test "testParseADTWithData" {
+        let input = "type Option = None | Some of int\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module([d], _) ->
+            let (name, _, ctors) = extractTypeDecl d
+            Expect.equal name "Option" "Type name should be Option"
+            match ctors with
+            | [Ast.ConstructorDecl("None", None, _)
+               Ast.ConstructorDecl("Some", Some(Ast.TEInt), _)] -> ()
+            | _ -> failtest (sprintf "Unexpected constructors: %A" ctors)
+        | _ -> failtest (sprintf "Expected ADT with data, got: %A" result)
+    }
+
+    test "testParseADTWithTypeParam" {
+        let input = "type Option 'a = None | Some of 'a\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module([d], _) ->
+            let (name, tparams, ctors) = extractTypeDecl d
+            Expect.equal name "Option" "Type name should be Option"
+            Expect.equal tparams ["'a"] "Should have type param 'a"
+            match ctors with
+            | [Ast.ConstructorDecl("None", None, _)
+               Ast.ConstructorDecl("Some", Some(Ast.TEVar "'a"), _)] -> ()
+            | _ -> failtest (sprintf "Unexpected constructors: %A" ctors)
+        | _ -> failtest (sprintf "Expected ADT with type param, got: %A" result)
+    }
+
+    test "testParseRecursiveADT" {
+        let input = "type Tree = Leaf | Node of Tree * int * Tree\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module([d], _) ->
+            let (name, _, ctors) = extractTypeDecl d
+            Expect.equal name "Tree" "Type name should be Tree"
+            match ctors with
+            | [Ast.ConstructorDecl("Leaf", None, _)
+               Ast.ConstructorDecl("Node", Some(Ast.TETuple _), _)] -> ()
+            | _ -> failtest (sprintf "Unexpected constructors: %A" ctors)
+        | _ -> failtest (sprintf "Expected recursive ADT, got: %A" result)
+    }
+
+    test "testParseMutuallyRecursiveADT" {
+        let input = "type Expr = Lit of int | Arith of ArithExpr\nand ArithExpr = Add of Expr * Expr\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module(decls, _) ->
+            Expect.equal (List.length decls) 2 "Should have 2 type declarations"
+            let (name1, _, _) = extractTypeDecl decls.[0]
+            let (name2, _, _) = extractTypeDecl decls.[1]
+            Expect.equal name1 "Expr" "First type should be Expr"
+            Expect.equal name2 "ArithExpr" "Second type should be ArithExpr"
+        | _ -> failtest (sprintf "Expected module with decls, got: %A" result)
+    }
+
+    test "testParseADTWithLeadingPipe" {
+        let input = "type Color =\n    | Red\n    | Green\n    | Blue\n"
+        let result = parseModule input
+        match result with
+        | Ast.Module([d], _) ->
+            let (name, _, ctors) = extractTypeDecl d
+            Expect.equal name "Color" "Type name should be Color"
+            Expect.equal (List.length ctors) 3 "Should have 3 constructors"
+        | _ -> failtest (sprintf "Expected ADT with leading pipe, got: %A" result)
+    }
+
     test "testMixedSingleAndMultiLine" {
         let input = "let f = fun x -> fun y -> fun z -> x + y + z\nlet result = f 1\n    2\n    3\n"
         let result = parseModule input
