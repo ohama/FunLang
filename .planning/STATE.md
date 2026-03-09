@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 of 6 (Module System)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 05-03-PLAN.md (Module-scoped type checking)
+Last activity: 2026-03-09 -- Completed 05-04-PLAN.md (Module-aware evaluation)
 
-Progress: [██████████████████░░] 84% (4/6 phases + 3/5 plans in phase 5)
+Progress: [███████████████████░] 88% (4/6 phases + 4/5 plans in phase 5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 4.0 min
-- Total execution time: 1.51 hours
+- Total plans completed: 23
+- Average duration: 3.9 min
+- Total execution time: 1.59 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [██████████████████░░] 84% (4/
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
 | 04 | 5 | 16 min | 3.2 min |
-| 05 | 3 | 8 min | 2.7 min |
+| 05 | 4 | 13 min | 3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-04 (3min), 04-05 (4min), 05-01 (2min), 05-02 (2min), 05-03 (4min)
-- Trend: Consistent ~2-4min average for compiler plans
+- Last 5 plans: 04-05 (4min), 05-01 (2min), 05-02 (2min), 05-03 (4min), 05-04 (5min)
+- Trend: Consistent ~2-5min average for compiler plans
 
 *Updated after each plan completion*
 
@@ -155,6 +155,12 @@ Recent decisions affecting current work:
 - Nested module uses EQUALS INDENT Decls DEDENT (top-level has no =)
 - Open directive and nested module follow singleton/continuation pattern in Decls
 
+**From 05-04 (Module-Aware Evaluation):**
+- ModuleValueEnv has CtorEnv for constructor qualified access separate from Values
+- FieldAccess dispatches on module name via Var pattern match before falling through to record field
+- evalModuleDecls is standalone let rec, not part of eval/evalMatchClauses and-group
+- Constructor names collected from both ConstructorDecl and GadtConstructorDecl in TypeDecl
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -186,10 +192,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 5 plan 3 complete)
-Stopped at: Completed 05-03-PLAN.md (Module-scoped type checking)
+Last session: 2026-03-09 (Phase 5 plan 4 complete)
+Stopped at: Completed 05-04-PLAN.md (Module-aware evaluation)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 07:58 UTC*
+*Last updated: 2026-03-09*
