@@ -161,19 +161,13 @@ let main argv =
                             match m with
                             | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
                             | EmptyModule _ -> []
-                        // Evaluate module declarations sequentially
-                        let finalEnv =
-                            moduleDecls
-                            |> List.fold (fun env decl ->
-                                match decl with
-                                | LetDecl(name, body, _) ->
-                                    let value = eval recEnv Map.empty env body
-                                    Map.add name value env
-                                | _ -> env) initialEnv
+                        // Evaluate module declarations with module-aware pipeline
+                        let finalEnv, moduleEnv =
+                            Eval.evalModuleDecls recEnv Map.empty initialEnv moduleDecls
                         // Print the last let binding's value
                         match moduleDecls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
                         | Some lastBody ->
-                            let result = eval recEnv Map.empty finalEnv lastBody
+                            let result = eval recEnv moduleEnv finalEnv lastBody
                             printfn "%s" (formatValue result)
                         | None -> ()
                         0
