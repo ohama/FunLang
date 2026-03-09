@@ -109,10 +109,14 @@ Plans:
   3. User can import module with `open` keyword and use unqualified names
   4. User can access module members via qualified names (`Module.function`)
   5. User creates circular module dependency and receives clear error showing cycle path
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- TBD during planning
+- [ ] 05-01-PLAN.md — AST nodes, diagnostic codes, lexer keywords, parser token declarations for module system
+- [ ] 05-02-PLAN.md — Parser grammar rules for module/namespace/open declarations
+- [ ] 05-03-PLAN.md — Module-scoped type checking with ModuleExports and circular dependency detection
+- [ ] 05-04-PLAN.md — Module-aware evaluation with qualified name resolution and Program.fs wiring
+- [ ] 05-05-PLAN.md — Comprehensive module system integration tests (MOD-01 through MOD-06)
 
 ### Phase 6: Exceptions
 **Goal**: Users can declare exceptions and handle errors with try-with expressions
@@ -140,9 +144,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Algebraic Data Types | 6/6 | Complete | 2026-03-09 |
 | 3. Records | 7/7 | Complete | 2026-03-09 |
 | 4. Generalized Algebraic Data Types | 5/5 | Complete | 2026-03-09 |
-| 5. Module System | 0/? | Not started | - |
+| 5. Module System | 0/5 | Not started | - |
 | 6. Exceptions | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-02-25*
-*Last updated: 2026-03-09 (Phase 4 complete)*
+*Last updated: 2026-03-09 (Phase 5 planned)*
