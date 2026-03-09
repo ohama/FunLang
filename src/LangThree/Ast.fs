@@ -217,11 +217,17 @@ type Decl =
     | LetDecl of name: string * body: Expr * Span
     | TypeDecl of TypeDecl  // Phase 2 (ADT-01): Type declaration (discriminated union)
     | RecordTypeDecl of RecordDecl  // Phase 3 (Records): Record type declaration
+    // Phase 5 (Modules): Module system declarations
+    | ModuleDecl of name: string * decls: Decl list * Span
+    | OpenDecl of path: string list * Span
+    | NamespaceDecl of path: string list * decls: Decl list * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
 type Module =
     | Module of decls: Decl list * Span
+    | NamedModule of name: string list * decls: Decl list * Span
+    | NamespacedModule of name: string list * decls: Decl list * Span
     | EmptyModule of Span
 
 /// Extract span from Decl
@@ -230,8 +236,13 @@ let declSpanOf (decl: Decl) : Span =
     | LetDecl(_, _, s) -> s
     | TypeDecl td -> typeSpanOf td
     | RecordTypeDecl (RecordDecl(_, _, _, s)) -> s
+    | ModuleDecl(_, _, s) -> s
+    | OpenDecl(_, s) -> s
+    | NamespaceDecl(_, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
     match m with
     | Module(_, s) | EmptyModule s -> s
+    | NamedModule(_, _, s) -> s
+    | NamespacedModule(_, _, s) -> s

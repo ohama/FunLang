@@ -33,6 +33,11 @@ type TypeErrorKind =
     | GadtAnnotationRequired of scrutineeType: string
     | ExistentialEscape of varId: int
     | GadtReturnTypeMismatch of constructor: string * expected: string * actual: string
+    // Phase 5 (Modules): Module error kinds
+    | CircularModuleDependency of cycle: string list   // E0501
+    | UnresolvedModule of name: string                 // E0502
+    | DuplicateModuleName of name: string              // E0503
+    | ForwardModuleReference of name: string           // E0504
     // Warning kinds (W-prefixed codes)
     | NonExhaustiveMatch of missingPatterns: string list
     | RedundantPattern of index: int
@@ -245,6 +250,27 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0403",
             sprintf "GADT constructor %s return type mismatch: expected %s but got %s" ctor expected actual,
             Some "The constructor's return type must match the declared type"
+
+        | CircularModuleDependency cycle ->
+            let cycleStr = cycle |> String.concat " -> "
+            Some "E0501",
+            sprintf "Circular module dependency: %s" cycleStr,
+            Some "Remove the circular dependency between modules"
+
+        | UnresolvedModule name ->
+            Some "E0502",
+            sprintf "Unresolved module: %s" name,
+            Some "Make sure the module is defined before use"
+
+        | DuplicateModuleName name ->
+            Some "E0503",
+            sprintf "Duplicate module name: %s" name,
+            Some "Each module must have a unique name"
+
+        | ForwardModuleReference name ->
+            Some "E0504",
+            sprintf "Forward reference to module: %s" name,
+            Some "Modules must be defined before they can be opened (top-to-bottom order)"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "
