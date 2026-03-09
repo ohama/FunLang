@@ -133,28 +133,50 @@ let main argv =
                     1
                 | Ok _ ->
                     // Type check passed, evaluate
-                    let result = eval initialEnv ast
+                    let result = eval Map.empty initialEnv ast
                     printfn "%s" (formatValue result)
                     0
             with ex ->
                 eprintfn "Error: %s" ex.Message
                 1
-        // file only
+        // file only -- use module pipeline for record type declaration support
         elif results.Contains File then
             let filename = results.GetResult File
             if File.Exists filename then
                 try
                     let input = File.ReadAllText filename
-                    let ast = parse input filename
-                    // Type check first
-                    match typecheckWithDiagnostic ast with
+                    let lexbuf = FSharp.Text.Lexing.LexBuffer<char>.FromString input
+                    Lexer.setInitialPos lexbuf filename
+                    let m = Parser.parseModule Lexer.tokenize lexbuf
+                    match TypeCheck.typeCheckModule m with
                     | Error diag ->
                         eprintfn "%s" (formatDiagnostic diag)
                         1
-                    | Ok _ ->
-                        // Type check passed, evaluate
-                        let result = eval initialEnv ast
-                        printfn "%s" (formatValue result)
+                    | Ok (warnings, recEnv) ->
+                        // Print any warnings (non-exhaustive matches, etc.)
+                        for w in warnings do
+                            eprintfn "Warning: %s" (formatDiagnostic w)
+                        // Evaluate module declarations sequentially
+                        let finalEnv =
+                            match m with
+                            | Module (decls, _) ->
+                                decls
+                                |> List.fold (fun env decl ->
+                                    match decl with
+                                    | LetDecl(name, body, _) ->
+                                        let value = eval recEnv env body
+                                        Map.add name value env
+                                    | _ -> env) initialEnv
+                            | EmptyModule _ -> initialEnv
+                        // Print the last let binding's value
+                        match m with
+                        | Module (decls, _) ->
+                            match decls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
+                            | Some lastBody ->
+                                let result = eval recEnv finalEnv lastBody
+                                printfn "%s" (formatValue result)
+                            | None -> ()
+                        | EmptyModule _ -> ()
                         0
                 with ex ->
                     eprintfn "Error: %s" ex.Message

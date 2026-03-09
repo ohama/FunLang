@@ -16,7 +16,7 @@ let private parse (input: string) : Expr =
 let rec private evalToEnv (env: Env) (expr: Expr) : Env =
     match expr with
     | Let (name, binding, body, _) ->
-        let value = eval env binding
+        let value = eval Map.empty env binding
         let extendedEnv = Map.add name value env
         evalToEnv extendedEnv body
     | LetRec (name, param, funcBody, inExpr, _) ->

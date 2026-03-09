@@ -387,7 +387,7 @@ let integrationTests = testList "Integration" [
             decls |> List.fold (fun env decl ->
                 match decl with
                 | Ast.LetDecl(name, body, _) ->
-                    let value = Eval.eval env body
+                    let value = Eval.eval Map.empty env body
                     Map.add name value env) Eval.emptyEnv
         | Ast.EmptyModule _ -> Eval.emptyEnv
 
