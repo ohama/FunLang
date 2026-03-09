@@ -1,5 +1,7 @@
 module Exhaustive
 
+open Type
+
 // ============================================================================
 // Pattern Exhaustiveness and Redundancy Checking
 // ============================================================================
@@ -222,7 +224,37 @@ let checkRedundant (constructors: ConstructorSet) (patterns: CasePat list) : Red
     else
         HasRedundancy redundant
 
-/// Get constructors for a given type name
-/// This will be extended when TData types are added to the type system
-let getConstructors (_typeName: string) : ConstructorSet =
-    failwith "Not implemented: getConstructors (requires TData integration)"
+// ============================================================================
+// Constructor Environment Integration
+// ============================================================================
+
+/// Get constructors from a ConstructorEnv for a given scrutinee type.
+/// For TData types, filters the ConstructorEnv to find all constructors
+/// that produce the same type name.
+let getConstructorsFromEnv (ctorEnv: Type.ConstructorEnv) (scrutineeType: Type.Type) : ConstructorSet =
+    match scrutineeType with
+    | Type.TData(typeName, _) ->
+        ctorEnv
+        |> Map.toList
+        |> List.choose (fun (ctorName, info: Type.ConstructorInfo) ->
+            match info.ResultType with
+            | Type.TData(resultTypeName, _) when resultTypeName = typeName ->
+                Some { Name = ctorName; Arity = if info.ArgType.IsSome then 1 else 0 }
+            | _ -> None)
+    | _ -> []
+
+/// Convert an AST Pattern to a CasePat for exhaustiveness analysis.
+/// Non-ADT patterns (tuples, lists, constants) are treated as wildcards
+/// since they are not relevant for ADT exhaustiveness checking.
+let rec astPatToCasePat (pat: Ast.Pattern) : CasePat =
+    match pat with
+    | Ast.ConstructorPat(name, Some argPat, _) ->
+        ConstructorPat(name, [astPatToCasePat argPat])
+    | Ast.ConstructorPat(name, None, _) ->
+        ConstructorPat(name, [])
+    | Ast.WildcardPat _ -> WildcardPat
+    | Ast.VarPat _ -> WildcardPat
+    | Ast.TuplePat _ -> WildcardPat
+    | Ast.ConsPat _ -> WildcardPat
+    | Ast.EmptyListPat _ -> WildcardPat
+    | Ast.ConstPat _ -> WildcardPat

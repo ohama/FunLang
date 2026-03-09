@@ -21,6 +21,9 @@ type TypeErrorKind =
     | NotAFunction of ty: Type
     | UnboundConstructor of name: string
     | ArityMismatch of constructor: string * expected: int * actual: int
+    // Warning kinds (W-prefixed codes)
+    | NonExhaustiveMatch of missingPatterns: string list
+    | RedundantPattern of index: int
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -180,6 +183,17 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             sprintf "Constructor %s expects %d argument(s) but was given %d" ctor expected actual,
             Some "Check the number of arguments to the constructor"
 
+        | NonExhaustiveMatch patterns ->
+            let patternsStr = patterns |> String.concat ", "
+            Some "W0001",
+            sprintf "Incomplete pattern match. Missing cases: %s" patternsStr,
+            Some "Add the missing cases or a wildcard pattern '_' to cover all values"
+
+        | RedundantPattern idx ->
+            Some "W0002",
+            sprintf "Redundant pattern in clause %d. This case will never be reached." (idx + 1),
+            Some "Remove the unreachable pattern"
+
     // Build notes from context stack and trace
     let contextNotes = formatContextStack err.ContextStack
     let traceNotes = formatTrace err.Trace
@@ -211,8 +225,10 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
 let formatDiagnostic (diag: Diagnostic) : string =
     let sb = System.Text.StringBuilder()
 
-    // Error header: error[E0301]: Type mismatch
+    // Header: error[E0301] or warning[W0001]
     match diag.Code with
+    | Some code when code.StartsWith("W") ->
+        sb.AppendLine(sprintf "warning[%s]: %s" code diag.Message) |> ignore
     | Some code -> sb.AppendLine(sprintf "error[%s]: %s" code diag.Message) |> ignore
     | None -> sb.AppendLine(sprintf "error: %s" diag.Message) |> ignore
 
