@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 6 (Generalized Algebraic Data Types)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 -- Completed 04-02-PLAN.md (GADT elaboration)
+Last activity: 2026-03-09 -- Completed 04-03-PLAN.md (GADT type refinement)
 
-Progress: [██████████░░░░░░░░░░] 53% (3/6 phases + 2/5 plans in phase 4)
+Progress: [████████████░░░░░░░░] 59% (3/6 phases + 3/5 plans in phase 4)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
-- Average duration: 4.8 min
-- Total execution time: 1.22 hours
+- Total plans completed: 17
+- Average duration: 4.5 min
+- Total execution time: 1.30 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [██████████░░░░░░░░░░] 53% (3/
 | 01 | 4 | 37 min | 9.3 min |
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
-| 04 | 2 | 7 min | 3.5 min |
+| 04 | 4 | 12 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-06 (2min), 03-07 (4min), 04-01 (3min), 04-02 (4min)
+- Last 5 plans: 03-07 (4min), 04-01 (3min), 04-02 (4min), 04-03 (2min), 04-04 (3min)
 - Trend: Consistent ~3-4min average for type system elaboration plans
 
 *Updated after each plan completion*
@@ -127,6 +127,11 @@ Recent decisions affecting current work:
 - IsGadt sweep: if any constructor uses GADT syntax, ALL constructors marked IsGadt=true
 - inferTypeFromPatterns builds generic type from TData name for GADT constructors (exhaustiveness)
 
+**From 04-04 (GADT Exhaustiveness Filtering):**
+- Two-phase type inference: generic type for constructor lookup, specific type for GADT filtering
+- filterPossibleConstructors: structural type arg comparison, conservative when type variables present
+- inferSpecificScrutineeType: raw ResultType from first GADT constructor pattern
+
 ### Pending Todos
 
 None yet.
@@ -151,9 +156,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09 (Phase 4 in progress)
-Stopped at: Completed 04-02-PLAN.md (GADT elaboration)
+Stopped at: Completed 04-04-PLAN.md (GADT exhaustiveness filtering)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 06:57 UTC*
+*Last updated: 2026-03-09 07:04 UTC*
