@@ -52,6 +52,13 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
     | TList t1, TList t2 ->
         unifyWithContext ctx (AtListElement t2 :: trace) span t1 t2
 
+    // Named ADT types: same name, same arity, unify args pairwise
+    | TData (n1, args1), TData (n2, args2) when n1 = n2 && List.length args1 = List.length args2 ->
+        List.fold2 (fun s a1 a2 ->
+            let s' = unifyWithContext ctx trace span (apply s a1) (apply s a2)
+            compose s' s
+        ) empty args1 args2
+
     // Everything else: type mismatch
     | _ ->
         raise (TypeException {

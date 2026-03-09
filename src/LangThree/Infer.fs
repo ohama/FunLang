@@ -159,7 +159,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let appliedFuncTy = apply s2 funcTy
         // Check if we're trying to apply a non-function type
         match appliedFuncTy with
-        | TInt | TBool | TString | TTuple _ | TList _ ->
+        | TInt | TBool | TString | TTuple _ | TList _ | TData _ ->
             raise (TypeException {
                 Kind = NotAFunction appliedFuncTy
                 Span = spanOf func

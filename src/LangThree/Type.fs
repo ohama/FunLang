@@ -10,6 +10,7 @@ type Type =
     | TArrow of Type * Type          // function type 'a -> 'b
     | TTuple of Type list            // tuple type 'a * 'b
     | TList of Type                  // list type 'a list
+    | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
 
 /// Type scheme for polymorphism
 /// forall 'a 'b. 'a -> 'b -> 'a
@@ -17,6 +18,17 @@ type Scheme = Scheme of vars: int list * ty: Type
 
 /// Type environment: variable name -> type scheme
 type TypeEnv = Map<string, Scheme>
+
+/// Constructor type information for ADT constructors
+/// Example: Some : 'a -> Option<'a>
+type ConstructorInfo = {
+    TypeParams: int list        // Type variables [0] for 'a
+    ArgType: Type option        // None for nullary constructors (e.g., None)
+    ResultType: Type            // Always TData("TypeName", [TVar ...])
+}
+
+/// Constructor environment: constructor name -> type information
+type ConstructorEnv = Map<string, ConstructorInfo>
 
 /// Type substitution: type variable -> type
 type Subst = Map<int, Type>
@@ -32,6 +44,10 @@ let rec formatType = function
         sprintf "%s -> %s" left (formatType t2)
     | TTuple ts -> ts |> List.map formatType |> String.concat " * "
     | TList t -> sprintf "%s list" (formatType t)
+    | TData (name, []) -> name
+    | TData (name, args) ->
+        let argStr = args |> List.map formatType |> String.concat ", "
+        sprintf "%s<%s>" name argStr
 
 /// Format type with normalized type variables ('a, 'b, 'c instead of raw indices)
 /// TVar 1000, TVar 1001 -> 'a, 'b (based on order of first appearance)
@@ -42,6 +58,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TArrow(t1, t2) -> collectVars (collectVars acc t1) t2
         | TTuple ts -> List.fold collectVars acc ts
         | TList t -> collectVars acc t
+        | TData (_, args) -> List.fold collectVars acc args
         | TInt | TBool | TString -> acc
 
     let vars = collectVars [] ty
@@ -60,6 +77,10 @@ let formatTypeNormalized (ty: Type) : string =
             sprintf "%s -> %s" left (format t2)
         | TTuple ts -> ts |> List.map format |> String.concat " * "
         | TList t -> sprintf "%s list" (format t)
+        | TData (name, []) -> name
+        | TData (name, args) ->
+            let argStr = args |> List.map format |> String.concat ", "
+            sprintf "%s<%s>" name argStr
 
     format ty
 
@@ -87,6 +108,7 @@ let rec apply (s: Subst) = function
     | TArrow (t1, t2) -> TArrow (apply s t1, apply s t2)
     | TTuple ts -> TTuple (List.map (apply s) ts)
     | TList t -> TList (apply s t)
+    | TData (name, args) -> TData (name, List.map (apply s) args)
 
 /// Compose two substitutions: s2 after s1 (like function composition)
 /// Apply s2 to all values in s1, then merge s2 bindings
@@ -115,6 +137,7 @@ let rec freeVars = function
     | TArrow (t1, t2) -> Set.union (freeVars t1) (freeVars t2)
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany
     | TList t -> freeVars t
+    | TData (_, args) -> args |> List.map freeVars |> Set.unionMany
 
 /// Free variables in a type scheme (excludes bound variables)
 let freeVarsScheme (Scheme (vars, ty)) =
