@@ -90,10 +90,14 @@ Plans:
   2. User can pattern match on GADT and type checker refines types in branches (e.g., `match e with Int n -> ...` knows `n : int`)
   3. User can use existential types in GADT constructors for data hiding
   4. User writes GADT pattern match without type annotation and receives clear error "GADTs require type annotations"
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- TBD during planning
+- [ ] 04-01-PLAN.md — AST, Type, Diagnostic, and Parser foundation for GADT constructor syntax
+- [ ] 04-02-PLAN.md — GADT constructor elaboration into ConstructorInfo with IsGadt and ExistentialVars
+- [ ] 04-03-PLAN.md — GADT type refinement in bidirectional type checker (check mode + annotation enforcement)
+- [ ] 04-04-PLAN.md — GADT-aware exhaustiveness checking with impossible branch filtering
+- [ ] 04-05-PLAN.md — Comprehensive GADT integration tests (GADT-01 through GADT-04) with bug fixes
 
 ### Phase 5: Module System
 **Goal**: Users can organize code into modules with namespaces and qualified names
@@ -128,14 +132,14 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Indentation-Based Syntax | 4/4 | ✓ Complete | 2026-03-02 |
-| 2. Algebraic Data Types | 6/6 | ✓ Complete | 2026-03-09 |
-| 3. Records | 7/7 | ✓ Complete | 2026-03-09 |
-| 4. Generalized Algebraic Data Types | 0/? | Not started | - |
+| 1. Indentation-Based Syntax | 4/4 | Complete | 2026-03-02 |
+| 2. Algebraic Data Types | 6/6 | Complete | 2026-03-09 |
+| 3. Records | 7/7 | Complete | 2026-03-09 |
+| 4. Generalized Algebraic Data Types | 0/5 | In progress | - |
 | 5. Module System | 0/? | Not started | - |
 | 6. Exceptions | 0/? | Not started | - |
 
