@@ -92,6 +92,16 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
     | Ast.TEData(name, args) ->
         TData(name, List.map (substTypeExprWithMap paramMap) args)
 
+/// Collect all TEVar names from a TypeExpr (for detecting constructor-local type variables)
+let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
+    match te with
+    | Ast.TEVar v -> Set.singleton v
+    | Ast.TEInt | Ast.TEBool | Ast.TEString | Ast.TEName _ -> Set.empty
+    | Ast.TEList t -> collectTypeExprVars t
+    | Ast.TEArrow(t1, t2) -> Set.union (collectTypeExprVars t1) (collectTypeExprVars t2)
+    | Ast.TETuple ts -> ts |> List.map collectTypeExprVars |> Set.unionMany
+    | Ast.TEData(_, args) -> args |> List.map collectTypeExprVars |> Set.unionMany
+
 /// Elaborate a type declaration into ConstructorEnv entries
 /// Example: type Option 'a = None | Some of 'a
 /// Returns: Map with "None" -> {TypeParams=[0]; ArgType=None; ResultType=TData("Option",[TVar 0])}
@@ -108,46 +118,67 @@ let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.Type
     let typeParamVars = typeParams |> List.mapi (fun i _ -> i)
     let resultType = TData(name, List.map TVar typeParamVars)
 
-    let substTypeExpr = substTypeExprWithMap paramMap
+    // Detect if any constructor uses GADT syntax for the IsGadt sweep
+    let hasAnyGadt =
+        constructors |> List.exists (fun ctor ->
+            match ctor with
+            | Ast.GadtConstructorDecl _ -> true
+            | Ast.ConstructorDecl _ -> false)
 
     // Elaborate each constructor
-    constructors
-    |> List.map (fun ctor ->
-        match ctor with
-        | Ast.ConstructorDecl(ctorName, dataTypeOpt, _) ->
-            let argType = dataTypeOpt |> Option.map substTypeExpr
-            let info = {
-                TypeParams = typeParamVars
-                ArgType = argType
-                ResultType = resultType
-                IsGadt = false
-                ExistentialVars = []
-            }
-            (ctorName, info)
-        | Ast.GadtConstructorDecl(ctorName, argTypes, retType, _) ->
-            let argType =
-                match argTypes with
-                | [] -> None
-                | [t] -> Some (substTypeExpr t)
-                | ts -> Some (TTuple (List.map substTypeExpr ts))
-            let gadtResultType = substTypeExpr retType
-            // Determine existential vars: type params that appear in args but not in result
-            let resultVars = Type.freeVars gadtResultType
-            let argVars =
-                match argType with
-                | Some t -> Type.freeVars t
-                | None -> Set.empty
-            let existentials = Set.difference argVars resultVars |> Set.toList
-            let isGadt = gadtResultType <> resultType
-            let info = {
-                TypeParams = typeParamVars
-                ArgType = argType
-                ResultType = gadtResultType
-                IsGadt = isGadt
-                ExistentialVars = existentials
-            }
-            (ctorName, info))
-    |> Map.ofList
+    let ctorEntries =
+        constructors
+        |> List.map (fun ctor ->
+            match ctor with
+            | Ast.ConstructorDecl(ctorName, dataTypeOpt, _) ->
+                let argType = dataTypeOpt |> Option.map (substTypeExprWithMap paramMap)
+                let info = {
+                    TypeParams = typeParamVars
+                    ArgType = argType
+                    ResultType = resultType
+                    IsGadt = hasAnyGadt  // Mark ALL as GADT if any constructor uses GADT syntax
+                    ExistentialVars = []
+                }
+                (ctorName, info)
+            | Ast.GadtConstructorDecl(ctorName, argTypes, retType, _) ->
+                // Collect type variable names from argument types
+                let argVarNames = argTypes |> List.map collectTypeExprVars |> Set.unionMany
+                // Constructor-local type variables: TEVar names in args but NOT in the type's paramMap
+                let localVarNames = argVarNames |> Set.filter (fun v -> not (Map.containsKey v paramMap))
+                // Allocate fresh indices for constructor-local type variables, extend paramMap
+                let extendedParamMap, localIndices =
+                    localVarNames
+                    |> Set.toList
+                    |> List.fold (fun (pm, indices) v ->
+                        let idx = freshTypeVarIndex()
+                        (Map.add v idx pm, idx :: indices)) (paramMap, [])
+                let localIndices = List.rev localIndices
+                let allTypeParams = typeParamVars @ localIndices
+
+                let substExpr = substTypeExprWithMap extendedParamMap
+                let argType =
+                    match argTypes with
+                    | [] -> None
+                    | [t] -> Some (substExpr t)
+                    | ts -> Some (TTuple (List.map substExpr ts))
+                let gadtResultType = substExpr retType
+                // Determine existential vars: type params in args but NOT in result type
+                let resultFreeVars = Type.freeVars gadtResultType
+                let argFreeVars =
+                    match argType with
+                    | Some t -> Type.freeVars t
+                    | None -> Set.empty
+                let existentials = Set.difference argFreeVars resultFreeVars |> Set.toList
+                let info = {
+                    TypeParams = allTypeParams
+                    ArgType = argType
+                    ResultType = gadtResultType
+                    IsGadt = true
+                    ExistentialVars = existentials
+                }
+                (ctorName, info))
+
+    ctorEntries |> Map.ofList
 
 /// Elaborate a record type declaration into RecordTypeInfo
 /// Phase 3 (Records): Maps record fields to typed metadata
