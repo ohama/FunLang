@@ -110,6 +110,8 @@ Expr:
     | Expr NE Expr                   { NotEqual($1, $3, ruleSpan parseState 1 3) }
     // Phase 2 (v3.0): Cons operator (lower precedence than arithmetic)
     | Expr CONS Expr                 { Cons($1, $3, ruleSpan parseState 1 3) }
+    // Phase 3 (Records-06): Mutable field assignment
+    | Atom DOT IDENT LARROW Expr     { SetField($1, $3, $5, ruleSpan parseState 1 5) }
     // Arithmetic - uses Term/Factor for precedence
     | Expr PLUS Term                 { Add($1, $3, ruleSpan parseState 1 3) }
     | Expr MINUS Term                { Subtract($1, $3, ruleSpan parseState 1 3) }
@@ -354,6 +356,8 @@ RecordFields:
 RecordField:
     | IDENT COLON TypeExpr
         { Ast.RecordFieldDecl($1, $3, false, ruleSpan parseState 1 3) }
+    | MUTABLE IDENT COLON TypeExpr
+        { Ast.RecordFieldDecl($2, $4, true, ruleSpan parseState 1 4) }
 
 // Phase 3 (Records): Record expression inner (resolves LBRACE IDENT ambiguity)
 RecordExprInner:
