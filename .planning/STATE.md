@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 4 complete - GADT (Generalized Algebraic Data Types)
+**Current focus:** Phase 5 in progress - Module System
 
 ## Current Position
 
-Phase: 4 of 6 (Generalized Algebraic Data Types)
-Plan: 5 of 5 in current phase
-Status: Phase complete
-Last activity: 2026-03-09 -- Completed 04-05-PLAN.md (GADT integration tests)
+Phase: 5 of 6 (Module System)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-09 -- Completed 05-01-PLAN.md (Module system foundation)
 
-Progress: [████████████████░░░░] 76% (4/6 phases complete, ready for phase 5)
+Progress: [█████████████████░░░] 80% (4/6 phases + 1/5 plans in phase 5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
-- Average duration: 4.3 min
-- Total execution time: 1.38 hours
+- Total plans completed: 20
+- Average duration: 4.2 min
+- Total execution time: 1.41 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [████████████████░░░░] 76% (4/
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
 | 04 | 5 | 16 min | 3.2 min |
+| 05 | 1 | 2 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3min), 04-02 (4min), 04-03 (2min), 04-04 (3min), 04-05 (4min)
-- Trend: Consistent ~3-4min average for type system plans
+- Last 5 plans: 04-02 (4min), 04-03 (2min), 04-04 (3min), 04-05 (4min), 05-01 (2min)
+- Trend: Consistent ~2-4min average for compiler plans
 
 *Updated after each plan completion*
 
@@ -143,6 +144,16 @@ Recent decisions affecting current work:
 - Scrutinee annotation alone is insufficient -- the match expression itself must be in check mode
 - All 17 GADT tests passed; zero bugs found in plans 01-04 implementation
 
+**From 05-01 (Module System Foundation):**
+- OpenDecl path is string list (not single string) to support qualified opens like open A.B.C
+- QualifiedIdent rule added in Plan 01 to avoid concurrent Parser.fsy edits in Plan 02
+- E05xx error code range for module system errors
+- Module system keywords (module, namespace, open) lexed before general identifier rule
+
+### Roadmap Evolution
+
+- Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
+
 ### Pending Todos
 
 None yet.
@@ -165,10 +176,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 4 complete)
-Stopped at: Completed 04-05-PLAN.md (GADT integration tests)
+Last session: 2026-03-09 (Phase 5 plan 1 complete)
+Stopped at: Completed 05-01-PLAN.md (Module system foundation)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 07:10 UTC*
+*Last updated: 2026-03-09 07:51 UTC*
