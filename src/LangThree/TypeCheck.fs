@@ -536,29 +536,29 @@ let rec typeCheckDecls
     validateUniqueRecordFields decls
 
     // Second pass: process declarations sequentially
-    let (typeEnv', modules', warnings') =
+    let (typeEnv', ctorEnv', recEnv', modules', warnings') =
         decls
-        |> List.fold (fun (env, mods, warns) decl ->
+        |> List.fold (fun (env, cEnv, rEnv, mods, warns) decl ->
             match decl with
             | LetDecl(name, body, _) ->
                 // Resolve qualified module access before type checking
                 let refsInBody = collectModuleRefs mods body
                 let rewrittenBody = rewriteModuleAccess mods body
                 let (envForSynth, ctorEnvForSynth, recEnvForSynth) =
-                    if Set.isEmpty refsInBody then (env, ctorEnv, recEnv)
-                    else mergeModuleExportsForTypeCheck mods refsInBody env ctorEnv recEnv
+                    if Set.isEmpty refsInBody then (env, cEnv, rEnv)
+                    else mergeModuleExportsForTypeCheck mods refsInBody env cEnv rEnv
                 // Type check the let binding (with module-resolved body)
                 let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
                 let ty' = apply s ty
                 let scheme = generalize (applyEnv s env) ty'
                 let env' = Map.add name scheme env
                 // Collect match warnings from this let body
-                let matchWarnings = checkMatchWarnings ctorEnv body
-                (env', mods, warns @ matchWarnings)
+                let matchWarnings = checkMatchWarnings cEnv body
+                (env', cEnv, rEnv, mods, warns @ matchWarnings)
 
             | Decl.TypeDecl _ | Decl.RecordTypeDecl _ | ExceptionDecl _ ->
                 // Already processed in first pass (ExceptionDecl: TODO in Plan 02)
-                (env, mods, warns)
+                (env, cEnv, rEnv, mods, warns)
 
             | ModuleDecl(name, innerDecls, span) ->
                 // Check duplicate module name
@@ -568,7 +568,7 @@ let rec typeCheckDecls
                         Span = span; Term = None; ContextStack = []; Trace = [] })
                 // Recurse into inner declarations
                 let (innerTypeEnv, innerCtorEnv, innerRecEnv, innerMods, innerWarns) =
-                    typeCheckDecls innerDecls env ctorEnv recEnv mods
+                    typeCheckDecls innerDecls env cEnv rEnv mods
                 // Build module exports (only bindings defined in this module, not inherited)
                 let moduleTypeEnv =
                     Map.fold (fun acc k v ->
@@ -576,11 +576,11 @@ let rec typeCheckDecls
                         else Map.add k v acc) Map.empty innerTypeEnv
                 let moduleCtorEnv =
                     Map.fold (fun acc k v ->
-                        if Map.containsKey k ctorEnv then acc
+                        if Map.containsKey k cEnv then acc
                         else Map.add k v acc) Map.empty innerCtorEnv
                 let moduleRecEnv =
                     Map.fold (fun acc k v ->
-                        if Map.containsKey k recEnv then acc
+                        if Map.containsKey k rEnv then acc
                         else Map.add k v acc) Map.empty innerRecEnv
                 let exports = {
                     TypeEnv = moduleTypeEnv
@@ -588,7 +588,7 @@ let rec typeCheckDecls
                     RecEnv = moduleRecEnv
                     SubModules = innerMods
                 }
-                (env, Map.add name exports mods, warns @ innerWarns)
+                (env, cEnv, rEnv, Map.add name exports mods, warns @ innerWarns)
 
             | OpenDecl(path, span) ->
                 // Look up module in current modules map
@@ -600,52 +600,50 @@ let rec typeCheckDecls
                             Kind = ForwardModuleReference name
                             Span = span; Term = None; ContextStack = []; Trace = [] })
                     | Some exports ->
-                        let (env', ctorEnv', recEnv') = openModuleExports exports env ctorEnv recEnv
-                        // Note: ctorEnv/recEnv are mutable in scope via the fold's closure
-                        // We return updated env; ctor/rec env updates handled via the exports merge
-                        (env', mods, warns)
+                        let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
+                        (env', cEnv', rEnv', mods, warns)
                 | _ ->
                     let exports = resolveModule mods path span
-                    let (env', _ctorEnv', _recEnv') = openModuleExports exports env ctorEnv recEnv
-                    (env', mods, warns)
+                    let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
+                    (env', cEnv', rEnv', mods, warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope
-                let (env', mods', innerWarns) =
+                let (env', cEnv'', rEnv'', mods', innerWarns) =
                     innerDecls
-                    |> List.fold (fun (e, ms, ws) d ->
+                    |> List.fold (fun (e, ce, re, ms, ws) d ->
                         match d with
                         | LetDecl(n, body, _) ->
                             let refsInBody = collectModuleRefs ms body
                             let rewrittenBody = rewriteModuleAccess ms body
                             let (eForSynth, cForSynth, rForSynth) =
-                                if Set.isEmpty refsInBody then (e, ctorEnv, recEnv)
-                                else mergeModuleExportsForTypeCheck ms refsInBody e ctorEnv recEnv
+                                if Set.isEmpty refsInBody then (e, ce, re)
+                                else mergeModuleExportsForTypeCheck ms refsInBody e ce re
                             let s, ty = Bidir.synth cForSynth rForSynth [] eForSynth rewrittenBody
                             let ty' = apply s ty
                             let scheme = generalize (applyEnv s e) ty'
-                            let matchWarnings = checkMatchWarnings ctorEnv body
-                            (Map.add n scheme e, ms, ws @ matchWarnings)
+                            let matchWarnings = checkMatchWarnings ce body
+                            (Map.add n scheme e, ce, re, ms, ws @ matchWarnings)
                         | ModuleDecl(name, mInnerDecls, span) ->
                             if Map.containsKey name ms then
                                 raise (TypeException {
                                     Kind = DuplicateModuleName name
                                     Span = span; Term = None; ContextStack = []; Trace = [] })
                             let (iEnv, iCtor, iRec, iMods, iWarns) =
-                                typeCheckDecls mInnerDecls e ctorEnv recEnv ms
+                                typeCheckDecls mInnerDecls e ce re ms
                             let mExports = {
                                 TypeEnv = Map.fold (fun acc k v -> if Map.containsKey k e then acc else Map.add k v acc) Map.empty iEnv
-                                CtorEnv = Map.fold (fun acc k v -> if Map.containsKey k ctorEnv then acc else Map.add k v acc) Map.empty iCtor
-                                RecEnv = Map.fold (fun acc k v -> if Map.containsKey k recEnv then acc else Map.add k v acc) Map.empty iRec
+                                CtorEnv = Map.fold (fun acc k v -> if Map.containsKey k ce then acc else Map.add k v acc) Map.empty iCtor
+                                RecEnv = Map.fold (fun acc k v -> if Map.containsKey k re then acc else Map.add k v acc) Map.empty iRec
                                 SubModules = iMods
                             }
-                            (e, Map.add name mExports ms, ws @ iWarns)
-                        | _ -> (e, ms, ws)
-                    ) (env, mods, warns)
-                (env', mods', innerWarns)
-        ) (typeEnv, modules, [])
+                            (e, ce, re, Map.add name mExports ms, ws @ iWarns)
+                        | _ -> (e, ce, re, ms, ws)
+                    ) (env, cEnv, rEnv, mods, warns)
+                (env', cEnv'', rEnv'', mods', innerWarns)
+        ) (typeEnv, ctorEnv, recEnv, modules, [])
 
-    (typeEnv', ctorEnv, recEnv, modules', warnings')
+    (typeEnv', ctorEnv', recEnv', modules', warnings')
 
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.

@@ -425,7 +425,12 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             eval recEnv moduleEnv env body
         with
         | LangThreeException exnVal ->
-            evalMatchClauses recEnv moduleEnv env exnVal handlers
+            try
+                evalMatchClauses recEnv moduleEnv env exnVal handlers
+            with
+            | :? System.Exception as e when e.Message = "Match failure: no pattern matched" ->
+                // No handler matched: re-raise the original exception
+                raise (LangThreeException exnVal)
 
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->

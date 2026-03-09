@@ -17,6 +17,7 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
     | TInt, TInt -> empty
     | TBool, TBool -> empty
     | TString, TString -> empty
+    | TExn, TExn -> empty
 
     // Type variable: symmetric pattern handles both TVar,t and t,TVar
     | TVar n, t | t, TVar n ->

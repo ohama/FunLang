@@ -147,7 +147,7 @@ let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: 
                     let rec popContexts ctx =
                         match ctx with
                         | InMatch baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
-                        | InTry baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
+                        | InTry baseCol :: rest when newState.IndentStack.Head < baseCol -> popContexts rest
                         | InFunctionApp baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
                         | _ -> ctx
                     { newState with Context = popContexts newState.Context }
@@ -184,8 +184,8 @@ let updateContextOnDedent (state: FilterState) : FilterState =
         else
             state
     | InTry baseCol :: rest ->
-        // If current indent level is at or below try base, exit context
-        if state.IndentStack.Head <= baseCol then
+        // If current indent level is below try base, exit context (not at, because try body DEDENTs back to try level before pipes)
+        if state.IndentStack.Head < baseCol then
             { state with Context = rest }
         else
             state
