@@ -63,6 +63,11 @@ rule tokenize = parse
     | "bool"        { TYPE_BOOL }
     | "string"      { TYPE_STRING }
     | "list"        { TYPE_LIST }
+    // Phase 6 (Exceptions): Exception keywords
+    | "exception"   { EXCEPTION }
+    | "raise"       { RAISE }
+    | "try"         { TRY }
+    | "when"        { WHEN }
     // Phase 1 (v3.0): Wildcard pattern (must come before identifier)
     | '_'           { UNDERSCORE }
     // v6.0: Type variables ('a, 'b, etc.)

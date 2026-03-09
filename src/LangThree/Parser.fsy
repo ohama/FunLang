@@ -50,6 +50,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token MUTABLE LARROW
 // Phase 5 (Modules): Module system tokens
 %token MODULE NAMESPACE OPEN
+// Phase 6 (Exceptions): Exception tokens
+%token EXCEPTION RAISE TRY WHEN
 // Indentation tokens
 %token <int> NEWLINE   // NEWLINE with column position
 %token INDENT          // Indentation increase
@@ -112,6 +114,9 @@ Expr:
     | Expr NE Expr                   { NotEqual($1, $3, ruleSpan parseState 1 3) }
     // Phase 2 (v3.0): Cons operator (lower precedence than arithmetic)
     | Expr CONS Expr                 { Cons($1, $3, ruleSpan parseState 1 3) }
+    // Phase 6 (Exceptions): Try-with expression
+    | TRY Expr WITH MatchClauses              { TryWith($2, $4, ruleSpan parseState 1 4) }
+    | TRY INDENT Expr DEDENT WITH MatchClauses { TryWith($3, $6, ruleSpan parseState 1 6) }
     // Phase 3 (Records-06): Mutable field assignment
     | Atom DOT IDENT LARROW Expr     { SetField($1, $3, $5, ruleSpan parseState 1 5) }
     // Arithmetic - uses Term/Factor for precedence
@@ -128,6 +133,8 @@ Term:
 // Unary minus binds tighter than multiplication but looser than application
 Factor:
     | MINUS Factor       { Negate($2, ruleSpan parseState 1 2) }
+    // Phase 6 (Exceptions): Raise expression (uses Atom to avoid ambiguity)
+    | RAISE Atom         { Raise($2, ruleSpan parseState 1 2) }
     | AppExpr            { $1 }
 
 // Phase 5: Function application (left-associative, highest precedence)
@@ -221,9 +228,12 @@ Pattern:
     | LBRACE RecordPatFields RBRACE  { RecordPat($2, ruleSpan parseState 1 3) }
 
 // Phase 3 (v3.0): Match clauses (non-empty, requires leading PIPE)
+// Phase 6: Extended with optional when guards (Pattern * Expr option * Expr)
 MatchClauses:
-    | PIPE Pattern ARROW Expr                { [($2, $4)] }
-    | PIPE Pattern ARROW Expr MatchClauses   { ($2, $4) :: $5 }
+    | PIPE Pattern ARROW Expr                         { [($2, None, $4)] }
+    | PIPE Pattern WHEN Expr ARROW Expr               { [($2, Some $4, $6)] }
+    | PIPE Pattern ARROW Expr MatchClauses            { ($2, None, $4) :: $5 }
+    | PIPE Pattern WHEN Expr ARROW Expr MatchClauses  { ($2, Some $4, $6) :: $7 }
 
 // v6.0: Annotated parameter list for curried lambdas
 AnnotParamList:
@@ -341,6 +351,15 @@ Decls:
         { [ModuleDecl($2, $5, ruleSpan parseState 1 6)] }
     | MODULE IDENT EQUALS INDENT Decls DEDENT Decls
         { ModuleDecl($2, $5, ruleSpan parseState 1 6) :: $7 }
+    // Phase 6 (Exceptions): Exception declaration
+    | EXCEPTION IDENT
+        { [ExceptionDecl($2, None, ruleSpan parseState 1 2)] }
+    | EXCEPTION IDENT Decls
+        { ExceptionDecl($2, None, ruleSpan parseState 1 2) :: $3 }
+    | EXCEPTION IDENT OF TypeExpr
+        { [ExceptionDecl($2, Some $4, ruleSpan parseState 1 4)] }
+    | EXCEPTION IDENT OF TypeExpr Decls
+        { ExceptionDecl($2, Some $4, ruleSpan parseState 1 4) :: $5 }
     // Phase 5 (Modules): Open directive
     | OPEN QualifiedIdent
         { [OpenDecl($2, ruleSpan parseState 1 2)] }
