@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 4 - GADT (Generalized Algebraic Data Types)
+**Current focus:** Phase 4 complete - GADT (Generalized Algebraic Data Types)
 
 ## Current Position
 
 Phase: 4 of 6 (Generalized Algebraic Data Types)
-Plan: 3 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-09 -- Completed 04-03-PLAN.md (GADT type refinement)
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-03-09 -- Completed 04-05-PLAN.md (GADT integration tests)
 
-Progress: [████████████░░░░░░░░] 59% (3/6 phases + 3/5 plans in phase 4)
+Progress: [████████████████░░░░] 76% (4/6 phases complete, ready for phase 5)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: 4.5 min
-- Total execution time: 1.30 hours
+- Total plans completed: 19
+- Average duration: 4.3 min
+- Total execution time: 1.38 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████████████░░░░░░░░] 59% (3/
 | 01 | 4 | 37 min | 9.3 min |
 | 02 | 2 | 8 min | 4.0 min |
 | 03 | 7 | 21 min | 3.0 min |
-| 04 | 4 | 12 min | 3.0 min |
+| 04 | 5 | 16 min | 3.2 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-07 (4min), 04-01 (3min), 04-02 (4min), 04-03 (2min), 04-04 (3min)
-- Trend: Consistent ~3-4min average for type system elaboration plans
+- Last 5 plans: 04-01 (3min), 04-02 (4min), 04-03 (2min), 04-04 (3min), 04-05 (4min)
+- Trend: Consistent ~3-4min average for type system plans
 
 *Updated after each plan completion*
 
@@ -138,6 +138,11 @@ Recent decisions affecting current work:
 - filterPossibleConstructors: structural type arg comparison, conservative when type variables present
 - inferSpecificScrutineeType: raw ResultType from first GADT constructor pattern
 
+**From 04-05 (GADT Integration Tests):**
+- GADT match tests use (match ... : ResultType) annotation to enter check mode
+- Scrutinee annotation alone is insufficient -- the match expression itself must be in check mode
+- All 17 GADT tests passed; zero bugs found in plans 01-04 implementation
+
 ### Pending Todos
 
 None yet.
@@ -151,9 +156,8 @@ None yet.
 **From 01-04:**
 - **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
-**Phase 4 (GADT) known challenges:**
-- Type inference undecidability requires mandatory annotations
-- Rigid type variable scope checking needed
+**Phase 4 (GADT) -- COMPLETE:**
+- All challenges resolved; 132 tests pass
 
 **Phase 5 (Modules) known challenges:**
 - Circular dependency detection required
@@ -161,10 +165,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 4 in progress)
-Stopped at: Completed 04-03-PLAN.md (GADT type refinement)
+Last session: 2026-03-09 (Phase 4 complete)
+Stopped at: Completed 04-05-PLAN.md (GADT integration tests)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 07:04 UTC*
+*Last updated: 2026-03-09 07:10 UTC*
