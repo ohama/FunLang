@@ -348,6 +348,30 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | _ ->
             raise (TypeException { Kind = FieldAccessOnNonRecord resolvedSrcTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
 
+    // === SetField (mutable field assignment) ===
+    | SetField (expr, fieldName, value, span) ->
+        let s1, exprTy = synth ctorEnv recEnv ctx env expr
+        let resolvedTy = apply s1 exprTy
+        match resolvedTy with
+        | TData (typeName, typeArgs) ->
+            match Map.tryFind typeName recEnv with
+            | Some recInfo ->
+                match recInfo.Fields |> List.tryFind (fun f -> f.Name = fieldName) with
+                | Some fieldInfo ->
+                    if not fieldInfo.IsMutable then
+                        raise (TypeException { Kind = ImmutableFieldAssignment(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                    let subst = List.zip recInfo.TypeParams typeArgs |> Map.ofList
+                    let fieldTy = apply subst fieldInfo.FieldType
+                    let s2, valTy = synth ctorEnv recEnv ctx (applyEnv s1 env) value
+                    let s3 = unifyWithContext ctx [] span fieldTy valTy
+                    (compose s3 (compose s2 s1), TTuple [])
+                | None ->
+                    raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            | None ->
+                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        | _ ->
+            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+
     // === LetPat ===
     | LetPat (pat, value, body, span) ->
         let s1, valueTy = synth ctorEnv recEnv ctx env value

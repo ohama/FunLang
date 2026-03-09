@@ -31,7 +31,7 @@ let rec formatValue (v: Value) : string =
         let fieldStrs =
             fields
             |> Map.toList
-            |> List.map (fun (name, value) -> sprintf "%s = %s" name (formatValue value))
+            |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
         sprintf "{ %s }" (String.concat "; " fieldStrs)
 
 /// Resolve record type name from field names using RecordEnv
@@ -86,7 +86,7 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
             fieldPats
             |> List.map (fun (fieldName, pat) ->
                 match Map.tryFind fieldName fields with
-                | Some value -> matchPattern pat value
+                | Some valueRef -> matchPattern pat !valueRef
                 | None -> None)
         if List.forall Option.isSome bindings then
             Some (List.collect Option.get bindings)
@@ -221,7 +221,10 @@ and eval (recEnv: RecordEnv) (env: Env) (expr: Expr) : Value =
         | StringValue l, StringValue r -> BoolValue (l = r)
         | TupleValue l, TupleValue r -> BoolValue (l = r)  // Structural equality
         | ListValue l, ListValue r -> BoolValue (l = r)
-        | RecordValue (t1, f1), RecordValue (t2, f2) -> BoolValue (t1 = t2 && f1 = f2)
+        | RecordValue (t1, f1), RecordValue (t2, f2) ->
+            let v1 = f1 |> Map.map (fun _ r -> !r)
+            let v2 = f2 |> Map.map (fun _ r -> !r)
+            BoolValue (t1 = t2 && v1 = v2)
         | _ -> failwith "Type error: = requires operands of same type"
 
     | NotEqual (left, right, _) ->
@@ -231,7 +234,10 @@ and eval (recEnv: RecordEnv) (env: Env) (expr: Expr) : Value =
         | StringValue l, StringValue r -> BoolValue (l <> r)
         | TupleValue l, TupleValue r -> BoolValue (l <> r)  // Structural inequality
         | ListValue l, ListValue r -> BoolValue (l <> r)
-        | RecordValue (t1, f1), RecordValue (t2, f2) -> BoolValue (t1 <> t2 || f1 <> f2)
+        | RecordValue (t1, f1), RecordValue (t2, f2) ->
+            let v1 = f1 |> Map.map (fun _ r -> !r)
+            let v2 = f2 |> Map.map (fun _ r -> !r)
+            BoolValue (t1 <> t2 || v1 <> v2)
         | _ -> failwith "Type error: <> requires operands of same type"
 
     // Logical operators - short-circuit evaluation
@@ -305,7 +311,7 @@ and eval (recEnv: RecordEnv) (env: Env) (expr: Expr) : Value =
     | RecordExpr (_, fieldExprs, _) ->
         let fieldValues =
             fieldExprs
-            |> List.map (fun (name, expr) -> (name, eval recEnv env expr))
+            |> List.map (fun (name, expr) -> (name, ref (eval recEnv env expr)))
             |> Map.ofList
         let fieldNames = fieldExprs |> List.map fst |> Set.ofList
         let typeName = resolveRecordTypeName recEnv fieldNames
@@ -316,7 +322,7 @@ and eval (recEnv: RecordEnv) (env: Env) (expr: Expr) : Value =
         match eval recEnv env expr with
         | RecordValue (_, fields) ->
             match Map.tryFind fieldName fields with
-            | Some value -> value
+            | Some valueRef -> !valueRef
             | None -> failwithf "Field not found: %s" fieldName
         | v -> failwithf "Field access on non-record value: %s" (formatValue v)
 
@@ -324,12 +330,24 @@ and eval (recEnv: RecordEnv) (env: Env) (expr: Expr) : Value =
     | RecordUpdate (source, updates, _) ->
         match eval recEnv env source with
         | RecordValue (typeName, fields) ->
+            let copiedFields = fields |> Map.map (fun _ vr -> ref !vr)
             let updatedFields =
                 updates
                 |> List.fold (fun acc (name, expr) ->
-                    Map.add name (eval recEnv env expr) acc) fields
+                    Map.add name (ref (eval recEnv env expr)) acc) copiedFields
             RecordValue (typeName, updatedFields)
         | v -> failwithf "Copy-and-update on non-record value: %s" (formatValue v)
+
+    // Phase 3 (Records): Mutable field assignment
+    | SetField (expr, fieldName, value, _) ->
+        match eval recEnv env expr with
+        | RecordValue (_, fields) ->
+            match Map.tryFind fieldName fields with
+            | Some valueRef ->
+                valueRef := eval recEnv env value
+                TupleValue []
+            | None -> failwithf "Field not found: %s" fieldName
+        | v -> failwithf "SetField on non-record value: %s" (formatValue v)
 
 /// Convenience function for top-level evaluation
 let evalExpr (expr: Expr) : Value =

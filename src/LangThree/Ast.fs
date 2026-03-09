@@ -166,7 +166,7 @@ and Value =
     | TupleValue of Value list  // v3.0: Tuple values
     | ListValue of Value list  // v3.0: List values
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
-    | RecordValue of typeName: string * fields: Map<string, Value>  // Phase 3 (Records): Record value
+    | RecordValue of typeName: string * fields: Map<string, Value ref>  // Phase 3 (Records): Record value (ref cells for mutable field support)
 
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value

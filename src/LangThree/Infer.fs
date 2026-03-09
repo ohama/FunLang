@@ -320,6 +320,10 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
 
+    // === Record expressions (stub - primary implementation in Bidir) ===
+    | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
+        (empty, freshVar())
+
     // === Constructor (Phase 2 ADT) ===
     | Constructor (_, argOpt, _) ->
         match argOpt with

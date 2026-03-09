@@ -97,6 +97,7 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | RecordExpr(_, fields, _) -> fields |> List.collect (fun (_, e) -> collectMatches e)
     | FieldAccess(e, _, _) -> collectMatches e
     | RecordUpdate(src, fields, _) -> collectMatches src @ (fields |> List.collect (fun (_, e) -> collectMatches e))
+    | SetField(e, _, v, _) -> collectMatches e @ collectMatches v
     | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Type check a module: build ConstructorEnv and RecordEnv from type declarations,
