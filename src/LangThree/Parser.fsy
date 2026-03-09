@@ -169,6 +169,10 @@ Atom:
     | LBRACKET RBRACKET                      { EmptyList(ruleSpan parseState 1 2) }
     | LBRACKET Expr RBRACKET                 { List([$2], ruleSpan parseState 1 3) }
     | LBRACKET Expr COMMA ExprList RBRACKET  { List($2 :: $4, ruleSpan parseState 1 5) }
+    // Phase 3 (Records): Field access (left-recursive for chaining: a.b.c)
+    | Atom DOT IDENT                         { FieldAccess($1, $3, ruleSpan parseState 1 3) }
+    // Phase 3 (Records): Record creation and copy-and-update
+    | LBRACE RecordExprInner RBRACE          { $2 (ruleSpan parseState 1 3) }
 
 // Phase 1 (v3.0): Comma-separated expression list for tuples
 ExprList:
@@ -207,6 +211,8 @@ Pattern:
     | FALSE                       { ConstPat(BoolConst(false), symSpan parseState 1) }
     | LBRACKET RBRACKET           { EmptyListPat(ruleSpan parseState 1 2) }
     | Pattern CONS Pattern        { ConsPat($1, $3, ruleSpan parseState 1 3) }
+    // Phase 3 (Records): Record pattern
+    | LBRACE RecordPatFields RBRACE  { RecordPat($2, ruleSpan parseState 1 3) }
 
 // Phase 3 (v3.0): Match clauses (non-empty, requires leading PIPE)
 MatchClauses:
@@ -304,6 +310,9 @@ Decls:
     // Phase 2 (ADT-01): Type declarations (possibly mutually recursive)
     | TypeDeclaration               { List.map Ast.Decl.TypeDecl $1 }
     | TypeDeclaration Decls         { (List.map Ast.Decl.TypeDecl $1) @ $2 }
+    // Phase 3 (Records): Record type declarations
+    | RecordDeclaration               { [Ast.Decl.RecordTypeDecl $1] }
+    | RecordDeclaration Decls         { (Ast.Decl.RecordTypeDecl $1) :: $2 }
 
 // Decl: Single top-level declaration
 // Top-level declarations must be at column 0
@@ -326,3 +335,39 @@ Decl:
 ParamList:
     | IDENT                         { [$1] }
     | IDENT ParamList               { $1 :: $2 }
+
+// Phase 3 (Records): Record type declaration
+RecordDeclaration:
+    | TYPE IDENT TypeParams EQUALS LBRACE RecordFields RBRACE
+        { Ast.RecordDecl($2, $3, $6, ruleSpan parseState 1 7) }
+    | TYPE IDENT TypeParams EQUALS INDENT LBRACE RecordFields RBRACE DEDENT
+        { Ast.RecordDecl($2, $3, $7, ruleSpan parseState 1 9) }
+
+// Phase 3 (Records): Record field declarations
+RecordFields:
+    | RecordField                              { [$1] }
+    | RecordField SEMICOLON RecordFields       { $1 :: $3 }
+    | RecordField SEMICOLON                    { [$1] }
+
+RecordField:
+    | IDENT COLON TypeExpr
+        { Ast.RecordFieldDecl($1, $3, false, ruleSpan parseState 1 3) }
+
+// Phase 3 (Records): Record expression inner (resolves LBRACE IDENT ambiguity)
+RecordExprInner:
+    | RecordFieldBindings
+        { fun span -> RecordExpr(None, $1, span) }
+    | Expr WITH RecordFieldBindings
+        { fun span -> RecordUpdate($1, $3, span) }
+
+// Phase 3 (Records): Record field bindings for expressions
+RecordFieldBindings:
+    | IDENT EQUALS Expr                              { [($1, $3)] }
+    | IDENT EQUALS Expr SEMICOLON RecordFieldBindings { ($1, $3) :: $5 }
+    | IDENT EQUALS Expr SEMICOLON                    { [($1, $3)] }
+
+// Phase 3 (Records): Record pattern fields
+RecordPatFields:
+    | IDENT EQUALS Pattern                              { [($1, $3)] }
+    | IDENT EQUALS Pattern SEMICOLON RecordPatFields    { ($1, $3) :: $5 }
+    | IDENT EQUALS Pattern SEMICOLON                    { [($1, $3)] }
