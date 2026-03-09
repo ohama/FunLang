@@ -284,24 +284,65 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             })
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
-        let folder (s, idx) (pat, _guard, expr) =
+        let folder (s, idx) (pat, guard, expr) =
             let patEnv, patTy = inferPattern ctorEnv pat
             // Unify scrutinee with pattern type
             let s' = unifyWithContext ctx [] span (apply s scrutTy) patTy
             // Merge pattern env with current env
             let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
                                      (applyEnv s' (applyEnv s env)) patEnv
+            // Type-check when guard if present
+            let sGuard =
+                match guard with
+                | Some g ->
+                    let sg, gTy = synth ctorEnv recEnv ctx clauseEnv g
+                    let sg' = unifyWithContext ctx [] span (apply sg gTy) TBool
+                    compose sg' sg
+                | None -> Type.empty
+            let clauseEnv' = applyEnv sGuard clauseEnv
             // Synth clause body
-            let s'', exprTy = synth ctorEnv recEnv (InMatchClause (idx, span) :: ctx) clauseEnv expr
+            let s'', exprTy = synth ctorEnv recEnv (InMatchClause (idx, span) :: ctx) clauseEnv' expr
             // Unify with result type
             let s''' = unifyWithContext ctx [] span (apply s'' resultTy) exprTy
-            (compose s''' (compose s'' (compose s' s)), idx + 1)
+            (compose s''' (compose s'' (compose sGuard (compose s' s))), idx + 1)
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
 
-    // === Phase 6: Exception stubs ===
-    | Raise(_, span) -> failwith "TODO: Raise type checking"
-    | TryWith(_, _, span) -> failwith "TODO: TryWith type checking"
+    // === Phase 6: Raise expression ===
+    // raise expr: argument must be TExn, result is a fresh type variable (diverges)
+    | Raise(arg, span) ->
+        let s1, argTy = synth ctorEnv recEnv ctx env arg
+        let s2 = unifyWithContext ctx [] span (apply s1 argTy) TExn
+        let resultTy = freshVar()
+        (compose s2 s1, resultTy)
+
+    // === Phase 6: Try-with expression ===
+    // try body with | pat -> handler | pat when guard -> handler
+    | TryWith(body, handlers, span) ->
+        let s1, bodyTy = synth ctorEnv recEnv ctx env body
+        let folder (s, idx) (pat, guard, handlerExpr) =
+            let patEnv, patTy = inferPattern ctorEnv pat
+            // Handler patterns must match TExn
+            let s' = unifyWithContext ctx [] span (apply s patTy) TExn
+            let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
+                                (applyEnv s' (applyEnv s env)) patEnv
+            // Type-check when guard if present
+            let sGuard =
+                match guard with
+                | Some g ->
+                    let sg, gTy = synth ctorEnv recEnv ctx clauseEnv g
+                    let sg' = unifyWithContext ctx [] span (apply sg gTy) TBool
+                    compose sg' sg
+                | None -> Type.empty
+            let clauseEnv' = applyEnv sGuard clauseEnv
+            // Type-check handler body and unify with try body type
+            let s'', exprTy = synth ctorEnv recEnv (InMatchClause(idx, span) :: ctx) clauseEnv' handlerExpr
+            let sUnify = unifyWithContext ctx [] span
+                            (apply s'' (apply sGuard (apply s' (apply s bodyTy))))
+                            (apply s'' exprTy)
+            (compose sUnify (compose s'' (compose sGuard (compose s' s))), idx + 1)
+        let finalS, _ = List.fold folder (s1, 0) handlers
+        (finalS, apply finalS bodyTy)
 
     // === Record expressions (Phase 3) ===
     | RecordExpr (_, fields, span) ->
@@ -448,7 +489,7 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
     | Match (scrutinee, clauses, span) when isGadtMatch ctorEnv clauses ->
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
 
-        let folder (s, idx) (pat, _guard, body) =
+        let folder (s, idx) (pat, guard, body) =
             let clauseCtx = InMatchClause(idx, span) :: ctx
             match pat with
             | ConstructorPat(name, argPatOpt, patSpan) ->
@@ -501,9 +542,19 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                             (applyEnv (compose combinedLocalS s) env)
                             patEnv
 
+                    // 5b. Type-check when guard if present
+                    let sGuard =
+                        match guard with
+                        | Some g ->
+                            let sg, gTy = synth ctorEnv recEnv clauseCtx branchEnv g
+                            let sg' = unifyWithContext clauseCtx [] span (apply sg gTy) TBool
+                            compose sg' sg
+                        | None -> Type.empty
+                    let branchEnv' = applyEnv sGuard branchEnv
+
                     // 6. Check branch body against refined expected type
-                    let refinedExpected = apply (compose combinedLocalS s) expected
-                    let bodyS = check ctorEnv recEnv clauseCtx branchEnv body refinedExpected
+                    let refinedExpected = apply sGuard (apply (compose combinedLocalS s) expected)
+                    let bodyS = check ctorEnv recEnv clauseCtx branchEnv' body refinedExpected
 
                     // 7. Check existential escape: result type must not mention existential vars
                     let resultTy = apply bodyS refinedExpected
@@ -523,8 +574,16 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                     let s' = unifyWithContext clauseCtx [] span (apply s scrutTy) patTy
                     let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
                                         (applyEnv s' (applyEnv s env)) patEnv
-                    let bodyS = check ctorEnv recEnv clauseCtx clauseEnv body (apply (compose s' s) expected)
-                    (compose bodyS (compose s' s), idx + 1)
+                    let sGuard =
+                        match guard with
+                        | Some g ->
+                            let sg, gTy = synth ctorEnv recEnv clauseCtx clauseEnv g
+                            let sg' = unifyWithContext clauseCtx [] span (apply sg gTy) TBool
+                            compose sg' sg
+                        | None -> Type.empty
+                    let clauseEnv' = applyEnv sGuard clauseEnv
+                    let bodyS = check ctorEnv recEnv clauseCtx clauseEnv' body (apply sGuard (apply (compose s' s) expected))
+                    (compose bodyS (compose sGuard (compose s' s)), idx + 1)
 
             | _ ->
                 // Non-constructor pattern (wildcard, var, etc.)
@@ -532,8 +591,16 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                 let s' = unifyWithContext clauseCtx [] span (apply s scrutTy) patTy
                 let clauseEnv = Map.fold (fun acc k v -> Map.add k v acc)
                                     (applyEnv s' (applyEnv s env)) patEnv
-                let bodyS = check ctorEnv recEnv clauseCtx clauseEnv body (apply (compose s' s) expected)
-                (compose bodyS (compose s' s), idx + 1)
+                let sGuard =
+                    match guard with
+                    | Some g ->
+                        let sg, gTy = synth ctorEnv recEnv clauseCtx clauseEnv g
+                        let sg' = unifyWithContext clauseCtx [] span (apply sg gTy) TBool
+                        compose sg' sg
+                    | None -> Type.empty
+                let clauseEnv' = applyEnv sGuard clauseEnv
+                let bodyS = check ctorEnv recEnv clauseCtx clauseEnv' body (apply sGuard (apply (compose s' s) expected))
+                (compose bodyS (compose sGuard (compose s' s)), idx + 1)
 
         let finalS, _ = List.fold folder (s1, 0) clauses
         finalS

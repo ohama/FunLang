@@ -167,7 +167,9 @@ let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic> =
 let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     match expr with
     | Match(scrutinee, clauses, span) ->
-        let patterns = clauses |> List.map (fun (p, _, _) -> p)
+        // Exclude guarded patterns from exhaustiveness checking (they may not match)
+        let patterns = clauses |> List.choose (fun (p, guard, _) ->
+            match guard with None -> Some p | Some _ -> None)
         let nested =
             collectMatches scrutinee
             @ (clauses |> List.collect (fun (_, _, body) -> collectMatches body))
@@ -233,50 +235,99 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
                 | _ -> None
             | _ -> None)
 
-    allMatches
-    |> List.collect (fun (patterns, _scrutinee, matchSpan) ->
-        let mutable scrWarnings = []
+    let matchWarnings =
+        allMatches
+        |> List.collect (fun (patterns, _scrutinee, matchSpan) ->
+            let mutable scrWarnings = []
 
-        match inferTypeFromPatterns patterns with
-        | Some scrTy ->
-            let constructorSet = getConstructorsFromEnv ctorEnv scrTy
+            match inferTypeFromPatterns patterns with
+            | Some scrTy ->
+                let constructorSet = getConstructorsFromEnv ctorEnv scrTy
 
-            if not (List.isEmpty constructorSet) then
-                let filterType =
-                    inferSpecificScrutineeType patterns
-                    |> Option.defaultValue scrTy
-                let possibleConstructors =
-                    Exhaustive.filterPossibleConstructors ctorEnv filterType constructorSet
+                if not (List.isEmpty constructorSet) then
+                    let filterType =
+                        inferSpecificScrutineeType patterns
+                        |> Option.defaultValue scrTy
+                    let possibleConstructors =
+                        Exhaustive.filterPossibleConstructors ctorEnv filterType constructorSet
 
-                let casePats = patterns |> List.map astPatToCasePat
+                    let casePats = patterns |> List.map astPatToCasePat
 
-                match Exhaustive.checkExhaustive possibleConstructors casePats with
-                | Exhaustive.NonExhaustive missing ->
-                    let diag =
-                        { Kind = NonExhaustiveMatch(missing |> List.map Exhaustive.formatPattern)
-                          Span = matchSpan
-                          Term = None
-                          ContextStack = []
-                          Trace = [] }
-                        |> typeErrorToDiagnostic
-                    scrWarnings <- diag :: scrWarnings
-                | Exhaustive.Exhaustive -> ()
-
-                match Exhaustive.checkRedundant possibleConstructors casePats with
-                | Exhaustive.HasRedundancy indices ->
-                    for idx in indices do
+                    match Exhaustive.checkExhaustive possibleConstructors casePats with
+                    | Exhaustive.NonExhaustive missing ->
                         let diag =
-                            { Kind = RedundantPattern(idx)
+                            { Kind = NonExhaustiveMatch(missing |> List.map Exhaustive.formatPattern)
                               Span = matchSpan
                               Term = None
                               ContextStack = []
                               Trace = [] }
                             |> typeErrorToDiagnostic
                         scrWarnings <- diag :: scrWarnings
-                | Exhaustive.NoRedundancy -> ()
-        | None -> ()
+                    | Exhaustive.Exhaustive -> ()
 
-        scrWarnings |> List.rev)
+                    match Exhaustive.checkRedundant possibleConstructors casePats with
+                    | Exhaustive.HasRedundancy indices ->
+                        for idx in indices do
+                            let diag =
+                                { Kind = RedundantPattern(idx)
+                                  Span = matchSpan
+                                  Term = None
+                                  ContextStack = []
+                                  Trace = [] }
+                                |> typeErrorToDiagnostic
+                            scrWarnings <- diag :: scrWarnings
+                    | Exhaustive.NoRedundancy -> ()
+            | None -> ()
+
+            scrWarnings |> List.rev)
+
+    // Also check try-with handlers for non-exhaustive exception handling (W0003)
+    let tryWithWarnings =
+        let rec collectTryWiths (expr: Expr) : (MatchClause list * Span) list =
+            match expr with
+            | TryWith(body, handlers, span) ->
+                (handlers, span) :: collectTryWiths body
+                @ (handlers |> List.collect (fun (_, _, h) -> collectTryWiths h))
+            | Match(s, clauses, _) ->
+                collectTryWiths s @ (clauses |> List.collect (fun (_, _, b) -> collectTryWiths b))
+            | Let(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
+            | LetPat(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
+            | LetRec(_, _, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
+            | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectTryWiths body
+            | App(f, arg, _) -> collectTryWiths f @ collectTryWiths arg
+            | If(c, t, e, _) -> collectTryWiths c @ collectTryWiths t @ collectTryWiths e
+            | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _)
+            | Equal(a, b, _) | NotEqual(a, b, _) | LessThan(a, b, _) | GreaterThan(a, b, _)
+            | LessEqual(a, b, _) | GreaterEqual(a, b, _) | And(a, b, _) | Or(a, b, _) | Cons(a, b, _) ->
+                collectTryWiths a @ collectTryWiths b
+            | Negate(e, _) | Annot(e, _, _) -> collectTryWiths e
+            | Tuple(es, _) | List(es, _) -> es |> List.collect collectTryWiths
+            | Constructor(_, Some arg, _) -> collectTryWiths arg
+            | RecordExpr(_, fields, _) -> fields |> List.collect (fun (_, e) -> collectTryWiths e)
+            | FieldAccess(e, _, _) -> collectTryWiths e
+            | RecordUpdate(src, fields, _) -> collectTryWiths src @ (fields |> List.collect (fun (_, e) -> collectTryWiths e))
+            | SetField(e, _, v, _) -> collectTryWiths e @ collectTryWiths v
+            | Raise(e, _) -> collectTryWiths e
+            | _ -> []
+
+        let allTryWiths = collectTryWiths body
+
+        allTryWiths
+        |> List.collect (fun (handlers, span) ->
+            // Check if any handler is a catch-all (wildcard or var pattern without guard)
+            let hasCatchAll =
+                handlers |> List.exists (fun (pat, guard, _) ->
+                    match pat, guard with
+                    | Ast.WildcardPat _, None -> true
+                    | Ast.VarPat _, None -> true
+                    | _ -> false)
+            if hasCatchAll then []
+            else
+                [{ Kind = NonExhaustiveExceptionHandler("not all exceptions are handled; consider adding a catch-all handler")
+                   Span = span; Term = None; ContextStack = []; Trace = [] }
+                 |> typeErrorToDiagnostic])
+
+    matchWarnings @ tryWithWarnings
 
 /// Validate globally unique field names across all record types in a decl list
 let validateUniqueRecordFields (decls: Decl list) =
