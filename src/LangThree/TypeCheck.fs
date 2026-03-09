@@ -7,6 +7,7 @@ open Bidir
 open Ast
 open Elaborate
 open Diagnostic
+open Exhaustive
 
 /// Initial type environment with Prelude function type schemes
 /// All Prelude functions have polymorphic types using type variables 0-9
@@ -68,13 +69,40 @@ let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic> =
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
 
+/// Recursively collect all match expressions from an expression.
+/// Returns list of (patterns, scrutinee, span) for each Match node.
+let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
+    match expr with
+    | Match(scrutinee, clauses, span) ->
+        let patterns = clauses |> List.map fst
+        let nested =
+            collectMatches scrutinee
+            @ (clauses |> List.collect (fun (_, body) -> collectMatches body))
+        (patterns, scrutinee, span) :: nested
+    | Let(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
+    | LetPat(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
+    | LetRec(_, _, rhs, body, _) -> collectMatches rhs @ collectMatches body
+    | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectMatches body
+    | App(f, arg, _) -> collectMatches f @ collectMatches arg
+    | If(cond, thenE, elseE, _) -> collectMatches cond @ collectMatches thenE @ collectMatches elseE
+    | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _) ->
+        collectMatches a @ collectMatches b
+    | Equal(a, b, _) | NotEqual(a, b, _) | LessThan(a, b, _) | GreaterThan(a, b, _)
+    | LessEqual(a, b, _) | GreaterEqual(a, b, _) | And(a, b, _) | Or(a, b, _) ->
+        collectMatches a @ collectMatches b
+    | Cons(a, b, _) -> collectMatches a @ collectMatches b
+    | Negate(e, _) | Annot(e, _, _) -> collectMatches e
+    | Tuple(es, _) | List(es, _) -> es |> List.collect collectMatches
+    | Constructor(_, Some arg, _) -> collectMatches arg
+    | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
+
 /// Type check a module: build ConstructorEnv from type declarations,
-/// then type check all let declarations with constructor environment
-/// Returns Ok(unit) on success, Error(Diagnostic) on type error
-let typeCheckModule (m: Module) : Result<unit, Diagnostic> =
+/// then type check all let declarations with constructor environment.
+/// Returns Ok(warnings) on success, Error(Diagnostic) on type error.
+let typeCheckModule (m: Module) : Result<Diagnostic list, Diagnostic> =
     try
         match m with
-        | EmptyModule _ -> Ok ()
+        | EmptyModule _ -> Ok []
         | Module (decls, _) ->
             // Build constructor environment from type declarations
             let ctorEnv =
@@ -98,7 +126,72 @@ let typeCheckModule (m: Module) : Result<unit, Diagnostic> =
                     let scheme = generalize (applyEnv s env) ty'
                     Map.add name scheme env) initialTypeEnv
 
-            Ok ()
+            // Collect all match expressions from let declarations
+            let allMatches =
+                decls
+                |> List.choose (function
+                    | LetDecl(_, body, _) -> Some body
+                    | _ -> None)
+                |> List.collect collectMatches
+
+            // Determine ADT type from constructor patterns in a match expression.
+            // Looks at the first constructor pattern and resolves its result type.
+            let inferTypeFromPatterns (patterns: Pattern list) : Type option =
+                patterns
+                |> List.tryPick (fun pat ->
+                    match pat with
+                    | Ast.ConstructorPat(name, _, _) ->
+                        match Map.tryFind name ctorEnv with
+                        | Some info -> Some info.ResultType
+                        | None -> None
+                    | _ -> None)
+
+            // Check exhaustiveness and redundancy for ADT matches
+            let warnings =
+                allMatches
+                |> List.collect (fun (patterns, _scrutinee, matchSpan) ->
+                    let mutable scrWarnings = []
+
+                    // Determine the scrutinee type from constructor patterns
+                    match inferTypeFromPatterns patterns with
+                    | Some scrTy ->
+                        let constructorSet = getConstructorsFromEnv ctorEnv scrTy
+
+                        if not (List.isEmpty constructorSet) then
+                            // Convert AST patterns to CasePat
+                            let casePats = patterns |> List.map astPatToCasePat
+
+                            // Check exhaustiveness
+                            match Exhaustive.checkExhaustive constructorSet casePats with
+                            | Exhaustive.NonExhaustive missing ->
+                                let diag =
+                                    { Kind = NonExhaustiveMatch(missing |> List.map Exhaustive.formatPattern)
+                                      Span = matchSpan
+                                      Term = None
+                                      ContextStack = []
+                                      Trace = [] }
+                                    |> typeErrorToDiagnostic
+                                scrWarnings <- diag :: scrWarnings
+                            | Exhaustive.Exhaustive -> ()
+
+                            // Check redundancy
+                            match Exhaustive.checkRedundant constructorSet casePats with
+                            | Exhaustive.HasRedundancy indices ->
+                                for idx in indices do
+                                    let diag =
+                                        { Kind = RedundantPattern(idx)
+                                          Span = matchSpan
+                                          Term = None
+                                          ContextStack = []
+                                          Trace = [] }
+                                        |> typeErrorToDiagnostic
+                                    scrWarnings <- diag :: scrWarnings
+                            | Exhaustive.NoRedundancy -> ()
+                    | None -> ()
+
+                    scrWarnings |> List.rev)
+
+            Ok warnings
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)

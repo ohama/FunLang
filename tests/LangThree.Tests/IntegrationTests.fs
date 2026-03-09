@@ -461,6 +461,51 @@ let integrationTests = testList "Integration" [
         | other -> failtest $"Expected IntValue 1, got: %A{other}"
     }
 
+    // Phase 2 (02-06): Exhaustiveness and redundancy warning integration tests
+
+    test "testExhaustivenessWarningMissingCase" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | Some y -> y\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok warnings ->
+            Expect.isNonEmpty warnings "Should have exhaustiveness warning"
+            let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
+            Expect.isTrue hasW0001 "Should have W0001 warning code"
+            let w = warnings |> List.find (fun d -> d.Code = Some "W0001")
+            Expect.stringContains w.Message "None" "Warning should mention missing 'None' case"
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testExhaustivenessNoWarningComplete" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | None -> 0\n    | Some y -> y\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok warnings ->
+            Expect.isEmpty warnings "Complete match should have no warnings"
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testRedundancyWarning" {
+        let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | None -> 0\n    | Some y -> y\n    | None -> 2\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok warnings ->
+            let hasW0002 = warnings |> List.exists (fun d -> d.Code = Some "W0002")
+            Expect.isTrue hasW0002 "Should have W0002 redundancy warning"
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
+    test "testExhaustivenessWarningTree" {
+        let input = "type Tree = Leaf | Node of Tree\n\nlet f t =\n    match t with\n    | Leaf -> 0\n"
+        let result = parseAndTypeCheck input
+        match result with
+        | Ok warnings ->
+            Expect.isNonEmpty warnings "Should have exhaustiveness warning for Tree"
+            let w = warnings |> List.find (fun d -> d.Code = Some "W0001")
+            Expect.stringContains w.Message "Node" "Warning should mention missing 'Node' case"
+        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    }
+
     test "testMixedSingleAndMultiLine" {
         let input = "let f = fun x -> fun y -> fun z -> x + y + z\nlet result = f 1\n    2\n    3\n"
         let result = parseModule input
