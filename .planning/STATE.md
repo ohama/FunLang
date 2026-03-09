@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 3 of 6 (Records)
-Plan: 3 of 7 in current phase
+Plan: 4 of 7 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 03-03-PLAN.md (record type checking with RecordEnv)
+Last activity: 2026-03-09 — Completed 03-04-PLAN.md (record evaluation with RecordEnv)
 
-Progress: [████▌░░░░░] 45%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 6.1 min
-- Total execution time: 0.92 hours
+- Total plans completed: 10
+- Average duration: 5.9 min
+- Total execution time: 0.98 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [████▌░░░░░] 45%
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
 | 02 | 2 | 8 min | 4.0 min |
-| 03 | 3 | 9 min | 3.0 min |
+| 03 | 4 | 13 min | 3.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-04 (3min), 02-06 (5min), 03-01 (3min), 03-02 (2min), 03-03 (4min)
+- Last 5 plans: 02-06 (5min), 03-01 (3min), 03-02 (2min), 03-03 (4min), 03-04 (4min)
 - Trend: Record phase plans executing quickly
 
 *Updated after each plan completion*
@@ -94,6 +94,12 @@ Recent decisions affecting current work:
 - Record type resolved from field set (globally unique field names)
 - typeCheckModule returns RecordEnv alongside warnings for evaluator use
 
+**From 03-04 (Record Evaluation):**
+- recEnv added as first param to eval/evalMatchClauses, threaded through all recursive calls
+- resolveRecordTypeName: field-set lookup against RecordEnv for type name resolution
+- Program.fs --file migrated to parseModule+typeCheckModule pipeline
+- --expr and REPL pass Map.empty for recEnv (no module-level record type declarations)
+
 ### Pending Todos
 
 None yet.
@@ -117,10 +123,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 3 plan 03 complete)
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-03-09 (Phase 3 plan 04 complete)
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 05:58 UTC*
+*Last updated: 2026-03-09 06:05 UTC*
