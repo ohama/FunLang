@@ -19,6 +19,8 @@ type TypeErrorKind =
     | OccursCheck of var: int * ty: Type
     | UnboundVar of name: string
     | NotAFunction of ty: Type
+    | UnboundConstructor of name: string
+    | ArityMismatch of constructor: string * expected: int * actual: int
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -167,6 +169,16 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0304",
             sprintf "Type %s is not a function and cannot be applied" (formatType ty),
             Some "Check that you're calling a function, not a value"
+
+        | UnboundConstructor name ->
+            Some "E0305",
+            sprintf "Unbound constructor: %s" name,
+            Some "Make sure the type declaration defining this constructor is in scope"
+
+        | ArityMismatch (ctor, expected, actual) ->
+            Some "E0306",
+            sprintf "Constructor %s expects %d argument(s) but was given %d" ctor expected actual,
+            Some "Check the number of arguments to the constructor"
 
     // Build notes from context stack and trace
     let contextNotes = formatContextStack err.ContextStack

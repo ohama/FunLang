@@ -49,7 +49,8 @@ open Ast
 
 /// Infer pattern type and extract bindings (INFER-15)
 /// Returns (environment with bindings, pattern type)
-let rec inferPattern (pat: Pattern): TypeEnv * Type =
+/// ctorEnv: Constructor environment for ADT constructor pattern lookup
+let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
     match pat with
     | VarPat (name, _) ->
         let ty = freshVar()
@@ -59,7 +60,7 @@ let rec inferPattern (pat: Pattern): TypeEnv * Type =
         (Map.empty, freshVar())
 
     | TuplePat (pats, _) ->
-        let envTys = List.map inferPattern pats
+        let envTys = List.map (inferPattern ctorEnv) pats
         let env = envTys
                   |> List.map fst
                   |> List.fold (fun acc m -> Map.fold (fun a k v -> Map.add k v a) acc m) Map.empty
@@ -70,8 +71,8 @@ let rec inferPattern (pat: Pattern): TypeEnv * Type =
         (Map.empty, TList (freshVar()))
 
     | ConsPat (headPat, tailPat, _) ->
-        let headEnv, headTy = inferPattern headPat
-        let tailEnv, tailTy = inferPattern tailPat
+        let headEnv, headTy = inferPattern ctorEnv headPat
+        let tailEnv, tailTy = inferPattern ctorEnv tailPat
         // Note: tailTy should be TList headTy, but actual unification happens in Match
         // We return TList headTy as the pattern type
         let env = Map.fold (fun acc k v -> Map.add k v acc) headEnv tailEnv
@@ -82,6 +83,53 @@ let rec inferPattern (pat: Pattern): TypeEnv * Type =
 
     | ConstPat (BoolConst _, _) ->
         (Map.empty, TBool)
+
+    | ConstructorPat (name, argPatOpt, _) ->
+        match Map.tryFind name ctorEnv with
+        | None ->
+            raise (TypeException {
+                Kind = UnboundConstructor name
+                Span = patternSpanOf pat
+                Term = None
+                ContextStack = []
+                Trace = []
+            })
+        | Some ctorInfo ->
+            // Instantiate constructor type with fresh type variables
+            let freshVars = ctorInfo.TypeParams |> List.map (fun _ -> freshVar())
+            let subst =
+                List.zip ctorInfo.TypeParams freshVars |> Map.ofList
+            let resultType = apply subst ctorInfo.ResultType
+
+            // Check argument pattern if present
+            match (ctorInfo.ArgType, argPatOpt) with
+            | (None, None) ->
+                // Nullary constructor (e.g., None)
+                (Map.empty, resultType)
+            | (Some argType, Some argPat) ->
+                // Constructor with argument (e.g., Some x)
+                let argType' = apply subst argType
+                let (env, patTy) = inferPattern ctorEnv argPat
+                // Unify pattern type with expected arg type
+                let s = unify argType' patTy
+                let env' = Map.map (fun _ scheme -> applyScheme s scheme) env
+                (env', apply s resultType)
+            | (None, Some _) ->
+                raise (TypeException {
+                    Kind = ArityMismatch (name, 0, 1)
+                    Span = patternSpanOf pat
+                    Term = None
+                    ContextStack = []
+                    Trace = []
+                })
+            | (Some _, None) ->
+                raise (TypeException {
+                    Kind = ArityMismatch (name, 1, 0)
+                    Span = patternSpanOf pat
+                    Term = None
+                    ContextStack = []
+                    Trace = []
+                })
 
 /// <summary>
 /// DEPRECATED: Use Bidir.synth instead.
@@ -252,7 +300,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let s1, scrutTy = inferWithContext (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
         let folder (s, idx) (pat, expr) =
-            let patEnv, patTy = inferPattern pat
+            let patEnv, patTy = inferPattern Map.empty pat
             // Unify scrutinee with pattern type
             let s' = unifyWithContext ctx [] span (apply s scrutTy) patTy
             // Merge pattern env with current env (after applying substitution)
@@ -271,7 +319,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         // Infer value type
         let s1, valueTy = inferWithContext ctx env value
         // Get pattern bindings and type
-        let patEnv, patTy = inferPattern pat
+        let patEnv, patTy = inferPattern Map.empty pat
         // Unify value type with pattern type
         let s2 = unifyWithContext ctx [] span (apply s1 valueTy) patTy
         let s = compose s2 s1
