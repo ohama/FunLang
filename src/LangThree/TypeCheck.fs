@@ -172,14 +172,23 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv, Diagnostic
                 |> List.collect collectMatches
 
             // Determine ADT type from constructor patterns in a match expression.
-            // Looks at the first constructor pattern and resolves its result type.
+            // For GADT constructors, return the generic type (e.g., Expr<'a>) not
+            // the specific result type (e.g., Expr<int>), so exhaustiveness checking works.
             let inferTypeFromPatterns (patterns: Pattern list) : Type option =
                 patterns
                 |> List.tryPick (fun pat ->
                     match pat with
                     | Ast.ConstructorPat(name, _, _) ->
                         match Map.tryFind name ctorEnv with
-                        | Some info -> Some info.ResultType
+                        | Some info ->
+                            if info.IsGadt then
+                                // For GADT constructors, build generic type from type name
+                                match info.ResultType with
+                                | TData(typeName, _) ->
+                                    Some (TData(typeName, info.TypeParams |> List.map TVar))
+                                | _ -> Some info.ResultType
+                            else
+                                Some info.ResultType
                         | None -> None
                     | _ -> None)
 
