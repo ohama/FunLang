@@ -46,6 +46,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token TYPE OF AND_KW
 // Phase 3 (Records): Record syntax tokens
 %token LBRACE RBRACE SEMICOLON DOT
+// Phase 3 (Records-06): Mutable field tokens
+%token MUTABLE LARROW
 // Indentation tokens
 %token <int> NEWLINE   // NEWLINE with column position
 %token INDENT          // Indentation increase

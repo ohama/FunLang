@@ -52,6 +52,8 @@ rule tokenize = parse
     | "type"        { TYPE }
     | "of"          { OF }
     | "and"         { AND_KW }
+    // Phase 3 (Records-06): Mutable field keyword
+    | "mutable"     { MUTABLE }
     // v6.0: Type keywords for type annotations
     | "int"         { TYPE_INT }
     | "bool"        { TYPE_BOOL }
@@ -76,6 +78,8 @@ rule tokenize = parse
     | ':'           { COLON }      // v6.0: Type annotation
     // Phase 5: Arrow for lambda expressions
     | "->"          { ARROW }
+    // Phase 3 (Records-06): Field assignment operator
+    | "<-"          { LARROW }
     // Comments: don't consume newline so it triggers NEWLINE token
     | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment (newline handled separately)
     | "(*"          { block_comment 1 lexbuf }   // Start block comment, depth=1

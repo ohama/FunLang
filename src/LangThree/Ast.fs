@@ -94,6 +94,8 @@ type Expr =
     | RecordExpr of typeName: string option * fields: (string * Expr) list * span: Span
     | FieldAccess of expr: Expr * fieldName: string * span: Span
     | RecordUpdate of source: Expr * fields: (string * Expr) list * span: Span
+    // Phase 3 (Records-06): Mutable field assignment
+    | SetField of expr: Expr * fieldName: string * value: Expr * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -196,7 +198,7 @@ let spanOf (expr: Expr) : Span =
     | Match(_, _, s) -> s
     | Constructor(_, _, s) -> s
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
-    | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) -> s
+    | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) | SetField(_, _, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
