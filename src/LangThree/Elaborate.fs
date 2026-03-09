@@ -64,6 +64,51 @@ let elaborateTypeExpr (te: TypeExpr): Type =
     let (ty, _) = elaborateWithVars Map.empty te
     ty
 
+/// Elaborate a type declaration into ConstructorEnv entries
+/// Example: type Option 'a = None | Some of 'a
+/// Returns: Map with "None" -> {TypeParams=[0]; ArgType=None; ResultType=TData("Option",[TVar 0])}
+///                  "Some" -> {TypeParams=[0]; ArgType=Some(TVar 0); ResultType=TData("Option",[TVar 0])}
+let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.TypeDecl) : ConstructorEnv =
+    // Map type parameter names to TVar indices (deterministic: 'a->0, 'b->1)
+    let paramMap =
+        typeParams
+        |> List.mapi (fun i p ->
+            let varName = if p.StartsWith("'") then p else "'" + p
+            (varName, i))
+        |> Map.ofList
+
+    let typeParamVars = typeParams |> List.mapi (fun i _ -> i)
+    let resultType = TData(name, List.map TVar typeParamVars)
+
+    // Elaborate a TypeExpr within the context of this type declaration
+    // Uses paramMap for type variables, produces TData for named type references
+    let rec substTypeExpr = function
+        | Ast.TEVar v ->
+            match Map.tryFind v paramMap with
+            | Some idx -> TVar idx
+            | None -> failwithf "Unbound type parameter: %s" v
+        | Ast.TEName n ->
+            // Named type reference (e.g., Tree in recursive ADT, or other types)
+            TData(n, [])
+        | Ast.TEInt -> TInt
+        | Ast.TEBool -> TBool
+        | Ast.TEString -> TString
+        | Ast.TEList te -> TList (substTypeExpr te)
+        | Ast.TEArrow (t1, t2) -> TArrow (substTypeExpr t1, substTypeExpr t2)
+        | Ast.TETuple ts -> TTuple (List.map substTypeExpr ts)
+
+    // Elaborate each constructor
+    constructors
+    |> List.map (fun (Ast.ConstructorDecl(ctorName, dataTypeOpt, _)) ->
+        let argType = dataTypeOpt |> Option.map substTypeExpr
+        let info = {
+            TypeParams = typeParamVars
+            ArgType = argType
+            ResultType = resultType
+        }
+        (ctorName, info))
+    |> Map.ofList
+
 /// Elaborate multiple type expressions sharing the same scope
 /// Used for curried function parameters: fun (x: 'a) (y: 'a) -> ...
 /// Both 'a refer to the same type variable
