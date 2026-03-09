@@ -305,7 +305,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | Match (scrutinee, clauses, span) ->
         let s1, scrutTy = inferWithContext (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
-        let folder (s, idx) (pat, expr) =
+        let folder (s, idx) (pat, _guard, expr) =
             let patEnv, patTy = inferPattern Map.empty pat
             // Unify scrutinee with pattern type
             let s' = unifyWithContext ctx [] span (apply s scrutTy) patTy
@@ -322,6 +322,10 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
 
     // === Record expressions (stub - primary implementation in Bidir) ===
     | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
+        (empty, freshVar())
+
+    // === Phase 6: Exception stubs (primary implementation in Bidir) ===
+    | Raise _ | TryWith _ ->
         (empty, freshVar())
 
     // === Constructor (Phase 2 ADT) ===

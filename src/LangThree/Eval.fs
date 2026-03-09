@@ -109,7 +109,7 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
 and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (scrutinee: Value) (clauses: MatchClause list) : Value =
     match clauses with
     | [] -> failwith "Match failure: no pattern matched"
-    | (pattern, resultExpr) :: rest ->
+    | (pattern, _guard, resultExpr) :: rest ->
         match matchPattern pattern scrutinee with
         | Some bindings ->
             let extendedEnv = List.fold (fun e (n, v) -> Map.add n v e) env bindings
@@ -406,6 +406,10 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                     Map.add name (ref (eval recEnv moduleEnv env expr)) acc) copiedFields
             RecordValue (typeName, updatedFields)
         | v -> failwithf "Copy-and-update on non-record value: %s" (formatValue v)
+
+    // Phase 6 (Exceptions): Stubs
+    | Raise(_, _) -> failwith "TODO: Raise eval"
+    | TryWith(_, _, _) -> failwith "TODO: TryWith eval"
 
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->

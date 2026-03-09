@@ -68,6 +68,11 @@ let formatToken (token: Parser.token) : string =
     // Phase 3 (Records-06): Mutable field tokens
     | Parser.MUTABLE -> "MUTABLE"
     | Parser.LARROW -> "LARROW"
+    // Phase 6 (Exceptions): Exception tokens
+    | Parser.EXCEPTION -> "EXCEPTION"
+    | Parser.RAISE -> "RAISE"
+    | Parser.TRY -> "TRY"
+    | Parser.WHEN -> "WHEN"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
     | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n
@@ -130,7 +135,7 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.Match (scrut, clauses, _) ->
         let formattedClauses =
             clauses
-            |> List.map (fun (pat, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
+            |> List.map (fun (pat, _guard, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
             |> String.concat "; "
         sprintf "Match (%s, [%s])" (formatAst scrut) formattedClauses
     | Ast.Constructor (name, None, _) -> sprintf "Constructor \"%s\"" name
@@ -149,6 +154,14 @@ let rec formatAst (expr: Ast.Expr) : string =
     // Phase 3 (Records-06): Mutable field assignment
     | Ast.SetField (e, field, value, _) ->
         sprintf "SetField (%s, %s, %s)" (formatAst e) field (formatAst value)
+    // Phase 6 (Exceptions)
+    | Ast.Raise (e, _) -> sprintf "Raise (%s)" (formatAst e)
+    | Ast.TryWith (body, clauses, _) ->
+        let formattedClauses =
+            clauses
+            |> List.map (fun (pat, _guard, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
+            |> String.concat "; "
+        sprintf "TryWith (%s, [%s])" (formatAst body) formattedClauses
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

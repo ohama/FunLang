@@ -13,7 +13,7 @@ open Infer  // Reuse freshVar, instantiate, generalize
 
 /// Detect if a match involves GADT constructors
 let isGadtMatch (ctorEnv: ConstructorEnv) (clauses: MatchClause list) : bool =
-    clauses |> List.exists (fun (pat, _) ->
+    clauses |> List.exists (fun (pat, _, _) ->
         match pat with
         | ConstructorPat(name, _, _) ->
             match Map.tryFind name ctorEnv with
@@ -284,7 +284,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             })
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
-        let folder (s, idx) (pat, expr) =
+        let folder (s, idx) (pat, _guard, expr) =
             let patEnv, patTy = inferPattern ctorEnv pat
             // Unify scrutinee with pattern type
             let s' = unifyWithContext ctx [] span (apply s scrutTy) patTy
@@ -298,6 +298,10 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             (compose s''' (compose s'' (compose s' s)), idx + 1)
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
+
+    // === Phase 6: Exception stubs ===
+    | Raise(_, span) -> failwith "TODO: Raise type checking"
+    | TryWith(_, _, span) -> failwith "TODO: TryWith type checking"
 
     // === Record expressions (Phase 3) ===
     | RecordExpr (_, fields, span) ->
@@ -444,7 +448,7 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
     | Match (scrutinee, clauses, span) when isGadtMatch ctorEnv clauses ->
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
 
-        let folder (s, idx) (pat, body) =
+        let folder (s, idx) (pat, _guard, body) =
             let clauseCtx = InMatchClause(idx, span) :: ctx
             match pat with
             | ConstructorPat(name, argPatOpt, patSpan) ->

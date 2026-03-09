@@ -167,10 +167,10 @@ let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic> =
 let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     match expr with
     | Match(scrutinee, clauses, span) ->
-        let patterns = clauses |> List.map fst
+        let patterns = clauses |> List.map (fun (p, _, _) -> p)
         let nested =
             collectMatches scrutinee
-            @ (clauses |> List.collect (fun (_, body) -> collectMatches body))
+            @ (clauses |> List.collect (fun (_, _, body) -> collectMatches body))
         (patterns, scrutinee, span) :: nested
     | Let(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
     | LetPat(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
@@ -191,6 +191,10 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | FieldAccess(e, _, _) -> collectMatches e
     | RecordUpdate(src, fields, _) -> collectMatches src @ (fields |> List.collect (fun (_, e) -> collectMatches e))
     | SetField(e, _, v, _) -> collectMatches e @ collectMatches v
+    | Raise(e, _) -> collectMatches e
+    | TryWith(body, clauses, _) ->
+        collectMatches body
+        @ (clauses |> List.collect (fun (_, _, handler) -> collectMatches handler))
     | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body
@@ -314,7 +318,7 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | App(f, arg, _) -> Set.union (collectModuleRefs modules f) (collectModuleRefs modules arg)
     | If(c, t, e, _) -> Set.unionMany [collectModuleRefs modules c; collectModuleRefs modules t; collectModuleRefs modules e]
     | Match(s, clauses, _) ->
-        let clauseRefs = clauses |> List.map (fun (_, body) -> collectModuleRefs modules body)
+        let clauseRefs = clauses |> List.map (fun (_, _, body) -> collectModuleRefs modules body)
         Set.unionMany (collectModuleRefs modules s :: clauseRefs)
     | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _)
     | Equal(a, b, _) | NotEqual(a, b, _) | LessThan(a, b, _) | GreaterThan(a, b, _)
@@ -327,6 +331,10 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | RecordUpdate(src, fields, _) ->
         Set.unionMany (collectModuleRefs modules src :: (fields |> List.map (fun (_, e) -> collectModuleRefs modules e)))
     | SetField(e, _, v, _) -> Set.union (collectModuleRefs modules e) (collectModuleRefs modules v)
+    | Raise(e, _) -> collectModuleRefs modules e
+    | TryWith(body, clauses, _) ->
+        let clauseRefs = clauses |> List.map (fun (_, _, handler) -> collectModuleRefs modules handler)
+        Set.unionMany (collectModuleRefs modules body :: clauseRefs)
     | Constructor(_, Some arg, _) -> collectModuleRefs modules arg
     | _ -> Set.empty
 
@@ -376,7 +384,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | If(c, t, e, s) -> If(rewriteModuleAccess modules c, rewriteModuleAccess modules t, rewriteModuleAccess modules e, s)
     | Match(scr, clauses, s) ->
         Match(rewriteModuleAccess modules scr,
-              clauses |> List.map (fun (p, body) -> (p, rewriteModuleAccess modules body)), s)
+              clauses |> List.map (fun (p, g, body) -> (p, g, rewriteModuleAccess modules body)), s)
     | Add(a, b, s) -> Add(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Subtract(a, b, s) -> Subtract(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Multiply(a, b, s) -> Multiply(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
@@ -400,6 +408,10 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | RecordUpdate(src, fields, s) ->
         RecordUpdate(rewriteModuleAccess modules src, fields |> List.map (fun (n, e) -> (n, rewriteModuleAccess modules e)), s)
     | SetField(e, f, v, s) -> SetField(rewriteModuleAccess modules e, f, rewriteModuleAccess modules v, s)
+    | Raise(e, s) -> Raise(rewriteModuleAccess modules e, s)
+    | TryWith(body, clauses, s) ->
+        TryWith(rewriteModuleAccess modules body,
+                clauses |> List.map (fun (p, g, handler) -> (p, g, rewriteModuleAccess modules handler)), s)
     | Constructor(n, Some arg, s) -> Constructor(n, Some(rewriteModuleAccess modules arg), s)
     | _ -> expr  // Literals, Var, Constructor(None), EmptyList -- no rewrite needed
 
@@ -475,8 +487,8 @@ let rec typeCheckDecls
                 let matchWarnings = checkMatchWarnings ctorEnv body
                 (env', mods, warns @ matchWarnings)
 
-            | Decl.TypeDecl _ | Decl.RecordTypeDecl _ ->
-                // Already processed in first pass
+            | Decl.TypeDecl _ | Decl.RecordTypeDecl _ | ExceptionDecl _ ->
+                // Already processed in first pass (ExceptionDecl: TODO in Plan 02)
                 (env, mods, warns)
 
             | ModuleDecl(name, innerDecls, span) ->
