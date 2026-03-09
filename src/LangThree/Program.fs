@@ -133,7 +133,7 @@ let main argv =
                     1
                 | Ok _ ->
                     // Type check passed, evaluate
-                    let result = eval Map.empty initialEnv ast
+                    let result = eval Map.empty Map.empty initialEnv ast
                     printfn "%s" (formatValue result)
                     0
             with ex ->
@@ -167,13 +167,13 @@ let main argv =
                             |> List.fold (fun env decl ->
                                 match decl with
                                 | LetDecl(name, body, _) ->
-                                    let value = eval recEnv env body
+                                    let value = eval recEnv Map.empty env body
                                     Map.add name value env
                                 | _ -> env) initialEnv
                         // Print the last let binding's value
                         match moduleDecls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
                         | Some lastBody ->
-                            let result = eval recEnv finalEnv lastBody
+                            let result = eval recEnv Map.empty finalEnv lastBody
                             printfn "%s" (formatValue result)
                         | None -> ()
                         0

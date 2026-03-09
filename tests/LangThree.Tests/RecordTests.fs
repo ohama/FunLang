@@ -45,7 +45,7 @@ let parseTypeCheckAndEval (input: string) : Ast.Env =
             decls |> List.fold (fun env decl ->
                 match decl with
                 | Ast.LetDecl(name, body, _) ->
-                    let value = Eval.eval recEnv env body
+                    let value = Eval.eval recEnv Map.empty env body
                     Map.add name value env
                 | _ -> env) Eval.emptyEnv
         | Ast.EmptyModule _ -> Eval.emptyEnv

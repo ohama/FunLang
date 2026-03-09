@@ -29,7 +29,7 @@ let rec private replLoop (env: Env) : unit =
     | line ->
         try
             let ast = parse line
-            let result = eval Map.empty env ast
+            let result = eval Map.empty Map.empty env ast
             printfn "%s" (formatValue result)
             replLoop env
         with ex ->
