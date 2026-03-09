@@ -463,6 +463,24 @@ let rec typeCheckDecls
         |> List.map elaborateRecordDecl
         |> List.fold (fun acc (name, info) -> Map.add name info acc) recEnv
 
+    // First pass: collect exception declarations into ctorEnv and typeEnv
+    let ctorEnv, typeEnv =
+        decls
+        |> List.fold (fun (cEnv, tEnv) decl ->
+            match decl with
+            | ExceptionDecl(name, dataTypeOpt, _) ->
+                let (ctorName, ctorInfo) = Elaborate.elaborateExceptionDecl name dataTypeOpt
+                let cEnv' = Map.add ctorName ctorInfo cEnv
+                // Add exception constructor to type env as a function
+                let scheme =
+                    match ctorInfo.ArgType with
+                    | Some argTy -> Scheme([], TArrow(argTy, TExn))
+                    | None -> Scheme([], TExn)
+                let tEnv' = Map.add ctorName scheme tEnv
+                (cEnv', tEnv')
+            | _ -> (cEnv, tEnv)
+        ) (ctorEnv, typeEnv)
+
     // Validate globally unique field names
     validateUniqueRecordFields decls
 

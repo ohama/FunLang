@@ -199,6 +199,19 @@ let elaborateRecordDecl (Ast.RecordDecl(name, typeParams, fields, _)) : string *
               Index = idx })
     (name, { TypeParams = typeParamVars; Fields = fieldInfos; ResultType = resultType })
 
+/// Elaborate an exception declaration into a ConstructorEnv entry.
+/// Exception constructors are monomorphic (no type params) with ResultType = TExn.
+let elaborateExceptionDecl (name: string) (dataType: TypeExpr option) : string * Type.ConstructorInfo =
+    let argType =
+        dataType |> Option.map (substTypeExprWithMap Map.empty)
+    (name, {
+        TypeParams = []
+        ArgType = argType
+        ResultType = TExn
+        IsGadt = false
+        ExistentialVars = []
+    })
+
 /// Elaborate multiple type expressions sharing the same scope
 /// Used for curried function parameters: fun (x: 'a) (y: 'a) -> ...
 /// Both 'a refer to the same type variable
