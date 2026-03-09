@@ -37,13 +37,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Records
 
-- [ ] **REC-01**: Record type declarations (`type Point = { x: float; y: float }`)
-- [ ] **REC-02**: Record expressions (`{ x = 1.0; y = 2.0 }`)
-- [ ] **REC-03**: Field access via dot notation (`point.x`)
-- [ ] **REC-04**: Copy-and-update syntax (`{ point with y = 3.0 }`)
-- [ ] **REC-05**: Pattern matching on records
-- [ ] **REC-06**: Structural equality (같은 타입 내)
-- [ ] **REC-07**: Mutable fields (`mutable` keyword)
+- [x] **REC-01**: Record type declarations (`type Point = { x: float; y: float }`)
+- [x] **REC-02**: Record expressions (`{ x = 1.0; y = 2.0 }`)
+- [x] **REC-03**: Field access via dot notation (`point.x`)
+- [x] **REC-04**: Copy-and-update syntax (`{ point with y = 3.0 }`)
+- [x] **REC-05**: Pattern matching on records
+- [x] **REC-06**: Structural equality (같은 타입 내)
+- [x] **REC-07**: Mutable fields (`mutable` keyword)
 
 ### Modules
 
@@ -126,13 +126,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GADT-02 | Phase 4 | Pending |
 | GADT-03 | Phase 4 | Pending |
 | GADT-04 | Phase 4 | Pending |
-| REC-01 | Phase 3 | Pending |
-| REC-02 | Phase 3 | Pending |
-| REC-03 | Phase 3 | Pending |
-| REC-04 | Phase 3 | Pending |
-| REC-05 | Phase 3 | Pending |
-| REC-06 | Phase 3 | Pending |
-| REC-07 | Phase 3 | Pending |
+| REC-01 | Phase 3 | Complete |
+| REC-02 | Phase 3 | Complete |
+| REC-03 | Phase 3 | Complete |
+| REC-04 | Phase 3 | Complete |
+| REC-05 | Phase 3 | Complete |
+| REC-06 | Phase 3 | Complete |
+| REC-07 | Phase 3 | Complete |
 | MOD-01 | Phase 5 | Pending |
 | MOD-02 | Phase 5 | Pending |
 | MOD-03 | Phase 5 | Pending |
