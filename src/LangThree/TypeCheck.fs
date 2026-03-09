@@ -192,6 +192,18 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv, Diagnostic
                         | None -> None
                     | _ -> None)
 
+            // Infer the specific (non-genericized) scrutinee type from GADT constructor
+            // patterns. Used for filtering impossible branches in exhaustiveness checking.
+            let inferSpecificScrutineeType (patterns: Pattern list) : Type option =
+                patterns
+                |> List.tryPick (fun pat ->
+                    match pat with
+                    | Ast.ConstructorPat(name, _, _) ->
+                        match Map.tryFind name ctorEnv with
+                        | Some info when info.IsGadt -> Some info.ResultType
+                        | _ -> None
+                    | _ -> None)
+
             // Check exhaustiveness and redundancy for ADT matches
             let warnings =
                 allMatches
@@ -204,11 +216,19 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv, Diagnostic
                         let constructorSet = getConstructorsFromEnv ctorEnv scrTy
 
                         if not (List.isEmpty constructorSet) then
+                            // For GADT types, filter to only possible constructors
+                            // based on the specific scrutinee type
+                            let filterType =
+                                inferSpecificScrutineeType patterns
+                                |> Option.defaultValue scrTy
+                            let possibleConstructors =
+                                Exhaustive.filterPossibleConstructors ctorEnv filterType constructorSet
+
                             // Convert AST patterns to CasePat
                             let casePats = patterns |> List.map astPatToCasePat
 
                             // Check exhaustiveness
-                            match Exhaustive.checkExhaustive constructorSet casePats with
+                            match Exhaustive.checkExhaustive possibleConstructors casePats with
                             | Exhaustive.NonExhaustive missing ->
                                 let diag =
                                     { Kind = NonExhaustiveMatch(missing |> List.map Exhaustive.formatPattern)
@@ -221,7 +241,7 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv, Diagnostic
                             | Exhaustive.Exhaustive -> ()
 
                             // Check redundancy
-                            match Exhaustive.checkRedundant constructorSet casePats with
+                            match Exhaustive.checkRedundant possibleConstructors casePats with
                             | Exhaustive.HasRedundancy indices ->
                                 for idx in indices do
                                     let diag =

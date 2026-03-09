@@ -225,6 +225,54 @@ let checkRedundant (constructors: ConstructorSet) (patterns: CasePat list) : Red
         HasRedundancy redundant
 
 // ============================================================================
+// GADT-Aware Constructor Filtering
+// ============================================================================
+
+/// Filter constructors to only those whose return type head can match the scrutinee type.
+/// For GADT types, constructors with incompatible return type arguments are eliminated
+/// (e.g., matching on `int expr` does not require the `Bool` branch).
+/// For non-GADT types or generic scrutinee types (with type variables), all constructors
+/// are returned unchanged.
+let filterPossibleConstructors
+    (ctorEnv: Type.ConstructorEnv)
+    (scrutineeType: Type.Type)
+    (fullConstructorSet: ConstructorSet)
+    : ConstructorSet =
+    match scrutineeType with
+    | Type.TData(typeName, scrutArgs) ->
+        let hasGadt =
+            ctorEnv
+            |> Map.exists (fun _ info ->
+                match info.ResultType with
+                | Type.TData(n, _) when n = typeName -> info.IsGadt
+                | _ -> false)
+        if not hasGadt then
+            fullConstructorSet
+        else
+            let scrutHasVars = scrutArgs |> List.exists (fun arg ->
+                not (Set.isEmpty (Type.freeVars arg)))
+            if scrutHasVars then
+                fullConstructorSet
+            else
+                fullConstructorSet
+                |> List.filter (fun ctor ->
+                    match Map.tryFind ctor.Name ctorEnv with
+                    | Some info when info.IsGadt ->
+                        match info.ResultType with
+                        | Type.TData(_, ctorArgs) ->
+                            if List.length scrutArgs <> List.length ctorArgs then
+                                true // arity mismatch, keep conservatively
+                            else
+                                List.forall2 (fun scrutArg ctorArg ->
+                                    if not (Set.isEmpty (Type.freeVars ctorArg)) then true
+                                    elif not (Set.isEmpty (Type.freeVars scrutArg)) then true
+                                    else scrutArg = ctorArg
+                                ) scrutArgs ctorArgs
+                        | _ -> true
+                    | _ -> true)
+    | _ -> fullConstructorSet
+
+// ============================================================================
 // Constructor Environment Integration
 // ============================================================================
 
