@@ -467,7 +467,7 @@ let integrationTests = testList "Integration" [
         let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | Some y -> y\n"
         let result = parseAndTypeCheck input
         match result with
-        | Ok (warnings, _) ->
+        | Ok (warnings, _, _) ->
             Expect.isNonEmpty warnings "Should have exhaustiveness warning"
             let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
             Expect.isTrue hasW0001 "Should have W0001 warning code"
@@ -480,7 +480,7 @@ let integrationTests = testList "Integration" [
         let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | None -> 0\n    | Some y -> y\n"
         let result = parseAndTypeCheck input
         match result with
-        | Ok (warnings, _) ->
+        | Ok (warnings, _, _) ->
             Expect.isEmpty warnings "Complete match should have no warnings"
         | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
     }
@@ -489,7 +489,7 @@ let integrationTests = testList "Integration" [
         let input = "type Option 'a = None | Some of 'a\n\nlet f x =\n    match x with\n    | None -> 0\n    | Some y -> y\n    | None -> 2\n"
         let result = parseAndTypeCheck input
         match result with
-        | Ok (warnings, _) ->
+        | Ok (warnings, _, _) ->
             let hasW0002 = warnings |> List.exists (fun d -> d.Code = Some "W0002")
             Expect.isTrue hasW0002 "Should have W0002 redundancy warning"
         | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
@@ -499,7 +499,7 @@ let integrationTests = testList "Integration" [
         let input = "type Tree = Leaf | Node of Tree\n\nlet f t =\n    match t with\n    | Leaf -> 0\n"
         let result = parseAndTypeCheck input
         match result with
-        | Ok (warnings, _) ->
+        | Ok (warnings, _, _) ->
             Expect.isNonEmpty warnings "Should have exhaustiveness warning for Tree"
             let w = warnings |> List.find (fun d -> d.Code = Some "W0001")
             Expect.stringContains w.Message "Node" "Warning should mention missing 'Node' case"

@@ -39,7 +39,7 @@ let parseTypeCheckAndEval (input: string) : Ast.Env =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
     | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
-    | Ok (_warnings, recEnv) ->
+    | Ok (_warnings, recEnv, _modules) ->
         match m with
         | Ast.Module(decls, _) ->
             decls |> List.fold (fun env decl ->

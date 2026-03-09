@@ -152,31 +152,30 @@ let main argv =
                     | Error diag ->
                         eprintfn "%s" (formatDiagnostic diag)
                         1
-                    | Ok (warnings, recEnv) ->
+                    | Ok (warnings, recEnv, _modules) ->
                         // Print any warnings (non-exhaustive matches, etc.)
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
+                        // Extract declarations from any module variant
+                        let moduleDecls =
+                            match m with
+                            | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+                            | EmptyModule _ -> []
                         // Evaluate module declarations sequentially
                         let finalEnv =
-                            match m with
-                            | Module (decls, _) ->
-                                decls
-                                |> List.fold (fun env decl ->
-                                    match decl with
-                                    | LetDecl(name, body, _) ->
-                                        let value = eval recEnv env body
-                                        Map.add name value env
-                                    | _ -> env) initialEnv
-                            | EmptyModule _ -> initialEnv
+                            moduleDecls
+                            |> List.fold (fun env decl ->
+                                match decl with
+                                | LetDecl(name, body, _) ->
+                                    let value = eval recEnv env body
+                                    Map.add name value env
+                                | _ -> env) initialEnv
                         // Print the last let binding's value
-                        match m with
-                        | Module (decls, _) ->
-                            match decls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
-                            | Some lastBody ->
-                                let result = eval recEnv finalEnv lastBody
-                                printfn "%s" (formatValue result)
-                            | None -> ()
-                        | EmptyModule _ -> ()
+                        match moduleDecls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
+                        | Some lastBody ->
+                            let result = eval recEnv finalEnv lastBody
+                            printfn "%s" (formatValue result)
+                        | None -> ()
                         0
                 with ex ->
                     eprintfn "Error: %s" ex.Message
