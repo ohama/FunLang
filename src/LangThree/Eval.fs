@@ -3,6 +3,9 @@ module Eval
 open Ast
 open Type
 
+/// Exception type for raise/try-with runtime support
+exception LangThreeException of Value
+
 /// Empty environment for top-level evaluation
 /// Phase 5: Env type now defined in Ast.fs for mutual recursion with Value
 let emptyEnv : Env = Map.empty
@@ -109,11 +112,17 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
 and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (scrutinee: Value) (clauses: MatchClause list) : Value =
     match clauses with
     | [] -> failwith "Match failure: no pattern matched"
-    | (pattern, _guard, resultExpr) :: rest ->
+    | (pattern, guard, resultExpr) :: rest ->
         match matchPattern pattern scrutinee with
         | Some bindings ->
             let extendedEnv = List.fold (fun e (n, v) -> Map.add n v e) env bindings
-            eval recEnv moduleEnv extendedEnv resultExpr
+            match guard with
+            | None ->
+                eval recEnv moduleEnv extendedEnv resultExpr
+            | Some guardExpr ->
+                match eval recEnv moduleEnv extendedEnv guardExpr with
+                | BoolValue true -> eval recEnv moduleEnv extendedEnv resultExpr
+                | _ -> evalMatchClauses recEnv moduleEnv env scrutinee rest
         | None ->
             evalMatchClauses recEnv moduleEnv env scrutinee rest
 
@@ -407,9 +416,16 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             RecordValue (typeName, updatedFields)
         | v -> failwithf "Copy-and-update on non-record value: %s" (formatValue v)
 
-    // Phase 6 (Exceptions): Stubs
-    | Raise(_, _) -> failwith "TODO: Raise eval"
-    | TryWith(_, _, _) -> failwith "TODO: TryWith eval"
+    // Phase 6 (Exceptions): raise throws, try-with catches
+    | Raise(arg, _) ->
+        let exnVal = eval recEnv moduleEnv env arg
+        raise (LangThreeException exnVal)
+    | TryWith(body, handlers, _) ->
+        try
+            eval recEnv moduleEnv env body
+        with
+        | LangThreeException exnVal ->
+            evalMatchClauses recEnv moduleEnv env exnVal handlers
 
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->
@@ -445,7 +461,7 @@ let rec evalModuleDecls
             let moduleValues =
                 innerEnv
                 |> Map.filter (fun k _ -> not (Map.containsKey k env))
-            // Collect constructors from TypeDecl siblings inside this module
+            // Collect constructors from TypeDecl and ExceptionDecl siblings inside this module
             let ctorNames =
                 innerDecls |> List.collect (fun d ->
                     match d with
@@ -454,6 +470,7 @@ let rec evalModuleDecls
                             match ctor with
                             | ConstructorDecl(cname, _, _) -> [cname]
                             | GadtConstructorDecl(cname, _, _, _) -> [cname])
+                    | ExceptionDecl(cname, _, _) -> [cname]
                     | _ -> [])
             let ctorEnv =
                 ctorNames
@@ -501,6 +518,20 @@ let rec evalModuleDecls
                     else
                         // Nullary constructor: register as a value
                         Map.add cname (DataValue(cname, None)) acc) env
+            (env', modEnv)
+        | ExceptionDecl(name, dataTypeOpt, _) ->
+            let dummySpan = unknownSpan
+            let env' =
+                match dataTypeOpt with
+                | None ->
+                    // Nullary exception: register as DataValue
+                    Map.add name (DataValue(name, None)) env
+                | Some _ ->
+                    // Exception with data: register as constructor function
+                    let param = "__x"
+                    let body = Constructor(name, Some(Var(param, dummySpan)), dummySpan)
+                    Map.add name (FunctionValue(param, body, env)) env
+            // Also register in moduleEnv's CtorEnv if we're inside a module
             (env', modEnv)
         | _ -> (env, modEnv)  // RecordTypeDecl handled elsewhere
     ) (initialEnv, moduleEnv)
