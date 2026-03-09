@@ -54,6 +54,10 @@ rule tokenize = parse
     | "and"         { AND_KW }
     // Phase 3 (Records-06): Mutable field keyword
     | "mutable"     { MUTABLE }
+    // Phase 5 (Modules): Module system keywords
+    | "module"      { MODULE }
+    | "namespace"   { NAMESPACE }
+    | "open"        { OPEN }
     // v6.0: Type keywords for type annotations
     | "int"         { TYPE_INT }
     | "bool"        { TYPE_BOOL }
