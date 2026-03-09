@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 6 (Algebraic Data Types)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-09 — Completed 02-02-PLAN.md (Type System Extension)
+Last activity: 2026-03-09 -- Completed 02-03-PLAN.md (Constructor Pattern Type Checking)
 
-Progress: [████░░░░░░] 25%
+Progress: [█████░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 8.5 min
-- Total execution time: 0.83 hours
+- Total plans completed: 7
+- Average duration: 8 min
+- Total execution time: 0.92 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 | 4 | 37 min | 9.3 min |
-| 02 | 2 | 12 min | 6 min |
+| 02 | 3 | 17 min | 5.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (13min), 01-03 (3min), 01-04 (12min), 02-01 (9min), 02-02 (3min)
+- Last 5 plans: 01-03 (3min), 01-04 (12min), 02-01 (9min), 02-02 (3min), 02-03 (5min)
 - Trend: Consistent velocity, fast plans for well-scoped type system work
 
 *Updated after each plan completion*
@@ -43,9 +43,9 @@ Progress: [████░░░░░░] 25%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- F# 스타일 선택 (over OCaml) — 들여쓰기 기반이 현대적, 단순함
-- GADT 포함 — bidirectional checking 활용, 표현력 있는 타입 시스템
-- Functor 제외 — 복잡도 대비 실용성 낮음
+- F# 스타일 선택 (over OCaml) -- 들여쓰기 기반이 현대적, 단순함
+- GADT 포함 -- bidirectional checking 활용, 표현력 있는 타입 시스템
+- Functor 제외 -- 복잡도 대비 실용성 낮음
 
 **From 01-01 (Match Expression Indentation):**
 - Enter match context before processing newline to enable pipe alignment validation
@@ -59,7 +59,7 @@ Recent decisions affecting current work:
 
 **From 01-04 (Module-Level Declarations):**
 - Module and Decl types separate from Expr for clear file structure
-- Function declarations desugar to nested lambdas (let f x y = e → let f = fun x -> fun y -> e)
+- Function declarations desugar to nested lambdas (let f x y = e -> let f = fun x -> fun y -> e)
 - IndentFilter removes same-level NEWLINEs - rely on token boundaries in grammar
 
 **From 01-03 (Improved Error Messages):**
@@ -79,6 +79,13 @@ Recent decisions affecting current work:
 - TData unification requires same name and same arity, then unifies args pairwise
 - ConstructorEnv maps constructor names to ConstructorInfo with TypeParams, ArgType, ResultType
 
+**From 02-03 (Constructor Pattern Type Checking):**
+- Uppercase first char = constructor pattern, lowercase = variable pattern in parser
+- inferPattern takes ConstructorEnv param; existing callers pass Map.empty
+- ConstructorEnv threaded through all Bidir.synth/check calls
+- typeCheckModule builds ConstructorEnv from type declarations before checking let declarations
+- Parenthesized pattern rule added for nested constructor patterns (e.g., Some (Some x))
+
 ### Pending Todos
 
 None yet.
@@ -93,7 +100,7 @@ None yet.
 - **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
 
 **From 02-01:**
-- TEName elaboration is a placeholder (fresh TVar) in main elaborateWithVars - needs proper named type resolution in 02-03/02-04
+- TEName elaboration is a placeholder (fresh TVar) in main elaborateWithVars - needs proper named type resolution in 02-04
 
 **Phase 4 (GADT) known challenges:**
 - Type inference undecidability requires mandatory annotations
@@ -105,10 +112,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 00:57 UTC
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-09 01:04 UTC
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09 00:57 UTC*
+*Last updated: 2026-03-09 01:04 UTC*
