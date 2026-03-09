@@ -123,6 +123,15 @@ and TypeExpr =
     | TETuple of TypeExpr list            // T1 * T2 * ... (n >= 2)
     | TEVar of string                     // 'a, 'b (includes apostrophe)
 
+/// Type declaration AST for algebraic data types (discriminated unions)
+/// Phase 2 (ADT-01): F# discriminated union syntax
+and TypeDecl =
+    | TypeDecl of name: string * typeParams: string list * constructors: ConstructorDecl list * Span
+
+/// Constructor definition within a type declaration
+and ConstructorDecl =
+    | ConstructorDecl of name: string * dataType: TypeExpr option * Span
+
 /// Value type for evaluation results
 /// Phase 4: Heterogeneous types (int and bool)
 /// Phase 5: FunctionValue for first-class functions (mutual recursion with Expr, Env)
@@ -137,6 +146,16 @@ and Value =
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value
 and Env = Map<string, Value>
+
+/// Extract span from TypeDecl
+let typeSpanOf (td: TypeDecl) : Span =
+    match td with
+    | TypeDecl(_, _, _, s) -> s
+
+/// Extract span from ConstructorDecl
+let constructorSpanOf (cd: ConstructorDecl) : Span =
+    match cd with
+    | ConstructorDecl(_, _, s) -> s
 
 /// Extract span from any Expr
 let spanOf (expr: Expr) : Span =
@@ -164,6 +183,7 @@ let patternSpanOf (pat: Pattern) : Span =
 /// Phase 1 (INDENT-05): Module-level declarations
 type Decl =
     | LetDecl of name: string * body: Expr * Span
+    | TypeDecl of TypeDecl  // Phase 2 (ADT-01): Type declaration (discriminated union)
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -175,6 +195,7 @@ type Module =
 let declSpanOf (decl: Decl) : Span =
     match decl with
     | LetDecl(_, _, s) -> s
+    | TypeDecl td -> typeSpanOf td
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
