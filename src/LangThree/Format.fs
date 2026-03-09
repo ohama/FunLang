@@ -60,6 +60,11 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPE -> "TYPE"
     | Parser.OF -> "OF"
     | Parser.AND_KW -> "AND_KW"
+    // Phase 3 (Records): Record tokens
+    | Parser.LBRACE -> "LBRACE"
+    | Parser.RBRACE -> "RBRACE"
+    | Parser.SEMICOLON -> "SEMICOLON"
+    | Parser.DOT -> "DOT"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
     | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n
@@ -127,6 +132,17 @@ let rec formatAst (expr: Ast.Expr) : string =
         sprintf "Match (%s, [%s])" (formatAst scrut) formattedClauses
     | Ast.Constructor (name, None, _) -> sprintf "Constructor \"%s\"" name
     | Ast.Constructor (name, Some arg, _) -> sprintf "Constructor (\"%s\", %s)" name (formatAst arg)
+    // Phase 3 (Records): Record expressions
+    | Ast.RecordExpr (tyOpt, fields, _) ->
+        let fieldsStr = fields |> List.map (fun (n, e) -> sprintf "%s = %s" n (formatAst e)) |> String.concat "; "
+        match tyOpt with
+        | Some ty -> sprintf "RecordExpr (%s, {%s})" ty fieldsStr
+        | None -> sprintf "RecordExpr ({%s})" fieldsStr
+    | Ast.FieldAccess (e, field, _) ->
+        sprintf "FieldAccess (%s, %s)" (formatAst e) field
+    | Ast.RecordUpdate (src, fields, _) ->
+        let fieldsStr = fields |> List.map (fun (n, e) -> sprintf "%s = %s" n (formatAst e)) |> String.concat "; "
+        sprintf "RecordUpdate (%s, {%s})" (formatAst src) fieldsStr
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =
@@ -160,3 +176,7 @@ and formatPattern (pat: Ast.Pattern) : string =
         match argOpt with
         | None -> sprintf "ConstructorPat \"%s\"" name
         | Some arg -> sprintf "ConstructorPat (\"%s\", %s)" name (formatPattern arg)
+    // Phase 3 (Records): Record pattern
+    | Ast.RecordPat (fields, _) ->
+        let fieldsStr = fields |> List.map (fun (n, p) -> sprintf "%s = %s" n (formatPattern p)) |> String.concat "; "
+        sprintf "RecordPat {%s}" fieldsStr
