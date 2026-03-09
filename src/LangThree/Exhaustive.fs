@@ -115,6 +115,17 @@ let headConstructors (matrix: CasePat list list) : string list =
         | _ -> None)
     |> List.distinct
 
+/// Check if all constructors in the set appear in the first column of the matrix
+let isCompleteSignature (constructors: ConstructorSet) (matrix: CasePat list list) : bool =
+    let headCtors = headConstructors matrix
+    constructors |> List.forall (fun c -> List.contains c.Name headCtors)
+
+/// Look up constructor info from the set, falling back to pattern arity
+let lookupConstructor (constructors: ConstructorSet) (name: string) (fallbackArity: int) : ConstructorInfo =
+    constructors
+    |> List.tryFind (fun c -> c.Name = name)
+    |> Option.defaultValue { Name = name; Arity = fallbackArity }
+
 /// Check if pattern vector q is useful given pattern matrix P and constructor set.
 /// A pattern is useful if there exists a value matched by q but not by any row in P.
 let rec useful (constructors: ConstructorSet) (matrix: CasePat list list) (q: CasePat list) : bool =
@@ -125,35 +136,20 @@ let rec useful (constructors: ConstructorSet) (matrix: CasePat list list) (q: Ca
     | firstQ :: restQ ->
         match firstQ with
         | ConstructorPat (name, args) ->
-            // Specialize both matrix and q for this constructor
-            let ctorInfo =
-                constructors
-                |> List.tryFind (fun c -> c.Name = name)
-                |> Option.defaultValue { Name = name; Arity = List.length args }
-            let specializedMatrix = specializeMatrix ctorInfo matrix
-            let specializedQ = args @ restQ
-            useful constructors specializedMatrix specializedQ
+            let ctorInfo = lookupConstructor constructors name (List.length args)
+            useful constructors (specializeMatrix ctorInfo matrix) (args @ restQ)
 
         | WildcardPat ->
-            // Check if the constructors in the first column form a complete signature
-            let headCtors = headConstructors matrix
-            let isComplete =
-                constructors
-                |> List.forall (fun c -> List.contains c.Name headCtors)
-
-            if isComplete then
-                // All constructors present: wildcard is useful iff useful for some constructor
+            if isCompleteSignature constructors matrix then
+                // All constructors present: wildcard useful iff useful for some constructor
                 constructors |> List.exists (fun ctor ->
-                    let specializedMatrix = specializeMatrix ctor matrix
                     let expandedQ = List.replicate ctor.Arity WildcardPat @ restQ
-                    useful constructors specializedMatrix expandedQ)
+                    useful constructors (specializeMatrix ctor matrix) expandedQ)
             else
-                // Not all constructors present: use default matrix
-                let defMatrix = defaultMatrix matrix
-                useful constructors defMatrix restQ
+                // Incomplete signature: use default matrix (wildcard rows only)
+                useful constructors (defaultMatrix matrix) restQ
 
         | OrPat pats ->
-            // Or-pattern: useful if any alternative is useful
             pats |> List.exists (fun altPat ->
                 useful constructors matrix (altPat :: restQ))
 
