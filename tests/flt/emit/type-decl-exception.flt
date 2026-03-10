@@ -1,0 +1,9 @@
+// Test: --emit-type for exception declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+exception NotFound
+
+exception WithMsg of string
+// --- Output:
+NotFound : exn
+WithMsg : string -> exn

@@ -1,0 +1,4 @@
+// Test: --emit-ast pattern: boolean constants (ConstPat BoolConst)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "match true with | true -> 1 | false -> 0"
+// --- Output:
+Match (Bool true, [(ConstPat (BoolConst true), Number 1); (ConstPat (BoolConst false), Number 0)])

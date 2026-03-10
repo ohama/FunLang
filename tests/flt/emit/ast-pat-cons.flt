@@ -1,0 +1,4 @@
+// Test: --emit-ast pattern: cons destructuring (ConsPat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "match [1] with | x :: xs -> x | [] -> 0"
+// --- Output:
+Match (List [Number 1], [(ConsPat (VarPat "x", VarPat "xs"), Var "x"); (EmptyListPat, Number 0)])

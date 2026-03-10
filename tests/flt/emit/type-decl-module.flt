@@ -1,0 +1,13 @@
+// Test: --emit-type for module with open
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+module Math =
+    let pi = 3
+    let double x = x + x
+
+open Math
+let r = double pi
+// --- Output:
+double : int -> int
+pi : int
+r : int

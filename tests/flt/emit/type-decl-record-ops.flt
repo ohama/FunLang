@@ -1,0 +1,12 @@
+// Test: --emit-type for record field access and copy-update
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+type Point = { x: int; y: int }
+
+let p = { x = 1; y = 2 }
+let v = p.x
+let q = { p with y = 10 }
+// --- Output:
+p : Point
+q : Point
+v : int

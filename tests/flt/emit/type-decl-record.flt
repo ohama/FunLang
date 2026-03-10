@@ -1,0 +1,8 @@
+// Test: --emit-type for record type inference
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+type Point = { x: int; y: int }
+
+let p = { x = 1; y = 2 }
+// --- Output:
+p : Point

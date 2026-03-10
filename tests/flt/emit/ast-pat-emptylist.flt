@@ -1,0 +1,4 @@
+// Test: --emit-ast pattern: empty list (EmptyListPat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "match [] with | [] -> 0 | _ -> 1"
+// --- Output:
+Match (EmptyList, [(EmptyListPat, Number 0); (WildcardPat, Number 1)])

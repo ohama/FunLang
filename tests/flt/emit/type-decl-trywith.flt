@@ -1,0 +1,14 @@
+// Test: --emit-type for try-with exception handling
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+exception NotFound
+
+let safe f x =
+    try
+        f x
+    with
+    | NotFound -> 0
+    | _ -> 0
+// --- Output:
+NotFound : exn
+safe : ('a -> int) -> 'a -> int

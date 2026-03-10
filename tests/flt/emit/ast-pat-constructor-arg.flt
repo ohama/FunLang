@@ -1,0 +1,12 @@
+// Test: --emit-ast pattern: constructor with argument (ConstructorPat with sub-pattern)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Option = Some of int | None
+
+let x =
+    match Some 42 with
+    | Some n -> n
+    | None -> 0
+// --- Output:
+TypeDecl "Option" [| Some of TEInt | None]
+LetDecl ("x", Match (Constructor ("Some", Number 42), [(ConstructorPat ("Some", VarPat "n"), Var "n"); (ConstructorPat "None", Number 0)]))

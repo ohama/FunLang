@@ -1,0 +1,8 @@
+// Test: --emit-ast pattern: when guard in match clause
+// Note: The AST formatter (Format.fs) currently omits when guards from output.
+// The MatchClause type is Pattern * Expr option * Expr where the Expr option is the guard,
+// but formatAst binds it as _guard and does not render it.
+// This test verifies the pattern and body are correctly parsed; the guard is parsed but not shown.
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "match 5 with | x when x > 0 -> 1 | _ -> 0"
+// --- Output:
+Match (Number 5, [(VarPat "x", Number 1); (WildcardPat, Number 0)])

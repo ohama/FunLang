@@ -1,0 +1,13 @@
+// Test: --emit-ast pattern: constructor without argument (ConstructorPat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Color = Red | Green | Blue
+
+let x =
+    match Red with
+    | Red -> 1
+    | Green -> 2
+    | Blue -> 3
+// --- Output:
+TypeDecl "Color" [| Red | Green | Blue]
+LetDecl ("x", Match (Constructor "Red", [(ConstructorPat "Red", Number 1); (ConstructorPat "Green", Number 2); (ConstructorPat "Blue", Number 3)]))

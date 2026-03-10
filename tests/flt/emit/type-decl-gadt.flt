@@ -1,0 +1,8 @@
+// Test: --emit-type for GADT constructor type inference
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let e = IntLit 42
+// --- Output:
+e : Expr<int>

@@ -1,0 +1,4 @@
+// Test: --emit-ast pattern: variable binding (VarPat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "match 42 with | x -> x"
+// --- Output:
+Match (Number 42, [(VarPat "x", Var "x")])

@@ -1,0 +1,12 @@
+// Test: --emit-ast pattern: nested constructor with tuple (ConstructorPat containing TuplePat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Pair = MkPair of int * int
+
+let x =
+    match MkPair (1, 2) with
+    | MkPair (a, b) -> a
+    | _ -> 0
+// --- Output:
+TypeDecl "Pair" [| MkPair of TETuple [TEInt, TEInt]]
+LetDecl ("x", Match (Constructor ("MkPair", Tuple [Number 1, Number 2]), [(ConstructorPat ("MkPair", TuplePat [VarPat "a", VarPat "b"]), Var "a"); (WildcardPat, Number 0)]))

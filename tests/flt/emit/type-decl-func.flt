@@ -1,0 +1,9 @@
+// Test: --emit-type for function declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+let add x y = x + y
+
+let negate x = 0 - x
+// --- Output:
+add : int -> int -> int
+negate : int -> int

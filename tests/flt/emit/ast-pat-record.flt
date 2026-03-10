@@ -1,0 +1,14 @@
+// Test: --emit-ast pattern: record destructuring (RecordPat)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Point = { x: int; y: int }
+
+let p = { x = 1; y = 2 }
+
+let r =
+    match p with
+    | { x = a; y = b } -> a
+// --- Output:
+RecordDecl "Point" {x: TEInt; y: TEInt}
+LetDecl ("p", RecordExpr ({x = Number 1; y = Number 2}))
+LetDecl ("r", Match (Var "p", [(RecordPat {x = VarPat "a"; y = VarPat "b"}, Var "a")]))
