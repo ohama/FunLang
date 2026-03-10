@@ -28,10 +28,11 @@
 **Goal:** 문자열 내장 함수를 추가하여 실질적 문자열 처리 지원
 **Depends on:** Phase 10
 **Requirements:** STR-01, STR-02, STR-03, STR-04, STR-05, STR-06
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 11 to break down)
+- [ ] 11-01-PLAN.md — BuiltinValue infrastructure + 6 string functions (Ast/Eval/TypeCheck)
+- [ ] 11-02-PLAN.md — Wire initialBuiltinEnv into Program/Repl + 7 fslit tests
 
 **Success Criteria:**
 1. `string_length "hello"` returns 5
