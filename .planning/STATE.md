@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.2 Practical Language Features — Phase 09 complete, Phase 10 next
+**Current focus:** v1.2 Practical Language Features — Phase 10 complete, Phase 11 next
 
 ## Current Position
 
 Milestone: v1.2 Practical Language Features
-Phase: 09 of ? (pipe-composition) — COMPLETE
+Phase: 10 of ? (unit-type) — COMPLETE
 Plan: 01 of 1 in phase — COMPLETE
-Status: Phase 09 complete
-Last activity: 2026-03-10 -- Phase 09 verified and complete
+Status: Phase 10 complete
+Last activity: 2026-03-10 -- Completed 10-01-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓
+Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: █ 1/1 ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 33
+- Total plans completed: 34
 - Average duration: 4.2 min
-- Total execution time: 2.50 hours
+- Total execution time: 2.57 hours
 
 **By Phase:**
 
@@ -33,17 +33,15 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █
 | 03 | 7 | 21 min | 3.0 min |
 | 04 | 5 | 16 min | 3.2 min |
 | 05 | 5 | 25 min | 5.0 min |
-
 | 06 | 4 | 27 min | 6.8 min |
-
 | 07 | 3 | 8 min | 2.7 min |
-
 | 08 | 5 | 12 min | 2.4 min |
 | 09 | 1 | 8 min | 8.0 min |
+| 10 | 1 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-03 (2min), 08-04 (2min), 08-05 (4min), 09-01 (8min)
-- Trend: Phase 09 complete. 179 total fslit tests, all passing. 196 F# tests passing.
+- Last 5 plans: 08-04 (2min), 08-05 (4min), 09-01 (8min), 10-01 (4min)
+- Trend: Phase 10 complete. 196 F# tests passing. Unit type fully operational.
 
 *Updated after each plan completion*
 
@@ -246,6 +244,13 @@ Recent decisions affecting current work:
 - Closure-based composition: compose operators capture evaluated function values with unique names in minimal closure env
 - No Prelude.fun file exists; prelude functions are type-only (in initialTypeEnv) not eval-available
 
+**From 10-01 (Unit Type):**
+- Unit representation: TTuple [] / TupleValue [] (no new TUnit/UnitValue ADT case needed — already established in 03-07)
+- TYPE_UNIT lexer keyword (consistent with TYPE_INT/TYPE_BOOL pattern, not special-casing in elaborator)
+- fun () -> body desugars to LambdaAnnot("__unit", TETuple [], body) — explicit type annotation ensures unit -> T type
+- Var("()") sentinel replaced with Tuple([], ...) in indented-let continuation (now that () is a real expression)
+- let _ = at Decl level produces LetDecl("_", body, ...) — binds "_" in env harmlessly, enables sequencing
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -278,10 +283,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (Phase 09 complete)
-Stopped at: Phase 09 verified and complete
+Last session: 2026-03-10 (Phase 10 complete)
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-10*
+*Last updated: 2026-03-10 (Phase 10 complete)*
