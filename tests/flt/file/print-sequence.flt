@@ -1,0 +1,10 @@
+// Test: file-mode print side effects happen in declaration order before final value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = print "a"
+
+let _ = print "b"
+
+let result = 42
+// --- Output:
+ab42
