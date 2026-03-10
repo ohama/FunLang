@@ -198,11 +198,12 @@ let main argv =
                         // Evaluate module declarations with module-aware pipeline
                         let finalEnv, moduleEnv =
                             Eval.evalModuleDecls recEnv Map.empty initialEnv moduleDecls
-                        // Print the last let binding's value
-                        match moduleDecls |> List.rev |> List.tryPick (function LetDecl(_, body, _) -> Some body | _ -> None) with
-                        | Some lastBody ->
-                            let result = eval recEnv moduleEnv finalEnv lastBody
-                            printfn "%s" (formatValue result)
+                        // Print the last let binding's value (look up from env to avoid re-evaluating side effects)
+                        match moduleDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
+                        | Some lastName ->
+                            match Map.tryFind lastName finalEnv with
+                            | Some result -> printfn "%s" (formatValue result)
+                            | None -> ()
                         | None -> ()
                         0
                 with ex ->

@@ -1,0 +1,4 @@
+// Test: printf with no specifiers outputs the format string directly
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'printf "done"'
+// --- Output:
+done()

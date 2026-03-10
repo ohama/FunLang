@@ -1,0 +1,5 @@
+// Test: println writes string to stdout with newline and returns unit
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'println "hello"'
+// --- Output:
+hello
+()
