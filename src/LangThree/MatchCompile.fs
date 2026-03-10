@@ -122,3 +122,112 @@ let splitClauses (testVar: TestVar) (ctorName: string) (freshVars: TestVar list)
             yesClauses.Add(clause)
             noClauses.Add(clause)
     (Seq.toList yesClauses, Seq.toList noClauses)
+
+// ============================================================
+// 6. compile: main recursive algorithm (Jacobs Section 3)
+// ============================================================
+let rec compile (clauses: MatchRow list) : DecisionTree =
+    match clauses with
+    | [] -> Fail
+    | _ ->
+        // Step 1: Push variable bindings
+        let clauses' = clauses |> List.map pushVarBindings
+        let first = clauses'.Head
+
+        // Base case: first clause has no remaining constructor tests
+        if Map.isEmpty first.Patterns then
+            let fallback =
+                if clauses'.Tail.IsEmpty then None
+                else Some(compile clauses'.Tail)
+            Leaf(first.Bindings, first.Guard, first.Body, fallback)
+        else
+            // Step 2: Select test variable (heuristic)
+            let testVar = selectTestVariable first clauses'
+            let pat = Map.find testVar first.Patterns
+            let ctorName, arity =
+                match patternToConstructor pat with
+                | Some(n, a) -> (n, a)
+                | None -> failwith "Expected constructor pattern after pushVarBindings"
+            let freshVars = List.init arity (fun _ -> freshTestVar())
+
+            // Steps 3-4: Split and generate Switch
+            let yesClauses, noClauses = splitClauses testVar ctorName freshVars clauses'
+            Switch(testVar, ctorName, freshVars, compile yesClauses, compile noClauses)
+
+// ============================================================
+// 7. matchesConstructor: test if runtime Value matches a constructor name
+// ============================================================
+let matchesConstructor (value: Value) (ctor: string) : bool =
+    match value, ctor with
+    | DataValue(name, _), c -> name = c
+    | ListValue [], "[]" -> true
+    | ListValue(_ :: _), "::" -> true
+    | IntValue n, c when c.StartsWith("#int_") ->
+        string n = c.Substring(5)
+    | BoolValue b, c when c.StartsWith("#bool_") ->
+        (string b).ToLower() = c.Substring(6)
+    | TupleValue _, c when c.StartsWith("#tuple_") -> true
+    | RecordValue _, c when c.StartsWith("#record_") -> true
+    | _ -> false
+
+// ============================================================
+// 8. destructureValue: extract sub-values after constructor match
+// ============================================================
+let destructureValue (ctor: string) (value: Value) : Value list =
+    match value, ctor with
+    | DataValue(_, None), _ -> []
+    | DataValue(_, Some arg), _ -> [arg]
+    | ListValue(h :: t), "::" -> [h; ListValue t]
+    | ListValue [], "[]" -> []
+    | TupleValue vals, _ -> vals
+    | RecordValue(_, fields), _ ->
+        fields |> Map.toList |> List.sortBy fst |> List.map (fun (_, r) -> !r)
+    | _ -> []
+
+// ============================================================
+// 9. evalDecisionTree: walk the tree at runtime
+// ============================================================
+let evalDecisionTree (evalFn: Env -> Expr -> Value) (env: Env) (varEnv: Map<TestVar, Value>) (tree: DecisionTree) : Value =
+    let rec walk (env: Env) (varEnv: Map<TestVar, Value>) (tree: DecisionTree) : Value =
+        match tree with
+        | Fail -> failwith "Match failure: no pattern matched"
+        | Leaf(bindings, guard, body, fallback) ->
+            let bodyEnv =
+                bindings |> Map.fold (fun e name tv ->
+                    Map.add name (Map.find tv varEnv) e) env
+            match guard with
+            | None -> evalFn bodyEnv body
+            | Some guardExpr ->
+                match evalFn bodyEnv guardExpr with
+                | BoolValue true -> evalFn bodyEnv body
+                | _ ->
+                    match fallback with
+                    | Some fb -> walk env varEnv fb
+                    | None -> failwith "Match failure: no pattern matched"
+        | Switch(testVar, ctorName, argVars, ifMatch, ifNoMatch) ->
+            let testValue = Map.find testVar varEnv
+            if matchesConstructor testValue ctorName then
+                let subValues = destructureValue ctorName testValue
+                let varEnv' =
+                    List.zip argVars subValues
+                    |> List.fold (fun acc (tv, v) -> Map.add tv v acc) varEnv
+                walk env varEnv' ifMatch
+            else
+                walk env varEnv ifNoMatch
+    walk env varEnv tree
+
+// ============================================================
+// 10. compileMatch: entry point, converts MatchClause list to DecisionTree
+// ============================================================
+let compileMatch (clauses: MatchClause list) : DecisionTree * TestVar =
+    resetTestVarCounter()
+    let rootVar = freshTestVar()
+    let rows =
+        clauses |> List.mapi (fun i (pattern, guard, body) ->
+            { Patterns = Map.ofList [(rootVar, pattern)]
+              Guard = guard
+              Body = body
+              Bindings = Map.empty
+              OriginalIndex = i })
+    let tree = compile rows
+    (tree, rootVar)
