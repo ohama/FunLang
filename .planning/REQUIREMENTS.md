@@ -1,4 +1,4 @@
-# Requirements: LangThree v1.2
+# Requirements: LangThree v1.2 / v1.3
 
 ## Milestone v1.2: Practical Language Features
 
@@ -49,9 +49,52 @@
 | PRINT-02 | 12 | Pending |
 | PRINT-03 | 12 | Pending |
 
-## Out of Scope (v1.2)
+---
 
-- TCO (꼬리 호출 최적화) — v1.3
-- Or-patterns — v1.3
+## Milestone v1.3: Language Completion
+
+### Tail Call Optimization (TCO)
+
+- [ ] **TCO-01**: 꼬리 위치 감지 — 함수 본문의 꼬리 위치 호출 식별
+- [ ] **TCO-02**: Trampoline 평가 — 꼬리 호출을 stack-safe하게 실행
+- [ ] **TCO-03**: 대규모 재귀 — n=1,000,000 이상에서도 stack overflow 없음
+
+### Or-Patterns & String Patterns (PAT)
+
+- [ ] **PAT-01**: Or-패턴 — `| 1 | 2 | 3 -> expr` 여러 패턴이 같은 본문 공유
+- [ ] **PAT-02**: 문자열 패턴 — `| "hello" -> expr` 문자열 상수 매칭
+- [ ] **PAT-03**: Or-패턴 exhaustiveness — or-패턴이 소진 검사에 올바르게 반영
+
+### Type Aliases (ALIAS)
+
+- [ ] **ALIAS-01**: 단순 별칭 — `type Name = string` 타입 별칭 선언
+- [ ] **ALIAS-02**: 복합 별칭 — `type IntPair = int * int` 튜플/함수 타입 별칭
+
+### List Ranges & Mutual Recursion (RANGE/MUTREC)
+
+- [ ] **RANGE-01**: 리스트 범위 — `[1..5]` → `[1, 2, 3, 4, 5]`
+- [ ] **RANGE-02**: 스텝 범위 — `[1..2..10]` → `[1, 3, 5, 7, 9]`
+- [ ] **MUTREC-01**: 상호 재귀 함수 — `let rec f x = ... and g y = ...` 모듈 레벨
+
+## Traceability (continued)
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| TCO-01 | 13 | Pending |
+| TCO-02 | 13 | Pending |
+| TCO-03 | 13 | Pending |
+| PAT-01 | 14 | Pending |
+| PAT-02 | 14 | Pending |
+| PAT-03 | 14 | Pending |
+| ALIAS-01 | 15 | Pending |
+| ALIAS-02 | 15 | Pending |
+| RANGE-01 | 16 | Pending |
+| RANGE-02 | 16 | Pending |
+| MUTREC-01 | 16 | Pending |
+
+## Out of Scope (v1.2 / v1.3)
+
 - 사용자 정의 연산자 — v1.4
-- Type classes — v1.4
+- Type classes / interfaces — v1.4
+- Computation expressions — v1.4+
+- IO / 파일 시스템 — v1.4+
