@@ -5,6 +5,9 @@ type token =
   | DEDENT
   | INDENT
   | NEWLINE of (int)
+  | PIPE_RIGHT
+  | COMPOSE_RIGHT
+  | COMPOSE_LEFT
   | EXCEPTION
   | RAISE
   | TRY
@@ -67,6 +70,9 @@ type tokenId =
     | TOKEN_DEDENT
     | TOKEN_INDENT
     | TOKEN_NEWLINE
+    | TOKEN_PIPE_RIGHT
+    | TOKEN_COMPOSE_RIGHT
+    | TOKEN_COMPOSE_LEFT
     | TOKEN_EXCEPTION
     | TOKEN_RAISE
     | TOKEN_TRY
