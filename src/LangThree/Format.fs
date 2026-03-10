@@ -73,6 +73,10 @@ let formatToken (token: Parser.token) : string =
     | Parser.RAISE -> "RAISE"
     | Parser.TRY -> "TRY"
     | Parser.WHEN -> "WHEN"
+    // Phase 9 (Pipe & Composition): Pipe and composition tokens
+    | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
+    | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
+    | Parser.COMPOSE_LEFT -> "COMPOSE_LEFT"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
     | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n
@@ -162,6 +166,10 @@ let rec formatAst (expr: Ast.Expr) : string =
             |> List.map (fun (pat, _guard, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
             |> String.concat "; "
         sprintf "TryWith (%s, [%s])" (formatAst body) formattedClauses
+    // Phase 9 (Pipe & Composition)
+    | Ast.PipeRight (l, r, _) -> sprintf "PipeRight (%s, %s)" (formatAst l) (formatAst r)
+    | Ast.ComposeRight (l, r, _) -> sprintf "ComposeRight (%s, %s)" (formatAst l) (formatAst r)
+    | Ast.ComposeLeft (l, r, _) -> sprintf "ComposeLeft (%s, %s)" (formatAst l) (formatAst r)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

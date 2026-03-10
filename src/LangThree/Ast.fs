@@ -99,6 +99,10 @@ type Expr =
     // Phase 6 (Exceptions): Raise and try-with
     | Raise of expr: Expr * span: Span
     | TryWith of body: Expr * handlers: MatchClause list * span: Span
+    // Phase 9 (Pipe & Composition): Pipe and composition operators
+    | PipeRight of left: Expr * right: Expr * span: Span       // x |> f
+    | ComposeRight of left: Expr * right: Expr * span: Span    // f >> g
+    | ComposeLeft of left: Expr * right: Expr * span: Span     // f << g
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -206,6 +210,7 @@ let spanOf (expr: Expr) : Span =
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
     | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) | SetField(_, _, _, s) -> s
     | Raise(_, s) | TryWith(_, _, s) -> s
+    | PipeRight(_, _, s) | ComposeRight(_, _, s) | ComposeLeft(_, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =

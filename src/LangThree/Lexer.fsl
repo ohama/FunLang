@@ -87,6 +87,10 @@ rule tokenize = parse
     | ':'           { COLON }      // v6.0: Type annotation
     // Phase 5: Arrow for lambda expressions
     | "->"          { ARROW }
+    // Phase 9 (Pipe & Composition): Multi-char pipe/composition operators
+    | "|>"          { PIPE_RIGHT }
+    | ">>"          { COMPOSE_RIGHT }
+    | "<<"          { COMPOSE_LEFT }
     // Phase 3 (Records-06): Field assignment operator
     | "<-"          { LARROW }
     // Comments: don't consume newline so it triggers NEWLINE token
