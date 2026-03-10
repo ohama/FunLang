@@ -64,10 +64,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pattern Matching Compilation
 
-- [ ] **PMATCH-01**: Decision tree compilation (match → binary decision tree, no redundant tests)
-- [ ] **PMATCH-02**: Clause splitting (cases a/b/c per Jules Jacobs algorithm)
-- [ ] **PMATCH-03**: Heuristic test selection (maximize shared tests across clauses)
-- [ ] **PMATCH-04**: Semantic equivalence (decision tree produces same results as naive matching)
+- [x] **PMATCH-01**: Decision tree compilation (match → binary decision tree, no redundant tests)
+- [x] **PMATCH-02**: Clause splitting (cases a/b/c per Jules Jacobs algorithm)
+- [x] **PMATCH-03**: Heuristic test selection (maximize shared tests across clauses)
+- [x] **PMATCH-04**: Semantic equivalence (decision tree produces same results as naive matching)
 
 ## v2 Requirements
 
