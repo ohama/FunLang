@@ -64,6 +64,13 @@ let initialTypeEnv: TypeEnv =
 
         // string_to_int: string -> int
         "string_to_int", Scheme([], TArrow(TString, TInt))
+
+        // Phase 12: Output functions
+        // print : string -> unit
+        "print",   Scheme([], TArrow(TString, TTuple []))
+
+        // println : string -> unit
+        "println", Scheme([], TArrow(TString, TTuple []))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

@@ -80,6 +80,24 @@ let initialBuiltinEnv : Env =
                 | true, n -> IntValue n
                 | false, _ -> failwithf "string_to_int: cannot parse '%s' as integer" s
             | _ -> failwith "string_to_int: expected string argument")
+
+        // print : string -> unit  (no newline; flushes immediately)
+        "print", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                stdout.Write(s)
+                stdout.Flush()
+                TupleValue []
+            | _ -> failwith "print: expected string argument")
+
+        // println : string -> unit  (with newline; flushes immediately)
+        "println", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                stdout.WriteLine(s)
+                stdout.Flush()
+                TupleValue []
+            | _ -> failwith "println: expected string argument")
     ]
 
 /// Module value environment for runtime qualified access
