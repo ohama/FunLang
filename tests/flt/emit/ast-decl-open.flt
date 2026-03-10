@@ -1,0 +1,11 @@
+// Test: --emit-ast for module with open directive
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+module M =
+  let x = 42
+open M
+// --- Output:
+ModuleDecl "M" [
+  LetDecl ("x", Number 42)
+]
+OpenDecl [M]

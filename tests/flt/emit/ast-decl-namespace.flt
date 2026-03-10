@@ -1,0 +1,8 @@
+// Test: --emit-ast for namespace declaration
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+namespace MyNs
+let x = 42
+// --- Output:
+namespace MyNs
+LetDecl ("x", Number 42)

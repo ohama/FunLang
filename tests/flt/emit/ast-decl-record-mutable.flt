@@ -1,0 +1,6 @@
+// Test: --emit-ast for record type with mutable field
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Counter = { mutable count: int }
+// --- Output:
+RecordDecl "Counter" {mutable count: TEInt}

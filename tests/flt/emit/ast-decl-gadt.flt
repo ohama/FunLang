@@ -1,0 +1,8 @@
+// Test: --emit-ast for GADT type declaration with return type annotations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Expr 'a =
+  | IntLit : int -> int Expr
+  | BoolLit : bool -> bool Expr
+// --- Output:
+TypeDecl "Expr ''a" [| IntLit : TEInt -> TEData ("Expr", [TEInt]) | BoolLit : TEBool -> TEData ("Expr", [TEBool])]

@@ -1,0 +1,8 @@
+// Test: --emit-ast for record type declaration and record expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+type Point = { x: int; y: int }
+let p = { x = 1; y = 2 }
+// --- Output:
+RecordDecl "Point" {x: TEInt; y: TEInt}
+LetDecl ("p", RecordExpr ({x = Number 1; y = Number 2}))

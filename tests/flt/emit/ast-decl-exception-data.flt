@@ -1,0 +1,6 @@
+// Test: --emit-ast for exception declaration with data payload
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+exception InvalidArg of string
+// --- Output:
+ExceptionDecl "InvalidArg" of TEString

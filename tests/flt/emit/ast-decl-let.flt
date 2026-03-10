@@ -1,0 +1,6 @@
+// Test: --emit-ast for simple let binding declaration
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+let x = 42
+// --- Output:
+LetDecl ("x", Number 42)

@@ -1,0 +1,9 @@
+// Test: --emit-ast for module declaration with nested let
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+module M =
+  let x = 42
+// --- Output:
+ModuleDecl "M" [
+  LetDecl ("x", Number 42)
+]

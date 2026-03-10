@@ -1,0 +1,12 @@
+// Test: --emit-ast for try-with exception handling with raise
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+exception NotFound
+let safe f =
+  try
+    f 1
+  with
+  | NotFound -> 0
+// --- Output:
+ExceptionDecl "NotFound"
+LetDecl ("safe", Lambda ("f", TryWith (App (Var "f", Number 1), [(ConstructorPat "NotFound", Number 0)])))
