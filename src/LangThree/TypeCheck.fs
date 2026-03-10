@@ -197,6 +197,8 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | TryWith(body, clauses, _) ->
         collectMatches body
         @ (clauses |> List.collect (fun (_, _, handler) -> collectMatches handler))
+    | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
+        collectMatches a @ collectMatches b
     | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body
@@ -308,6 +310,8 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             | RecordUpdate(src, fields, _) -> collectTryWiths src @ (fields |> List.collect (fun (_, e) -> collectTryWiths e))
             | SetField(e, _, v, _) -> collectTryWiths e @ collectTryWiths v
             | Raise(e, _) -> collectTryWiths e
+            | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
+                collectTryWiths a @ collectTryWiths b
             | _ -> []
 
         let allTryWiths = collectTryWiths body
@@ -387,6 +391,8 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
         let clauseRefs = clauses |> List.map (fun (_, _, handler) -> collectModuleRefs modules handler)
         Set.unionMany (collectModuleRefs modules body :: clauseRefs)
     | Constructor(_, Some arg, _) -> collectModuleRefs modules arg
+    | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
+        Set.union (collectModuleRefs modules a) (collectModuleRefs modules b)
     | _ -> Set.empty
 
 /// Rewrite qualified module access in an expression tree.
@@ -464,6 +470,9 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
         TryWith(rewriteModuleAccess modules body,
                 clauses |> List.map (fun (p, g, handler) -> (p, g, rewriteModuleAccess modules handler)), s)
     | Constructor(n, Some arg, s) -> Constructor(n, Some(rewriteModuleAccess modules arg), s)
+    | PipeRight(a, b, s) -> PipeRight(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | ComposeRight(a, b, s) -> ComposeRight(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | ComposeLeft(a, b, s) -> ComposeLeft(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | _ -> expr  // Literals, Var, Constructor(None), EmptyList -- no rewrite needed
 
 /// Merge module exports into type/constructor environments for qualified access type checking.

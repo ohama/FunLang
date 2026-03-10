@@ -328,6 +328,10 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | Raise _ | TryWith _ ->
         (empty, freshVar())
 
+    // === Phase 9: Pipe/Composition stubs (primary implementation in Bidir) ===
+    | PipeRight _ | ComposeRight _ | ComposeLeft _ ->
+        (empty, freshVar())
+
     // === Constructor (Phase 2 ADT) ===
     | Constructor (_, argOpt, _) ->
         match argOpt with

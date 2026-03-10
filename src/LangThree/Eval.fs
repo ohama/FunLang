@@ -435,6 +435,36 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                 // No handler matched: re-raise the original exception
                 raise (LangThreeException exnVal)
 
+    // Phase 9 (Pipe & Composition): Pipe and composition operators
+    | PipeRight (left, right, _) ->
+        let argVal = eval recEnv moduleEnv env left
+        let funcVal = eval recEnv moduleEnv env right
+        match funcVal with
+        | FunctionValue (param, body, closureEnv) ->
+            let callEnv = Map.add param argVal closureEnv
+            eval recEnv moduleEnv callEnv body
+        | _ -> failwith "Type error: |> requires function on right side"
+
+    | ComposeRight (left, right, _) ->
+        let fVal = eval recEnv moduleEnv env left
+        let gVal = eval recEnv moduleEnv env right
+        let param = "__compose_x"
+        let fName = "__compose_f"
+        let gName = "__compose_g"
+        let body = App(Var(gName, unknownSpan), App(Var(fName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
+        let closureEnv = env |> Map.add fName fVal |> Map.add gName gVal
+        FunctionValue(param, body, closureEnv)
+
+    | ComposeLeft (left, right, _) ->
+        let fVal = eval recEnv moduleEnv env left
+        let gVal = eval recEnv moduleEnv env right
+        let param = "__compose_x"
+        let fName = "__compose_f"
+        let gName = "__compose_g"
+        let body = App(Var(fName, unknownSpan), App(Var(gName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
+        let closureEnv = env |> Map.add fName fVal |> Map.add gName gVal
+        FunctionValue(param, body, closureEnv)
+
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->
         match eval recEnv moduleEnv env expr with
