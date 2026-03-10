@@ -90,6 +90,9 @@
     <!-- 11. Format utilities (uses Parser tokens and Lexer) -->
     <Compile Include="Format.fs" />
 
+    <!-- 11.5. Match compilation (decision tree algorithm, used by Eval) -->
+    <Compile Include="MatchCompile.fs" />
+
     <!-- 12. Evaluator (uses Ast, used by Program) -->
     <Compile Include="Eval.fs" />
 
