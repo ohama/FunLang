@@ -63,6 +63,8 @@ rule tokenize = parse
     | "bool"        { TYPE_BOOL }
     | "string"      { TYPE_STRING }
     | "list"        { TYPE_LIST }
+    // Phase 10 (Unit): Unit type keyword
+    | "unit"        { TYPE_UNIT }
     // Phase 6 (Exceptions): Exception keywords
     | "exception"   { EXCEPTION }
     | "raise"       { RAISE }

@@ -41,6 +41,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 // v6.0: Type annotation tokens
 %token COLON
 %token TYPE_INT TYPE_BOOL TYPE_STRING TYPE_LIST
+// Phase 10 (Unit): Unit type keyword token
+%token TYPE_UNIT
 %token <string> TYPE_VAR
 // Phase 2 (ADT-01): Type declaration tokens
 %token TYPE OF AND_KW
@@ -91,7 +93,7 @@ Expr:
     // Let expression - lowest precedence
     | LET IDENT EQUALS Expr IN Expr  { Let($2, $4, $6, ruleSpan parseState 1 6) }
     // Indentation-based let: let x = <indent>expr<dedent>
-    | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Var("()", symSpan parseState 6), ruleSpan parseState 1 6) }
+    | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Tuple([], symSpan parseState 6), ruleSpan parseState 1 6) }
     // Phase 1 (v3.0): Let with pattern binding
     | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
@@ -103,6 +105,9 @@ Expr:
     // Single parameter
     | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW Expr
         { LambdaAnnot($3, $5, $8, ruleSpan parseState 1 8) }
+    // Phase 10 (Unit): fun () -> body (unit parameter)
+    | FUN LPAREN RPAREN ARROW Expr
+        { LambdaAnnot("__unit", TETuple [], $5, ruleSpan parseState 1 5) }
     // v6.0: Curried annotated lambda - fun (x: T) (y: U) -> e
     // Multiple parameters via AnnotParamList
     | FUN AnnotParamList ARROW Expr
@@ -171,6 +176,8 @@ AppArgs:
 // Atom: The most basic expressions, no operators
 // Used as function arguments in application
 Atom:
+    // Phase 10 (Unit): () unit literal (must come before LPAREN Expr RPAREN)
+    | LPAREN RPAREN      { Tuple([], ruleSpan parseState 1 2) }
     | NUMBER             { Number($1, symSpan parseState 1) }
     | IDENT              {
         // Uppercase = constructor (nullary), lowercase = variable
@@ -275,6 +282,8 @@ TupleTypeList:
 
 // Atomic types: base types, type variables, list types, parenthesized
 AtomicType:
+    // Phase 10 (Unit): unit type keyword
+    | TYPE_UNIT                     { TETuple [] }
     | TYPE_INT                      { TEInt }
     | TYPE_BOOL                     { TEBool }
     | TYPE_STRING                   { TEString }

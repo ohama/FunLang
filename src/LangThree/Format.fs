@@ -55,6 +55,8 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPE_BOOL -> "TYPE_BOOL"
     | Parser.TYPE_STRING -> "TYPE_STRING"
     | Parser.TYPE_LIST -> "TYPE_LIST"
+    // Phase 10 (Unit): Unit type token
+    | Parser.TYPE_UNIT -> "TYPE_UNIT"
     | Parser.TYPE_VAR s -> sprintf "TYPE_VAR(%s)" s
     // Phase 2 (ADT-01): Type declaration tokens
     | Parser.TYPE -> "TYPE"
