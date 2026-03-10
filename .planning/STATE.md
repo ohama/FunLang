@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 
 Milestone: v1.1 Full Coverage Testing
 Phase: 08 of 08 (full-coverage-fslit-testing)
-Plan: 03 of 05
+Plan: 04 of 05
 Status: In progress
-Last activity: 2026-03-10 -- Completed 08-03-PLAN.md
+Last activity: 2026-03-10 -- Completed 08-04-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: ███░░ 3/5
+Progress: v1.0 complete (7 phases, 32 plans) + 08: ████░ 4/5
 
 ## Performance Metrics
 
@@ -38,11 +38,11 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: ███░░ 3/5
 
 | 07 | 3 | 8 min | 2.7 min |
 
-| 08 | 3/5 | 6 min | 2.0 min |
+| 08 | 4/5 | 8 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-02 (3min), 07-03 (3min), 08-01 (2min), 08-02 (2min), 08-03 (2min)
-- Trend: Phase 8 fslit testing in progress. Fast execution.
+- Last 5 plans: 07-03 (3min), 08-01 (2min), 08-02 (2min), 08-03 (2min), 08-04 (2min)
+- Trend: Phase 8 fslit testing progressing rapidly. 168 total tests.
 
 *Updated after each plan completion*
 
@@ -223,6 +223,11 @@ Recent decisions affecting current work:
 - ast-decl-*.flt naming convention for declaration-level AST tests
 - All declaration node types covered: LetDecl, TypeDecl (ADT/GADT/mutual), RecordDecl, ExceptionDecl, ModuleDecl, OpenDecl, NamespaceDecl
 
+**From 08-04 (Type Declaration Emit Tests):**
+- type-decl-*.flt naming convention for declaration-level type inference tests
+- Builtin names (id, const) filtered from --emit-type output; use non-builtin names for polymorphic tests
+- --emit-type file mode outputs bindings in alphabetical order
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -255,8 +260,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (08-03 complete)
-Stopped at: Completed 08-03-PLAN.md (Declaration AST Emit Tests)
+Last session: 2026-03-10 (08-04 complete)
+Stopped at: Completed 08-04-PLAN.md (Type Declaration Emit Tests)
 Resume file: None
 
 ---
