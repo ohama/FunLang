@@ -1,0 +1,8 @@
+// Test: GADT with multiple constructors
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let result = BoolLit true
+// --- Output:
+BoolLit true

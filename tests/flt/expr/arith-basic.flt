@@ -1,0 +1,4 @@
+// Test: basic arithmetic with operator precedence (1 + 2 * 3 = 7)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "1 + 2 * 3"
+// --- Output:
+7

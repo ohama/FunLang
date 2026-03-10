@@ -1,0 +1,4 @@
+// Test: --emit-ast with --expr shows parsed AST
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "1 + 2"
+// --- Output:
+Add (Number 1, Number 2)

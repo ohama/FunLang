@@ -1,0 +1,12 @@
+// Test: multi-line match expression with indented body
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify x =
+    match x with
+    | 0 -> "zero"
+    | 1 -> "one"
+    | _ -> "other"
+
+let result = classify 1
+// --- Output:
+"one"

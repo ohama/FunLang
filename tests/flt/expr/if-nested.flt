@@ -1,0 +1,9 @@
+// Test: nested if-then-else with strings
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x =
+    if 1 > 2 then "a"
+    else if 2 > 3 then "b"
+    else "c"
+// --- Output:
+"c"

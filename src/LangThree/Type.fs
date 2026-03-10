@@ -109,6 +109,10 @@ let formatTypeNormalized (ty: Type) : string =
 
     format ty
 
+/// Format a type scheme with normalized variables
+let formatSchemeNormalized (Scheme (_vars, ty)) : string =
+    formatTypeNormalized ty
+
 // ============================================================================
 // Substitution Operations
 // ============================================================================

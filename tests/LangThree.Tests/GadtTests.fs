@@ -185,7 +185,7 @@ let gadtTests = testList "GADT" [
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n\nlet eval e = (match e with | IntLit n -> n : int)\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 let hasExhaustivenessWarning = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isFalse hasExhaustivenessWarning
                     "Should NOT warn about missing BoolLit case when matching on int Expr"
@@ -197,7 +197,7 @@ let gadtTests = testList "GADT" [
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n    | Add : int Expr * int Expr -> int Expr\n\nlet eval e = (match e with | IntLit n -> n : int)\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isTrue hasW0001 "Should warn about missing Add case"
             | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
@@ -207,7 +207,7 @@ let gadtTests = testList "GADT" [
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n    | Add : int Expr * int Expr -> int Expr\n\nlet eval e = (match e with | IntLit n -> n | Add (a, b) -> 0 : int)\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isFalse hasW0001 "No warning when all int Expr constructors covered"
             | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
@@ -223,7 +223,7 @@ let gadtTests = testList "GADT" [
             let input = "type Color = Red | Green | Blue\n\nlet toInt c =\n    match c with\n    | Red -> 1\n    | Green -> 2\n    | Blue -> 3\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 Expect.isEmpty warnings "No warnings for complete match"
             | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
         }
@@ -232,7 +232,7 @@ let gadtTests = testList "GADT" [
             let input = "type Option 'a = None | Some of 'a\n\nlet getOrZero opt =\n    match opt with\n    | None -> 0\n    | Some x -> x\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 Expect.isEmpty warnings "No warnings for complete match"
             | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
         }
@@ -241,7 +241,7 @@ let gadtTests = testList "GADT" [
             let input = "type Color = Red | Green | Blue\n\nlet f c =\n    match c with\n    | Red -> 1\n"
             let result = parseAndTypeCheck input
             match result with
-            | Ok (warnings, _, _) ->
+            | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isTrue hasW0001 "Should warn about missing Green and Blue cases"
             | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)

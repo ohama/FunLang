@@ -1,0 +1,9 @@
+// Test: qualified access to module members
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Math =
+    let add x y = x + y
+
+let result = Math.add 3 4
+// --- Output:
+7

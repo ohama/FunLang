@@ -1,0 +1,6 @@
+// Test: string literal
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = "hello"
+// --- Output:
+"hello"

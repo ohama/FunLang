@@ -1,0 +1,15 @@
+// Test: nested try-with where inner handler misses and outer catches
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception A
+exception B
+
+let result = try
+    try
+        raise A
+    with
+    | B -> 1
+with
+| A -> 2
+// --- Output:
+2

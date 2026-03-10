@@ -39,7 +39,7 @@ let evalModule (input: string) : Ast.Value =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
     | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
-    | Ok (_warnings, recEnv, _modules) ->
+    | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         let decls =
             match m with
             | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls

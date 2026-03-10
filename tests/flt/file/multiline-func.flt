@@ -1,0 +1,9 @@
+// Test: multi-line function definition with indented body
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add x y =
+    x + y
+
+let result = add 3 4
+// --- Output:
+7

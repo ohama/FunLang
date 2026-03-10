@@ -648,10 +648,10 @@ let rec typeCheckDecls
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
 /// Returns Ok(warnings, RecordEnv, modules) on success, Error(Diagnostic) on type error.
-let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports>, Diagnostic> =
+let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
     try
         match m with
-        | EmptyModule _ -> Ok ([], Map.empty, Map.empty)
+        | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
             // Check for circular module dependencies
             let depGraph = buildDependencyGraph decls
@@ -662,9 +662,9 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<strin
                     Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
             | None -> ()
 
-            let (_typeEnv, _ctorEnv, recEnv, modules, warnings) =
+            let (typeEnv, _ctorEnv, recEnv, modules, warnings) =
                 typeCheckDecls decls initialTypeEnv Map.empty Map.empty Map.empty
-            Ok (warnings, recEnv, modules)
+            Ok (warnings, recEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)

@@ -1,0 +1,9 @@
+// Test: --emit-type with file shows types of all top-level bindings
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+let x = 42
+
+let y = true
+// --- Output:
+x : int
+y : bool

@@ -1,0 +1,5 @@
+// Test: division by zero runtime error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "1 / 0"
+// --- ExitCode: 1
+// --- Stderr:
+Error: Attempted to divide by zero.

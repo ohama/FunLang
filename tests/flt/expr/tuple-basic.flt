@@ -1,0 +1,4 @@
+// Test: tuple with mixed types including string
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr '(1, true, "hello")'
+// --- Output:
+(1, true, "hello")

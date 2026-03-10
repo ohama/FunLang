@@ -1,0 +1,8 @@
+// Test: when guards in match expressions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = match 5 with
+| x when x > 3 -> "big"
+| _ -> "small"
+// --- Output:
+"big"

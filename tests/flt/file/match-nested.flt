@@ -1,0 +1,10 @@
+// Test: nested patterns in match (tuple containing ADT)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Wrapper = Wrap of int
+
+let result = match (Wrap 5, true) with
+| (Wrap n, true) -> n
+| (Wrap n, false) -> 0
+// --- Output:
+5

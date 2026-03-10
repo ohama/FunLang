@@ -1,0 +1,5 @@
+// Test: unbound variable error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "x + 1"
+// --- ExitCode: 1
+// --- Stderr:
+error[E0303]: Unbound variable: x

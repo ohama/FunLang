@@ -202,3 +202,57 @@ and formatPattern (pat: Ast.Pattern) : string =
     | Ast.RecordPat (fields, _) ->
         let fieldsStr = fields |> List.map (fun (n, p) -> sprintf "%s = %s" n (formatPattern p)) |> String.concat "; "
         sprintf "RecordPat {%s}" fieldsStr
+
+/// Format a constructor declaration as string
+let formatConstructorDecl (cd: Ast.ConstructorDecl) : string =
+    match cd with
+    | Ast.ConstructorDecl(name, None, _) -> sprintf "| %s" name
+    | Ast.ConstructorDecl(name, Some ty, _) -> sprintf "| %s of %s" name (formatTypeExpr ty)
+    | Ast.GadtConstructorDecl(name, argTypes, retType, _) ->
+        let args = argTypes |> List.map formatTypeExpr |> String.concat " * "
+        sprintf "| %s : %s -> %s" name args (formatTypeExpr retType)
+
+/// Format a record field declaration as string
+let formatRecordFieldDecl (fd: Ast.RecordFieldDecl) : string =
+    match fd with
+    | Ast.RecordFieldDecl(name, ty, isMut, _) ->
+        if isMut then sprintf "mutable %s: %s" name (formatTypeExpr ty)
+        else sprintf "%s: %s" name (formatTypeExpr ty)
+
+/// Format a declaration as string
+let rec formatDecl (decl: Ast.Decl) : string =
+    match decl with
+    | Ast.LetDecl(name, body, _) ->
+        sprintf "LetDecl (\"%s\", %s)" name (formatAst body)
+    | Ast.Decl.TypeDecl(Ast.TypeDecl(name, typeParams, ctors, _)) ->
+        let paramsStr = if typeParams.IsEmpty then "" else sprintf " %s" (typeParams |> List.map (sprintf "'%s") |> String.concat " ")
+        let ctorsStr = ctors |> List.map formatConstructorDecl |> String.concat " "
+        sprintf "TypeDecl \"%s%s\" [%s]" name paramsStr ctorsStr
+    | Ast.Decl.RecordTypeDecl(Ast.RecordDecl(name, typeParams, fields, _)) ->
+        let paramsStr = if typeParams.IsEmpty then "" else sprintf " %s" (typeParams |> List.map (sprintf "'%s") |> String.concat " ")
+        let fieldsStr = fields |> List.map formatRecordFieldDecl |> String.concat "; "
+        sprintf "RecordDecl \"%s%s\" {%s}" name paramsStr fieldsStr
+    | Ast.ModuleDecl(name, decls, _) ->
+        let declsStr = decls |> List.map formatDecl |> String.concat "\n  "
+        sprintf "ModuleDecl \"%s\" [\n  %s\n]" name declsStr
+    | Ast.OpenDecl(path, _) ->
+        sprintf "OpenDecl [%s]" (path |> String.concat ".")
+    | Ast.NamespaceDecl(path, decls, _) ->
+        let declsStr = decls |> List.map formatDecl |> String.concat "\n  "
+        sprintf "NamespaceDecl [%s] [\n  %s\n]" (path |> String.concat ".") declsStr
+    | Ast.ExceptionDecl(name, None, _) ->
+        sprintf "ExceptionDecl \"%s\"" name
+    | Ast.ExceptionDecl(name, Some ty, _) ->
+        sprintf "ExceptionDecl \"%s\" of %s" name (formatTypeExpr ty)
+
+/// Format a module as string
+let formatModule (m: Ast.Module) : string =
+    let formatDecls decls =
+        decls |> List.map formatDecl |> String.concat "\n"
+    match m with
+    | Ast.Module(decls, _) -> formatDecls decls
+    | Ast.NamedModule(name, decls, _) ->
+        sprintf "module %s\n%s" (name |> String.concat ".") (formatDecls decls)
+    | Ast.NamespacedModule(name, decls, _) ->
+        sprintf "namespace %s\n%s" (name |> String.concat ".") (formatDecls decls)
+    | Ast.EmptyModule _ -> "(empty module)"

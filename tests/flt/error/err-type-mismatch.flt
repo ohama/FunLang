@@ -1,0 +1,5 @@
+// Test: type mismatch error when adding int and bool
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "1 + true"
+// --- ExitCode: 1
+// --- Stderr:
+error[E0301]: Type mismatch: expected int but got bool

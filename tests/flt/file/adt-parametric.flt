@@ -1,0 +1,12 @@
+// Test: parametric ADT (Option type) with type variable
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Option 'a = Some of 'a | None
+
+let getOrDefault o = match o with
+| Some x -> x
+| None -> 0
+
+let result = getOrDefault (Some 42)
+// --- Output:
+42

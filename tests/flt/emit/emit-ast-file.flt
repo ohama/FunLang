@@ -1,0 +1,6 @@
+// Test: --emit-ast with file shows parsed AST for module declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+let x = 1 + 2
+// --- Output:
+LetDecl ("x", Add (Number 1, Number 2))

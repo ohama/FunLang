@@ -1,0 +1,4 @@
+// Test: cons operator prepends element to list
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "1 :: [2, 3]"
+// --- Output:
+[1, 2, 3]
