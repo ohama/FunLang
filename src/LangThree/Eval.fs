@@ -10,6 +10,9 @@ exception LangThreeException of Value
 /// Phase 5: Env type now defined in Ast.fs for mutual recursion with Value
 let emptyEnv : Env = Map.empty
 
+/// Counter for generating unique compose variable names (avoids name collision in chained composition)
+let mutable composeCounter = 0
+
 /// Module value environment for runtime qualified access
 type ModuleValueEnv = {
     Values: Env
@@ -448,21 +451,26 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     | ComposeRight (left, right, _) ->
         let fVal = eval recEnv moduleEnv env left
         let gVal = eval recEnv moduleEnv env right
-        let param = "__compose_x"
-        let fName = "__compose_f"
-        let gName = "__compose_g"
+        // Use unique names to avoid collision in chained composition
+        composeCounter <- composeCounter + 1
+        let counter = composeCounter
+        let param = sprintf "__compose_x_%d" counter
+        let fName = sprintf "__compose_f_%d" counter
+        let gName = sprintf "__compose_g_%d" counter
         let body = App(Var(gName, unknownSpan), App(Var(fName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
-        let closureEnv = env |> Map.add fName fVal |> Map.add gName gVal
+        let closureEnv = Map.ofList [(fName, fVal); (gName, gVal)]
         FunctionValue(param, body, closureEnv)
 
     | ComposeLeft (left, right, _) ->
         let fVal = eval recEnv moduleEnv env left
         let gVal = eval recEnv moduleEnv env right
-        let param = "__compose_x"
-        let fName = "__compose_f"
-        let gName = "__compose_g"
+        composeCounter <- composeCounter + 1
+        let counter = composeCounter
+        let param = sprintf "__compose_x_%d" counter
+        let fName = sprintf "__compose_f_%d" counter
+        let gName = sprintf "__compose_g_%d" counter
         let body = App(Var(fName, unknownSpan), App(Var(gName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
-        let closureEnv = env |> Map.add fName fVal |> Map.add gName gVal
+        let closureEnv = Map.ofList [(fName, fVal); (gName, gVal)]
         FunctionValue(param, body, closureEnv)
 
     // Phase 3 (Records): Mutable field assignment

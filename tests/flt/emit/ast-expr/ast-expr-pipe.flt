@@ -1,0 +1,4 @@
+// Test: --emit-ast for pipe operator
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr 'x |> f'
+// --- Output:
+PipeRight (Var "x", Var "f")
