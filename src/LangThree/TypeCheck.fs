@@ -45,6 +45,25 @@ let initialTypeEnv: TypeEnv =
 
         // tl: 'a list -> 'a list
         "tl", Scheme([0], TArrow(TList(TVar 0), TList(TVar 0)))
+
+        // Phase 11: String built-in functions
+        // string_length: string -> int
+        "string_length", Scheme([], TArrow(TString, TInt))
+
+        // string_concat: string -> string -> string
+        "string_concat", Scheme([], TArrow(TString, TArrow(TString, TString)))
+
+        // string_sub: string -> int -> int -> string  (start index, length)
+        "string_sub", Scheme([], TArrow(TString, TArrow(TInt, TArrow(TInt, TString))))
+
+        // string_contains: string -> string -> bool
+        "string_contains", Scheme([], TArrow(TString, TArrow(TString, TBool)))
+
+        // to_string: 'a -> string  (permissively polymorphic; runtime enforces int/bool/string)
+        "to_string", Scheme([0], TArrow(TVar 0, TString))
+
+        // string_to_int: string -> int
+        "string_to_int", Scheme([], TArrow(TString, TInt))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

@@ -13,6 +13,75 @@ let emptyEnv : Env = Map.empty
 /// Counter for generating unique compose variable names (avoids name collision in chained composition)
 let mutable composeCounter = 0
 
+/// Initial built-in environment: all 6 string functions as BuiltinValue.
+/// Merged into the evaluation environment at startup (Program.fs, Repl.fs).
+/// Curried multi-arg builtins use nested BuiltinValue wrappers.
+let initialBuiltinEnv : Env =
+    Map.ofList [
+        // string_length : string -> int
+        "string_length", BuiltinValue (fun v ->
+            match v with
+            | StringValue s -> IntValue s.Length
+            | _ -> failwith "string_length: expected string argument")
+
+        // string_concat : string -> string -> string
+        "string_concat", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s1 ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue s2 -> StringValue (s1 + s2)
+                    | _ -> failwith "string_concat: second argument must be string")
+            | _ -> failwith "string_concat: first argument must be string")
+
+        // string_sub : string -> int -> int -> string  (start index, length)
+        // string_sub "hello" 1 3 = "ell"  (start=1, length=3)
+        "string_sub", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | IntValue start ->
+                        BuiltinValue (fun v3 ->
+                            match v3 with
+                            | IntValue len ->
+                                if start < 0 || len < 0 || start + len > s.Length then
+                                    failwithf "string_sub: index out of range (start=%d, len=%d, string_length=%d)"
+                                              start len s.Length
+                                else
+                                    StringValue (s.[start .. start + len - 1])
+                            | _ -> failwith "string_sub: third argument must be int")
+                    | _ -> failwith "string_sub: second argument must be int")
+            | _ -> failwith "string_sub: first argument must be string")
+
+        // string_contains : string -> string -> bool
+        "string_contains", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue haystack ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue needle -> BoolValue (haystack.Contains(needle))
+                    | _ -> failwith "string_contains: second argument must be string")
+            | _ -> failwith "string_contains: first argument must be string")
+
+        // to_string : 'a -> string  (polymorphic; runtime rejects unsupported types)
+        "to_string", BuiltinValue (fun v ->
+            match v with
+            | IntValue n -> StringValue (string n)
+            | BoolValue b -> StringValue (if b then "true" else "false")
+            | StringValue s -> StringValue s
+            | _ -> failwith "to_string: unsupported type (expected int, bool, or string)")
+
+        // string_to_int : string -> int
+        "string_to_int", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                match System.Int32.TryParse(s) with
+                | true, n -> IntValue n
+                | false, _ -> failwithf "string_to_int: cannot parse '%s' as integer" s
+            | _ -> failwith "string_to_int: expected string argument")
+    ]
+
 /// Module value environment for runtime qualified access
 type ModuleValueEnv = {
     Values: Env
