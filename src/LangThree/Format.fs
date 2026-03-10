@@ -79,6 +79,10 @@ let formatToken (token: Parser.token) : string =
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
     | Parser.COMPOSE_LEFT -> "COMPOSE_LEFT"
+    // Phase 5 (Modules): Module system tokens
+    | Parser.MODULE -> "MODULE"
+    | Parser.NAMESPACE -> "NAMESPACE"
+    | Parser.OPEN -> "OPEN"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
     | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n

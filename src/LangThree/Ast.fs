@@ -176,6 +176,7 @@ and Value =
     | ListValue of Value list  // v3.0: List values
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
     | RecordValue of typeName: string * fields: Map<string, Value ref>  // Phase 3 (Records): Record value (ref cells for mutable field support)
+    | BuiltinValue of fn: (Value -> Value)  // Phase 11: Native F# built-in function carrier
 
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value

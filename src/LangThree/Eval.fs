@@ -50,6 +50,31 @@ let rec formatValue (v: Value) : string =
             |> Map.toList
             |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
         sprintf "{ %s }" (String.concat "; " fieldStrs)
+    | BuiltinValue _ -> "<builtin>"
+
+/// Structural equality for Value (needed since BuiltinValue contains a function type
+/// which prevents F# from auto-deriving equality on the Value DU)
+let rec valuesEqual (v1: Value) (v2: Value) : bool =
+    match v1, v2 with
+    | IntValue a, IntValue b -> a = b
+    | BoolValue a, BoolValue b -> a = b
+    | StringValue a, StringValue b -> a = b
+    | TupleValue a, TupleValue b ->
+        List.length a = List.length b && List.forall2 valuesEqual a b
+    | ListValue a, ListValue b ->
+        List.length a = List.length b && List.forall2 valuesEqual a b
+    | DataValue (n1, None), DataValue (n2, None) -> n1 = n2
+    | DataValue (n1, Some av), DataValue (n2, Some bv) -> n1 = n2 && valuesEqual av bv
+    | RecordValue (t1, f1), RecordValue (t2, f2) ->
+        t1 = t2 &&
+        Map.count f1 = Map.count f2 &&
+        Map.forall (fun k r1 ->
+            match Map.tryFind k f2 with
+            | Some r2 -> valuesEqual !r1 !r2
+            | None -> false) f1
+    | BuiltinValue _, BuiltinValue _ -> false  // Functions not comparable
+    | FunctionValue _, FunctionValue _ -> false  // Functions not comparable
+    | _ -> false
 
 /// Resolve record type name from field names using RecordEnv
 let resolveRecordTypeName (recEnv: RecordEnv) (fieldNames: Set<string>) : string =
@@ -245,12 +270,10 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | IntValue l, IntValue r -> BoolValue (l = r)
         | BoolValue l, BoolValue r -> BoolValue (l = r)
         | StringValue l, StringValue r -> BoolValue (l = r)
-        | TupleValue l, TupleValue r -> BoolValue (l = r)  // Structural equality
-        | ListValue l, ListValue r -> BoolValue (l = r)
+        | TupleValue l, TupleValue r -> BoolValue (valuesEqual (TupleValue l) (TupleValue r))
+        | ListValue l, ListValue r -> BoolValue (valuesEqual (ListValue l) (ListValue r))
         | RecordValue (t1, f1), RecordValue (t2, f2) ->
-            let v1 = f1 |> Map.map (fun _ r -> !r)
-            let v2 = f2 |> Map.map (fun _ r -> !r)
-            BoolValue (t1 = t2 && v1 = v2)
+            BoolValue (valuesEqual (RecordValue (t1, f1)) (RecordValue (t2, f2)))
         | _ -> failwith "Type error: = requires operands of same type"
 
     | NotEqual (left, right, _) ->
@@ -258,12 +281,10 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | IntValue l, IntValue r -> BoolValue (l <> r)
         | BoolValue l, BoolValue r -> BoolValue (l <> r)
         | StringValue l, StringValue r -> BoolValue (l <> r)
-        | TupleValue l, TupleValue r -> BoolValue (l <> r)  // Structural inequality
-        | ListValue l, ListValue r -> BoolValue (l <> r)
+        | TupleValue l, TupleValue r -> BoolValue (not (valuesEqual (TupleValue l) (TupleValue r)))
+        | ListValue l, ListValue r -> BoolValue (not (valuesEqual (ListValue l) (ListValue r)))
         | RecordValue (t1, f1), RecordValue (t2, f2) ->
-            let v1 = f1 |> Map.map (fun _ r -> !r)
-            let v2 = f2 |> Map.map (fun _ r -> !r)
-            BoolValue (t1 <> t2 || v1 <> v2)
+            BoolValue (not (valuesEqual (RecordValue (t1, f1)) (RecordValue (t2, f2))))
         | _ -> failwith "Type error: <> requires operands of same type"
 
     // Logical operators - short-circuit evaluation
@@ -324,6 +345,9 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                 | _ -> closureEnv
             let callEnv = Map.add param argValue augmentedClosureEnv
             eval recEnv moduleEnv callEnv body
+        | BuiltinValue fn ->
+            let argValue = eval recEnv moduleEnv env argExpr
+            fn argValue
         | _ -> failwith "Type error: attempted to call non-function"
 
     // Let rec - recursive function definition
@@ -434,7 +458,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             try
                 evalMatchClauses recEnv moduleEnv env exnVal handlers
             with
-            | :? System.Exception as e when e.Message = "Match failure: no pattern matched" ->
+            | e when e.Message = "Match failure: no pattern matched" ->
                 // No handler matched: re-raise the original exception
                 raise (LangThreeException exnVal)
 

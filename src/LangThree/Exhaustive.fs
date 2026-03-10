@@ -306,3 +306,4 @@ let rec astPatToCasePat (pat: Ast.Pattern) : CasePat =
     | Ast.ConsPat _ -> WildcardPat
     | Ast.EmptyListPat _ -> WildcardPat
     | Ast.ConstPat _ -> WildcardPat
+    | Ast.RecordPat _ -> WildcardPat
