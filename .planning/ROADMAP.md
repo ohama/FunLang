@@ -147,10 +147,12 @@ Plans:
   3. Heuristic selects test variable that minimizes clause duplication across branches
   4. Exhaustiveness and redundancy checking integrated with decision tree generation
   5. Existing pattern matching behavior unchanged (semantic equivalence)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- TBD during planning
+- [ ] 07-01-PLAN.md — MatchCompile.fs module with DecisionTree types, clause splitting, heuristic selection, and tree evaluator
+- [ ] 07-02-PLAN.md — Wire decision tree compilation into Eval.fs Match expression evaluation
+- [ ] 07-03-PLAN.md — Comprehensive integration tests for all pattern types and semantic equivalence
 
 **Reference**: Jules Jacobs, "How to compile pattern matching" (2021)
 - Algorithm: binary match# generation with clause splitting (cases a/b/c)
@@ -170,8 +172,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Generalized Algebraic Data Types | 5/5 | Complete | 2026-03-09 |
 | 5. Module System | 5/5 | Complete | 2026-03-09 |
 | 6. Exceptions | 4/4 | Complete | 2026-03-09 |
-| 7. Pattern Matching Compilation | 0/? | Not started | - |
+| 7. Pattern Matching Compilation | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-02-25*
-*Last updated: 2026-03-09 (Phase 6 complete)*
+*Last updated: 2026-03-10 (Phase 7 planned)*
