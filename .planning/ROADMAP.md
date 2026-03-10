@@ -23,23 +23,10 @@
 
 ---
 
-### Phase 11: String Operations
+### Phase 11: String Operations (COMPLETE)
 
 **Goal:** 문자열 내장 함수를 추가하여 실질적 문자열 처리 지원
-**Depends on:** Phase 10
-**Requirements:** STR-01, STR-02, STR-03, STR-04, STR-05, STR-06
-**Plans:** 2 plans
-
-Plans:
-- [ ] 11-01-PLAN.md — BuiltinValue infrastructure + 6 string functions (Ast/Eval/TypeCheck)
-- [ ] 11-02-PLAN.md — Wire initialBuiltinEnv into Program/Repl + 7 fslit tests
-
-**Success Criteria:**
-1. `string_length "hello"` returns 5
-2. `string_sub "hello" 1 3` returns "ell"
-3. `to_string 42` returns "42", `to_string true` returns "true"
-4. `string_to_int "42"` returns 42
-5. All string functions have correct types in `--emit-type`
+**Status:** COMPLETE — 196 F# + 193 fslit tests passing
 
 ---
 
