@@ -167,7 +167,9 @@ and RecordDecl =
 /// Value type for evaluation results
 /// Phase 4: Heterogeneous types (int and bool)
 /// Phase 5: FunctionValue for first-class functions (mutual recursion with Expr, Env)
-and Value =
+/// Phase 11: CustomEquality/CustomComparison required because BuiltinValue carries a function type
+/// which F# cannot derive equality for automatically.
+and [<CustomEquality; CustomComparison>] Value =
     | IntValue of int
     | BoolValue of bool
     | FunctionValue of param: string * body: Expr * closure: Env
@@ -177,6 +179,52 @@ and Value =
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
     | RecordValue of typeName: string * fields: Map<string, Value ref>  // Phase 3 (Records): Record value (ref cells for mutable field support)
     | BuiltinValue of fn: (Value -> Value)  // Phase 11: Native F# built-in function carrier
+
+    override x.Equals(obj) =
+        match obj with
+        | :? Value as y -> Value.valueEqual x y
+        | _ -> false
+
+    override x.GetHashCode() =
+        match x with
+        | IntValue n -> hash n
+        | BoolValue b -> hash b
+        | StringValue s -> hash s
+        | FunctionValue(p, _, _) -> hash p
+        | TupleValue vs -> hash vs
+        | ListValue vs -> hash vs
+        | DataValue(ctor, v) -> hash (ctor, v)
+        | RecordValue(name, _) -> hash name
+        | BuiltinValue _ -> 0
+
+    interface System.IEquatable<Value> with
+        member x.Equals(y: Value) = Value.valueEqual x y
+
+    interface System.IComparable with
+        member x.CompareTo(obj) =
+            match obj with
+            | :? Value as y -> Value.valueCompare x y
+            | _ -> 0
+
+    static member valueEqual (x: Value) (y: Value) =
+        match x, y with
+        | IntValue a, IntValue b -> a = b
+        | BoolValue a, BoolValue b -> a = b
+        | StringValue a, StringValue b -> a = b
+        | TupleValue a, TupleValue b -> a = b
+        | ListValue a, ListValue b -> a = b
+        | DataValue(c1, v1), DataValue(c2, v2) -> c1 = c2 && v1 = v2
+        | RecordValue(n1, f1), RecordValue(n2, f2) -> n1 = n2 && f1 = f2
+        | FunctionValue(p1, b1, _), FunctionValue(p2, b2, _) -> p1 = p2 && b1 = b2
+        | BuiltinValue _, BuiltinValue _ -> false  // functions are never equal
+        | _ -> false
+
+    static member valueCompare (x: Value) (y: Value) =
+        match x, y with
+        | IntValue a, IntValue b -> compare a b
+        | BoolValue a, BoolValue b -> compare a b
+        | StringValue a, StringValue b -> compare a b
+        | _ -> 0
 
 /// Environment mapping variable names to values
 /// Phase 5: Defined here for mutual recursion with Value

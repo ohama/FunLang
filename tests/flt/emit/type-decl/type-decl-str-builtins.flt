@@ -1,0 +1,21 @@
+// Test: --emit-type for let bindings using all 6 string built-in functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+let a = string_length "hello"
+
+let b = string_concat "foo" "bar"
+
+let c = string_sub "hello" 1 3
+
+let d = string_contains "hello" "ell"
+
+let e = to_string 42
+
+let f = string_to_int "42"
+// --- Output:
+a : int
+b : string
+c : string
+d : bool
+e : string
+f : int
