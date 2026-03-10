@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 08 complete -- Full Coverage fslit Testing
+**Current focus:** v1.2 Practical Language Features — starting Phase 09
 
 ## Current Position
 
-Milestone: v1.1 Full Coverage Testing
-Phase: 08 of 08 (full-coverage-fslit-testing)
-Plan: 05 of 05
-Status: Phase complete
-Last activity: 2026-03-10 -- Completed 08-05-PLAN.md
+Milestone: v1.2 Practical Language Features
+Phase: 09 (not started)
+Plan: —
+Status: Planning
+Last activity: 2026-03-10 -- v1.2 milestone started
 
 Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5
 
