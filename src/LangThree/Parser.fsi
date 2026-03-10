@@ -25,6 +25,7 @@ type token =
   | OF
   | AND_KW
   | TYPE_VAR of (string)
+  | TYPE_UNIT
   | TYPE_INT
   | TYPE_BOOL
   | TYPE_STRING
@@ -90,6 +91,7 @@ type tokenId =
     | TOKEN_OF
     | TOKEN_AND_KW
     | TOKEN_TYPE_VAR
+    | TOKEN_TYPE_UNIT
     | TOKEN_TYPE_INT
     | TOKEN_TYPE_BOOL
     | TOKEN_TYPE_STRING
