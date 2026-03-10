@@ -2,7 +2,7 @@
 
 ## What This Is
 
-FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어. F# 스타일의 문법과 타입 시스템을 갖춘, 실제로 사용할 수 있는 언어를 목표로 한다.
+FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어. F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, 모듈, 예외 처리, 그리고 효율적인 패턴 매칭 컴파일을 갖춘 완전한 인터프리터.
 
 ## Core Value
 
@@ -12,15 +12,16 @@ FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 
 
 ### Validated
 
-(None yet — ship to validate)
+- Indentation-based syntax (F# 스타일 들여쓰기 기반 파싱) — v1.0
+- ADT (Algebraic Data Types) with GADT support — v1.0
+- Records with mutable fields — v1.0
+- Module system (F# 스타일, functor 없이) — v1.0
+- Exceptions (F# 스타일 — exception, try...with, raise) — v1.0
+- Pattern matching compilation to decision trees — v1.0
 
 ### Active
 
-- [ ] Indentation-based syntax (F# 스타일 들여쓰기 기반 파싱)
-- [ ] ADT (Algebraic Data Types) with GADT support
-- [ ] Records (`{ name: string; age: int }`)
-- [ ] Module system (F# 스타일, functor 없이)
-- [ ] Exceptions (F# 스타일 — `exception`, `try...with`, `raise`)
+(None — v1.0 milestone complete)
 
 ### Out of Scope
 
@@ -31,6 +32,11 @@ FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 
 
 ## Context
 
+**Shipped:** v1.0 Core Language (2026-03-10)
+- 23 source files, 8,362 lines of F#
+- 196 tests, all passing
+- 7 phases, 32 plans executed in 13 days
+
 **기반 코드**: ../LangTutorial의 FunLang v6.0
 - Hindley-Milner 타입 추론
 - Bidirectional type checking
@@ -38,9 +44,7 @@ FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 
 - 리스트, 튜플
 - Prelude (map, filter, fold 등)
 
-**기술 스택**: F# / .NET / fslex / fsyacc
-
-**구현 순서**: Indentation → ADT → Records → Modules → Exceptions
+**기술 스택**: F# / .NET 10 / fslex / fsyacc
 
 ## Constraints
 
@@ -52,9 +56,12 @@ FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| F# 스타일 선택 | OCaml보다 단순, 들여쓰기 기반이 현대적 | — Pending |
-| GADT 포함 | 표현력 있는 타입 시스템, FunLang의 bidirectional checking 활용 | — Pending |
-| Functor 제외 | 복잡도 대비 실용성 낮음 | — Pending |
+| F# 스타일 선택 | OCaml보다 단순, 들여쓰기 기반이 현대적 | ✓ Good |
+| GADT 포함 | 표현력 있는 타입 시스템, FunLang의 bidirectional checking 활용 | ✓ Good |
+| Functor 제외 | 복잡도 대비 실용성 낮음 | ✓ Good |
+| Jules Jacobs algorithm for pattern matching | Binary trees simpler than Maranget N-way, no clause duplication | ✓ Good |
+| evalFn parameter pattern | Avoids circular F# module dependency between MatchCompile and Eval | ✓ Good |
+| Record field-name encoding in constructor names | Enables partial record pattern matching in decision trees | ✓ Good |
 
 ---
-*Last updated: 2026-02-25 after initialization*
+*Last updated: 2026-03-10 after v1.0 milestone*
