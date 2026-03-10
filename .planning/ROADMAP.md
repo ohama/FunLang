@@ -30,22 +30,10 @@
 
 ---
 
-### Phase 12: Printf Output
+### Phase 12: Printf Output (COMPLETE)
 
 **Goal:** printf 계열 함수를 추가하여 포맷 출력 지원
-**Depends on:** Phase 10 (unit type needed for return), Phase 11 (string ops)
-**Requirements:** PRINT-01, PRINT-02, PRINT-03
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 12 to break down)
-
-**Success Criteria:**
-1. `print "hello"` outputs "hello" to stdout (no newline)
-2. `println "hello"` outputs "hello\n" to stdout
-3. `printf "x=%d, s=%s" 42 "hi"` outputs "x=42, s=hi"
-4. Print functions return unit type
-5. File-mode programs can produce output mid-execution (not just final value)
+**Status:** COMPLETE — 196 F# + 201 fslit tests passing
 
 ---
 

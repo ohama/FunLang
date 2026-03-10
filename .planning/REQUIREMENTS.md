@@ -45,9 +45,9 @@
 | STR-04 | 11 | Complete |
 | STR-05 | 11 | Complete |
 | STR-06 | 11 | Complete |
-| PRINT-01 | 12 | Pending |
-| PRINT-02 | 12 | Pending |
-| PRINT-03 | 12 | Pending |
+| PRINT-01 | 12 | Complete |
+| PRINT-02 | 12 | Complete |
+| PRINT-03 | 12 | Complete |
 
 ---
 
