@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.2 Practical Language Features — starting Phase 09
+**Current focus:** v1.2 Practical Language Features — Phase 09 in progress
 
 ## Current Position
 
 Milestone: v1.2 Practical Language Features
-Phase: 09 (not started)
-Plan: —
-Status: Planning
-Last activity: 2026-03-10 -- v1.2 milestone started
+Phase: 09 of ? (pipe-composition)
+Plan: 01 of ? in phase
+Status: In progress
+Last activity: 2026-03-10 -- Completed 09-01-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5
+Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/?
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 32
+- Total plans completed: 33
 - Average duration: 4.2 min
-- Total execution time: 2.37 hours
+- Total execution time: 2.50 hours
 
 **By Phase:**
 
@@ -39,10 +39,11 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5
 | 07 | 3 | 8 min | 2.7 min |
 
 | 08 | 5 | 12 min | 2.4 min |
+| 09 | 1 | 8 min | 8.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-01 (2min), 08-02 (2min), 08-03 (2min), 08-04 (2min), 08-05 (4min)
-- Trend: Phase 8 complete. 168 total fslit tests, all passing.
+- Last 5 plans: 08-03 (2min), 08-04 (2min), 08-05 (4min), 09-01 (8min)
+- Trend: Phase 09 started. 179 total fslit tests, all passing.
 
 *Updated after each plan completion*
 
@@ -239,6 +240,12 @@ Recent decisions affecting current work:
 - String constant patterns not supported by parser (parse error) -- skipped
 - When guard parsed but not shown in AST output (Format.fs binds as _guard)
 
+**From 09-01 (Pipe & Composition Operators):**
+- Unique compose variable names per closure (composeCounter) to avoid stack overflow in chained composition
+- Pipe/composition precedence: PIPE_RIGHT < COMPOSE_RIGHT = COMPOSE_LEFT < OR (lowest of all operators)
+- Closure-based composition: compose operators capture evaluated function values with unique names in minimal closure env
+- No Prelude.fun file exists; prelude functions are type-only (in initialTypeEnv) not eval-available
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -271,8 +278,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (08-05 complete, Phase 08 complete)
-Stopped at: Completed 08-05-PLAN.md (Pattern AST Emit Tests) -- Phase 08 complete
+Last session: 2026-03-10 (09-01 complete)
+Stopped at: Completed 09-01-PLAN.md (Pipe & Composition Operators)
 Resume file: None
 
 ---
