@@ -1,0 +1,4 @@
+// Test: --emit-ast for Divide expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "10 / 2"
+// --- Output:
+Divide (Number 10, Number 2)

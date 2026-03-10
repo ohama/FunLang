@@ -1,0 +1,4 @@
+// Test: --emit-ast for Match expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr 'match 1 with | 0 -> "zero" | _ -> "other"'
+// --- Output:
+Match (Number 1, [(ConstPat (IntConst 0), String "zero"); (WildcardPat, String "other")])

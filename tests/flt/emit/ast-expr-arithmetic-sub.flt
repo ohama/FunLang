@@ -1,0 +1,4 @@
+// Test: --emit-ast for Subtract expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "5 - 3"
+// --- Output:
+Subtract (Number 5, Number 3)

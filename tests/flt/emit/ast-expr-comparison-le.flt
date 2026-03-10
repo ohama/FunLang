@@ -1,0 +1,4 @@
+// Test: --emit-ast for LessEqual expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "1 <= 2"
+// --- Output:
+LessEqual (Number 1, Number 2)

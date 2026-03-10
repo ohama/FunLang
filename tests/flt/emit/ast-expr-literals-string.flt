@@ -1,0 +1,4 @@
+// Test: --emit-ast for String literal
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr '"hello"'
+// --- Output:
+String "hello"

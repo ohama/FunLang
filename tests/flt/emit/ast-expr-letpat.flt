@@ -1,0 +1,4 @@
+// Test: --emit-ast for LetPat expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "let (a, b) = (1, 2) in a + b"
+// --- Output:
+LetPat (TuplePat [VarPat "a", VarPat "b"], Tuple [Number 1, Number 2], Add (Var "a", Var "b"))

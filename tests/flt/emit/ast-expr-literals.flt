@@ -1,0 +1,4 @@
+// Test: --emit-ast for Number literal
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "42"
+// --- Output:
+Number 42

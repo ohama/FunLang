@@ -1,0 +1,4 @@
+// Test: --emit-ast for Or expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "true || false"
+// --- Output:
+Or (Bool true, Bool false)

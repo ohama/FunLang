@@ -1,0 +1,4 @@
+// Test: --emit-ast for Cons expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "1 :: 2 :: []"
+// --- Output:
+Cons (Number 1, Cons (Number 2, EmptyList))

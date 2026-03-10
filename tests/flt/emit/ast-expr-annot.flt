@@ -1,0 +1,4 @@
+// Test: --emit-ast for Annot expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "(1 + 2 : int)"
+// --- Output:
+Annot (Add (Number 1, Number 2), TEInt)

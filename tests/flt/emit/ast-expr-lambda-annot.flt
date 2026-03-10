@@ -1,0 +1,4 @@
+// Test: --emit-ast for LambdaAnnot expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "fun (x: int) -> x + 1"
+// --- Output:
+LambdaAnnot ("x", TEInt, Add (Var "x", Number 1))

@@ -1,0 +1,4 @@
+// Test: --emit-ast for App expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "(fun x -> x) 42"
+// --- Output:
+App (Lambda ("x", Var "x"), Number 42)
