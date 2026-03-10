@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.2 Practical Language Features — Phase 11 in progress (plan 01 complete, plan 02 next)
+**Current focus:** v1.2 Practical Language Features — Phase 11 complete (2 plans done)
 
 ## Current Position
 
 Milestone: v1.2 Practical Language Features
-Phase: 11 of ? (string-operations) — In progress
-Plan: 01 of ? in phase — COMPLETE
-Status: Plan 01 complete; Plan 02 next (wire initialBuiltinEnv into Program.fs + Repl.fs, add .flt tests)
-Last activity: 2026-03-10 -- Completed 11-01-PLAN.md
+Phase: 11 of ? (string-operations) — COMPLETE
+Plan: 02 of 02 in phase — COMPLETE
+Status: Phase 11 complete; all 6 string operations working end-to-end; 196 F# + 193 fslit tests passing
+Last activity: 2026-03-10 -- Completed 11-02-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: ██ 2/2 ✓ + 11: █ 1/? ✓
+Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: ██ 2/2 ✓ + 11: ██ 2/2 ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 36
+- Total plans completed: 37
 - Average duration: 4.3 min
-- Total execution time: 2.70 hours
+- Total execution time: 2.75 hours
 
 **By Phase:**
 
@@ -38,11 +38,11 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █
 | 08 | 5 | 12 min | 2.4 min |
 | 09 | 1 | 8 min | 8.0 min |
 | 10 | 2 | 9 min | 4.5 min |
-| 11 | 1 (so far) | 5 min | 5.0 min |
+| 11 | 2 | 10 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-01 (8min), 10-01 (4min), 10-02 (5min), 11-01 (5min)
-- Trend: Phase 11 plan 01 complete. BuiltinValue infrastructure in place. Build: 0 errors, 0 warnings.
+- Last 5 plans: 10-01 (4min), 10-02 (5min), 11-01 (5min), 11-02 (5min)
+- Trend: Phase 11 complete. 6 string ops end-to-end. 196 F# + 193 fslit tests passing.
 
 *Updated after each plan completion*
 
@@ -258,6 +258,11 @@ Recent decisions affecting current work:
 - initialBuiltinEnv : Env in Eval.fs — merge into startup env in Program.fs and Repl.fs (Plan 02)
 - to_string: Scheme([0], TArrow(TVar 0, TString)) — permissively polymorphic; runtime enforces int/bool/string only
 - string_sub uses start+length semantics: string_sub s start len = s.[start .. start+len-1]
+
+**From 11-02 (String Operations Wiring + Tests):**
+- Startup merge: Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initialBuiltinEnv in Program.fs and Repl.fs
+- and [<CustomEquality; CustomComparison>] Value requires inline attribute on the and-clause (not preceding line); implements Equals/GetHashCode/IEquatable/IComparable; BuiltinValue always returns false for equality
+- fslit single-quote quoting: use single quotes for --expr args with string literals in .flt Command lines
 - Pre-existing warnings fixed: Exhaustive.fs RecordPat, Format.fs MODULE/NAMESPACE/OPEN, Eval.fs FS0067
 
 ### Roadmap Evolution
@@ -292,10 +297,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T07:35:37Z (Phase 11 plan 01 complete)
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-10T07:43:37Z (Phase 11 plan 02 complete)
+Stopped at: Completed 11-02-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-10 (Phase 11 plan 01 complete)*
+*Last updated: 2026-03-10 (Phase 11 plan 02 complete)*
