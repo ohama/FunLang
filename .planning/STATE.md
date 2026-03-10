@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 08 -- Full Coverage fslit Testing
+**Current focus:** Phase 08 complete -- Full Coverage fslit Testing
 
 ## Current Position
 
 Milestone: v1.1 Full Coverage Testing
 Phase: 08 of 08 (full-coverage-fslit-testing)
-Plan: 04 of 05
-Status: In progress
-Last activity: 2026-03-10 -- Completed 08-04-PLAN.md
+Plan: 05 of 05
+Status: Phase complete
+Last activity: 2026-03-10 -- Completed 08-05-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: ████░ 4/5
+Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5
 
 ## Performance Metrics
 
@@ -38,11 +38,11 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: ████░ 4/5
 
 | 07 | 3 | 8 min | 2.7 min |
 
-| 08 | 4/5 | 8 min | 2.0 min |
+| 08 | 5 | 12 min | 2.4 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-03 (3min), 08-01 (2min), 08-02 (2min), 08-03 (2min), 08-04 (2min)
-- Trend: Phase 8 fslit testing progressing rapidly. 168 total tests.
+- Last 5 plans: 08-01 (2min), 08-02 (2min), 08-03 (2min), 08-04 (2min), 08-05 (4min)
+- Trend: Phase 8 complete. 168 total fslit tests, all passing.
 
 *Updated after each plan completion*
 
@@ -234,6 +234,11 @@ Recent decisions affecting current work:
 - Builtin names (id, const) filtered from --emit-type output; use non-builtin names for polymorphic tests
 - --emit-type file mode outputs bindings in alphabetical order
 
+**From 08-05 (Pattern AST Emit Tests):**
+- ast-pat-*.flt naming convention for pattern node AST tests
+- String constant patterns not supported by parser (parse error) -- skipped
+- When guard parsed but not shown in AST output (Format.fs binds as _guard)
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -266,8 +271,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (08-01 complete)
-Stopped at: Completed 08-01-PLAN.md (Expression AST Emit Tests)
+Last session: 2026-03-10 (08-05 complete, Phase 08 complete)
+Stopped at: Completed 08-05-PLAN.md (Pattern AST Emit Tests) -- Phase 08 complete
 Resume file: None
 
 ---
