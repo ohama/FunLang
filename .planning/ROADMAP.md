@@ -21,10 +21,11 @@
 **Goal:** `()` unit 값과 `unit` 타입을 추가하여 부수효과 표현 지원
 **Depends on:** Phase 09
 **Requirements:** UNIT-01, UNIT-02, UNIT-03
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 10 to break down)
+- [ ] 10-01-PLAN.md — Core unit type wiring (lexer, parser, Type.fs formatType, let _ = grammar)
+- [ ] 10-02-PLAN.md — fslit tests for all unit type features
 
 **Success Criteria:**
 1. `()` parses and evaluates to UnitValue
