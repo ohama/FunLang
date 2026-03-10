@@ -1,0 +1,4 @@
+// Test: wildcard pattern in match
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "match 42 with | _ -> 99"
+// --- Stdout:
+99

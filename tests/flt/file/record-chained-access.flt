@@ -1,0 +1,10 @@
+// Test: chained record field access
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Inner = { value: int }
+type Outer = { inner: Inner }
+
+let o = { inner = { value = 42 } }
+let result = o.inner.value
+// --- Stdout:
+42

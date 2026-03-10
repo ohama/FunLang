@@ -1,0 +1,12 @@
+// Test: nested constructor patterns
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Option 'a = None | Some of 'a
+
+let x = Some (Some 42)
+let result =
+    match x with
+    | Some (Some v) -> v
+    | _ -> 0
+// --- Stdout:
+42
