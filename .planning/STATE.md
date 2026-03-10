@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.2 Practical Language Features — Phase 11 complete (2 plans done)
+**Current focus:** v1.2 Practical Language Features — Phase 12 in progress (1 plan done)
 
 ## Current Position
 
 Milestone: v1.2 Practical Language Features
-Phase: 11 of ? (string-operations) — COMPLETE ✓
-Plan: 02 of 02 in phase — COMPLETE
-Status: Phase 11 verified and complete; all 6 string operations working end-to-end; 196 F# + 193 fslit tests passing
-Last activity: 2026-03-10 -- Phase 11 verified and docs updated
+Phase: 12 of ? (printf-output) — In progress
+Plan: 01 of ? in phase — COMPLETE
+Status: Phase 12 plan 01 complete; print/println/printf live in Eval + TypeCheck; all spot-checks pass
+Last activity: 2026-03-10 -- Completed 12-01-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: ██ 2/2 ✓ + 11: ██ 2/2 ✓
+Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: ██ 2/2 ✓ + 11: ██ 2/2 ✓ + 12: █ 1/?
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 37
+- Total plans completed: 38
 - Average duration: 4.3 min
-- Total execution time: 2.75 hours
+- Total execution time: ~2.77 hours
 
 **By Phase:**
 
@@ -265,6 +265,13 @@ Recent decisions affecting current work:
 - fslit single-quote quoting: use single quotes for --expr args with string literals in .flt Command lines
 - Pre-existing warnings fixed: Exhaustive.fs RecordPat, Format.fs MODULE/NAMESPACE/OPEN, Eval.fs FS0067
 
+**From 12-01 (Printf Output):**
+- printf typed as Scheme([0], TArrow(TString, TVar 0)) — cannot know arity at type-check time; runtime enforces specifier types
+- Use stdout.Write + stdout.Flush() (not F# printfn) to avoid formatting interference and ensure ordering
+- applyPrintfArgs must be let rec (recursive); parsePrintfSpecifiers/printfFormatArg/substitutePrintfArgs are non-recursive let
+- All four helpers must appear before initialBuiltinEnv in Eval.fs to be in scope
+- Zero-specifier printf (e.g., printf "hello") writes format string directly via applyPrintfArgs fmt [] []
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -297,8 +304,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (Phase 11 complete, verified)
-Stopped at: Phase 11 complete — ready for Phase 12
+Last session: 2026-03-10 (Phase 12 plan 01 complete)
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
 
 ---
