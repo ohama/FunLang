@@ -9,11 +9,13 @@
 **Plans:** 5 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Expression AST tests (--emit-ast --expr for all expression nodes)
-- [ ] 08-02-PLAN.md — Expression type tests (--emit-type --expr for all expression nodes)
-- [ ] 08-03-PLAN.md — Declaration AST tests (--emit-ast file mode for all declaration nodes)
-- [ ] 08-04-PLAN.md — Declaration type tests (--emit-type file mode for all declaration nodes)
-- [ ] 08-05-PLAN.md — Pattern AST tests (--emit-ast for all pattern node types in match)
+- [x] 08-01-PLAN.md — Expression AST tests (28 files, all passing)
+- [x] 08-02-PLAN.md — Expression type tests (16 files, all passing)
+- [x] 08-03-PLAN.md — Declaration AST tests (16 files, all passing)
+- [x] 08-04-PLAN.md — Declaration type tests (12 files, all passing)
+- [x] 08-05-PLAN.md — Pattern AST tests (12 files, all passing)
+
+**Status:** COMPLETE — 168/168 fslit tests passing
 
 **Details:**
 
