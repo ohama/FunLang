@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 6 complete - Exceptions. Ready for Phase 7.
+**Current focus:** Phase 7 in progress - Pattern Matching Compilation.
 
 ## Current Position
 
-Phase: 6 of 7 (Exceptions)
-Plan: 4 of 4 in current phase
-Status: Phase complete, verified
-Last activity: 2026-03-09 -- Phase 6 verified (5/5 must-haves pass)
+Phase: 7 of 7 (Pattern Matching Compilation)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-10 -- Completed 07-01-PLAN.md
 
-Progress: [██████████████████░░] 86% (6/7 phases complete)
+Progress: [██████████████████░░] 90% (29/32 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28
-- Average duration: 4.4 min
-- Total execution time: 2.24 hours
+- Total plans completed: 29
+- Average duration: 4.3 min
+- Total execution time: 2.27 hours
 
 **By Phase:**
 
@@ -35,9 +35,11 @@ Progress: [██████████████████░░] 86% (6/
 
 | 06 | 4 | 27 min | 6.8 min |
 
+| 07 | 1 | 2 min | 2.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 05-05 (12min), 06-01 (5min), 06-02 (5min), 06-03 (5min), 06-04 (12min)
-- Trend: Phase 6 complete. 4 bugs found and fixed during integration testing.
+- Last 5 plans: 06-01 (5min), 06-02 (5min), 06-03 (5min), 06-04 (12min), 07-01 (2min)
+- Trend: Phase 7 started. MatchCompile.fs foundation created cleanly.
 
 *Updated after each plan completion*
 
@@ -193,6 +195,13 @@ Recent decisions affecting current work:
 - Try-with re-raises exception when no handler matches (enables nested try-with)
 - typeCheckDecls fold now threads ctorEnv/recEnv so open directive propagates constructors
 
+**From 07-01 (Match Compilation Foundation):**
+- MatchCompile.fs only opens Ast -- no dependency on Eval.fs (avoids circular deps)
+- evalDecisionTree takes evalFn parameter for decoupling from Eval module
+- Constructor names use prefix encoding: #tuple_N, #int_N, #bool_N, #record_N for non-ADT patterns
+- Record sub-patterns sorted alphabetically by field name for canonical ordering
+- resetTestVarCounter called per compileMatch for deterministic variable numbering
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -224,10 +233,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09 (Phase 6 verified)
-Stopped at: Phase 6 verified, ready for Phase 7 (Pattern Matching Compilation)
+Last session: 2026-03-10 (07-01 complete)
+Stopped at: Completed 07-01-PLAN.md (Match Compilation Foundation)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-09*
+*Last updated: 2026-03-10*
