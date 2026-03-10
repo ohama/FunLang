@@ -5,15 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.0 milestone complete. Planning next milestone.
+**Current focus:** Phase 08 -- Full Coverage fslit Testing
 
 ## Current Position
 
-Milestone: v1.0 Core Language — SHIPPED 2026-03-10
-Status: Between milestones
-Last activity: 2026-03-10 -- v1.0 milestone archived
+Milestone: v1.1 Full Coverage Testing
+Phase: 08 of 08 (full-coverage-fslit-testing)
+Plan: 02 of 05
+Status: In progress
+Last activity: 2026-03-10 -- Completed 08-02-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans)
+Progress: v1.0 complete (7 phases, 32 plans) + 08: ██░░░ 2/5
 
 ## Performance Metrics
 
@@ -36,9 +38,11 @@ Progress: v1.0 complete (7 phases, 32 plans)
 
 | 07 | 3 | 8 min | 2.7 min |
 
+| 08 | 2/5 | 4 min | 2.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 06-04 (12min), 07-01 (2min), 07-02 (3min), 07-03 (3min)
-- Trend: Phase 7 complete. All pattern types verified with 196 tests passing.
+- Last 5 plans: 07-01 (2min), 07-02 (3min), 07-03 (3min), 08-01 (2min), 08-02 (2min)
+- Trend: Phase 8 fslit testing in progress. Fast execution.
 
 *Updated after each plan completion*
 
@@ -211,9 +215,14 @@ Recent decisions affecting current work:
 - Structural tree-walking test confirms no redundant constructor tests per decision path
 - All 196 tests pass (zero regression across all phases)
 
+**From 08-02 (Type Expression Emit Tests):**
+- Use single quotes for --expr args containing string literals in .flt files (avoids shell escaping issues)
+- type-expr-*.flt naming convention for --emit-type expression tests
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
+- Phase 8 added: Full Coverage fslit Testing (--emit-ast, --emit-type, 100% grammar coverage)
 
 ### Pending Todos
 
@@ -242,8 +251,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (07-03 complete, all phases done)
-Stopped at: Completed 07-03-PLAN.md (Match Compilation Tests) -- PROJECT COMPLETE
+Last session: 2026-03-10 (08-02 complete)
+Stopped at: Completed 08-02-PLAN.md (Type Expression Emit Tests)
 Resume file: None
 
 ---
