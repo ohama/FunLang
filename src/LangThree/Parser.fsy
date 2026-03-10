@@ -96,6 +96,8 @@ Expr:
     | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Tuple([], symSpan parseState 6), ruleSpan parseState 1 6) }
     // Phase 1 (v3.0): Let with pattern binding
     | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
+    // Phase 10 (Unit): let _ = e1 in e2 wildcard sequencing at expression level
+    | LET UNDERSCORE EQUALS Expr IN Expr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
     | IF Expr THEN Expr ELSE Expr    { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 5: Function definitions
@@ -388,6 +390,11 @@ Decls:
 // Top-level declarations must be at column 0
 // Each declaration can have indented body using INDENT/DEDENT
 Decl:
+    // Phase 10 (Unit): let _ = expr wildcard sequencing at module level
+    | LET UNDERSCORE EQUALS Expr
+        { LetDecl("_", $4, ruleSpan parseState 1 4) }
+    | LET UNDERSCORE EQUALS INDENT Expr DEDENT
+        { LetDecl("_", $5, ruleSpan parseState 1 6) }
     // Simple let binding: let x = expr
     | LET IDENT EQUALS Expr
         { LetDecl($2, $4, ruleSpan parseState 1 4) }

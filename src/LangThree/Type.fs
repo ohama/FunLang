@@ -65,6 +65,7 @@ let rec formatType = function
     | TArrow (t1, t2) ->
         let left = match t1 with TArrow _ -> sprintf "(%s)" (formatType t1) | _ -> formatType t1
         sprintf "%s -> %s" left (formatType t2)
+    | TTuple [] -> "unit"
     | TTuple ts -> ts |> List.map formatType |> String.concat " * "
     | TList t -> sprintf "%s list" (formatType t)
     | TData (name, []) -> name
@@ -99,6 +100,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TArrow(t1, t2) ->
             let left = match t1 with TArrow _ -> sprintf "(%s)" (format t1) | _ -> format t1
             sprintf "%s -> %s" left (format t2)
+        | TTuple [] -> "unit"
         | TTuple ts -> ts |> List.map format |> String.concat " * "
         | TList t -> sprintf "%s list" (format t)
         | TData (name, []) -> name
