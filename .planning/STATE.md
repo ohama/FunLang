@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Pattern Matching Compilation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-10 -- Completed 07-01-PLAN.md
+Last activity: 2026-03-10 -- Completed 07-02-PLAN.md
 
-Progress: [██████████████████░░] 90% (29/32 plans complete)
+Progress: [███████████████████░] 94% (30/32 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29
+- Total plans completed: 30
 - Average duration: 4.3 min
-- Total execution time: 2.27 hours
+- Total execution time: 2.32 hours
 
 **By Phase:**
 
@@ -35,11 +35,11 @@ Progress: [██████████████████░░] 90% (29
 
 | 06 | 4 | 27 min | 6.8 min |
 
-| 07 | 1 | 2 min | 2.0 min |
+| 07 | 2 | 5 min | 2.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-01 (5min), 06-02 (5min), 06-03 (5min), 06-04 (12min), 07-01 (2min)
-- Trend: Phase 7 started. MatchCompile.fs foundation created cleanly.
+- Last 5 plans: 06-02 (5min), 06-03 (5min), 06-04 (12min), 07-01 (2min), 07-02 (3min)
+- Trend: Decision tree wired into Eval.fs. One bug fixed (partial record encoding).
 
 *Updated after each plan completion*
 
@@ -198,9 +198,14 @@ Recent decisions affecting current work:
 **From 07-01 (Match Compilation Foundation):**
 - MatchCompile.fs only opens Ast -- no dependency on Eval.fs (avoids circular deps)
 - evalDecisionTree takes evalFn parameter for decoupling from Eval module
-- Constructor names use prefix encoding: #tuple_N, #int_N, #bool_N, #record_N for non-ADT patterns
+- Constructor names use prefix encoding: #tuple_N, #int_N, #bool_N for non-ADT patterns
 - Record sub-patterns sorted alphabetically by field name for canonical ordering
 - resetTestVarCounter called per compileMatch for deterministic variable numbering
+
+**From 07-02 (Eval Integration):**
+- Record constructor encoding changed from #record_N to #record:fieldA,fieldB for partial record pattern support
+- Match case uses MatchCompile.compileMatch + evalDecisionTree; TryWith remains sequential
+- matchPattern and evalMatchClauses preserved (used by TryWith and LetPat)
 
 ### Roadmap Evolution
 
@@ -233,8 +238,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (07-01 complete)
-Stopped at: Completed 07-01-PLAN.md (Match Compilation Foundation)
+Last session: 2026-03-10 (07-02 complete)
+Stopped at: Completed 07-02-PLAN.md (Eval Integration)
 Resume file: None
 
 ---
