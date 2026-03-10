@@ -166,10 +166,13 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             | _ ->
                 failwith "Pattern match failed"
 
-    // Phase 3 (v3.0): Pattern Matching
+    // Phase 3 (v3.0): Pattern Matching -- compiled via decision tree (Phase 7)
     | Match (scrutinee, clauses, _) ->
         let value = eval recEnv moduleEnv env scrutinee
-        evalMatchClauses recEnv moduleEnv env value clauses
+        let tree, rootVar = MatchCompile.compileMatch clauses
+        let evalFn e expr = eval recEnv moduleEnv e expr
+        let varEnv = Map.ofList [(rootVar, value)]
+        MatchCompile.evalDecisionTree evalFn env varEnv tree
 
     // Phase 2 (v3.0): Lists
     | EmptyList _ ->
