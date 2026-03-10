@@ -215,6 +215,12 @@ Recent decisions affecting current work:
 - Structural tree-walking test confirms no redundant constructor tests per decision path
 - All 196 tests pass (zero regression across all phases)
 
+**From 08-01 (Expression AST Emit Tests):**
+- One .flt file per AST node type (fslit limitation: one test per file)
+- 28 files created (not 16 as planned) to cover all expression node types
+- Use single quotes for embedded double quotes in fslit Command lines
+- ast-expr-*.flt naming convention with hyphen suffixes for variants
+
 **From 08-02 (Type Expression Emit Tests):**
 - Use single quotes for --expr args containing string literals in .flt files (avoids shell escaping issues)
 - type-expr-*.flt naming convention for --emit-type expression tests
@@ -260,8 +266,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (08-04 complete)
-Stopped at: Completed 08-04-PLAN.md (Type Declaration Emit Tests)
+Last session: 2026-03-10 (08-01 complete)
+Stopped at: Completed 08-01-PLAN.md (Expression AST Emit Tests)
 Resume file: None
 
 ---
