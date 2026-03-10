@@ -11,6 +11,7 @@
     <Compile Include="GadtTests.fs" />
     <Compile Include="ModuleTests.fs" />
     <Compile Include="ExceptionTests.fs" />
+    <Compile Include="MatchCompileTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
