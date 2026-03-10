@@ -1,0 +1,10 @@
+// Test: mutable field set returns unit; let _ = enables sequencing to read updated value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Counter = { mutable count: int }
+
+let r = { count = 0 }
+let _ = r.count <- 42
+let result = r.count
+// --- Output:
+42

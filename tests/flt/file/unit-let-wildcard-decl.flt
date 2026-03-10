@@ -1,0 +1,8 @@
+// Test: let _ = expr at module level enables sequencing; result comes from last binding
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = 10
+let _ = x
+let result = 42
+// --- Output:
+42
