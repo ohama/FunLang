@@ -71,6 +71,9 @@ let initialTypeEnv: TypeEnv =
 
         // println : string -> unit
         "println", Scheme([], TArrow(TString, TTuple []))
+
+        // printf : string -> 'a  (permissively polymorphic — runtime enforces arity from format string)
+        "printf", Scheme([0], TArrow(TString, TVar 0))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

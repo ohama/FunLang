@@ -13,6 +13,81 @@ let emptyEnv : Env = Map.empty
 /// Counter for generating unique compose variable names (avoids name collision in chained composition)
 let mutable composeCounter = 0
 
+// Phase 12: Printf helpers
+
+/// Parse format string to extract specifier characters in order.
+/// Returns list of specifier chars: "d", "s", or "b". Skips %% (escaped percent).
+let parsePrintfSpecifiers (fmt: string) : string list =
+    let mutable i = 0
+    let specs = System.Collections.Generic.List<string>()
+    while i < fmt.Length do
+        if fmt.[i] = '%' && i + 1 < fmt.Length then
+            let spec = fmt.[i + 1]
+            match spec with
+            | 'd' | 's' | 'b' ->
+                specs.Add(string spec)
+                i <- i + 2
+            | '%' ->
+                i <- i + 2  // %% is a literal %, not a specifier
+            | _ ->
+                i <- i + 1  // unknown % sequence, skip
+        else
+            i <- i + 1
+    specs |> Seq.toList
+
+/// Format a value for printf output. NEVER adds quotes around strings (unlike formatValue).
+/// %s -> raw string; %d -> int as string; %b -> bool as "true"/"false"
+let printfFormatArg (spec: string) (v: Value) : string =
+    match spec, v with
+    | "s", StringValue s -> s
+    | "d", IntValue n    -> string n
+    | "b", BoolValue b   -> if b then "true" else "false"
+    | "s", _ -> failwith "printf: %s requires a string argument"
+    | "d", _ -> failwith "printf: %d requires an int argument"
+    | "b", _ -> failwith "printf: %b requires a bool argument"
+    | s, _   -> failwithf "printf: unknown specifier %%%s" s
+
+/// Substitute format specifiers in fmt left-to-right with collected argument values.
+/// Handles %% -> literal %. Collects chars unchanged for non-% positions.
+let substitutePrintfArgs (fmt: string) (args: Value list) : string =
+    let sb = System.Text.StringBuilder()
+    let mutable i = 0
+    let mutable argIdx = 0
+    let argsArr = List.toArray args
+    while i < fmt.Length do
+        if fmt.[i] = '%' && i + 1 < fmt.Length then
+            let spec = fmt.[i + 1]
+            match spec with
+            | 'd' | 's' | 'b' ->
+                if argIdx < argsArr.Length then
+                    sb.Append(printfFormatArg (string spec) argsArr.[argIdx]) |> ignore
+                    argIdx <- argIdx + 1
+                i <- i + 2
+            | '%' ->
+                sb.Append('%') |> ignore
+                i <- i + 2
+            | _ ->
+                sb.Append(fmt.[i]) |> ignore
+                i <- i + 1
+        else
+            sb.Append(fmt.[i]) |> ignore
+            i <- i + 1
+    sb.ToString()
+
+/// Build a curried BuiltinValue chain for printf with the given format string.
+/// remaining: specifiers left to collect. collected: args gathered so far (in reverse).
+/// When remaining is empty, substitute and flush.
+let rec applyPrintfArgs (fmt: string) (remaining: string list) (collected: Value list) : Value =
+    match remaining with
+    | [] ->
+        let result = substitutePrintfArgs fmt (List.rev collected)
+        stdout.Write(result)
+        stdout.Flush()
+        TupleValue []
+    | _ :: rest ->
+        BuiltinValue (fun argVal ->
+            applyPrintfArgs fmt rest (argVal :: collected))
+
 /// Initial built-in environment: all 6 string functions as BuiltinValue.
 /// Merged into the evaluation environment at startup (Program.fs, Repl.fs).
 /// Curried multi-arg builtins use nested BuiltinValue wrappers.
@@ -98,6 +173,14 @@ let initialBuiltinEnv : Env =
                 stdout.Flush()
                 TupleValue []
             | _ -> failwith "println: expected string argument")
+
+        // printf : string -> ...  (variadic at runtime via curried BuiltinValue chain)
+        "printf", BuiltinValue (fun fmtVal ->
+            match fmtVal with
+            | StringValue fmt ->
+                let specifiers = parsePrintfSpecifiers fmt
+                applyPrintfArgs fmt specifiers []
+            | _ -> failwith "printf: first argument must be a format string")
     ]
 
 /// Module value environment for runtime qualified access
