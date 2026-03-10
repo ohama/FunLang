@@ -33,9 +33,9 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| PIPE-01 | 09 | Pending |
-| PIPE-02 | 09 | Pending |
-| PIPE-03 | 09 | Pending |
+| PIPE-01 | 09 | Complete |
+| PIPE-02 | 09 | Complete |
+| PIPE-03 | 09 | Complete |
 | UNIT-01 | 10 | Pending |
 | UNIT-02 | 10 | Pending |
 | UNIT-03 | 10 | Pending |

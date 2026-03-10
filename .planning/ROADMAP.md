@@ -9,22 +9,10 @@
 
 ---
 
-### Phase 09: Pipe & Composition Operators
+### Phase 09: Pipe & Composition Operators (COMPLETE)
 
 **Goal:** `|>`, `>>`, `<<` 연산자를 추가하여 F# 스타일 파이프라인 프로그래밍 지원
-**Depends on:** v1.0 (complete)
-**Requirements:** PIPE-01, PIPE-02, PIPE-03
-**Plans:** 1 plan
-
-Plans:
-- [ ] 09-01-PLAN.md — Pipe & composition operators (lexer, parser, AST, type check, eval, tests)
-
-**Success Criteria:**
-1. `[1,2,3] |> map (fun x -> x * 2) |> filter (fun x -> x > 2)` evaluates correctly
-2. `let double_then_add = (fun x -> x * 2) >> (fun x -> x + 1)` works
-3. `--emit-ast` shows PipeRight / ComposeRight / ComposeLeft nodes
-4. `--emit-type` infers correct types for pipe/composition chains
-5. All existing tests still pass
+**Status:** COMPLETE — 196 F# + 179 fslit tests passing
 
 ---
 
