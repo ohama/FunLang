@@ -1,0 +1,4 @@
+// Test: --emit-type boolean expression infers bool
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type --expr "true && false"
+// --- Output:
+bool

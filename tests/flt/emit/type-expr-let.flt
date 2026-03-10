@@ -1,0 +1,4 @@
+// Test: --emit-type let expression infers body type
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type --expr "let x = 5 in x + 1"
+// --- Output:
+int
