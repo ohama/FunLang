@@ -14,10 +14,10 @@
 **Goal:** `|>`, `>>`, `<<` 연산자를 추가하여 F# 스타일 파이프라인 프로그래밍 지원
 **Depends on:** v1.0 (complete)
 **Requirements:** PIPE-01, PIPE-02, PIPE-03
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 09 to break down)
+- [ ] 09-01-PLAN.md — Pipe & composition operators (lexer, parser, AST, type check, eval, tests)
 
 **Success Criteria:**
 1. `[1,2,3] |> map (fun x -> x * 2) |> filter (fun x -> x > 2)` evaluates correctly
