@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 
 Milestone: v1.1 Full Coverage Testing
 Phase: 08 of 08 (full-coverage-fslit-testing)
-Plan: 02 of 05
+Plan: 03 of 05
 Status: In progress
-Last activity: 2026-03-10 -- Completed 08-02-PLAN.md
+Last activity: 2026-03-10 -- Completed 08-03-PLAN.md
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: ██░░░ 2/5
+Progress: v1.0 complete (7 phases, 32 plans) + 08: ███░░ 3/5
 
 ## Performance Metrics
 
@@ -38,10 +38,10 @@ Progress: v1.0 complete (7 phases, 32 plans) + 08: ██░░░ 2/5
 
 | 07 | 3 | 8 min | 2.7 min |
 
-| 08 | 2/5 | 4 min | 2.0 min |
+| 08 | 3/5 | 6 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 07-01 (2min), 07-02 (3min), 07-03 (3min), 08-01 (2min), 08-02 (2min)
+- Last 5 plans: 07-02 (3min), 07-03 (3min), 08-01 (2min), 08-02 (2min), 08-03 (2min)
 - Trend: Phase 8 fslit testing in progress. Fast execution.
 
 *Updated after each plan completion*
@@ -219,6 +219,10 @@ Recent decisions affecting current work:
 - Use single quotes for --expr args containing string literals in .flt files (avoids shell escaping issues)
 - type-expr-*.flt naming convention for --emit-type expression tests
 
+**From 08-03 (Declaration AST Emit Tests):**
+- ast-decl-*.flt naming convention for declaration-level AST tests
+- All declaration node types covered: LetDecl, TypeDecl (ADT/GADT/mutual), RecordDecl, ExceptionDecl, ModuleDecl, OpenDecl, NamespaceDecl
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -251,8 +255,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (08-02 complete)
-Stopped at: Completed 08-02-PLAN.md (Type Expression Emit Tests)
+Last session: 2026-03-10 (08-03 complete)
+Stopped at: Completed 08-03-PLAN.md (Declaration AST Emit Tests)
 Resume file: None
 
 ---
