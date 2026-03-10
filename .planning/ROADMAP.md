@@ -16,23 +16,10 @@
 
 ---
 
-### Phase 10: Unit Type
+### Phase 10: Unit Type (COMPLETE)
 
 **Goal:** `()` unit 값과 `unit` 타입을 추가하여 부수효과 표현 지원
-**Depends on:** Phase 09
-**Requirements:** UNIT-01, UNIT-02, UNIT-03
-**Plans:** 2 plans
-
-Plans:
-- [ ] 10-01-PLAN.md — Core unit type wiring (lexer, parser, Type.fs formatType, let _ = grammar)
-- [ ] 10-02-PLAN.md — fslit tests for all unit type features
-
-**Success Criteria:**
-1. `()` parses and evaluates to UnitValue
-2. `let _ = record.field <- 42` works without type errors
-3. `fun () -> 42` works (unit parameter)
-4. `--emit-type` shows `unit` type correctly
-5. Mutable field set returns unit type
+**Status:** COMPLETE — 196 F# + 186 fslit tests passing
 
 ---
 

@@ -36,9 +36,9 @@
 | PIPE-01 | 09 | Complete |
 | PIPE-02 | 09 | Complete |
 | PIPE-03 | 09 | Complete |
-| UNIT-01 | 10 | Pending |
-| UNIT-02 | 10 | Pending |
-| UNIT-03 | 10 | Pending |
+| UNIT-01 | 10 | Complete |
+| UNIT-02 | 10 | Complete |
+| UNIT-03 | 10 | Complete |
 | STR-01 | 11 | Pending |
 | STR-02 | 11 | Pending |
 | STR-03 | 11 | Pending |
