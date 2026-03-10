@@ -53,8 +53,9 @@ let main argv =
     try
         let results = parser.Parse(argv, raiseOnUsage = false)
 
-        // Load prelude for evaluation modes
-        let initialEnv = Prelude.loadPrelude()
+        // Load prelude for evaluation modes, then merge built-in string functions
+        let preludeEnv = Prelude.loadPrelude()
+        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initialBuiltinEnv
 
         // Check if help was requested
         if results.IsUsageRequested then
