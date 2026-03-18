@@ -640,6 +640,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | FunctionValue (param, body, closureEnv) ->
             let callEnv = Map.add param argVal closureEnv
             eval recEnv moduleEnv callEnv body
+        | BuiltinValue fn -> fn argVal
         | _ -> failwith "Type error: |> requires function on right side"
 
     | ComposeRight (left, right, _) ->

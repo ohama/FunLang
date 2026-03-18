@@ -1,6 +1,8 @@
-// Test: pipe operator directly with built-in string function
+// Test: pipe operator directly with built-in print function
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = "hello" |> string_length
+let _ = "hello" |> println
+let result = 0
 // --- Output:
-5
+hello
+0
