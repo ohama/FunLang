@@ -1,0 +1,9 @@
+// Test: function returning a function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let adder n = fun x -> x + n
+let add5 = adder 5
+let add10 = adder 10
+let result = add5 3 + add10 3
+// --- Output:
+21

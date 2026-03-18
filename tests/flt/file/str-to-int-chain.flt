@@ -1,0 +1,8 @@
+// Test: string_to_int and to_string round-trip
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let n = string_to_int "123"
+let s = to_string n
+let result = s
+// --- Output:
+"123"

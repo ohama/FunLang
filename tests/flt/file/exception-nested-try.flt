@@ -1,0 +1,15 @@
+// Test: nested try-with with exception propagation
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception Inner
+exception Outer
+
+let result = try
+    try
+        raise Inner
+    with
+    | Outer -> "caught outer"
+with
+| Inner -> "caught inner"
+// --- Output:
+"caught inner"

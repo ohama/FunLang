@@ -1,0 +1,7 @@
+// Test: string_concat curried function in file mode
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let prefix = string_concat "Mr. "
+let result = prefix "Smith"
+// --- Output:
+"Mr. Smith"

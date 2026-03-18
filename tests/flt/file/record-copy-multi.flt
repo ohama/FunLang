@@ -1,0 +1,10 @@
+// Test: record copy-and-update with multiple fields
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Person = { name: string; age: int; active: bool }
+
+let p = { name = "Alice"; age = 30; active = true }
+let p2 = { p with age = 31; active = false }
+let result = p2.age
+// --- Output:
+31

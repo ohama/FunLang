@@ -1,0 +1,10 @@
+// Test: unit type with side effects sequencing
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = print "step1 "
+let _ = print "step2 "
+let _ = println "step3"
+let result = "done"
+// --- Output:
+step1 step2 step3
+"done"

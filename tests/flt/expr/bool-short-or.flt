@@ -1,0 +1,4 @@
+// Test: short-circuit OR does not evaluate right side when left is true
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "true || (1 / 0 = 0)"
+// --- Output:
+true

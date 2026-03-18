@@ -1,0 +1,10 @@
+// Test: nested record access with chained dot notation
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Inner = { value: int }
+type Outer = { inner: Inner; name: string }
+
+let o = { inner = { value = 42 }; name = "test" }
+let result = o.inner.value
+// --- Output:
+42

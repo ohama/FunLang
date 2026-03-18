@@ -1,0 +1,13 @@
+// Test: module containing exception declaration
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Err =
+    exception BadInput of string
+
+open Err
+let result = try
+    raise (BadInput "oops")
+with
+| BadInput msg -> msg
+// --- Output:
+"oops"

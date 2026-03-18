@@ -1,0 +1,13 @@
+// Test: when guard fallthrough to next handler
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception Val of int
+
+let result = try
+    raise (Val 0)
+with
+| Val x when x > 0 -> "positive"
+| Val x when x < 0 -> "negative"
+| Val _ -> "zero"
+// --- Output:
+"zero"

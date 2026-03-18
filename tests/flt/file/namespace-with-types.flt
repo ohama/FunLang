@@ -1,0 +1,15 @@
+// Test: namespace with type and function declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+namespace App
+
+type Color = Red | Green | Blue
+
+let pick c = match c with
+| Red -> 1
+| Green -> 2
+| Blue -> 3
+
+let result = pick Blue
+// --- Output:
+3

@@ -1,0 +1,10 @@
+// Test: complex let sequencing with dependent bindings
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let a = 10
+let b = a + 5
+let c = a * b
+let d = if c > 100 then c - 100 else c
+let result = d
+// --- Output:
+50

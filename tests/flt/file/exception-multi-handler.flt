@@ -1,0 +1,21 @@
+// Test: multiple exception handlers selecting correct one
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception NotFound
+exception InvalidArg of string
+
+let r1 = try
+    raise NotFound
+with
+| NotFound -> "not found"
+| InvalidArg msg -> msg
+
+let r2 = try
+    raise (InvalidArg "bad")
+with
+| NotFound -> "not found"
+| InvalidArg msg -> msg
+
+let result = r1 + " " + r2
+// --- Output:
+"not found bad"

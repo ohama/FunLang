@@ -1,0 +1,9 @@
+// Test: multiple printf calls with side effects ordering
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = printf "%d " 1
+let _ = printf "%d " 2
+let _ = printf "%d" 3
+let result = 0
+// --- Output:
+1 2 30

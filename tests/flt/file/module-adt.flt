@@ -1,0 +1,15 @@
+// Test: module containing ADT with constructor matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Color =
+    type T = Red | Green | Blue
+    let toInt c =
+        match c with
+        | Red -> 1
+        | Green -> 2
+        | Blue -> 3
+
+open Color
+let result = toInt Green
+// --- Output:
+2

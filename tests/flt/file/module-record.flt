@@ -1,0 +1,12 @@
+// Test: module containing record type and operations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Geo =
+    type Point = { x: int; y: int }
+    let origin = { x = 0; y = 0 }
+
+open Geo
+let p = { x = 3; y = 4 }
+let result = p.x + p.y
+// --- Output:
+7

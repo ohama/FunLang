@@ -1,0 +1,10 @@
+// Test: GADT type refinement narrows to bool in branch
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let toBool e = (match e with | BoolLit b -> b | IntLit _ -> false : bool)
+
+let result = toBool (BoolLit true)
+// --- Output:
+true

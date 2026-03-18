@@ -1,0 +1,13 @@
+// Test: record structural equality comparison
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Point = { x: int; y: int }
+
+let p1 = { x = 1; y = 2 }
+let p2 = { x = 1; y = 2 }
+let p3 = { x = 3; y = 4 }
+let eq = if p1 = p2 then "equal" else "not"
+let neq = if p1 = p3 then "equal" else "not"
+let result = eq + " " + neq
+// --- Output:
+"equal not"

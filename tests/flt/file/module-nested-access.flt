@@ -1,0 +1,10 @@
+// Test: nested module with qualified access chain
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Outer =
+    module Inner =
+        let value = 42
+
+let result = Outer.Inner.value
+// --- Output:
+42

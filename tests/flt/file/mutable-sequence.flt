@@ -1,0 +1,12 @@
+// Test: mutable record field mutation sequence
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Counter = { mutable count: int }
+
+let c = { count = 0 }
+let _ = c.count <- 1
+let _ = c.count <- c.count + 1
+let _ = c.count <- c.count + 1
+let result = c.count
+// --- Output:
+3

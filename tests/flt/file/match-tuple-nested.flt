@@ -1,0 +1,12 @@
+// Test: nested tuple pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify pair = match pair with
+| (0, 0) -> "origin"
+| (0, _) -> "y-axis"
+| (_, 0) -> "x-axis"
+| _ -> "other"
+
+let result = classify (0, 5)
+// --- Output:
+"y-axis"

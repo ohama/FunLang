@@ -1,0 +1,11 @@
+// Test: nested ADT pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Opt 'a = None | Some of 'a
+
+let result = match Some (Some 42) with
+| Some (Some x) -> x
+| Some None -> 0
+| None -> 0
+// --- Output:
+42

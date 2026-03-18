@@ -1,0 +1,10 @@
+// Test: GADT type refinement in pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let eval e = (match e with | IntLit n -> n | BoolLit b -> 0 : int)
+
+let result = eval (IntLit 42)
+// --- Output:
+42

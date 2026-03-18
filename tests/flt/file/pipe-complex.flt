@@ -1,0 +1,9 @@
+// Test: complex pipe chain with multiple functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let double x = x * 2
+let inc x = x + 1
+let square x = x * x
+let result = 3 |> inc |> double |> square
+// --- Output:
+64

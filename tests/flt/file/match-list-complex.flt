@@ -1,0 +1,16 @@
+// Test: complex list pattern matching with multiple cases
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let describe xs = match xs with
+| [] -> "empty"
+| x :: [] -> "single"
+| x :: y :: [] -> "pair"
+| _ -> "many"
+
+let r1 = describe []
+let r2 = describe [1]
+let r3 = describe [1, 2]
+let r4 = describe [1, 2, 3]
+let result = r1 + " " + r2 + " " + r3 + " " + r4
+// --- Output:
+"empty single pair many"

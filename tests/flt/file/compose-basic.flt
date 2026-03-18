@@ -1,0 +1,11 @@
+// Test: basic composition operators in file mode
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let double x = x * 2
+let inc x = x + 1
+let f = double >> inc
+let g = double << inc
+let r1 = f 5
+let result = r1
+// --- Output:
+11
