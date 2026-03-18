@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-10)
+See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.2 Practical Language Features — Phase 12 complete (2/2 plans done)
+**Current focus:** v1.3 Language Completion — Planning next milestone
 
 ## Current Position
 
-Milestone: v1.2 Practical Language Features
-Phase: 12 of ? (printf-output) — COMPLETE
-Plan: 02 of 02 in phase — COMPLETE
-Status: Phase 12 complete; print/println/printf fully implemented and tested; 201 fslit + 196 F# tests passing
-Last activity: 2026-03-10 -- Completed 12-02-PLAN.md
+Milestone: v1.3 Language Completion
+Phase: 13 (tail-call-optimization) — Not started
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-03-18 — v1.2 milestone complete
 
-Progress: v1.0 complete (7 phases, 32 plans) + 08: █████ 5/5 + 09: █ 1/1 ✓ + 10: ██ 2/2 ✓ + 11: ██ 2/2 ✓ + 12: ██ 2/2 ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓
 
 ## Performance Metrics
 
@@ -311,10 +311,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10 (Phase 12 complete, verified)
-Stopped at: Phase 12 complete — v1.2 milestone complete
+Last session: 2026-03-18 (v1.2 milestone archived)
+Stopped at: v1.2 complete — ready for v1.3
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-10 (Phase 12 complete — v1.2 milestone complete)*
+*Last updated: 2026-03-18 (v1.2 milestone complete, archived)*

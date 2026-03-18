@@ -1,5 +1,31 @@
 # Project Milestones: LangThree
 
+## v1.2 Practical Language Features (Shipped: 2026-03-18)
+
+**Delivered:** 파이프/합성 연산자, unit 타입, 문자열 내장 함수, printf 포맷 출력, Prelude 디렉토리 기반 표준 라이브러리, Option 타입
+
+**Phases completed:** 8-12 (12 plans total)
+
+**Key accomplishments:**
+- `|>` 파이프, `>>` `<<` 합성 연산자로 F# 스타일 파이프라인 프로그래밍
+- `()` unit 타입과 `let _ =` 부수효과 시퀀싱
+- BuiltinValue 인프라로 6개 문자열 내장 함수 (string_length, string_concat, string_sub, string_contains, to_string, string_to_int)
+- print/println/printf 포맷 출력 (curried 인자 체인)
+- Prelude/*.fun 디렉토리 로딩 + Option 타입 표준 라이브러리
+- 168→260 fslit 테스트 확장 (전 기능 커버리지)
+
+**Stats:**
+- 23 source files, 9,112 lines of F#
+- 456 tests (196 F# + 260 fslit), all passing
+- 5 phases, 12 plans
+- 8 days from start to ship (2026-03-10 → 2026-03-18)
+
+**Git range:** `test(08-01)` → `fix: handle BuiltinValue in pipe operator`
+
+**What's next:** v1.3 Language Completion (TCO, or-patterns, type aliases, list ranges, mutual recursion)
+
+---
+
 ## v1.0 Core Language (Shipped: 2026-03-10)
 
 **Delivered:** FunLang v6.0을 F# 스타일 문법과 현대적 타입 시스템(ADT, GADT, Records, Modules, Exceptions)을 갖춘 실용 함수형 언어로 변환
