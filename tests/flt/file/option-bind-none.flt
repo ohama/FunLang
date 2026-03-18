@@ -1,0 +1,14 @@
+// Test: Option bind returns None on division by zero
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let optionBind f opt = match opt with
+| Some x -> f x
+| None -> None
+
+let safeDivide a b =
+    if b = 0 then None
+    else Some (a / b)
+
+let result = optionBind (safeDivide 10) (Some 0)
+// --- Output:
+None

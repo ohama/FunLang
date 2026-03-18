@@ -4,41 +4,89 @@ open System.IO
 open FSharp.Text.Lexing
 open Ast
 open Eval
+open TypeCheck
+open Type
+open Diagnostic
+open LangThree.IndentFilter
 
-/// Parse a string into an AST expression
-let private parse (input: string) : Expr =
-    let lexbuf = LexBuffer<char>.FromString(input)
-    Lexer.setInitialPos lexbuf "Prelude.fun"
-    Parser.start Lexer.tokenize lexbuf
+/// Result of loading prelude files — provides environments for both type checking and evaluation
+type PreludeResult = {
+    Env: Env
+    TypeEnv: TypeEnv
+    CtorEnv: ConstructorEnv
+    RecEnv: RecordEnv
+}
 
-/// Recursively collect let/let rec bindings into environment
-/// Handles nested let-in structure: let x = ... in let y = ... in ... in ()
-let rec private evalToEnv (env: Env) (expr: Expr) : Env =
-    match expr with
-    | Let (name, binding, body, _) ->
-        let value = eval Map.empty Map.empty env binding
-        let extendedEnv = Map.add name value env
-        evalToEnv extendedEnv body
-    | LetRec (name, param, funcBody, inExpr, _) ->
-        let funcVal = FunctionValue (param, funcBody, env)
-        let extendedEnv = Map.add name funcVal env
-        evalToEnv extendedEnv inExpr
-    | _ ->
-        // Base case: return accumulated environment (final expr is discarded)
-        env
+let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty }
 
-/// Load the Prelude.fun standard library and return initial environment
-/// Returns emptyEnv if file not found or parse error
-let loadPrelude () : Env =
-    let preludePath = "Prelude.fun"
-    if File.Exists preludePath then
-        try
-            let source = File.ReadAllText preludePath
-            let ast = parse source
-            evalToEnv emptyEnv ast
-        with ex ->
-            eprintfn "Warning: Failed to load Prelude.fun: %s" ex.Message
-            emptyEnv
+/// Parse a string as module with IndentFilter
+let private parseModuleFromString (input: string) (filename: string) : Module =
+    let lexbuf = LexBuffer<char>.FromString input
+    Lexer.setInitialPos lexbuf filename
+    let rec collect () =
+        let tok = Lexer.tokenize lexbuf
+        if tok = Parser.EOF then [Parser.EOF]
+        else tok :: collect ()
+    let rawTokens = collect ()
+    let filteredTokens = filter defaultConfig rawTokens |> Seq.toList
+    let lexbuf2 = LexBuffer<char>.FromString input
+    Lexer.setInitialPos lexbuf2 filename
+    let mutable index = 0
+    let tokenizer (_: LexBuffer<_>) =
+        if index < filteredTokens.Length then
+            let tok = filteredTokens.[index]
+            index <- index + 1
+            tok
+        else
+            Parser.EOF
+    Parser.parseModule tokenizer lexbuf2
+
+/// Extract declarations from a module
+let private getDecls (m: Module) : Decl list =
+    match m with
+    | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+    | EmptyModule _ -> []
+
+/// Load all Prelude/*.fun files and return accumulated environments
+let loadPrelude () : PreludeResult =
+    let preludeDir = "Prelude"
+    if Directory.Exists preludeDir then
+        let files = Directory.GetFiles(preludeDir, "*.fun") |> Array.sort
+        if files.Length = 0 then
+            emptyPrelude
+        else
+            let mutable result = emptyPrelude
+            for file in files do
+                try
+                    let source = File.ReadAllText file
+                    let m = parseModuleFromString source file
+
+                    // Type check with accumulated prelude environments
+                    match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.TypeEnv m with
+                    | Ok (_warnings, ctorEnv, recEnv, _modules, typeEnv) ->
+                        // Accumulate type environments (exclude built-in types)
+                        let newTypeBindings = typeEnv |> Map.filter (fun k _ -> not (Map.containsKey k initialTypeEnv))
+                        let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) result.TypeEnv newTypeBindings
+
+                        // Accumulate constructor and record environments
+                        let mergedCtorEnv = Map.fold (fun acc k v -> Map.add k v acc) result.CtorEnv ctorEnv
+                        let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) result.RecEnv recEnv
+
+                        // Evaluate module declarations for value environment
+                        let decls = getDecls m
+                        let evalEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env Eval.initialBuiltinEnv
+                        let (finalEnv, _moduleEnv) = Eval.evalModuleDecls mergedRecEnv Map.empty evalEnv decls
+                        // Extract only new bindings (not built-ins or previous prelude)
+                        let newValues = finalEnv |> Map.filter (fun k _ ->
+                            not (Map.containsKey k Eval.initialBuiltinEnv) && not (Map.containsKey k result.Env))
+                        let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env newValues
+
+                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv }
+
+                    | Error diag ->
+                        eprintfn "Warning: Type error in %s: %s" file (formatDiagnostic diag)
+                with ex ->
+                    eprintfn "Warning: Failed to load %s: %s" file ex.Message
+            result
     else
-        eprintfn "Warning: Prelude.fun not found, starting with empty environment"
-        emptyEnv
+        emptyPrelude

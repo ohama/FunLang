@@ -1,8 +1,6 @@
-// Test: Option-style ADT with pattern matching
+// Test: Prelude Option with pattern matching
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-type Opt 'a = None | Some of 'a
-
 let getOrDefault opt def = match opt with
 | Some x -> x
 | None -> def

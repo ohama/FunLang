@@ -686,10 +686,13 @@ let rec typeCheckDecls
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
 /// Returns Ok(warnings, RecordEnv, modules) on success, Error(Diagnostic) on type error.
-let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
+let typeCheckModuleWithPrelude
+    (preludeCtorEnv: ConstructorEnv) (preludeRecEnv: RecordEnv) (preludeTypeEnv: TypeEnv)
+    (m: Module)
+    : Result<Diagnostic list * ConstructorEnv * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
     try
         match m with
-        | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty)
+        | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
             // Check for circular module dependencies
             let depGraph = buildDependencyGraph decls
@@ -700,9 +703,15 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<strin
                     Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
             | None -> ()
 
-            let (typeEnv, _ctorEnv, recEnv, modules, warnings) =
-                typeCheckDecls decls initialTypeEnv Map.empty Map.empty Map.empty
-            Ok (warnings, recEnv, modules, typeEnv)
+            let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
+            let (typeEnv, ctorEnv, recEnv, modules, warnings) =
+                typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv Map.empty
+            Ok (warnings, ctorEnv, recEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
+
+let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
+    match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty m with
+    | Ok (warnings, _ctorEnv, recEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
+    | Error e -> Error e

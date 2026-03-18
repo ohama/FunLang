@@ -1,0 +1,12 @@
+// Test: Option defaultValue using Prelude Option
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let defaultValue def opt = match opt with
+| Some x -> x
+| None -> def
+
+let r1 = defaultValue 0 (Some 42)
+let r2 = defaultValue 0 None
+let result = r1 + r2
+// --- Output:
+42

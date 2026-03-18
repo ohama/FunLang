@@ -53,9 +53,9 @@ let main argv =
     try
         let results = parser.Parse(argv, raiseOnUsage = false)
 
-        // Load prelude for evaluation modes, then merge built-in string functions
-        let preludeEnv = Prelude.loadPrelude()
-        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initialBuiltinEnv
+        // Load prelude from Prelude/*.fun directory
+        let prelude = Prelude.loadPrelude()
+        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
 
         // Check if help was requested
         if results.IsUsageRequested then
@@ -106,14 +106,14 @@ let main argv =
                 try
                     let input = File.ReadAllText filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModule m with
-                    | Ok (warnings, _recEnv, _modules, typeEnv) ->
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
+                    | Ok (warnings, _ctorEnv, _recEnv, _modules, typeEnv) ->
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
-                        // Print types of user-defined top-level bindings
+                        // Print types of user-defined top-level bindings (exclude built-in and prelude)
                         let userBindings =
                             typeEnv
-                            |> Map.filter (fun k _ -> not (Map.containsKey k TypeCheck.initialTypeEnv))
+                            |> Map.filter (fun k _ -> not (Map.containsKey k TypeCheck.initialTypeEnv) && not (Map.containsKey k prelude.TypeEnv))
                         userBindings
                         |> Map.iter (fun name scheme ->
                             printfn "%s : %s" name (Type.formatSchemeNormalized scheme))
@@ -182,11 +182,11 @@ let main argv =
                 try
                     let input = File.ReadAllText filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModule m with
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
                     | Error diag ->
                         eprintfn "%s" (formatDiagnostic diag)
                         1
-                    | Ok (warnings, recEnv, _modules, _typeEnv) ->
+                    | Ok (warnings, _ctorEnv, recEnv, _modules, _typeEnv) ->
                         // Print any warnings (non-exhaustive matches, etc.)
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
@@ -196,8 +196,9 @@ let main argv =
                             | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
                             | EmptyModule _ -> []
                         // Evaluate module declarations with module-aware pipeline
+                        let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
                         let finalEnv, moduleEnv =
-                            Eval.evalModuleDecls recEnv Map.empty initialEnv moduleDecls
+                            Eval.evalModuleDecls mergedRecEnv Map.empty initialEnv moduleDecls
                         // Print the last let binding's value (look up from env to avoid re-evaluating side effects)
                         match moduleDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
                         | Some lastName ->

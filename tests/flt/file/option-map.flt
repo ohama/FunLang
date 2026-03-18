@@ -1,0 +1,10 @@
+// Test: Option map function using Prelude Option
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let optionMap f opt = match opt with
+| Some x -> Some (f x)
+| None -> None
+
+let result = optionMap (fun x -> x * 2) (Some 21)
+// --- Output:
+Some 42
