@@ -1,0 +1,8 @@
+// Test: printf with all format specifiers in one call
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = printf "%d %s %b %%\n" 42 "hi" true
+let result = 0
+// --- Output:
+42 hi true %
+0

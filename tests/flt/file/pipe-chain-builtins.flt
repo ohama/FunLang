@@ -1,0 +1,6 @@
+// Test: pipe chain with multiple built-in functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = "hello world" |> string_length |> to_string
+// --- Output:
+"11"

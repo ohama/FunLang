@@ -1,0 +1,6 @@
+// Test: tuple structural equality
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = if (1, "a") = (1, "a") then "eq" else "ne"
+// --- Output:
+"eq"

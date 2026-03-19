@@ -1,0 +1,11 @@
+// Test: record update on nested inner record
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Inner = { value: int }
+type Outer = { inner: Inner; name: string }
+
+let o = { inner = { value = 1 }; name = "test" }
+let o2 = { o with inner = { value = 99 } }
+let result = o2.inner.value
+// --- Output:
+99

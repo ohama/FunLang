@@ -1,0 +1,6 @@
+// Test: composition operator with built-in functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let f = to_string >> string_length in f 12345
+// --- Output:
+5
