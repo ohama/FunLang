@@ -1,0 +1,14 @@
+// Test: string pattern matching - multiple string alternatives
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify s =
+    match s with
+    | "a" -> 1
+    | "b" -> 2
+    | _ -> 0
+let r1 = classify "a"
+let r2 = classify "b"
+let r3 = classify "c"
+let result = r1 + r2 + r3
+// --- Output:
+3

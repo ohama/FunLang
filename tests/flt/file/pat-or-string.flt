@@ -1,0 +1,14 @@
+// Test: or-pattern with string constants
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let greet lang =
+    match lang with
+    | "hello" | "hi" | "hey" -> "english"
+    | "bonjour" | "salut" -> "french"
+    | _ -> "unknown"
+let r1 = greet "hi"
+let r2 = greet "salut"
+let r3 = greet "hola"
+let result = if r1 = "english" then if r2 = "french" then if r3 = "unknown" then true else false else false else false
+// --- Output:
+true

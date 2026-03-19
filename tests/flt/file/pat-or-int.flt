@@ -1,0 +1,12 @@
+// Test: or-pattern with integer constants
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify x =
+    match x with
+    | 1 | 2 | 3 -> "small"
+    | _ -> "big"
+let r1 = classify 2
+let r2 = classify 7
+let result = if r1 = "small" then if r2 = "big" then true else false else false
+// --- Output:
+true

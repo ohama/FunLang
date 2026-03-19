@@ -1,0 +1,9 @@
+// Test: string pattern matching - basic string constant
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    match "hello" with
+    | "hello" -> true
+    | _ -> false
+// --- Output:
+true
