@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.4 Language Completion — Phase 17 complete
+**Current focus:** Planning next milestone (v1.4)
 
 ## Current Position
 
 Milestone: v1.4 Language Completion
-Phase: 17 (type-aliases) — Complete
-Plan: 01 of 01
-Status: Phase complete
-Last activity: 2026-03-19 — Completed 17-01-PLAN.md
+Phase: 18 of ? (list-ranges-mutual-recursion)
+Plan: 01 of 02
+Status: In progress
+Last activity: 2026-03-19 — Completed 18-01-PLAN.md (List Range Syntax)
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 phases 13-17 (8 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (1/2 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44
-- Average duration: 4.5 min
-- Total execution time: ~3.36 hours
+- Total plans completed: 42
+- Average duration: 4.4 min
+- Total execution time: ~3.12 hours
 
 **By Phase:**
 
@@ -43,13 +43,12 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 
 | 13 | 2 | 11 min | 5.5 min |
 | 14 | 2 | 9 min | 4.5 min |
-| 15 | 1 | 7 min | 7.0 min |
-| 16 | 1 | 7 min | 7.0 min |
-| 17 | 1 | 4 min | 4.0 min |
+
+| 18 | 1 | 6 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 14-02 (4min), 15-01 (7min), 16-01 (7min), 17-01 (4min)
-- Trend: Type aliases added. 525 tests (196 F# + 329 fslit).
+- Last 5 plans: 13-02 (5min), 14-01 (5min), 14-02 (4min), 18-01 (6min)
+- Trend: v1.4 milestone started. Range syntax complete.
 
 *Updated after each plan completion*
 
@@ -285,21 +284,6 @@ Recent decisions affecting current work:
 - print/println in --expr mode: side-effect text appears immediately before () result on same line (no newline between)
 - println in --expr mode: side-effect text on its own line, () result on the next line
 
-**From 16-01 (Or-Patterns & String Patterns):**
-- Unparenthesized or-patterns via OrPattern nonterminal in Parser.fsy -- zero LALR(1) conflicts
-- OrPat expanded to multiple rows in compileMatch entry point (top-level expansion only, no nested)
-- StringConst uses #str_ prefix in MatchCompile (consistent with #int_, #bool_)
-- specializeRow in Exhaustive.fs made recursive for or-pattern alternative expansion
-- astPatToCasePat converts Ast.OrPat to Exhaustive.OrPat (already stubbed in CasePat DU)
-
-**From 15-01 (Trampoline TCO):**
-- TailCall of func: Value * arg: Value added to Value DU -- transient sentinel, never compared or printed to user
-- eval takes tailPos: bool; default false, inherit true only for tail positions (Let body, If branches, Match bodies, LetRec inExpr)
-- TryWith body is NOT tail position (exception handler needs stack frame); handler bodies ARE
-- applyFunc helper extracted for App/PipeRight/trampoline reuse; lives in eval/evalMatchClauses `and` group
-- App in tail position returns TailCall immediately; non-tail App trampolines via while loop
-- MatchCompile.evalDecisionTree callback: Env -> bool -> Expr -> Value (tailPos parameter added)
-
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -333,9 +317,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 17-01-PLAN.md (Type Alias Implementation) — Phase 17 complete
+Stopped at: Completed 18-01-PLAN.md (List Range Syntax)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-19 (Phase 17 type-aliases complete)*
+*Last updated: 2026-03-18 (v1.2 milestone complete, archived)*

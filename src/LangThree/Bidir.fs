@@ -475,6 +475,25 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | _ ->
             raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
 
+    // === Phase 18: Range expression ===
+    // [start..stop] or [start..step..stop] — all components must be int, result is int list
+    | Range (startExpr, stopExpr, stepOpt, span) ->
+        let s1, startTy = synth ctorEnv recEnv ctx env startExpr
+        let s2 = unifyWithContext ctx [] span (apply s1 startTy) TInt
+        let s12 = compose s2 s1
+        let s3, stopTy = synth ctorEnv recEnv ctx (applyEnv s12 env) stopExpr
+        let s4 = unifyWithContext ctx [] span (apply s3 stopTy) TInt
+        let s34 = compose s4 s3
+        let sStep =
+            match stepOpt with
+            | Some stepExpr ->
+                let s5, stepTy = synth ctorEnv recEnv ctx (applyEnv (compose s34 s12) env) stepExpr
+                let s6 = unifyWithContext ctx [] span (apply s5 stepTy) TInt
+                compose s6 s5
+            | None -> empty
+        let finalS = compose sStep (compose s34 s12)
+        (finalS, TList TInt)
+
     // === LetPat ===
     | LetPat (pat, value, body, span) ->
         let s1, valueTy = synth ctorEnv recEnv ctx env value

@@ -67,6 +67,8 @@ let formatToken (token: Parser.token) : string =
     | Parser.RBRACE -> "RBRACE"
     | Parser.SEMICOLON -> "SEMICOLON"
     | Parser.DOT -> "DOT"
+    // Phase 18 (Ranges): DOTDOT token
+    | Parser.DOTDOT -> "DOTDOT"
     // Phase 3 (Records-06): Mutable field tokens
     | Parser.MUTABLE -> "MUTABLE"
     | Parser.LARROW -> "LARROW"
@@ -176,6 +178,11 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.PipeRight (l, r, _) -> sprintf "PipeRight (%s, %s)" (formatAst l) (formatAst r)
     | Ast.ComposeRight (l, r, _) -> sprintf "ComposeRight (%s, %s)" (formatAst l) (formatAst r)
     | Ast.ComposeLeft (l, r, _) -> sprintf "ComposeLeft (%s, %s)" (formatAst l) (formatAst r)
+    // Phase 18 (Ranges)
+    | Ast.Range (start, stop, stepOpt, _) ->
+        match stepOpt with
+        | None -> sprintf "Range (%s, %s)" (formatAst start) (formatAst stop)
+        | Some step -> sprintf "Range (%s, %s, %s)" (formatAst start) (formatAst stop) (formatAst step)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

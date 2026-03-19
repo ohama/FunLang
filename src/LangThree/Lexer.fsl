@@ -118,6 +118,8 @@ rule tokenize = parse
     | '{'           { LBRACE }
     | '}'           { RBRACE }
     | ';'           { SEMICOLON }
+    // Phase 18 (Ranges): DOTDOT must come before DOT (longest match)
+    | ".."          { DOTDOT }
     | '.'           { DOT }
     | eof           { EOF }                       // End of input
 

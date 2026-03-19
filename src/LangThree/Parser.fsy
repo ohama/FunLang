@@ -48,6 +48,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token TYPE OF AND_KW
 // Phase 3 (Records): Record syntax tokens
 %token LBRACE RBRACE SEMICOLON DOT
+// Phase 18 (Ranges): DOTDOT token for range syntax
+%token DOTDOT
 // Phase 3 (Records-06): Mutable field tokens
 %token MUTABLE LARROW
 // Phase 5 (Modules): Module system tokens
@@ -200,6 +202,11 @@ Atom:
     | LBRACKET RBRACKET                      { EmptyList(ruleSpan parseState 1 2) }
     | LBRACKET Expr RBRACKET                 { List([$2], ruleSpan parseState 1 3) }
     | LBRACKET Expr COMMA ExprList RBRACKET  { List($2 :: $4, ruleSpan parseState 1 5) }
+    // Phase 18 (Ranges): Range syntax [start..stop] and [start..step..stop]
+    | LBRACKET Expr DOTDOT Expr RBRACKET
+        { Range($2, $4, None, ruleSpan parseState 1 5) }
+    | LBRACKET Expr DOTDOT Expr DOTDOT Expr RBRACKET
+        { Range($2, $6, Some $4, ruleSpan parseState 1 7) }
     // Phase 3 (Records): Field access (left-recursive for chaining: a.b.c)
     | Atom DOT IDENT                         { FieldAccess($1, $3, ruleSpan parseState 1 3) }
     // Phase 3 (Records): Record creation and copy-and-update
