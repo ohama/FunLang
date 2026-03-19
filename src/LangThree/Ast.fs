@@ -103,6 +103,8 @@ type Expr =
     | PipeRight of left: Expr * right: Expr * span: Span       // x |> f
     | ComposeRight of left: Expr * right: Expr * span: Span    // f >> g
     | ComposeLeft of left: Expr * right: Expr * span: Span     // f << g
+    // Phase 18 (Ranges): List range syntax
+    | Range of start: Expr * stop: Expr * step: Expr option * Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -260,6 +262,7 @@ let spanOf (expr: Expr) : Span =
     | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) | SetField(_, _, _, s) -> s
     | Raise(_, s) | TryWith(_, _, s) -> s
     | PipeRight(_, _, s) | ComposeRight(_, _, s) | ComposeLeft(_, _, s) -> s
+    | Range(_, _, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
