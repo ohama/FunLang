@@ -594,6 +594,56 @@ let rec typeCheckDecls
                 let matchWarnings = checkMatchWarnings cEnv body
                 (env', cEnv, rEnv, mods, warns @ matchWarnings)
 
+            | LetRecDecl(bindings, _) ->
+                // Phase 18: Mutual recursive function type checking
+                // 1. Create fresh type variables for each function
+                let funcTypes =
+                    bindings |> List.map (fun (name, param, _body, _) ->
+                        let paramTy = Infer.freshVar()
+                        let retTy = Infer.freshVar()
+                        (name, param, TArrow(paramTy, retTy), paramTy))
+
+                // 2. Add all functions to env with monomorphic types
+                let recEnvTC =
+                    funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
+                        Map.add name (Scheme([], funcTy)) acc) env
+
+                // 3. Type-check each body in the extended env and unify
+                let finalSubst =
+                    List.map2 (fun (_, _, body, _) (_, param, funcTy, paramTy) ->
+                        // Add param to env
+                        let bodyEnv = Map.add param (Scheme([], paramTy)) recEnvTC
+                        // Resolve qualified module access
+                        let refsInBody = collectModuleRefs mods body
+                        let rewrittenBody = rewriteModuleAccess mods body
+                        let (envForSynth, ctorForSynth, recForSynth) =
+                            if Set.isEmpty refsInBody then (bodyEnv, cEnv, rEnv)
+                            else mergeModuleExportsForTypeCheck mods refsInBody bodyEnv cEnv rEnv
+                        let s, bodyTy = Bidir.synth ctorForSynth recForSynth [] envForSynth rewrittenBody
+                        // Extract expected return type from funcTy
+                        let expectedRetTy =
+                            match apply s funcTy with
+                            | TArrow(_, ret) -> ret
+                            | t -> t
+                        let s2 = unify (apply s bodyTy) expectedRetTy
+                        compose s2 s
+                    ) bindings funcTypes
+                    |> List.fold compose empty
+
+                // 4. Generalize all function types and add to env
+                let env' = applyEnv finalSubst env
+                let env'' =
+                    funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
+                        let resolvedTy = apply finalSubst funcTy
+                        let scheme = generalize env' resolvedTy
+                        Map.add name scheme acc) env'
+
+                // Collect match warnings from all bodies
+                let matchWarnings =
+                    bindings |> List.collect (fun (_, _, body, _) -> checkMatchWarnings cEnv body)
+
+                (env'', cEnv, rEnv, mods, warns @ matchWarnings)
+
             | Decl.TypeDecl _ | Decl.RecordTypeDecl _ | ExceptionDecl _ ->
                 // Already processed in first pass (ExceptionDecl: TODO in Plan 02)
                 (env, cEnv, rEnv, mods, warns)
