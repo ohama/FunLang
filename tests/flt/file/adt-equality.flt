@@ -1,0 +1,10 @@
+// Test: ADT structural equality (Option values)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let eq1 = if Some 1 = Some 1 then "eq" else "ne"
+let eq2 = if Some 1 = Some 2 then "eq" else "ne"
+let eq3 = if None = None then "eq" else "ne"
+let eq4 = if Some 1 <> None then "ne" else "eq"
+let result = eq1 + " " + eq2 + " " + eq3 + " " + eq4
+// --- Output:
+"eq ne eq ne"

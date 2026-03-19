@@ -1,0 +1,8 @@
+// Test: zip two lists into pairs
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let rec zip xs = fun ys -> match xs with | [] -> [] | x :: xt -> match ys with | [] -> [] | y :: yt -> (x, y) :: zip xt yt
+    in zip [1, 2, 3] [10, 20, 30]
+// --- Output:
+[(1, 10), (2, 20), (3, 30)]

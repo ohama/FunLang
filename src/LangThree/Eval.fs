@@ -434,28 +434,16 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | IntValue l, IntValue r -> BoolValue (l >= r)
         | _ -> failwith "Type error: >= requires integer operands"
 
-    // Equal and NotEqual work on both int and bool (same type required)
+    // Equal and NotEqual delegate to valuesEqual for all value types
     | Equal (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
-        | IntValue l, IntValue r -> BoolValue (l = r)
-        | BoolValue l, BoolValue r -> BoolValue (l = r)
-        | StringValue l, StringValue r -> BoolValue (l = r)
-        | TupleValue l, TupleValue r -> BoolValue (valuesEqual (TupleValue l) (TupleValue r))
-        | ListValue l, ListValue r -> BoolValue (valuesEqual (ListValue l) (ListValue r))
-        | RecordValue (t1, f1), RecordValue (t2, f2) ->
-            BoolValue (valuesEqual (RecordValue (t1, f1)) (RecordValue (t2, f2)))
-        | _ -> failwith "Type error: = requires operands of same type"
+        let l = eval recEnv moduleEnv env left
+        let r = eval recEnv moduleEnv env right
+        BoolValue (valuesEqual l r)
 
     | NotEqual (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
-        | IntValue l, IntValue r -> BoolValue (l <> r)
-        | BoolValue l, BoolValue r -> BoolValue (l <> r)
-        | StringValue l, StringValue r -> BoolValue (l <> r)
-        | TupleValue l, TupleValue r -> BoolValue (not (valuesEqual (TupleValue l) (TupleValue r)))
-        | ListValue l, ListValue r -> BoolValue (not (valuesEqual (ListValue l) (ListValue r)))
-        | RecordValue (t1, f1), RecordValue (t2, f2) ->
-            BoolValue (not (valuesEqual (RecordValue (t1, f1)) (RecordValue (t2, f2))))
-        | _ -> failwith "Type error: <> requires operands of same type"
+        let l = eval recEnv moduleEnv env left
+        let r = eval recEnv moduleEnv env right
+        BoolValue (not (valuesEqual l r))
 
     // Logical operators - short-circuit evaluation
     | And (left, right, _) ->

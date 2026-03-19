@@ -1,0 +1,18 @@
+// Test: tree sort algorithm using BST
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Tree = Leaf | Node of Tree * int * Tree
+
+let sorted =
+    let rec treeInsert x = fun t -> match t with | Leaf -> Node (Leaf, x, Leaf) | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
+    in
+    let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
+    in
+    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
+    in
+    let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> app (inorder l) (v :: inorder r)
+    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+
+let result = sorted
+// --- Output:
+[1, 2, 3, 5, 7, 8, 9]

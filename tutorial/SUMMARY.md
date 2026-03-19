@@ -22,6 +22,10 @@
 - [Pipes and Composition](10-pipes-and-composition.md)
 - [Strings and Output](11-strings-and-output.md)
 
+# 심화
+
+- [Algorithms and Data Structures](14-algorithms.md)
+
 # 참조
 
 - [Prelude and Standard Library](12-prelude.md)

@@ -1,0 +1,18 @@
+// Test: Peano arithmetic with algebraic data types
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Nat = Zero | Succ of Nat
+
+let result =
+    let rec toInt n = match n with | Zero -> 0 | Succ p -> 1 + toInt p
+    in
+    let rec add a = fun b -> match a with | Zero -> b | Succ p -> Succ (add p b)
+    in
+    let rec mul a = fun b -> match a with | Zero -> Zero | Succ p -> add b (mul p b)
+    in
+    let three = Succ (Succ (Succ Zero))
+    in
+    let four = Succ (Succ (Succ (Succ Zero)))
+    in toInt (mul three four)
+// --- Output:
+12

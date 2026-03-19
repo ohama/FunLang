@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-789ab13d.js";
+            window.path_to_searchindex_js = "searchindex-e74fd1ab.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-2ec4169e.js"></script>
+        <script src="toc-917490ca.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1641,6 +1641,389 @@ height: 600
 <li><strong><code>to_string</code></strong> accepts int, bool, and string (polymorphic type, runtime-checked)</li>
 <li><strong><code>printf</code></strong> is curried: each <code>%</code> specifier consumes one additional argument</li>
 <li><strong>Sequencing:</strong> Use <code>let _ =</code> at module level to chain side effects</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="chapter-14-algorithms-and-data-structures"><a class="header" href="#chapter-14-algorithms-and-data-structures">Chapter 14: Algorithms and Data Structures</a></h1>
+<p>This chapter demonstrates how to implement classic algorithms and data structures
+in LangThree. If you have experience with functional programming in OCaml, Haskell,
+or similar languages, you will find the patterns familiar – but LangThree has its
+own idioms worth understanding.</p>
+<h2 id="recursive-patterns-in-langthree"><a class="header" href="#recursive-patterns-in-langthree">Recursive Patterns in LangThree</a></h2>
+<p>All recursion in LangThree uses <code>let rec</code> at the <strong>expression level</strong> with <code>in</code>.
+There is no <code>let rec</code> at module level. Recursive functions are defined inside an
+expression and chained together:</p>
+<pre><code>let result =
+    let rec f x = ...
+    in f 10
+</code></pre>
+<p>When a recursive function needs <strong>two or more parameters</strong>, the second parameter
+is passed via a closure:</p>
+<pre><code>let result =
+    let rec f x = fun y -&gt; ... f something_else another_thing ...
+    in f 1 2
+</code></pre>
+<p>Multiple recursive helpers are chained with <code>let rec ... in let rec ... in</code>:</p>
+<pre><code>let answer =
+    let rec helper1 x = ...
+    in
+    let rec helper2 y = ... helper1 ... helper2 ...
+    in helper2 start
+</code></pre>
+<p>This pattern appears throughout the chapter. Each algorithm is self-contained:
+define helpers with <code>let rec ... in</code>, then call the entry point at the end.</p>
+<h2 id="number-theory"><a class="header" href="#number-theory">Number Theory</a></h2>
+<h3 id="factorial"><a class="header" href="#factorial">Factorial</a></h3>
+<p>The classic recursive factorial. Note that <code>let rec</code> must appear inside an
+expression – here it lives inside the <code>let result = ...</code> binding:</p>
+<pre><code>$ cat factorial.l3
+let result =
+    let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1)
+    in fact 10
+
+$ langthree factorial.l3
+3628800
+</code></pre>
+<p><code>fact 10</code> computes 10 * 9 * 8 * … * 1 = 3628800.</p>
+<h3 id="fibonacci"><a class="header" href="#fibonacci">Fibonacci</a></h3>
+<p>Naive recursive Fibonacci. The double recursion makes this exponential, but it
+demonstrates the pattern clearly:</p>
+<pre><code>$ cat fibonacci.l3
+let result =
+    let rec fib n = if n &lt;= 1 then n else fib (n - 1) + fib (n - 2)
+    in fib 10
+
+$ langthree fibonacci.l3
+55
+</code></pre>
+<p>The sequence is 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, <strong>55</strong>.</p>
+<h3 id="gcd-and-lcm"><a class="header" href="#gcd-and-lcm">GCD and LCM</a></h3>
+<p>Euclid’s algorithm for greatest common divisor, then least common multiple
+derived from it. Since <code>gcd</code> needs two parameters and is recursive, the second
+parameter comes via a closure (<code>fun b -&gt; ...</code>):</p>
+<pre><code>$ cat gcd_lcm.l3
+let result =
+    let rec gcd a = fun b -&gt; if b = 0 then a else gcd b (a - (a / b) * b)
+    in
+    let lcm = fun a -&gt; fun b -&gt; a / gcd a b * b
+    in (gcd 48 36, lcm 12 18)
+
+$ langthree gcd_lcm.l3
+(12, 36)
+</code></pre>
+<p><code>gcd 48 36</code> reduces: gcd 48 36 -&gt; gcd 36 12 -&gt; gcd 12 0 -&gt; 12.
+<code>lcm 12 18</code> computes 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36.</p>
+<p>Note <code>a - (a / b) * b</code> is the modulo operation, since LangThree uses integer
+division for <code>/</code>.</p>
+<h3 id="exponentiation"><a class="header" href="#exponentiation">Exponentiation</a></h3>
+<p>Compute <code>base^exp</code> by repeated multiplication:</p>
+<pre><code>$ cat power.l3
+let result =
+    let rec power base = fun exp -&gt; if exp = 0 then 1 else base * power base (exp - 1)
+    in power 2 10
+
+$ langthree power.l3
+1024
+</code></pre>
+<p><code>power 2 10</code> computes 2^10 = 1024. The two-parameter recursive pattern is the
+same as <code>gcd</code>: the first parameter <code>base</code> is the <code>let rec</code> parameter, the second
+<code>exp</code> arrives via <code>fun exp -&gt; ...</code>.</p>
+<h2 id="list-utilities"><a class="header" href="#list-utilities">List Utilities</a></h2>
+<h3 id="reverse"><a class="header" href="#reverse">Reverse</a></h3>
+<p>Reverse a list using a tail-recursive accumulator. The accumulator <code>acc</code> is the
+<code>let rec</code> parameter; the list <code>xs</code> arrives via closure:</p>
+<pre><code>$ cat reverse.l3
+let result =
+    let rec rev acc = fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; rev (h :: acc) t
+    in rev [] [1, 2, 3, 4, 5]
+
+$ langthree reverse.l3
+[5, 4, 3, 2, 1]
+</code></pre>
+<p>This is tail-recursive: each step conses the head onto the accumulator and
+recurses on the tail. No stack growth.</p>
+<h3 id="flatten"><a class="header" href="#flatten">Flatten</a></h3>
+<p>Flatten a list of lists into a single list. This requires an <code>app</code> (append)
+helper:</p>
+<pre><code>$ cat flatten.l3
+let result =
+    let rec app xs = fun ys -&gt; match xs with | [] -&gt; ys | h :: t -&gt; h :: app t ys
+    in
+    let rec flatten xss = match xss with | [] -&gt; [] | xs :: rest -&gt; app xs (flatten rest)
+    in flatten [[1, 2], [3, 4, 5], [], [6]]
+
+$ langthree flatten.l3
+[1, 2, 3, 4, 5, 6]
+</code></pre>
+<p><code>flatten</code> processes each sub-list, appending it to the flattened rest.</p>
+<h3 id="zip"><a class="header" href="#zip">Zip</a></h3>
+<p>Combine two lists element-wise into a list of pairs. The nested match handles
+the case where either list runs out:</p>
+<pre><code>$ cat zip.l3
+let result =
+    let rec zip xs = fun ys -&gt; match xs with | [] -&gt; [] | x :: xt -&gt; match ys with | [] -&gt; [] | y :: yt -&gt; (x, y) :: zip xt yt
+    in zip [1, 2, 3] [10, 20, 30]
+
+$ langthree zip.l3
+[(1, 10), (2, 20), (3, 30)]
+</code></pre>
+<p>When the lists have different lengths, <code>zip</code> stops at the shorter one.</p>
+<h3 id="maximum-of-a-list"><a class="header" href="#maximum-of-a-list">Maximum of a List</a></h3>
+<p>Find the maximum element. The base case matches a singleton list <code>x :: []</code>:</p>
+<pre><code>$ cat max_list.l3
+let result =
+    let rec maxList xs = match xs with | x :: [] -&gt; x | x :: rest -&gt; let m = maxList rest in if x &gt; m then x else m
+    in maxList [3, 7, 2, 9, 1, 8, 4]
+
+$ langthree max_list.l3
+9
+</code></pre>
+<h3 id="fold-left"><a class="header" href="#fold-left">Fold (Left)</a></h3>
+<p>A left fold applies a binary function across a list, threading an accumulator.
+This is the workhorse of functional programming – many other operations can be
+expressed as folds:</p>
+<pre><code>$ cat fold.l3
+let result =
+    let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+    in fold (fun acc -&gt; fun x -&gt; acc + x * x) 0 [1, 2, 3, 4, 5]
+
+$ langthree fold.l3
+55
+</code></pre>
+<p>The fold computes 0 + 1<em>1 + 2</em>2 + 3<em>3 + 4</em>4 + 5*5 = 1 + 4 + 9 + 16 + 25 = 55.</p>
+<p><code>fold</code> takes three parameters via nested closures: the function <code>f</code> is the
+<code>let rec</code> parameter, <code>acc</code> arrives via the first <code>fun</code>, and <code>xs</code> via the second.</p>
+<h3 id="map-via-fold"><a class="header" href="#map-via-fold">Map via Fold</a></h3>
+<p>Once you have <code>fold</code>, you can build <code>map</code> on top of it:</p>
+<pre><code>$ cat map_via_fold.l3
+let result =
+    let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+    in
+    let rec rev acc = fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; rev (h :: acc) t
+    in
+    let map f = fun xs -&gt; rev [] (fold (fun acc -&gt; fun x -&gt; f x :: acc) [] xs)
+    in map (fun x -&gt; x * x) [1, 2, 3, 4, 5]
+
+$ langthree map_via_fold.l3
+[1, 4, 9, 16, 25]
+</code></pre>
+<p>The fold builds the result in reverse, so we reverse it at the end.</p>
+<h3 id="length"><a class="header" href="#length">Length</a></h3>
+<p>Count the elements of a list:</p>
+<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: t -&gt; 1 + length t in length [10, 20, 30, 40]
+4
+</code></pre>
+<h2 id="sorting-algorithms"><a class="header" href="#sorting-algorithms">Sorting Algorithms</a></h2>
+<p>Sorting is a great lens for comparing algorithmic approaches. All three sorts
+below take an unsorted list and return a new sorted list – no mutation involved.</p>
+<h3 id="insertion-sort"><a class="header" href="#insertion-sort">Insertion Sort</a></h3>
+<p>Build a sorted list by inserting each element into its correct position.
+Two recursive helpers: <code>insert</code> places one element, <code>sort</code> processes the list:</p>
+<pre><code>$ cat insertion_sort.l3
+let sorted =
+    let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
+    in
+    let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
+    in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+
+$ langthree insertion_sort.l3
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+<p><code>insert</code> walks the sorted list until it finds the right spot. <code>sort</code> recursively
+sorts the tail, then inserts the head. O(n^2) worst case, but simple and stable.</p>
+<h3 id="quicksort"><a class="header" href="#quicksort">Quicksort</a></h3>
+<p>Partition around a pivot, recursively sort each half, and append. This needs
+three helpers – <code>filter</code>, <code>app</code> (append), and <code>qsort</code> itself:</p>
+<pre><code>$ cat quicksort.l3
+let sorted =
+    let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+    in
+    let rec app xs = fun ys -&gt; match xs with | [] -&gt; ys | h :: t -&gt; h :: app t ys
+    in
+    let rec qsort xs = match xs with | [] -&gt; [] | pivot :: rest -&gt; let lo = filter (fun x -&gt; x &lt; pivot) rest in let hi = filter (fun x -&gt; x &gt;= pivot) rest in app (qsort lo) (pivot :: qsort hi)
+    in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+
+$ langthree quicksort.l3
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+<p>The pivot is simply the head of the list. <code>filter</code> selects elements less than
+the pivot (<code>lo</code>) and elements greater than or equal (<code>hi</code>). The sorted result
+is <code>qsort lo ++ [pivot] ++ qsort hi</code>.</p>
+<h3 id="merge-sort"><a class="header" href="#merge-sort">Merge Sort</a></h3>
+<p>Split the list in half, sort each half, then merge. This requires several
+helpers – <code>length</code>, <code>take</code>, <code>drop</code>, <code>merge</code>, and <code>msort</code>:</p>
+<pre><code>$ cat merge_sort.l3
+let sorted =
+    let rec length xs = match xs with | [] -&gt; 0 | _ :: t -&gt; 1 + length t
+    in
+    let rec take n = fun xs -&gt; if n = 0 then [] else match xs with | [] -&gt; [] | h :: t -&gt; h :: take (n - 1) t
+    in
+    let rec drop n = fun xs -&gt; if n = 0 then xs else match xs with | [] -&gt; [] | _ :: t -&gt; drop (n - 1) t
+    in
+    let rec merge xs = fun ys -&gt; match xs with | [] -&gt; ys | x :: xt -&gt; match ys with | [] -&gt; xs | y :: yt -&gt; if x &lt;= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+    in
+    let rec msort xs = let len = length xs in if len &lt;= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
+    in msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+
+$ langthree merge_sort.l3
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+<p>This is a top-down merge sort. <code>take</code> and <code>drop</code> split the list at the midpoint.
+<code>merge</code> interleaves two sorted lists by comparing heads. O(n log n) guaranteed.</p>
+<p>Notice how the <code>let rec ... in</code> chain builds up a library of helpers. Each later
+function can call all previous ones. This is the idiomatic LangThree pattern for
+non-trivial programs.</p>
+<h2 id="tree-data-structures"><a class="header" href="#tree-data-structures">Tree Data Structures</a></h2>
+<h3 id="binary-search-tree-and-tree-sort"><a class="header" href="#binary-search-tree-and-tree-sort">Binary Search Tree and Tree Sort</a></h3>
+<p>Define a binary tree type, then implement insert, build, and in-order traversal.
+The result is a tree-based sort:</p>
+<pre><code>$ cat tree_sort.l3
+type Tree = Leaf | Node of Tree * int * Tree
+
+let sorted =
+    let rec treeInsert x = fun t -&gt; match t with | Leaf -&gt; Node (Leaf, x, Leaf) | Node (l, v, r) -&gt; if x &lt;= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
+    in
+    let rec buildTree xs = match xs with | [] -&gt; Leaf | h :: t -&gt; treeInsert h (buildTree t)
+    in
+    let rec app xs = fun ys -&gt; match xs with | [] -&gt; ys | h :: t -&gt; h :: app t ys
+    in
+    let rec inorder t = match t with | Leaf -&gt; [] | Node (l, v, r) -&gt; app (inorder l) (v :: inorder r)
+    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+
+$ langthree tree_sort.l3
+[1, 2, 3, 5, 7, 8, 9]
+</code></pre>
+<p>The <code>Tree</code> type is an algebraic data type with two constructors: <code>Leaf</code> (empty)
+and <code>Node</code> carrying a left subtree, a value, and a right subtree.</p>
+<p><code>treeInsert</code> places a value into the BST by comparing with the node value and
+recursing left or right. <code>buildTree</code> folds a list into a tree by inserting each
+element. <code>inorder</code> traversal produces a sorted list.</p>
+<h3 id="peano-naturals-and-church-style-arithmetic"><a class="header" href="#peano-naturals-and-church-style-arithmetic">Peano Naturals and Church-Style Arithmetic</a></h3>
+<p>Natural numbers as an algebraic type, with addition and multiplication defined
+by structural recursion:</p>
+<pre><code>$ cat peano.l3
+type Nat = Zero | Succ of Nat
+
+let result =
+    let rec toInt n = match n with | Zero -&gt; 0 | Succ p -&gt; 1 + toInt p
+    in
+    let rec add a = fun b -&gt; match a with | Zero -&gt; b | Succ p -&gt; Succ (add p b)
+    in
+    let rec mul a = fun b -&gt; match a with | Zero -&gt; Zero | Succ p -&gt; add b (mul p b)
+    in
+    let three = Succ (Succ (Succ Zero))
+    in
+    let four = Succ (Succ (Succ (Succ Zero)))
+    in toInt (mul three four)
+
+$ langthree peano.l3
+12
+</code></pre>
+<p><code>add</code> peels off <code>Succ</code> from <code>a</code> and wraps the result: add (Succ (Succ Zero)) b
+= Succ (Succ b). <code>mul</code> uses repeated addition: mul (Succ (Succ Zero)) b =
+add b (add b Zero).</p>
+<p>Three times four is twelve – verified by converting back to <code>int</code> with <code>toInt</code>.</p>
+<p>This example shows how LangThree’s algebraic types and pattern matching make it
+natural to define and compute with custom numeric representations.</p>
+<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
+<h3 id="balanced-parentheses-checker"><a class="header" href="#balanced-parentheses-checker">Balanced Parentheses Checker</a></h3>
+<p>Check whether a sequence of parentheses is balanced. Since LangThree does not
+have a char type, we encode <code>(</code> as 1 and <code>)</code> as 0:</p>
+<pre><code>$ cat balanced.l3
+let result =
+    let rec check depth = fun cs -&gt; match cs with | [] -&gt; depth = 0 | c :: rest -&gt; if c = 1 then check (depth + 1) rest else if c = 0 then if depth &gt; 0 then check (depth - 1) rest else false else check depth rest
+    in (check 0 [1, 1, 0, 0], check 0 [1, 0, 0, 1])
+
+$ langthree balanced.l3
+(true, false)
+</code></pre>
+<p>The first sequence <code>(())</code> is balanced, so <code>check</code> returns <code>true</code>. The second
+sequence <code>())( </code> has a closing paren before a matching open, so <code>check</code> returns
+<code>false</code> immediately when <code>depth</code> would go negative.</p>
+<p>The algorithm is a single pass: increment depth on <code>(</code>, decrement on <code>)</code>, fail
+if depth goes below zero, and succeed only if depth is zero at the end.</p>
+<h3 id="option-chaining-with-safe-division"><a class="header" href="#option-chaining-with-safe-division">Option Chaining with Safe Division</a></h3>
+<p>Use the Prelude <code>Option</code> type to chain computations that might fail:</p>
+<pre><code>$ cat safe_div.l3
+let safediv a = fun b -&gt; if b = 0 then None else Some (a / b)
+
+let bind opt = fun f -&gt;
+    match opt with
+    | None -&gt; None
+    | Some v -&gt; f v
+
+let result =
+    let step1 = safediv 100 5 in
+    let step2 = bind step1 (fun x -&gt; safediv x 4) in
+    let step3 = bind step2 (fun x -&gt; safediv x 0) in
+    (step1, step2, step3)
+
+$ langthree safe_div.l3
+(Some 20, Some 5, None)
+</code></pre>
+<p><code>safediv 100 5</code> gives <code>Some 20</code>. Dividing that by 4 gives <code>Some 5</code>. Dividing by
+zero gives <code>None</code>, and the <code>None</code> propagates through subsequent <code>bind</code> calls.</p>
+<h3 id="expression-evaluator"><a class="header" href="#expression-evaluator">Expression Evaluator</a></h3>
+<p>Build a small arithmetic expression tree and evaluate it:</p>
+<pre><code>$ cat expr_eval.l3
+type Expr =
+    | Lit of int
+    | Add of Expr * Expr
+    | Mul of Expr * Expr
+
+let result =
+    let rec eval e = match e with | Lit n -&gt; n | Add (a, b) -&gt; eval a + eval b | Mul (a, b) -&gt; eval a * eval b
+    in eval (Add (Mul (Lit 3, Lit 4), Lit 5))
+
+$ langthree expr_eval.l3
+17
+</code></pre>
+<p><code>Mul (Lit 3, Lit 4)</code> evaluates to 12, then <code>Add (_, Lit 5)</code> gives 17. The
+recursive evaluator mirrors the tree structure exactly – one branch per
+constructor.</p>
+<h3 id="counting-with-filter-and-length"><a class="header" href="#counting-with-filter-and-length">Counting with Filter and Length</a></h3>
+<p>Combine helpers to count elements satisfying a predicate:</p>
+<pre><code>$ cat count_evens.l3
+let result =
+    let rec length xs = match xs with | [] -&gt; 0 | _ :: t -&gt; 1 + length t
+    in
+    let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+    in
+    let countWhere pred = fun xs -&gt; length (filter pred xs)
+    in countWhere (fun x -&gt; x - (x / 2) * 2 = 0) [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+$ langthree count_evens.l3
+5
+</code></pre>
+<p>There are 5 even numbers in 1..10. The predicate <code>x - (x / 2) * 2 = 0</code> checks
+evenness using integer arithmetic (since there is no <code>mod</code> operator).</p>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Pattern</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>Single-param recursion</td><td><code>let rec f x = ... f ... in f start</code></td></tr>
+<tr><td>Multi-param recursion</td><td><code>let rec f x = fun y -&gt; ... f ... in f a b</code></td></tr>
+<tr><td>Chained helpers</td><td><code>let rec h1 ... in let rec h2 ... in h2 start</code></td></tr>
+<tr><td>Accumulator pattern</td><td><code>let rec go acc = fun xs -&gt; ... go (acc') t in go init list</code></td></tr>
+<tr><td>ADT + recursion</td><td><code>type T = ... let rec f t = match t with ...</code></td></tr>
+<tr><td>Option chaining</td><td><code>bind (safediv a b) (fun x -&gt; safediv x c)</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Key takeaways:</p>
+<ul>
+<li><strong><code>let rec</code> is expression-level only.</strong> All recursion lives inside a
+<code>let name = let rec ... in ...</code> binding.</li>
+<li><strong>Multi-parameter recursive functions</strong> use <code>fun</code> for the second parameter
+onward: <code>let rec f x = fun y -&gt; ...</code>.</li>
+<li><strong>Chain helpers</strong> with <code>let rec ... in let rec ... in</code>. Each helper can call
+all previously defined helpers.</li>
+<li><strong>Algebraic data types</strong> combine naturally with recursive functions for trees,
+expression languages, and custom numeric types.</li>
+<li><strong>The Prelude <code>Option</code> type</strong> provides <code>None</code> and <code>Some</code> for safe computation
+without exceptions.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="chapter-12-prelude-and-standard-library"><a class="header" href="#chapter-12-prelude-and-standard-library">Chapter 12: Prelude and Standard Library</a></h1>
