@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.4 Language Completion — Phase 16 complete
+**Current focus:** v1.4 Language Completion — Phase 17 complete
 
 ## Current Position
 
 Milestone: v1.4 Language Completion
-Phase: 16 (or-string-patterns) — Complete
+Phase: 17 (type-aliases) — Complete
 Plan: 01 of 01
 Status: Phase complete
-Last activity: 2026-03-19 — Completed 16-01-PLAN.md
+Last activity: 2026-03-19 — Completed 17-01-PLAN.md
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 phases 13-16 (7 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 phases 13-17 (8 plans) ✓
 
 ## Performance Metrics
 
@@ -45,10 +45,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 | 14 | 2 | 9 min | 4.5 min |
 | 15 | 1 | 7 min | 7.0 min |
 | 16 | 1 | 7 min | 7.0 min |
+| 17 | 1 | 4 min | 4.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 14-01 (5min), 14-02 (4min), 15-01 (7min), 16-01 (7min)
-- Trend: Or-patterns and string patterns added. 520 tests (196 F# + 324 fslit).
+- Last 5 plans: 14-02 (4min), 15-01 (7min), 16-01 (7min), 17-01 (4min)
+- Trend: Type aliases added. 525 tests (196 F# + 329 fslit).
 
 *Updated after each plan completion*
 
@@ -332,9 +333,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 16-01-PLAN.md (Or-Patterns & String Patterns) — Phase 16 complete
+Stopped at: Completed 17-01-PLAN.md (Type Alias Implementation) — Phase 17 complete
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-19 (Phase 16 or-string-patterns complete)*
+*Last updated: 2026-03-19 (Phase 17 type-aliases complete)*
