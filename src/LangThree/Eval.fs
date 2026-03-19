@@ -656,6 +656,26 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         let closureEnv = Map.ofList [(fName, fVal); (gName, gVal)]
         FunctionValue(param, body, closureEnv)
 
+    // Phase 18 (Ranges): List range [start..stop] or [start..step..stop]
+    | Range (startExpr, stopExpr, stepOpt, _) ->
+        let startVal = eval recEnv moduleEnv env startExpr
+        let stopVal = eval recEnv moduleEnv env stopExpr
+        match startVal, stopVal with
+        | IntValue start, IntValue stop ->
+            let step =
+                match stepOpt with
+                | Some stepExpr ->
+                    match eval recEnv moduleEnv env stepExpr with
+                    | IntValue s -> s
+                    | _ -> failwith "Type error: range step must be integer"
+                | None -> 1
+            if step = 0 then failwith "Range error: step cannot be zero"
+            elif step > 0 then
+                ListValue ([start .. step .. stop] |> List.map IntValue)
+            else
+                ListValue ([start .. step .. stop] |> List.map IntValue)
+        | _ -> failwith "Type error: range bounds must be integers"
+
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->
         match eval recEnv moduleEnv env expr with

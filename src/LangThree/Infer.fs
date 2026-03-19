@@ -332,6 +332,10 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | PipeRight _ | ComposeRight _ | ComposeLeft _ ->
         (empty, freshVar())
 
+    // === Phase 18: Range stub (primary implementation in Bidir) ===
+    | Range _ ->
+        (empty, TList TInt)
+
     // === Constructor (Phase 2 ADT) ===
     | Constructor (_, argOpt, _) ->
         match argOpt with
