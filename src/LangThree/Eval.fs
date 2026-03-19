@@ -221,6 +221,7 @@ let rec formatValue (v: Value) : string =
             |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
         sprintf "{ %s }" (String.concat "; " fieldStrs)
     | BuiltinValue _ -> "<builtin>"
+    | TailCall _ -> "<tailcall>"
 
 /// Structural equality for Value (needed since BuiltinValue contains a function type
 /// which prevents F# from auto-deriving equality on the Value DU)
@@ -244,6 +245,7 @@ let rec valuesEqual (v1: Value) (v2: Value) : bool =
             | None -> false) f1
     | BuiltinValue _, BuiltinValue _ -> false  // Functions not comparable
     | FunctionValue _, FunctionValue _ -> false  // Functions not comparable
+    | TailCall _, _ | _, TailCall _ -> false  // TailCall is transient
     | _ -> false
 
 /// Resolve record type name from field names using RecordEnv

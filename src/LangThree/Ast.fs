@@ -179,6 +179,7 @@ and [<CustomEquality; CustomComparison>] Value =
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
     | RecordValue of typeName: string * fields: Map<string, Value ref>  // Phase 3 (Records): Record value (ref cells for mutable field support)
     | BuiltinValue of fn: (Value -> Value)  // Phase 11: Native F# built-in function carrier
+    | TailCall of func: Value * arg: Value  // Phase 15: Deferred tail call for trampoline TCO
 
     override x.Equals(obj) =
         match obj with
@@ -196,6 +197,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | DataValue(ctor, v) -> hash (ctor, v)
         | RecordValue(name, _) -> hash name
         | BuiltinValue _ -> 0
+        | TailCall _ -> 0
 
     interface System.IEquatable<Value> with
         member x.Equals(y: Value) = Value.valueEqual x y
@@ -217,6 +219,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | RecordValue(n1, f1), RecordValue(n2, f2) -> n1 = n2 && f1 = f2
         | FunctionValue(p1, b1, _), FunctionValue(p2, b2, _) -> p1 = p2 && b1 = b2
         | BuiltinValue _, BuiltinValue _ -> false  // functions are never equal
+        | TailCall _, _ | _, TailCall _ -> false  // TailCall is transient, never compared
         | _ -> false
 
     static member valueCompare (x: Value) (y: Value) =
@@ -224,6 +227,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | IntValue a, IntValue b -> compare a b
         | BoolValue a, BoolValue b -> compare a b
         | StringValue a, StringValue b -> compare a b
+        | TailCall _, _ | _, TailCall _ -> 0
         | _ -> 0
 
 /// Environment mapping variable names to values
