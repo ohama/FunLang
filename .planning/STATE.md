@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone (v1.4)
+**Current focus:** v1.4 Language Completion - Phase 18
 
 ## Current Position
 
-Milestone: v1.4 (not started)
-Phase: Not started
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-19 — v1.3 milestone complete
+Milestone: v1.4
+Phase: 18 of ? (list-ranges-mutual-recursion)
+Plan: 02 of 02
+Status: Phase 18 complete
+Last activity: 2026-03-19 — Completed 18-02-PLAN.md (Mutual Recursive Functions)
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) + v1.2 (5 phases, 12 plans) + v1.3 (2 phases, 4 plans) + v1.4 (1 phase, 2 plans in progress)
 
 ## Performance Metrics
 
@@ -282,6 +282,13 @@ Recent decisions affecting current work:
 - print/println in --expr mode: side-effect text appears immediately before () result on same line (no newline between)
 - println in --expr mode: side-effect text on its own line, () result on the next line
 
+**From 18-02 (Mutual Recursive Functions):**
+- LetRecDecl of bindings: (string * string * Expr * Span) list * Span in Decl DU
+- LetRecDeclaration/LetRecContinuation parser pattern mirrors TypeDeclaration/TypeDeclContinuation
+- Type checking: monomorphic pre-binding, simultaneous body checking, post-group generalization
+- Eval: BuiltinValue wrappers with shared mutable ref Env for true circular mutual references
+- Immutable Map envs cannot create circular references; ref cell approach required for arbitrary-depth mutual recursion
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -315,7 +322,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 14-02-PLAN.md (Tutorial Chapters 12-13) — v1.3 milestone complete
+Stopped at: Completed 18-02-PLAN.md (Mutual Recursive Functions) — Phase 18 complete
 Resume file: None
 
 ---
