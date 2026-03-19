@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone (v1.4)
+**Current focus:** v1.4 Language Completion — Defining requirements
 
 ## Current Position
 
-Milestone: v1.4 (not started)
-Phase: Not started
+Milestone: v1.4 Language Completion
+Phase: 15 (tail-call-optimization) — Not started
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-03-19 — v1.3 milestone complete
+Last activity: 2026-03-19 — v1.4 milestone started
 
 Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓
 
