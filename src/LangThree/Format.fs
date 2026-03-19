@@ -217,6 +217,10 @@ and formatPattern (pat: Ast.Pattern) : string =
     | Ast.RecordPat (fields, _) ->
         let fieldsStr = fields |> List.map (fun (n, p) -> sprintf "%s = %s" n (formatPattern p)) |> String.concat "; "
         sprintf "RecordPat {%s}" fieldsStr
+    // Phase 16: Or-pattern
+    | Ast.OrPat (pats, _) ->
+        let formatted = pats |> List.map formatPattern |> String.concat " | "
+        sprintf "OrPat [%s]" formatted
 
 /// Format a constructor declaration as string
 let formatConstructorDecl (cd: Ast.ConstructorDecl) : string =

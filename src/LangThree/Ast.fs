@@ -120,6 +120,8 @@ and Pattern =
     | ConstructorPat of name: string * argPattern: Pattern option * span: Span
     // Phase 3 (Records): Record pattern
     | RecordPat of fields: (string * Pattern) list * span: Span
+    // Phase 16: Or-pattern (multiple alternatives share one body)
+    | OrPat of Pattern list * span: Span
 
 /// Match clause: pattern -> when guard -> expression
 /// Phase 3 (v3.0), Phase 6: Extended with optional when guard
@@ -273,6 +275,7 @@ let patternSpanOf (pat: Pattern) : Span =
     | ConsPat(_, _, s) | EmptyListPat s | ConstPat(_, s) -> s
     | ConstructorPat(_, _, s) -> s
     | RecordPat(_, s) -> s
+    | OrPat(_, s) -> s
 
 /// Module-level declaration
 /// Phase 1 (INDENT-05): Module-level declarations

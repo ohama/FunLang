@@ -93,6 +93,15 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
         // Record pattern type is a fresh type var (actual type resolution happens during unification in Match)
         (env, freshVar())
 
+    // Phase 16: Or-pattern - all alternatives must have same type, no bindings
+    | OrPat(pats, _) ->
+        let env0, ty0 = inferPattern ctorEnv (List.head pats)
+        for p in List.tail pats do
+            let _, tyi = inferPattern ctorEnv p
+            let _ = unify ty0 tyi
+            ()
+        (env0, ty0)
+
     | ConstructorPat (name, argPatOpt, _) ->
         match Map.tryFind name ctorEnv with
         | None ->

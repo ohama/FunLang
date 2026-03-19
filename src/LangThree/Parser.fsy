@@ -248,11 +248,21 @@ Pattern:
 
 // Phase 3 (v3.0): Match clauses (non-empty, requires leading PIPE)
 // Phase 6: Extended with optional when guards (Pattern * Expr option * Expr)
+// Phase 16: OrPattern allows multiple patterns per clause (| 1 | 2 | 3 -> expr)
 MatchClauses:
-    | PIPE Pattern ARROW Expr                         { [($2, None, $4)] }
-    | PIPE Pattern WHEN Expr ARROW Expr               { [($2, Some $4, $6)] }
-    | PIPE Pattern ARROW Expr MatchClauses            { ($2, None, $4) :: $5 }
-    | PIPE Pattern WHEN Expr ARROW Expr MatchClauses  { ($2, Some $4, $6) :: $7 }
+    | PIPE OrPattern ARROW Expr                         { [($2, None, $4)] }
+    | PIPE OrPattern WHEN Expr ARROW Expr               { [($2, Some $4, $6)] }
+    | PIPE OrPattern ARROW Expr MatchClauses            { ($2, None, $4) :: $5 }
+    | PIPE OrPattern WHEN Expr ARROW Expr MatchClauses  { ($2, Some $4, $6) :: $7 }
+
+// Phase 16: Or-pattern nonterminal (| 1 | 2 | 3 parsed as OrPat)
+OrPattern:
+    | Pattern                    { $1 }
+    | Pattern PIPE OrPattern     {
+        match $3 with
+        | Ast.OrPat(pats, _) -> Ast.OrPat($1 :: pats, ruleSpan parseState 1 3)
+        | p -> Ast.OrPat([$1; p], ruleSpan parseState 1 3)
+      }
 
 // v6.0: Annotated parameter list for curried lambdas
 AnnotParamList:

@@ -308,6 +308,9 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
             Some (List.collect Option.get bindings)
         else
             None
+    // Phase 16: Or-pattern - try each alternative
+    | OrPat(pats, _), value ->
+        pats |> List.tryPick (fun p -> matchPattern p value)
     | _ -> None  // Type mismatch (e.g., TuplePat vs IntValue)
 
 /// Evaluate match clauses sequentially, returning first match
