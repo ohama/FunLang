@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.3 Tutorial Documentation — Defining requirements
+**Current focus:** v1.3 Tutorial Documentation — In progress
 
 ## Current Position
 
 Milestone: v1.3 Tutorial Documentation
-Phase: 13 (tutorial) — Not started
-Plan: Not started
-Status: Defining requirements
-Last activity: 2026-03-18 — v1.3 Tutorial milestone started
+Phase: 13 (tutorial-core) — In progress
+Plan: 01 of 02
+Status: In progress
+Last activity: 2026-03-19 — Completed 13-01-PLAN.md (Tutorial Chapters 1-4)
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 █░ (1/2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40
+- Total plans completed: 41
 - Average duration: 4.4 min
-- Total execution time: ~2.94 hours
+- Total execution time: ~3.04 hours
 
 **By Phase:**
 
@@ -41,9 +41,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓
 | 11 | 2 | 10 min | 5.0 min |
 | 12 | 2 | 13 min | 6.5 min |
 
+| 13 | 1 | 6 min | 6.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 11-01 (5min), 11-02 (5min), 12-01 (2min), 12-02 (11min)
-- Trend: Phase 12 complete. print/println/printf with 8 integration tests. 196 F# + 201 fslit tests passing.
+- Last 5 plans: 11-02 (5min), 12-01 (2min), 12-02 (11min), 13-01 (6min)
+- Trend: Tutorial chapters 1-4 written with 78 CLI-verified examples.
 
 *Updated after each plan completion*
 
@@ -311,8 +313,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18 (v1.2 milestone archived)
-Stopped at: v1.2 complete — ready for v1.3
+Last session: 2026-03-19
+Stopped at: Completed 13-01-PLAN.md (Tutorial Chapters 1-4)
 Resume file: None
 
 ---
