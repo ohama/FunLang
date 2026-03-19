@@ -289,6 +289,8 @@ type Decl =
     | NamespaceDecl of path: string list * decls: Decl list * Span
     // Phase 6 (Exceptions): Exception declaration
     | ExceptionDecl of name: string * dataType: TypeExpr option * Span
+    // Phase 17 (Type Aliases): Type alias declaration
+    | TypeAliasDecl of name: string * typeParams: string list * body: TypeExpr * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -308,6 +310,7 @@ let declSpanOf (decl: Decl) : Span =
     | OpenDecl(_, s) -> s
     | NamespaceDecl(_, _, s) -> s
     | ExceptionDecl(_, _, s) -> s
+    | TypeAliasDecl(_, _, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =

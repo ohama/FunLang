@@ -374,6 +374,9 @@ Decls:
     // Phase 2 (ADT-01): Type declarations (possibly mutually recursive)
     | TypeDeclaration               { List.map Ast.Decl.TypeDecl $1 }
     | TypeDeclaration Decls         { (List.map Ast.Decl.TypeDecl $1) @ $2 }
+    // Phase 17 (Type Aliases): Type alias declarations
+    | TypeAliasDeclaration            { [$1] }
+    | TypeAliasDeclaration Decls      { $1 :: $2 }
     // Phase 3 (Records): Record type declarations
     | RecordDeclaration               { [Ast.Decl.RecordTypeDecl $1] }
     | RecordDeclaration Decls         { (Ast.Decl.RecordTypeDecl $1) :: $2 }
@@ -461,6 +464,38 @@ RecordPatFields:
     | IDENT EQUALS Pattern                              { [($1, $3)] }
     | IDENT EQUALS Pattern SEMICOLON RecordPatFields    { ($1, $3) :: $5 }
     | IDENT EQUALS Pattern SEMICOLON                    { [($1, $3)] }
+
+// Phase 17 (Type Aliases): Type alias declaration
+// type Name = TypeExpr (RHS starts with type keyword like int, bool, string, or type variable)
+// Distinguished from ADT (type Name = Ctor) because ADT constructors start with uppercase IDENT
+TypeAliasDeclaration:
+    | TYPE IDENT TypeParams EQUALS AliasTypeExpr
+        { Ast.Decl.TypeAliasDecl($2, $3, $5, ruleSpan parseState 1 5) }
+
+// AliasTypeExpr: Type expressions that unambiguously start a type alias (not an ADT constructor)
+// Starts with: TYPE_INT, TYPE_BOOL, TYPE_STRING, TYPE_UNIT, TYPE_VAR, LPAREN
+// This avoids LALR(1) conflict with ADT rules that start with uppercase IDENT
+AliasTypeExpr:
+    | AliasArrowType                    { $1 }
+
+AliasArrowType:
+    | AliasTupleType ARROW ArrowType    { TEArrow($1, $3) }
+    | AliasTupleType                    { $1 }
+
+AliasTupleType:
+    | AliasAtomicType STAR TupleTypeList { TETuple($1 :: $3) }
+    | AliasAtomicType                    { $1 }
+
+// AliasAtomicType: Same as AtomicType but WITHOUT bare IDENT (which would conflict with ADT constructors)
+AliasAtomicType:
+    | TYPE_UNIT                     { TETuple [] }
+    | TYPE_INT                      { TEInt }
+    | TYPE_BOOL                     { TEBool }
+    | TYPE_STRING                   { TEString }
+    | TYPE_VAR                      { TEVar($1) }
+    | AliasAtomicType TYPE_LIST     { TEList($1) }
+    | AliasAtomicType IDENT         { Ast.TEData($2, [$1]) }
+    | LPAREN TypeExpr RPAREN        { $2 }
 
 // Phase 5 (Modules): Qualified identifier for module paths (A.B.C)
 QualifiedIdent:

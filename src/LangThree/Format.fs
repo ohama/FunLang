@@ -263,6 +263,9 @@ let rec formatDecl (decl: Ast.Decl) : string =
         sprintf "ExceptionDecl \"%s\"" name
     | Ast.ExceptionDecl(name, Some ty, _) ->
         sprintf "ExceptionDecl \"%s\" of %s" name (formatTypeExpr ty)
+    | Ast.TypeAliasDecl(name, typeParams, body, _) ->
+        let paramsStr = if typeParams.IsEmpty then "" else sprintf " %s" (typeParams |> List.map (sprintf "'%s") |> String.concat " ")
+        sprintf "TypeAliasDecl \"%s%s\" = %s" name paramsStr (formatTypeExpr body)
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =
