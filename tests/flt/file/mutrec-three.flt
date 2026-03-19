@@ -1,0 +1,9 @@
+// Test: three mutually recursive functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec f n = if n <= 0 then 1 else g (n - 1)
+and g n = if n <= 0 then 2 else h (n - 1)
+and h n = if n <= 0 then 3 else f (n - 1)
+let result = f 7
+// --- Output:
+2

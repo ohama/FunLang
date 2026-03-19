@@ -727,32 +727,25 @@ let rec evalModuleDecls
             | _ -> (env, modEnv)  // Multi-segment open paths: v2
         | LetRecDecl(bindings, _) ->
             // Phase 18: Mutual recursive function evaluation
-            // Strategy: wrap each function body with LetRec bindings for all mutual
-            // functions. This ensures App's self-augmentation provides full mutual
-            // visibility at any recursion depth.
-            //
-            // For let rec even n = evenBody and odd n = oddBody, we create:
-            //   even n = let rec odd __p = oddBody' in evenBody
-            //   odd n = let rec even __p = evenBody' in oddBody
-            // where each body' is similarly wrapped. This creates an "onion" where
-            // each function, when called, re-establishes the mutual group via LetRec
-            // expressions that leverage App's self-name augmentation.
-            let dummySpan = unknownSpan
-            // For each binding, wrap body with LetRec for each OTHER binding
-            let wrappedBindings =
-                bindings |> List.map (fun (name, param, body, span) ->
-                    let others = bindings |> List.filter (fun (n, _, _, _) -> n <> name)
-                    let wrappedBody =
-                        List.foldBack (fun (otherName, otherParam, otherBody, _) acc ->
-                            LetRec(otherName, otherParam, otherBody, acc, dummySpan)
-                        ) others body
-                    (name, param, wrappedBody, span))
-            // Create closures -- each body contains LetRec for all others,
-            // so App's self-augmentation + LetRec gives full mutual access.
-            let finalEnv =
-                wrappedBindings |> List.fold (fun acc (name, param, body, _) ->
-                    Map.add name (FunctionValue(param, body, acc)) acc) env
-            (finalEnv, modEnv)
+            // Strategy: use BuiltinValue wrappers that close over a shared mutable
+            // env ref. Each function, when called, evaluates its body in the shared
+            // env (which contains all mutual functions). This gives true circular
+            // references without needing recursive AST wrapping.
+            let sharedEnvRef = ref env
+            // Create BuiltinValue wrappers for each function
+            let funcValues =
+                bindings |> List.map (fun (name, param, body, _) ->
+                    let wrapper = BuiltinValue (fun argVal ->
+                        let currentEnv = !sharedEnvRef
+                        let callEnv = Map.add param argVal currentEnv
+                        eval recEnv modEnv callEnv body)
+                    (name, wrapper))
+            // Register all functions in the shared env
+            let mutualEnv =
+                funcValues |> List.fold (fun acc (name, v) ->
+                    Map.add name v acc) env
+            sharedEnvRef := mutualEnv
+            (mutualEnv, modEnv)
         | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
             // Register constructor values/functions in the environment
             let dummySpan = unknownSpan
