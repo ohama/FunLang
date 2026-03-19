@@ -1,4 +1,6 @@
 // Test: nested match with wildcard and constant patterns
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "match (true, 3) with | (true, x) -> x * 10 | (false, _) -> 0"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = match (true, 3) with | (true, x) -> x * 10 | (false, _) -> 0
 // --- Output:
 30

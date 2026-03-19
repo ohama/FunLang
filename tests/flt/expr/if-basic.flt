@@ -1,4 +1,6 @@
 // Test: basic if-then-else (true branch)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "if true then 1 else 2"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = if true then 1 else 2
 // --- Output:
 1

@@ -1,4 +1,6 @@
 // Test: nested list pattern matching with multiple elements
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "match [1, 2, 3, 4] with | a :: b :: c :: rest -> a + b + c | _ -> 0"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = match [1, 2, 3, 4] with | a :: b :: c :: rest -> a + b + c | _ -> 0
 // --- Output:
 6

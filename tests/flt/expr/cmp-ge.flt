@@ -1,4 +1,6 @@
 // Test: greater than or equal comparison (false case)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "2 >= 5"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = 2 >= 5
 // --- Stdout:
 false

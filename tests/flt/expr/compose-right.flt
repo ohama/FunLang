@@ -1,4 +1,6 @@
 // Test: forward composition operator
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'let f = (fun x -> x * 2) >> (fun x -> x + 1) in f 3'
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let f = (fun x -> x * 2) >> (fun x -> x + 1) in f 3
 // --- Output:
 7

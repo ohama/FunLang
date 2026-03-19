@@ -1,4 +1,6 @@
 // Test: printf with %b specifier formats a boolean
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'printf "%b" true'
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = printf "%b" true
 // --- Output:
 true()

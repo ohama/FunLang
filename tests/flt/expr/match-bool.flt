@@ -1,4 +1,6 @@
 // Test: boolean constant patterns in match
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "match true with | true -> 1 | false -> 0"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = match true with | true -> 1 | false -> 0
 // --- Stdout:
 1

@@ -1,4 +1,6 @@
 // Test: basic let binding
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "let x = 5 in x + 1"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let x = 5 in x + 1
 // --- Output:
 6

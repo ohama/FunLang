@@ -1,4 +1,6 @@
 // Test: short-circuit AND does not evaluate right side when left is false
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "false && (1 / 0 = 0)"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = false && (1 / 0 = 0)
 // --- Output:
 false

@@ -1,4 +1,6 @@
 // Test: less than or equal comparison
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "3 <= 3"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = 3 <= 3
 // --- Stdout:
 true

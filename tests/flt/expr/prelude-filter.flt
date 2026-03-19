@@ -1,4 +1,6 @@
 // Test: filter function over a list
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "let rec filter f = fun xs -> match xs with | [] -> [] | x :: rest -> if f x then x :: filter f rest else filter f rest in filter (fun x -> x > 2) [1, 2, 3, 4]"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let rec filter f = fun xs -> match xs with | [] -> [] | x :: rest -> if f x then x :: filter f rest else filter f rest in filter (fun x -> x > 2) [1, 2, 3, 4]
 // --- Output:
 [3, 4]

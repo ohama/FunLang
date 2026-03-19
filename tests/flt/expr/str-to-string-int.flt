@@ -1,4 +1,6 @@
 // Test: to_string converts int to string
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'to_string 42'
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = to_string 42
 // --- Output:
 "42"

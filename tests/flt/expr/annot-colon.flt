@@ -1,4 +1,6 @@
 // Test: type annotation with colon syntax
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "(1 : int)"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = (1 : int)
 // --- Stdout:
 1

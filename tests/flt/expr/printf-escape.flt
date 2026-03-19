@@ -1,4 +1,6 @@
 // Test: printf %% outputs literal percent sign
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr 'printf "100%%"'
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = printf "100%%"
 // --- Output:
 100%()
