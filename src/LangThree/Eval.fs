@@ -275,6 +275,8 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
         if n = m then Some [] else None
     | ConstPat (BoolConst b1, _), BoolValue b2 ->
         if b1 = b2 then Some [] else None
+    | ConstPat (StringConst s, _), StringValue v ->
+        if s = v then Some [] else None
     // Empty list pattern
     | EmptyListPat _, ListValue [] -> Some []
     // Cons pattern - matches non-empty list

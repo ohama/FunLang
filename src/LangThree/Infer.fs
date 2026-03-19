@@ -84,6 +84,9 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
     | ConstPat (BoolConst _, _) ->
         (Map.empty, TBool)
 
+    | ConstPat (StringConst _, _) ->
+        (Map.empty, TString)
+
     | RecordPat (fields, _) ->
         let envTys = fields |> List.map (fun (_, pat) -> inferPattern ctorEnv pat)
         let env = envTys |> List.map fst |> List.fold (fun acc m -> Map.fold (fun a k v -> Map.add k v a) acc m) Map.empty

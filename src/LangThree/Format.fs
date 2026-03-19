@@ -206,6 +206,7 @@ and formatPattern (pat: Ast.Pattern) : string =
         match c with
         | Ast.IntConst n -> sprintf "ConstPat (IntConst %d)" n
         | Ast.BoolConst b -> sprintf "ConstPat (BoolConst %b)" b
+        | Ast.StringConst s -> sprintf "ConstPat (StringConst \"%s\")" s
     | Ast.EmptyListPat _ -> "EmptyListPat"
     | Ast.ConsPat (h, t, _) -> sprintf "ConsPat (%s, %s)" (formatPattern h) (formatPattern t)
     | Ast.ConstructorPat (name, argOpt, _) ->

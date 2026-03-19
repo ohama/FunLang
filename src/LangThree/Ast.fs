@@ -130,6 +130,7 @@ and MatchClause = Pattern * Expr option * Expr
 and Constant =
     | IntConst of int
     | BoolConst of bool
+    | StringConst of string
 
 /// Type expression AST for type annotations
 /// v6.0: Bidirectional type system
