@@ -45,12 +45,12 @@
 | TUT-05 | 13 | Complete |
 | TUT-06 | 13 | Complete |
 | TUT-07 | 13 | Complete |
-| TUT-08 | 14 | Pending |
-| TUT-09 | 14 | Pending |
-| TUT-10 | 14 | Pending |
-| TUT-11 | 14 | Pending |
-| TUT-12 | 14 | Pending |
-| TUT-13 | 14 | Pending |
+| TUT-08 | 14 | Complete |
+| TUT-09 | 14 | Complete |
+| TUT-10 | 14 | Complete |
+| TUT-11 | 14 | Complete |
+| TUT-12 | 14 | Complete |
+| TUT-13 | 14 | Complete |
 | QUAL-01 | 13 | Complete |
 | QUAL-02 | 13 | Complete |
 

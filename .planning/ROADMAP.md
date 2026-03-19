@@ -26,15 +26,16 @@ Plans:
 
 ---
 
-### Phase 14: Tutorial — Practical Features & Reference (Chapters 8-13)
+### Phase 14: Tutorial — Practical Features & Reference (Chapters 8-13) (COMPLETE)
 
 **Goal:** 모듈, 예외, 파이프, 문자열, Prelude, CLI 레퍼런스까지 튜토리얼 완성
 **Depends on:** Phase 13
 **Requirements:** TUT-08, TUT-09, TUT-10, TUT-11, TUT-12, TUT-13, QUAL-01, QUAL-02
-**Plans:** 0 plans
+**Status:** COMPLETE — 6 chapters, 118 CLI-verified examples
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 14 to break down)
+- [x] 14-01: Chapters 8-11 (Modules, Exceptions, Pipes, Strings & Output) — 53 examples
+- [x] 14-02: Chapters 12-13 (Prelude & CLI Reference) — 65 examples
 
 **Success Criteria:**
 1. `tutorial/08-modules.md` — module, namespace, open, qualified access 예제
