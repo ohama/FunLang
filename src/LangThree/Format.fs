@@ -258,6 +258,13 @@ let rec formatDecl (decl: Ast.Decl) : string =
         sprintf "ExceptionDecl \"%s\"" name
     | Ast.ExceptionDecl(name, Some ty, _) ->
         sprintf "ExceptionDecl \"%s\" of %s" name (formatTypeExpr ty)
+    | Ast.LetRecDecl(bindings, _) ->
+        let bindingsStr =
+            bindings
+            |> List.map (fun (name, param, body, _) ->
+                sprintf "%s %s = %s" name param (formatAst body))
+            |> String.concat " and "
+        sprintf "LetRecDecl (%s)" bindingsStr
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =

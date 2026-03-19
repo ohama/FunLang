@@ -171,6 +171,8 @@ type nonTerminalId =
     | NONTERM_RecordExprInner
     | NONTERM_RecordFieldBindings
     | NONTERM_RecordPatFields
+    | NONTERM_LetRecDeclaration
+    | NONTERM_LetRecContinuation
     | NONTERM_QualifiedIdent
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int
