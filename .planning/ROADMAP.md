@@ -2,15 +2,16 @@
 
 ## Current Milestone: v1.3 Tutorial Documentation
 
-### Phase 13: Tutorial — Core Language (Chapters 1-7)
+### Phase 13: Tutorial — Core Language (Chapters 1-7) (COMPLETE)
 
 **Goal:** 기본 문법부터 GADT까지, LangThree 핵심 언어 기능을 가르치는 튜토리얼 챕터 작성
 **Depends on:** v1.2 (complete)
 **Requirements:** TUT-01, TUT-02, TUT-03, TUT-04, TUT-05, TUT-06, TUT-07, QUAL-01, QUAL-02
-**Plans:** 0 plans
+**Status:** COMPLETE — 7 chapters, 106 CLI-verified examples
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 13 to break down)
+- [x] 13-01: Chapters 1-4 (Getting Started, Functions, Lists & Tuples, Pattern Matching) — 78 examples
+- [x] 13-02: Chapters 5-7 (Algebraic Types, Records, GADTs) — 28 examples
 
 **Success Criteria:**
 1. `tutorial/01-getting-started.md` — 실행 방법, 기본 값, 연산자 예제 포함

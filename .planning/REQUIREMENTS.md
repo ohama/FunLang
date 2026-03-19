@@ -38,21 +38,21 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TUT-01 | 13 | Pending |
-| TUT-02 | 13 | Pending |
-| TUT-03 | 13 | Pending |
-| TUT-04 | 13 | Pending |
-| TUT-05 | 13 | Pending |
-| TUT-06 | 13 | Pending |
-| TUT-07 | 13 | Pending |
-| TUT-08 | 13 | Pending |
-| TUT-09 | 13 | Pending |
-| TUT-10 | 13 | Pending |
-| TUT-11 | 13 | Pending |
-| TUT-12 | 13 | Pending |
-| TUT-13 | 13 | Pending |
-| QUAL-01 | 13 | Pending |
-| QUAL-02 | 13 | Pending |
+| TUT-01 | 13 | Complete |
+| TUT-02 | 13 | Complete |
+| TUT-03 | 13 | Complete |
+| TUT-04 | 13 | Complete |
+| TUT-05 | 13 | Complete |
+| TUT-06 | 13 | Complete |
+| TUT-07 | 13 | Complete |
+| TUT-08 | 14 | Pending |
+| TUT-09 | 14 | Pending |
+| TUT-10 | 14 | Pending |
+| TUT-11 | 14 | Pending |
+| TUT-12 | 14 | Pending |
+| TUT-13 | 14 | Pending |
+| QUAL-01 | 13 | Complete |
+| QUAL-02 | 13 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 15 total
