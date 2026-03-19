@@ -1,0 +1,10 @@
+// Test: --emit-type shows underlying types for type alias declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+type Name = string
+type IntPair = int * int
+let greeting = "hello"
+let pair = (1, 2)
+// --- Output:
+greeting : string
+pair : int * int

@@ -1,0 +1,8 @@
+// Test: tuple type alias (type IntPair = int * int) with destructuring
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type IntPair = int * int
+let p = (3, 7)
+let result = match p with | (a, b) -> a + b
+// --- Output:
+10

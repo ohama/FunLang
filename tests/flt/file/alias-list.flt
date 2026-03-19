@@ -1,0 +1,11 @@
+// Test: list type alias (type IntList = int list) with list operations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type IntList = int list
+let xs = [10, 20, 30]
+let result =
+    match xs with
+    | a :: b :: c :: [] -> a + b + c
+    | _ -> 0
+// --- Output:
+60

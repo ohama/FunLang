@@ -1,0 +1,8 @@
+// Test: simple type alias (type Name = string)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Name = string
+let x = "hello"
+let result = string_length x
+// --- Output:
+5
