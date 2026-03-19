@@ -61,9 +61,6 @@ let main argv =
         if results.IsUsageRequested then
             printfn "%s" (parser.PrintUsage())
             0
-        // --repl flag
-        elif results.Contains Repl then
-            Repl.startRepl()
         // --emit-tokens with --expr
         elif results.Contains Emit_Tokens && results.Contains Expr then
             let expr = results.GetResult Expr

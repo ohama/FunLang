@@ -8,7 +8,6 @@ type CliArgs =
     | Emit_Tokens
     | Emit_Ast
     | Emit_Type
-    | Repl
     | [<MainCommand; Last>] File of filename: string
 with
     interface IArgParserTemplate with
@@ -18,5 +17,4 @@ with
             | Emit_Tokens -> "show lexer tokens"
             | Emit_Ast -> "show parsed AST"
             | Emit_Type -> "show inferred type"
-            | Repl -> "start interactive REPL"
             | File _ -> "evaluate program from file"
