@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,24 +174,22 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-12-prelude-and-standard-library"><a class="header" href="#chapter-12-prelude-and-standard-library">Chapter 12: Prelude and Standard Library</a></h1>
-<p>LangThree loads a standard library called the Prelude at startup. Prelude files
-provide type declarations and constructors that are available in all user code
-without explicit imports.</p>
-<h2 id="how-the-prelude-works"><a class="header" href="#how-the-prelude-works">How the Prelude Works</a></h2>
-<p>The Prelude consists of <code>.fun</code> files in the <code>Prelude/</code> directory adjacent to the
-LangThree binary. At startup, these files are sorted alphabetically, then each is
-parsed as a module, type-checked, and evaluated. The types and constructors they
-define become available in all subsequent code.</p>
-<p>Currently, the Prelude ships with one file:</p>
+                        <h1 id="12장-prelude-and-standard-library"><a class="header" href="#12장-prelude-and-standard-library">12장: Prelude and Standard Library</a></h1>
+<p>LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은
+명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입 선언과 생성자를 제공합니다.</p>
+<h2 id="prelude의-동작-방식"><a class="header" href="#prelude의-동작-방식">Prelude의 동작 방식</a></h2>
+<p>Prelude는 LangThree 바이너리와 같은 위치의 <code>Prelude/</code> 디렉토리에 있는 <code>.fun</code> 파일로
+구성됩니다. 시작 시 이 파일들은 알파벳순으로 정렬된 후, 각각 모듈로 파싱되고 타입 검사를
+거쳐 평가됩니다. 이 파일들이 정의하는 타입과 생성자는 이후 모든 코드에서 사용 가능합니다.</p>
+<p>현재 Prelude에는 하나의 파일이 포함되어 있습니다:</p>
 <p><strong>Prelude/Option.fun:</strong></p>
 <pre><code>type Option 'a = None | Some of 'a
 </code></pre>
-<p>This defines the <code>Option</code> type with constructors <code>None</code> and <code>Some</code>, available
-everywhere without any <code>open</code> directive.</p>
-<h2 id="using-the-option-type"><a class="header" href="#using-the-option-type">Using the Option Type</a></h2>
-<h3 id="creating-option-values"><a class="header" href="#creating-option-values">Creating Option Values</a></h3>
-<p>The <code>Some</code> and <code>None</code> constructors work in both the REPL and file mode:</p>
+<p>이 파일은 <code>Option</code> 타입과 <code>None</code>, <code>Some</code> 생성자를 정의하며, <code>open</code> 지시어 없이
+어디서든 사용 가능합니다.</p>
+<h2 id="option-타입-사용하기"><a class="header" href="#option-타입-사용하기">Option 타입 사용하기</a></h2>
+<h3 id="option-값-생성"><a class="header" href="#option-값-생성">Option 값 생성</a></h3>
+<p><code>Some</code>과 <code>None</code> 생성자는 REPL과 파일 모드 모두에서 동작합니다:</p>
 <pre><code>funlang&gt; Some 42
 Some 42
 
@@ -201,15 +199,15 @@ Some "hello"
 funlang&gt; None
 None
 </code></pre>
-<p>Check inferred types:</p>
+<p>추론된 타입을 확인합니다:</p>
 <pre><code>$ cat check_option.l3
 let x = Some 42
 
 $ langthree --emit-type check_option.l3
 x : Option&lt;int&gt;
 </code></pre>
-<h3 id="pattern-matching-on-option"><a class="header" href="#pattern-matching-on-option">Pattern Matching on Option</a></h3>
-<p>Pattern matching on Prelude types works in file mode:</p>
+<h3 id="option에-대한-패턴-매칭"><a class="header" href="#option에-대한-패턴-매칭">Option에 대한 패턴 매칭</a></h3>
+<p>Prelude 타입에 대한 패턴 매칭은 파일 모드에서 동작합니다:</p>
 <pre><code>$ cat option_match.l3
 let x = Some 42
 let result =
@@ -220,7 +218,7 @@ let result =
 $ langthree option_match.l3
 42
 </code></pre>
-<p>Extracting with a default:</p>
+<p>기본값으로 추출하기:</p>
 <pre><code>$ cat option_default.l3
 let getOrDefault default opt =
     match opt with
@@ -231,8 +229,8 @@ let result = getOrDefault 0 None
 $ langthree option_default.l3
 0
 </code></pre>
-<h3 id="common-option-patterns"><a class="header" href="#common-option-patterns">Common Option Patterns</a></h3>
-<p><strong>Mapping over an Option</strong> – apply a function to the value inside <code>Some</code>:</p>
+<h3 id="일반적인-option-패턴"><a class="header" href="#일반적인-option-패턴">일반적인 Option 패턴</a></h3>
+<p><strong>Option에 대한 맵핑</strong> – <code>Some</code> 내부의 값에 함수를 적용합니다:</p>
 <pre><code>$ cat option_map.l3
 let optionMap f opt =
     match opt with
@@ -247,7 +245,7 @@ let result =
 $ langthree option_map.l3
 10
 </code></pre>
-<p><strong>Binding (flatMap)</strong> – chain operations that may fail:</p>
+<p><strong>바인딩 (flatMap)</strong> – 실패할 수 있는 연산을 체이닝합니다:</p>
 <pre><code>$ cat option_bind.l3
 let optionBind f opt =
     match opt with
@@ -263,7 +261,7 @@ let result =
 $ langthree option_bind.l3
 20
 </code></pre>
-<p><strong>Using Option with pipe:</strong></p>
+<p><strong>파이프와 함께 Option 사용하기:</strong></p>
 <pre><code>$ cat option_pipe.l3
 let optionMap f opt =
     match opt with
@@ -278,13 +276,13 @@ let result =
 $ langthree option_pipe.l3
 10
 </code></pre>
-<h2 id="extending-the-prelude"><a class="header" href="#extending-the-prelude">Extending the Prelude</a></h2>
-<p>You can add your own types to the Prelude by creating new <code>.fun</code> files in the
-<code>Prelude/</code> directory. Files are sorted alphabetically, so naming affects load order.</p>
-<p>For example, creating <code>Prelude/Result.fun</code>:</p>
+<h2 id="prelude-확장하기"><a class="header" href="#prelude-확장하기">Prelude 확장하기</a></h2>
+<p><code>Prelude/</code> 디렉토리에 새 <code>.fun</code> 파일을 생성하여 자신만의 타입을 Prelude에 추가할 수
+있습니다. 파일은 알파벳순으로 정렬되므로, 파일 이름이 로드 순서에 영향을 줍니다.</p>
+<p>예를 들어, <code>Prelude/Result.fun</code>을 생성하면:</p>
 <pre><code>type Result 'a 'b = Ok of 'a | Error of 'b
 </code></pre>
-<p>After adding this file, <code>Ok</code> and <code>Error</code> constructors become available in all code:</p>
+<p>이 파일을 추가한 후, <code>Ok</code>과 <code>Error</code> 생성자가 모든 코드에서 사용 가능해집니다:</p>
 <pre><code>$ cat result_demo.l3
 let safeDivide x y =
     if y = 0 then Error "division by zero"
@@ -297,12 +295,12 @@ let result =
 $ langthree result_demo.l3
 3
 </code></pre>
-<p>Prelude types work in both the REPL and file mode. Constructors from Prelude
-files are available without <code>open</code>.</p>
-<h2 id="built-in-type-signatures"><a class="header" href="#built-in-type-signatures">Built-in Type Signatures</a></h2>
-<p>Separate from the Prelude, LangThree has a set of <strong>type-only</strong> built-in names.
-These have type signatures for type checking but <strong>no runtime implementation</strong>.
-They exist so that user code can reference standard function types:</p>
+<p>Prelude 타입은 REPL과 파일 모드 모두에서 동작합니다. Prelude 파일의 생성자는
+<code>open</code> 없이 사용 가능합니다.</p>
+<h2 id="타입-전용-내장-시그니처"><a class="header" href="#타입-전용-내장-시그니처">타입 전용 내장 시그니처</a></h2>
+<p>Prelude와는 별도로, LangThree에는 <strong>타입 전용</strong> 내장 이름 세트가 있습니다.
+이들은 타입 검사를 위한 타입 시그니처를 가지지만 <strong>런타임 구현이 없습니다</strong>.
+사용자 코드에서 표준 함수 타입을 참조할 수 있도록 존재합니다:</p>
 <pre><code>$ langthree --emit-type --expr 'map'
 ('a -&gt; 'b) -&gt; 'a list -&gt; 'b list
 
@@ -312,15 +310,15 @@ $ langthree --emit-type --expr 'filter'
 $ langthree --emit-type --expr 'id'
 'a -&gt; 'a
 </code></pre>
-<p>However, calling these at runtime produces an error:</p>
+<p>그러나 런타임에 이들을 호출하면 오류가 발생합니다:</p>
 <pre><code>funlang&gt; id 42
 Error: Undefined variable: id
 </code></pre>
-<p>The full list of type-only built-ins:</p>
+<p>타입 전용 내장 함수의 전체 목록:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Name</th><th>Type Signature</th></tr>
+<tr><th>이름</th><th>타입 시그니처</th></tr>
 </thead>
 <tbody>
 <tr><td><code>map</code></td><td><code>('a -&gt; 'b) -&gt; 'a list -&gt; 'b list</code></td></tr>
@@ -337,7 +335,7 @@ Error: Undefined variable: id
 </tbody>
 </table>
 </div>
-<p>To use these operations, define them inline with <code>let rec ... in</code>:</p>
+<p>이 연산들을 사용하려면 <code>let rec ... in</code>으로 직접 정의하세요:</p>
 <pre><code>$ cat my_map.l3
 let result =
     let rec myMap f = fun xs -&gt; match xs with | [] -&gt; [] | x :: rest -&gt; f x :: myMap f rest
@@ -346,57 +344,57 @@ let result =
 $ langthree my_map.l3
 [2, 4, 6]
 </code></pre>
-<p>Since <code>let rec</code> supports only a single parameter, use a nested <code>fun</code> for the
-second parameter (see <a href="02-functions.html">Chapter 2</a> for details).</p>
-<h2 id="built-in-runtime-functions"><a class="header" href="#built-in-runtime-functions">Built-in Runtime Functions</a></h2>
-<p>A separate set of built-ins <strong>do</strong> have runtime implementations. These come from
-the built-in environment, not from Prelude files:</p>
+<p><code>let rec</code>은 단일 매개변수만 지원하므로, 두 번째 매개변수에는 중첩된 <code>fun</code>을 사용합니다
+(자세한 내용은 <a href="02-functions.html">Chapter 2</a>를 참조하세요).</p>
+<h2 id="런타임-내장-함수"><a class="header" href="#런타임-내장-함수">런타임 내장 함수</a></h2>
+<p>별도의 내장 함수 세트는 런타임 구현을 <strong>가지고 있습니다</strong>. 이들은 Prelude 파일이 아닌
+내장 환경에서 제공됩니다:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Function</th><th>Type</th><th>Description</th></tr>
+<tr><th>함수</th><th>타입</th><th>설명</th></tr>
 </thead>
 <tbody>
-<tr><td><code>string_length</code></td><td><code>string -&gt; int</code></td><td>Length of a string</td></tr>
-<tr><td><code>string_concat</code></td><td><code>string -&gt; string -&gt; string</code></td><td>Concatenate two strings</td></tr>
-<tr><td><code>string_sub</code></td><td><code>string -&gt; int -&gt; int -&gt; string</code></td><td>Substring (start, length)</td></tr>
-<tr><td><code>string_contains</code></td><td><code>string -&gt; string -&gt; bool</code></td><td>Substring test</td></tr>
-<tr><td><code>to_string</code></td><td><code>'a -&gt; string</code></td><td>Convert int/bool/string to string</td></tr>
-<tr><td><code>string_to_int</code></td><td><code>string -&gt; int</code></td><td>Parse string as integer</td></tr>
-<tr><td><code>print</code></td><td><code>string -&gt; unit</code></td><td>Print without newline</td></tr>
-<tr><td><code>println</code></td><td><code>string -&gt; unit</code></td><td>Print with newline</td></tr>
-<tr><td><code>printf</code></td><td><code>string -&gt; ...</code></td><td>Formatted output</td></tr>
+<tr><td><code>string_length</code></td><td><code>string -&gt; int</code></td><td>문자열의 길이</td></tr>
+<tr><td><code>string_concat</code></td><td><code>string -&gt; string -&gt; string</code></td><td>두 문자열을 연결</td></tr>
+<tr><td><code>string_sub</code></td><td><code>string -&gt; int -&gt; int -&gt; string</code></td><td>부분 문자열 (시작, 길이)</td></tr>
+<tr><td><code>string_contains</code></td><td><code>string -&gt; string -&gt; bool</code></td><td>부분 문자열 포함 여부</td></tr>
+<tr><td><code>to_string</code></td><td><code>'a -&gt; string</code></td><td>int/bool/string을 문자열로 변환</td></tr>
+<tr><td><code>string_to_int</code></td><td><code>string -&gt; int</code></td><td>문자열을 정수로 파싱</td></tr>
+<tr><td><code>print</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 없이 출력</td></tr>
+<tr><td><code>println</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 포함 출력</td></tr>
+<tr><td><code>printf</code></td><td><code>string -&gt; ...</code></td><td>형식화 출력</td></tr>
 </tbody>
 </table>
 </div>
-<p>These work in both the REPL and file mode:</p>
+<p>이들은 REPL과 파일 모드 모두에서 동작합니다:</p>
 <pre><code>funlang&gt; string_length "hello"
 5
 
 funlang&gt; to_string 42
 "42"
 </code></pre>
-<p>See <a href="11-strings-and-output.html">Chapter 11: Strings and Output</a> for full details.</p>
-<h2 id="prelude-vs-built-in-summary"><a class="header" href="#prelude-vs-built-in-summary">Prelude vs Built-in Summary</a></h2>
+<p>자세한 내용은 <a href="11-strings-and-output.html">Chapter 11: Strings and Output</a>을 참조하세요.</p>
+<h2 id="prelude-vs-내장-함수-요약"><a class="header" href="#prelude-vs-내장-함수-요약">Prelude vs 내장 함수 요약</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Category</th><th>Source</th><th>Available at runtime?</th><th>Example</th></tr>
+<tr><th>분류</th><th>출처</th><th>런타임 사용 가능?</th><th>예제</th></tr>
 </thead>
 <tbody>
-<tr><td>Prelude types</td><td><code>Prelude/*.fun</code> files</td><td>Yes (types + constructors)</td><td><code>Option</code>, <code>None</code>, <code>Some</code></td></tr>
-<tr><td>Type-only built-ins</td><td>Type environment</td><td>No (type check only)</td><td><code>map</code>, <code>id</code>, <code>compose</code></td></tr>
-<tr><td>Runtime built-ins</td><td>Built-in environment</td><td>Yes (callable)</td><td><code>print</code>, <code>string_length</code></td></tr>
+<tr><td>Prelude 타입</td><td><code>Prelude/*.fun</code> 파일</td><td>예 (타입 + 생성자)</td><td><code>Option</code>, <code>None</code>, <code>Some</code></td></tr>
+<tr><td>타입 전용 내장 함수</td><td>타입 환경</td><td>아니오 (타입 검사만)</td><td><code>map</code>, <code>id</code>, <code>compose</code></td></tr>
+<tr><td>런타임 내장 함수</td><td>내장 환경</td><td>예 (호출 가능)</td><td><code>print</code>, <code>string_length</code></td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
+<h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <ul>
-<li><strong>Prelude files</strong> are <code>.fun</code> files loaded alphabetically from the <code>Prelude/</code> directory</li>
-<li><strong>Prelude constructors</strong> (<code>None</code>, <code>Some</code>) are available without <code>open</code></li>
-<li><strong>Type-only built-ins</strong> (<code>map</code>, <code>id</code>, etc.) type-check but fail at runtime</li>
-<li><strong>Runtime built-ins</strong> (<code>print</code>, <code>string_length</code>, etc.) work everywhere</li>
-<li><strong>Pattern matching</strong> on Prelude types works in file mode</li>
+<li><strong>Prelude 파일</strong>은 <code>Prelude/</code> 디렉토리에서 알파벳순으로 로드되는 <code>.fun</code> 파일입니다</li>
+<li><strong>Prelude 생성자</strong> (<code>None</code>, <code>Some</code>)는 <code>open</code> 없이 사용 가능합니다</li>
+<li><strong>타입 전용 내장 함수</strong> (<code>map</code>, <code>id</code> 등)는 타입 검사는 통과하지만 런타임에 실패합니다</li>
+<li><strong>런타임 내장 함수</strong> (<code>print</code>, <code>string_length</code> 등)는 어디서든 동작합니다</li>
+<li><strong>패턴 매칭</strong>은 파일 모드에서 Prelude 타입에 대해 동작합니다</li>
 </ul>
 
                     </main>

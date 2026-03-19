@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,28 +174,28 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-2-functions"><a class="header" href="#chapter-2-functions">Chapter 2: Functions</a></h1>
-<h2 id="anonymous-functions"><a class="header" href="#anonymous-functions">Anonymous Functions</a></h2>
-<p>Lambda syntax uses <code>fun</code>:</p>
+                        <h1 id="2장-함수-functions"><a class="header" href="#2장-함수-functions">2장: 함수 (Functions)</a></h1>
+<h2 id="익명-함수-anonymous-functions"><a class="header" href="#익명-함수-anonymous-functions">익명 함수 (Anonymous Functions)</a></h2>
+<p>람다 구문은 <code>fun</code>을 사용합니다:</p>
 <pre><code>funlang&gt; (fun x -&gt; x + 1) 10
 11
 </code></pre>
-<p>With type annotation:</p>
+<p>타입 어노테이션을 포함하는 경우:</p>
 <pre><code>funlang&gt; (fun (x: int) -&gt; x + 1) 10
 11
 </code></pre>
-<h2 id="let-bindings-repl--expression-mode"><a class="header" href="#let-bindings-repl--expression-mode">Let Bindings (REPL / Expression Mode)</a></h2>
-<p>In the REPL, bind values with <code>let ... in</code>:</p>
+<h2 id="let-바인딩-repl--표현식-모드"><a class="header" href="#let-바인딩-repl--표현식-모드">Let 바인딩 (REPL / 표현식 모드)</a></h2>
+<p>REPL에서는 <code>let ... in</code>으로 값을 바인딩합니다:</p>
 <pre><code>funlang&gt; let x = 5 in x + 1
 6
 </code></pre>
-<p>Bindings can be chained:</p>
+<p>바인딩을 연쇄적으로 사용할 수 있습니다:</p>
 <pre><code>funlang&gt; let x = 5 in let y = x + 1 in y * 2
 12
 </code></pre>
-<h2 id="let-bindings-file-mode"><a class="header" href="#let-bindings-file-mode">Let Bindings (File Mode)</a></h2>
-<p>In file mode, <code>let</code> bindings are top-level declarations – no <code>in</code> needed.
-The last binding’s value is printed:</p>
+<h2 id="let-바인딩-파일-모드"><a class="header" href="#let-바인딩-파일-모드">Let 바인딩 (파일 모드)</a></h2>
+<p>파일 모드에서 <code>let</code> 바인딩은 최상위 선언(top-level declarations)이며 <code>in</code>이 필요 없습니다.
+마지막 바인딩의 값이 출력됩니다:</p>
 <pre><code>$ cat add.l3
 let a = 10
 let b = 20
@@ -204,9 +204,9 @@ let result = a + b
 $ langthree add.l3
 30
 </code></pre>
-<h2 id="multi-parameter-functions"><a class="header" href="#multi-parameter-functions">Multi-Parameter Functions</a></h2>
-<p>Multi-parameter functions desugar to nested lambdas (currying).
-This works at module level (file mode):</p>
+<h2 id="다중-매개변수-함수-multi-parameter-functions"><a class="header" href="#다중-매개변수-함수-multi-parameter-functions">다중 매개변수 함수 (Multi-Parameter Functions)</a></h2>
+<p>다중 매개변수 함수는 중첩된 람다로 변환됩니다 (커링, currying).
+파일 모드(모듈 레벨)에서 다음과 같이 작동합니다:</p>
 <pre><code>$ cat multi.l3
 let add x y = x + y
 let result = add 3 4
@@ -214,7 +214,7 @@ let result = add 3 4
 $ langthree multi.l3
 7
 </code></pre>
-<p>Equivalent to:</p>
+<p>위 코드는 다음과 동일합니다:</p>
 <pre><code>$ cat multi2.l3
 let add = fun x -&gt; fun y -&gt; x + y
 let result = add 3 4
@@ -222,18 +222,18 @@ let result = add 3 4
 $ langthree multi2.l3
 7
 </code></pre>
-<h2 id="recursive-functions"><a class="header" href="#recursive-functions">Recursive Functions</a></h2>
-<p>Use <code>let rec</code> for recursion. This only works at expression level (with <code>in</code>),
-<strong>not</strong> at module level – a known limitation.</p>
+<h2 id="재귀-함수-recursive-functions"><a class="header" href="#재귀-함수-recursive-functions">재귀 함수 (Recursive Functions)</a></h2>
+<p>재귀에는 <code>let rec</code>를 사용합니다. 이는 표현식 레벨(<code>in</code>과 함께)에서만 작동하며,
+모듈 레벨에서는 사용할 수 <strong>없습니다</strong> – 알려진 제한 사항입니다.</p>
 <pre><code>funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5
 120
 </code></pre>
-<p><strong>Limitation:</strong> <code>let rec</code> supports only a single parameter. For multi-parameter
-recursive functions, take a single tuple or use nested lambdas inside the body:</p>
+<p><strong>제한 사항:</strong> <code>let rec</code>는 단일 매개변수만 지원합니다. 다중 매개변수
+재귀 함수의 경우, 단일 튜플을 받거나 본문 내부에서 중첩 람다를 사용하세요:</p>
 <pre><code>funlang&gt; let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1, 2, 3]
 3
 </code></pre>
-<p>In file mode, embed <code>let rec ... in</code> inside a top-level <code>let</code>:</p>
+<p>파일 모드에서는 최상위 <code>let</code> 내부에 <code>let rec ... in</code>을 포함시킵니다:</p>
 <pre><code>$ cat factorial.l3
 let result =
     let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1)
@@ -242,8 +242,8 @@ let result =
 $ langthree factorial.l3
 3628800
 </code></pre>
-<h2 id="higher-order-functions"><a class="header" href="#higher-order-functions">Higher-Order Functions</a></h2>
-<p>Functions are first-class values. Pass them as arguments:</p>
+<h2 id="고차-함수-higher-order-functions"><a class="header" href="#고차-함수-higher-order-functions">고차 함수 (Higher-Order Functions)</a></h2>
+<p>함수는 일급 값(first-class values)입니다. 함수를 인자로 전달할 수 있습니다:</p>
 <pre><code>$ cat hof.l3
 let apply f x = f x
 let result = apply (fun x -&gt; x + 1) 10
@@ -251,7 +251,7 @@ let result = apply (fun x -&gt; x + 1) 10
 $ langthree hof.l3
 11
 </code></pre>
-<p>Return functions from functions:</p>
+<p>함수에서 함수를 반환할 수도 있습니다:</p>
 <pre><code>$ cat hof2.l3
 let make_adder n = fun x -&gt; x + n
 let add10 = make_adder 10
@@ -260,8 +260,8 @@ let result = add10 5
 $ langthree hof2.l3
 15
 </code></pre>
-<h2 id="closures"><a class="header" href="#closures">Closures</a></h2>
-<p>Functions capture variables from their enclosing scope:</p>
+<h2 id="클로저-closures"><a class="header" href="#클로저-closures">클로저 (Closures)</a></h2>
+<p>함수는 자신을 둘러싼 스코프(scope)의 변수를 캡처합니다:</p>
 <pre><code>$ cat closure.l3
 let x = 10
 let add_x y = x + y
@@ -270,8 +270,8 @@ let result = add_x 5
 $ langthree closure.l3
 15
 </code></pre>
-<h2 id="currying-and-partial-application"><a class="header" href="#currying-and-partial-application">Currying and Partial Application</a></h2>
-<p>Multi-parameter functions are automatically curried:</p>
+<h2 id="커링과-부분-적용-currying-and-partial-application"><a class="header" href="#커링과-부분-적용-currying-and-partial-application">커링과 부분 적용 (Currying and Partial Application)</a></h2>
+<p>다중 매개변수 함수는 자동으로 커링(currying)됩니다:</p>
 <pre><code>$ cat curry.l3
 let add x y = x + y
 let add5 = add 5
@@ -280,16 +280,16 @@ let result = add5 3
 $ langthree curry.l3
 8
 </code></pre>
-<h2 id="pipe-and-composition-operators"><a class="header" href="#pipe-and-composition-operators">Pipe and Composition Operators</a></h2>
-<p>The pipe operator <code>|&gt;</code> passes a value as the last argument:</p>
+<h2 id="파이프와-합성-연산자-pipe-and-composition-operators"><a class="header" href="#파이프와-합성-연산자-pipe-and-composition-operators">파이프와 합성 연산자 (Pipe and Composition Operators)</a></h2>
+<p>파이프 연산자(pipe operator) <code>|&gt;</code>는 값을 마지막 인자로 전달합니다:</p>
 <pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
-<p>Composition operators <code>&gt;&gt;</code> (left-to-right) and <code>&lt;&lt;</code> (right-to-left):</p>
+<p>합성 연산자(composition operators) <code>&gt;&gt;</code>(왼쪽에서 오른쪽)와 <code>&lt;&lt;</code>(오른쪽에서 왼쪽):</p>
 <pre><code>funlang&gt; let f = (fun x -&gt; x + 1) &gt;&gt; (fun x -&gt; x * 2) in f 3
 8
 </code></pre>
-<p>Here <code>f 3</code> computes <code>(3 + 1) * 2 = 8</code>.</p>
+<p>여기서 <code>f 3</code>은 <code>(3 + 1) * 2 = 8</code>을 계산합니다.</p>
 
                     </main>
 

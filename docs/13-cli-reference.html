@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,16 +174,15 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-13-cli-reference"><a class="header" href="#chapter-13-cli-reference">Chapter 13: CLI Reference</a></h1>
-<p>This chapter covers all LangThree command-line modes and options.</p>
-<h2 id="expression-mode"><a class="header" href="#expression-mode">Expression Mode</a></h2>
-<p>Evaluate a single expression with <code>--expr</code>:</p>
+                        <h1 id="13장-cli-reference"><a class="header" href="#13장-cli-reference">13장: CLI Reference</a></h1>
+<p>이 장에서는 LangThree의 모든 커맨드라인 모드와 옵션을 다룹니다.</p>
+<h2 id="표현식-모드"><a class="header" href="#표현식-모드">표현식 모드</a></h2>
+<p><code>--expr</code>로 단일 표현식을 평가합니다:</p>
 <pre><code>$ langthree --expr '1 + 2'
 3
 </code></pre>
-<p>The expression is parsed, type-checked, and evaluated. The result is printed
-to standard output.</p>
-<p>Different result types:</p>
+<p>표현식은 파싱, 타입 검사, 평가를 거칩니다. 결과는 표준 출력으로 출력됩니다.</p>
+<p>다양한 결과 타입:</p>
 <pre><code>$ langthree --expr '42'
 42
 
@@ -205,13 +204,13 @@ $ langthree --expr '()'
 $ langthree --expr 'fun x -&gt; x + 1'
 &lt;function&gt;
 </code></pre>
-<p>Expression mode uses <code>let ... in</code> syntax for local bindings:</p>
+<p>표현식 모드에서는 <code>let ... in</code> 구문으로 로컬 바인딩을 사용합니다:</p>
 <pre><code>$ langthree --expr 'let x = 5 in let y = 10 in x + y'
 15
 </code></pre>
-<p>Expression mode is single-line only – no indentation support.</p>
-<h2 id="file-mode"><a class="header" href="#file-mode">File Mode</a></h2>
-<p>Evaluate a program file:</p>
+<p>표현식 모드는 한 줄만 지원하며, 들여쓰기를 지원하지 않습니다.</p>
+<h2 id="파일-모드"><a class="header" href="#파일-모드">파일 모드</a></h2>
+<p>프로그램 파일을 평가합니다:</p>
 <pre><code>$ cat hello.l3
 let greeting = "hello"
 let result = greeting + " world"
@@ -219,8 +218,8 @@ let result = greeting + " world"
 $ langthree hello.l3
 "hello world"
 </code></pre>
-<p>File mode supports indentation-based syntax. The last <code>let</code> binding’s value
-is printed. Use <code>let _ =</code> for side effects before the final result:</p>
+<p>파일 모드는 들여쓰기 기반 문법을 지원합니다. 마지막 <code>let</code> 바인딩의 값이
+출력됩니다. 최종 결과 전에 부수 효과를 실행하려면 <code>let _ =</code>를 사용합니다:</p>
 <pre><code>$ cat greet.l3
 let _ = println "starting..."
 let name = "world"
@@ -230,11 +229,11 @@ $ langthree greet.l3
 starting...
 "hello world"
 </code></pre>
-<p>File mode supports all LangThree features: type declarations, modules,
-exceptions, pattern matching with indentation, and multi-line expressions.</p>
-<p>The <code>.l3</code> extension is convention, not enforced – any filename works.</p>
-<h2 id="ast-emission"><a class="header" href="#ast-emission">AST Emission</a></h2>
-<p>Inspect the parsed abstract syntax tree with <code>--emit-ast</code>:</p>
+<p>파일 모드는 LangThree의 모든 기능을 지원합니다: 타입 선언, 모듈,
+예외, 들여쓰기 기반 패턴 매칭, 여러 줄 표현식.</p>
+<p><code>.l3</code> 확장자는 관례이며 강제되지 않습니다 – 어떤 파일 이름이든 사용 가능합니다.</p>
+<h2 id="ast-출력"><a class="header" href="#ast-출력">AST 출력</a></h2>
+<p><code>--emit-ast</code>로 파싱된 추상 구문 트리를 확인합니다:</p>
 <pre><code>$ langthree --emit-ast --expr '1 + 2'
 Add (Number 1, Number 2)
 
@@ -244,7 +243,7 @@ Lambda ("x", Add (Var "x", Number 1))
 $ langthree --emit-ast --expr 'let x = 5 in x + 1'
 Let ("x", Number 5, Add (Var "x", Number 1))
 </code></pre>
-<p>With file mode, each declaration is shown:</p>
+<p>파일 모드에서는 각 선언이 표시됩니다:</p>
 <pre><code>$ cat ast_demo.l3
 let x = 42
 let add a b = a + b
@@ -253,9 +252,9 @@ $ langthree --emit-ast ast_demo.l3
 LetDecl ("x", Number 42)
 LetDecl ("add", Lambda ("a", Lambda ("b", Add (Var "a", Var "b"))))
 </code></pre>
-<p>Useful for debugging parse issues – verifies that your code is parsed as intended.</p>
-<h2 id="type-emission"><a class="header" href="#type-emission">Type Emission</a></h2>
-<p>Inspect inferred types with <code>--emit-type</code>:</p>
+<p>파싱 문제를 디버깅하는 데 유용합니다 – 코드가 의도한 대로 파싱되었는지 확인합니다.</p>
+<h2 id="타입-출력"><a class="header" href="#타입-출력">타입 출력</a></h2>
+<p><code>--emit-type</code>으로 추론된 타입을 확인합니다:</p>
 <pre><code>$ langthree --emit-type --expr '1 + 2'
 int
 
@@ -265,8 +264,8 @@ int -&gt; int
 $ langthree --emit-type --expr '"hello"'
 string
 </code></pre>
-<p>In file mode, types of all user-defined top-level bindings are shown
-(alphabetically sorted, excluding built-in and prelude bindings):</p>
+<p>파일 모드에서는 사용자 정의 최상위 바인딩의 타입이 모두 표시됩니다
+(알파벳순 정렬, 내장 및 Prelude 바인딩 제외):</p>
 <pre><code>$ cat types_demo.l3
 let x = 42
 let greet name = "hello " + name
@@ -277,19 +276,19 @@ greet : string -&gt; string
 result : string
 x : int
 </code></pre>
-<p>Polymorphic types show type variables:</p>
+<p>다형 타입은 타입 변수를 표시합니다:</p>
 <pre><code>$ langthree --emit-type --expr 'fun x -&gt; x'
 'a -&gt; 'a
 
 $ langthree --emit-type --expr 'fun f -&gt; fun x -&gt; f x'
 ('a -&gt; 'b) -&gt; 'a -&gt; 'b
 </code></pre>
-<h2 id="token-emission"><a class="header" href="#token-emission">Token Emission</a></h2>
-<p>Inspect lexer output with <code>--emit-tokens</code>:</p>
+<h2 id="토큰-출력"><a class="header" href="#토큰-출력">토큰 출력</a></h2>
+<p><code>--emit-tokens</code>로 렉서 출력을 확인합니다:</p>
 <pre><code>$ langthree --emit-tokens --expr '1 + 2'
 NUMBER(1) PLUS NUMBER(2) EOF
 </code></pre>
-<p>In file mode, the IndentFilter processes indentation into tokens:</p>
+<p>파일 모드에서는 IndentFilter가 들여쓰기를 토큰으로 처리합니다:</p>
 <pre><code>$ cat tokens_demo.l3
 let result =
     if true then 1
@@ -298,11 +297,11 @@ let result =
 $ langthree --emit-tokens tokens_demo.l3
 LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBER(2) NEWLINE(0) EOF
 </code></pre>
-<p>The <code>NEWLINE(n)</code> tokens show the indentation level at each line start.
-This is useful for debugging indentation issues – when a program fails to parse
-in file mode, token emission reveals how the IndentFilter interprets your whitespace.</p>
+<p><code>NEWLINE(n)</code> 토큰은 각 줄 시작의 들여쓰기 수준을 나타냅니다.
+들여쓰기 문제를 디버깅하는 데 유용합니다 – 프로그램이 파일 모드에서 파싱에 실패할 때,
+토큰 출력을 통해 IndentFilter가 공백을 어떻게 해석하는지 확인할 수 있습니다.</p>
 <h2 id="repl"><a class="header" href="#repl">REPL</a></h2>
-<p>Start an interactive session by running <code>langthree</code> with no arguments:</p>
+<p>인자 없이 <code>langthree</code>를 실행하여 대화형 세션을 시작합니다:</p>
 <pre><code>$ langthree
 FunLang REPL
 Type '#quit' or Ctrl+D to quit.
@@ -313,27 +312,26 @@ funlang&gt; let x = 5 in x * 2
 10
 funlang&gt; #quit
 </code></pre>
-<p>The REPL evaluates single-line expressions (like <code>--expr</code> mode). Use
-<code>let ... in</code> syntax for bindings. Module-level <code>let</code> (without <code>in</code>) is not
-supported.</p>
-<p>Exit with <code>#quit</code> or Ctrl+D.</p>
-<h2 id="diagnostic-modes-summary"><a class="header" href="#diagnostic-modes-summary">Diagnostic Modes Summary</a></h2>
+<p>REPL은 한 줄 표현식을 평가합니다 (<code>--expr</code> 모드와 동일). 바인딩에는
+<code>let ... in</code> 구문을 사용합니다. 모듈 수준의 <code>let</code> (<code>in</code> 없이)은 지원되지 않습니다.</p>
+<p><code>#quit</code> 또는 Ctrl+D로 종료합니다.</p>
+<h2 id="진단-모드-요약"><a class="header" href="#진단-모드-요약">진단 모드 요약</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Flag</th><th>Description</th><th>Expression</th><th>File</th></tr>
+<tr><th>플래그</th><th>설명</th><th>표현식</th><th>파일</th></tr>
 </thead>
 <tbody>
-<tr><td><em>(none)</em></td><td>Evaluate and print result</td><td>N/A</td><td>Last binding’s value</td></tr>
-<tr><td><code>--expr</code></td><td>Evaluate expression</td><td>Expression result</td><td>N/A</td></tr>
-<tr><td><code>--emit-ast</code></td><td>Show parsed AST</td><td>AST of expression</td><td>All declarations</td></tr>
-<tr><td><code>--emit-type</code></td><td>Show inferred types</td><td>Type of expression</td><td>All binding types</td></tr>
-<tr><td><code>--emit-tokens</code></td><td>Show lexer tokens</td><td>Raw tokens</td><td>Tokens with IndentFilter</td></tr>
-<tr><td><em>(no args)</em></td><td>REPL interactive session</td><td>Per-line evaluation</td><td>N/A</td></tr>
+<tr><td><em>(없음)</em></td><td>평가 후 결과 출력</td><td>N/A</td><td>마지막 바인딩의 값</td></tr>
+<tr><td><code>--expr</code></td><td>표현식 평가</td><td>표현식 결과</td><td>N/A</td></tr>
+<tr><td><code>--emit-ast</code></td><td>파싱된 AST 표시</td><td>표현식의 AST</td><td>모든 선언</td></tr>
+<tr><td><code>--emit-type</code></td><td>추론된 타입 표시</td><td>표현식의 타입</td><td>모든 바인딩 타입</td></tr>
+<tr><td><code>--emit-tokens</code></td><td>렉서 토큰 표시</td><td>원시 토큰</td><td>IndentFilter 적용 토큰</td></tr>
+<tr><td><em>(인자 없음)</em></td><td>REPL 대화형 세션</td><td>줄 단위 평가</td><td>N/A</td></tr>
 </tbody>
 </table>
 </div>
-<p>Diagnostic flags combine with either <code>--expr</code> or a filename:</p>
+<p>진단 플래그는 <code>--expr</code> 또는 파일 이름과 함께 사용합니다:</p>
 <pre><code>$ langthree --emit-type --expr '1 + 2'
 int
 
@@ -342,28 +340,28 @@ greet : string -&gt; string
 result : string
 x : int
 </code></pre>
-<h2 id="error-messages"><a class="header" href="#error-messages">Error Messages</a></h2>
-<p>Type errors include error codes, source location, and hints:</p>
+<h2 id="오류-메시지"><a class="header" href="#오류-메시지">오류 메시지</a></h2>
+<p>타입 오류에는 오류 코드, 소스 위치, 힌트가 포함됩니다:</p>
 <pre><code>$ langthree --expr '"hello" + 1'
 error[E0301]: Type mismatch: expected string but got int
  --&gt; &lt;expr&gt;:1:6-11
    = hint: Check that all branches of your expression return the same type
 </code></pre>
-<p>Parse errors:</p>
+<p>파싱 오류:</p>
 <pre><code>$ langthree --expr '1 +'
 Error: parse error
 </code></pre>
-<p>Unbound variable errors:</p>
+<p>미정의 변수 오류:</p>
 <pre><code>$ langthree --expr 'foo'
 error[E0303]: Unbound variable: foo
  --&gt; &lt;expr&gt;:1:0-3
    = hint: Make sure the variable is defined before use
 </code></pre>
-<h2 id="warnings"><a class="header" href="#warnings">Warnings</a></h2>
-<p>LangThree emits warnings for potential issues. Warnings do not prevent
-execution – the program still runs.</p>
-<h3 id="w0001-incomplete-pattern-match"><a class="header" href="#w0001-incomplete-pattern-match">W0001: Incomplete Pattern Match</a></h3>
-<p>Emitted when a match expression does not cover all constructors:</p>
+<h2 id="경고"><a class="header" href="#경고">경고</a></h2>
+<p>LangThree는 잠재적 문제에 대해 경고를 발생시킵니다. 경고는 실행을 막지 않으며,
+프로그램은 그대로 실행됩니다.</p>
+<h3 id="w0001-불완전한-패턴-매칭"><a class="header" href="#w0001-불완전한-패턴-매칭">W0001: 불완전한 패턴 매칭</a></h3>
+<p>match 표현식이 모든 생성자를 다루지 않을 때 발생합니다:</p>
 <pre><code>$ cat incomplete.l3
 type Color = Red | Green | Blue
 let result =
@@ -377,8 +375,8 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 </code></pre>
-<h3 id="w0002-redundant-pattern"><a class="header" href="#w0002-redundant-pattern">W0002: Redundant Pattern</a></h3>
-<p>Emitted when a pattern clause can never be reached:</p>
+<h3 id="w0002-중복-패턴"><a class="header" href="#w0002-중복-패턴">W0002: 중복 패턴</a></h3>
+<p>패턴 절에 도달할 수 없을 때 발생합니다:</p>
 <pre><code>$ cat redundant.l3
 type Color = Red | Green | Blue
 let result =
@@ -394,8 +392,8 @@ Warning: warning[W0002]: Redundant pattern in clause 4. This case will never be 
    = hint: Remove the unreachable pattern
 1
 </code></pre>
-<h3 id="w0003-non-exhaustive-exception-handler"><a class="header" href="#w0003-non-exhaustive-exception-handler">W0003: Non-exhaustive Exception Handler</a></h3>
-<p>Emitted when a <code>try ... with</code> block does not handle all possible exceptions:</p>
+<h3 id="w0003-불완전한-예외-핸들러"><a class="header" href="#w0003-불완전한-예외-핸들러">W0003: 불완전한 예외 핸들러</a></h3>
+<p><code>try ... with</code> 블록이 가능한 모든 예외를 처리하지 않을 때 발생합니다:</p>
 <pre><code>$ cat handler.l3
 exception MyError of string
 let result =
@@ -410,7 +408,7 @@ Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions ar
    = hint: Add a catch-all handler or handle all possible exceptions
 "oops"
 </code></pre>
-<p>Add a catch-all <code>| _ -&gt; ...</code> handler to silence this warning.</p>
+<p>이 경고를 없애려면 <code>| _ -&gt; ...</code> 포괄 핸들러를 추가하세요.</p>
 
                     </main>
 

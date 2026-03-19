@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,13 +174,13 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-10-pipes-and-composition"><a class="header" href="#chapter-10-pipes-and-composition">Chapter 10: Pipes and Composition</a></h1>
-<h2 id="the-pipe-operator"><a class="header" href="#the-pipe-operator">The Pipe Operator</a></h2>
-<p>The pipe operator <code>|&gt;</code> passes a value as the argument to a function:</p>
+                        <h1 id="10장-pipes-and-composition"><a class="header" href="#10장-pipes-and-composition">10장: Pipes and Composition</a></h1>
+<h2 id="파이프-연산자"><a class="header" href="#파이프-연산자">파이프 연산자</a></h2>
+<p>파이프 연산자 <code>|&gt;</code>는 값을 함수의 인자로 전달합니다:</p>
 <pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
-<p>Pipe chains read left-to-right, describing a data transformation pipeline:</p>
+<p>파이프 체인은 왼쪽에서 오른쪽으로 읽히며, 데이터 변환 파이프라인을 표현합니다:</p>
 <pre><code>$ cat pipe_chain.l3
 let double x = x * 2
 let inc x = x + 1
@@ -189,25 +189,25 @@ let result = 5 |&gt; double |&gt; inc
 $ langthree pipe_chain.l3
 11
 </code></pre>
-<p>Here <code>5 |&gt; double |&gt; inc</code> computes <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>.</p>
-<h2 id="pipe-with-built-in-functions"><a class="header" href="#pipe-with-built-in-functions">Pipe with Built-in Functions</a></h2>
-<p>Pipe works with built-in functions, not just user-defined ones:</p>
+<p>여기서 <code>5 |&gt; double |&gt; inc</code>는 <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>을 계산합니다.</p>
+<h2 id="내장-함수와-파이프"><a class="header" href="#내장-함수와-파이프">내장 함수와 파이프</a></h2>
+<p>파이프는 사용자 정의 함수뿐만 아니라 내장 함수와도 함께 동작합니다:</p>
 <pre><code>funlang&gt; "hello" |&gt; string_length
 5
 </code></pre>
-<p>Curried built-ins work naturally with pipe:</p>
+<p>커링된 내장 함수는 파이프와 자연스럽게 결합됩니다:</p>
 <pre><code>funlang&gt; "world" |&gt; string_concat "hello "
 "hello world"
 </code></pre>
-<h2 id="pipe-with-lambdas"><a class="header" href="#pipe-with-lambdas">Pipe with Lambdas</a></h2>
-<p>Pass a lambda as the function:</p>
+<h2 id="람다와-파이프"><a class="header" href="#람다와-파이프">람다와 파이프</a></h2>
+<p>람다를 함수로 전달할 수 있습니다:</p>
 <pre><code>funlang&gt; 10 |&gt; (fun x -&gt; x * x)
 100
 </code></pre>
-<p>Parentheses around the lambda are required.</p>
-<h2 id="forward-composition"><a class="header" href="#forward-composition">Forward Composition</a></h2>
-<p>The <code>&gt;&gt;</code> operator composes two functions left-to-right.
-<code>f &gt;&gt; g</code> creates a function that applies <code>f</code> first, then <code>g</code>:</p>
+<p>람다 주위의 괄호는 필수입니다.</p>
+<h2 id="순방향-합성"><a class="header" href="#순방향-합성">순방향 합성</a></h2>
+<p><code>&gt;&gt;</code> 연산자는 두 함수를 왼쪽에서 오른쪽 순서로 합성합니다.
+<code>f &gt;&gt; g</code>는 <code>f</code>를 먼저 적용한 다음 <code>g</code>를 적용하는 함수를 만듭니다:</p>
 <pre><code>$ cat compose_fwd.l3
 let double x = x * 2
 let inc x = x + 1
@@ -217,10 +217,10 @@ let result = f 5
 $ langthree compose_fwd.l3
 11
 </code></pre>
-<p><code>f 5</code> computes <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>.</p>
-<h2 id="backward-composition"><a class="header" href="#backward-composition">Backward Composition</a></h2>
-<p>The <code>&lt;&lt;</code> operator composes right-to-left.
-<code>g &lt;&lt; f</code> means “apply <code>f</code> first, then <code>g</code>” – same as <code>f &gt;&gt; g</code>:</p>
+<p><code>f 5</code>는 <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>을 계산합니다.</p>
+<h2 id="역방향-합성"><a class="header" href="#역방향-합성">역방향 합성</a></h2>
+<p><code>&lt;&lt;</code> 연산자는 오른쪽에서 왼쪽으로 합성합니다.
+<code>g &lt;&lt; f</code>는 “<code>f</code>를 먼저 적용한 다음 <code>g</code>를 적용한다“는 의미로, <code>f &gt;&gt; g</code>와 동일합니다:</p>
 <pre><code>$ cat compose_bwd.l3
 let double x = x * 2
 let inc x = x + 1
@@ -230,9 +230,9 @@ let result = g 5
 $ langthree compose_bwd.l3
 11
 </code></pre>
-<p>Both <code>double &gt;&gt; inc</code> and <code>inc &lt;&lt; double</code> produce the same function.</p>
-<h2 id="chained-composition"><a class="header" href="#chained-composition">Chained Composition</a></h2>
-<p>Composition chains for multi-step transformations:</p>
+<p><code>double &gt;&gt; inc</code>와 <code>inc &lt;&lt; double</code>은 동일한 함수를 생성합니다.</p>
+<h2 id="합성-체인"><a class="header" href="#합성-체인">합성 체인</a></h2>
+<p>합성은 다단계 변환을 위해 체이닝할 수 있습니다:</p>
 <pre><code>$ cat compose_chain.l3
 let add1 x = x + 1
 let mul2 x = x * 2
@@ -244,8 +244,8 @@ $ langthree compose_chain.l3
 9
 </code></pre>
 <p><code>f 5</code> = <code>sub3 (mul2 (add1 5))</code> = <code>sub3 (mul2 6)</code> = <code>sub3 12</code> = <code>9</code>.</p>
-<h2 id="pipe-vs-composition"><a class="header" href="#pipe-vs-composition">Pipe vs Composition</a></h2>
-<p><strong>Pipe</strong> transforms a specific value through a pipeline:</p>
+<h2 id="파이프-vs-합성"><a class="header" href="#파이프-vs-합성">파이프 vs 합성</a></h2>
+<p><strong>파이프</strong>는 특정 값을 파이프라인을 통해 변환합니다:</p>
 <pre><code>$ cat pipe_example.l3
 let double x = x * 2
 let inc x = x + 1
@@ -254,7 +254,7 @@ let result = 5 |&gt; double |&gt; inc
 $ langthree pipe_example.l3
 11
 </code></pre>
-<p><strong>Composition</strong> builds a new function for later use:</p>
+<p><strong>합성</strong>은 나중에 사용할 새로운 함수를 만듭니다:</p>
 <pre><code>$ cat comp_example.l3
 let double x = x * 2
 let inc x = x + 1
@@ -265,17 +265,17 @@ let result = transform 10
 $ langthree comp_example.l3
 21
 </code></pre>
-<p>Use pipe when you have a value and want to transform it now.
-Use composition when you want to define a reusable transformation.</p>
-<h2 id="practical-example-data-pipeline"><a class="header" href="#practical-example-data-pipeline">Practical Example: Data Pipeline</a></h2>
-<p>Combining pipes with string operations:</p>
+<p>값이 있고 지금 바로 변환하고 싶을 때는 파이프를 사용하세요.
+재사용 가능한 변환을 정의하고 싶을 때는 합성을 사용하세요.</p>
+<h2 id="실용-예제-데이터-파이프라인"><a class="header" href="#실용-예제-데이터-파이프라인">실용 예제: 데이터 파이프라인</a></h2>
+<p>파이프와 문자열 연산의 조합:</p>
 <pre><code>$ cat pipeline.l3
 let result = 42 |&gt; to_string |&gt; string_concat "answer: "
 
 $ langthree pipeline.l3
 "answer: 42"
 </code></pre>
-<p>Composition for reusable formatters:</p>
+<p>재사용 가능한 포매터를 위한 합성:</p>
 <pre><code>$ cat formatter.l3
 let format_num = to_string &gt;&gt; string_concat "value="
 let result = format_num 99
@@ -283,22 +283,22 @@ let result = format_num 99
 $ langthree formatter.l3
 "value=99"
 </code></pre>
-<h2 id="precedence"><a class="header" href="#precedence">Precedence</a></h2>
-<p>Pipe has the lowest precedence of all operators, so expressions like
-<code>x + 1 |&gt; f</code> pipe the result of <code>x + 1</code> into <code>f</code>. Composition
-operators bind tighter than pipe but looser than arithmetic:</p>
+<h2 id="우선순위"><a class="header" href="#우선순위">우선순위</a></h2>
+<p>파이프는 모든 연산자 중 가장 낮은 우선순위를 가지므로, <code>x + 1 |&gt; f</code>와 같은 식에서는
+<code>x + 1</code>의 결과가 <code>f</code>로 전달됩니다. 합성 연산자는 파이프보다 높지만 산술 연산자보다
+낮은 우선순위를 가집니다:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Operator</th><th>Precedence</th></tr>
+<tr><th>연산자</th><th>우선순위</th></tr>
 </thead>
 <tbody>
-<tr><td><code>|&gt;</code></td><td>lowest</td></tr>
-<tr><td><code>&gt;&gt;</code>, <code>&lt;&lt;</code></td><td>low</td></tr>
+<tr><td><code>|&gt;</code></td><td>가장 낮음</td></tr>
+<tr><td><code>&gt;&gt;</code>, <code>&lt;&lt;</code></td><td>낮음</td></tr>
 <tr><td><code>||</code></td><td>…</td></tr>
 <tr><td><code>&amp;&amp;</code></td><td>…</td></tr>
 <tr><td><code>+</code>, <code>-</code></td><td>…</td></tr>
-<tr><td><code>*</code>, <code>/</code></td><td>highest</td></tr>
+<tr><td><code>*</code>, <code>/</code></td><td>가장 높음</td></tr>
 </tbody>
 </table>
 </div>

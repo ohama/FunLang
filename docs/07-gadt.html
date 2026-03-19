@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,13 +174,13 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-7-gadts-generalized-algebraic-data-types"><a class="header" href="#chapter-7-gadts-generalized-algebraic-data-types">Chapter 7: GADTs (Generalized Algebraic Data Types)</a></h1>
-<h2 id="what-are-gadts"><a class="header" href="#what-are-gadts">What Are GADTs?</a></h2>
-<p>Regular ADTs give every constructor the same return type.
-GADTs let each constructor specify its own return type, enabling the type
-system to refine types within pattern match branches.</p>
-<h2 id="gadt-constructor-syntax"><a class="header" href="#gadt-constructor-syntax">GADT Constructor Syntax</a></h2>
-<p>Each constructor declares its argument and return type with <code>:</code> and <code>-&gt;</code>:</p>
+                        <h1 id="제7장-gadt-일반화된-대수적-데이터-타입-generalized-algebraic-data-types"><a class="header" href="#제7장-gadt-일반화된-대수적-데이터-타입-generalized-algebraic-data-types">제7장: GADT (일반화된 대수적 데이터 타입, Generalized Algebraic Data Types)</a></h1>
+<h2 id="gadt란-무엇인가"><a class="header" href="#gadt란-무엇인가">GADT란 무엇인가?</a></h2>
+<p>일반 ADT에서는 모든 생성자가 동일한 반환 타입을 가집니다.
+GADT는 각 생성자가 자신만의 반환 타입을 지정할 수 있게 하여,
+패턴 매치 분기 내에서 타입 시스템이 타입을 정제(refine)할 수 있도록 합니다.</p>
+<h2 id="gadt-생성자-구문"><a class="header" href="#gadt-생성자-구문">GADT 생성자 구문</a></h2>
+<p>각 생성자는 <code>:</code>와 <code>-&gt;</code>를 사용하여 인자 타입과 반환 타입을 선언합니다:</p>
 <pre><code>$ cat expr.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 let result = IntLit 42
@@ -188,18 +188,17 @@ let result = IntLit 42
 $ langthree expr.l3
 IntLit 42
 </code></pre>
-<p>Compare with a regular ADT where you would write <code>IntLit of int</code>.
-In GADT syntax, <code>IntLit : int -&gt; int Expr</code> means:</p>
+<p>일반 ADT에서 <code>IntLit of int</code>이라고 쓰는 것과 비교해 보세요.
+GADT 구문에서 <code>IntLit : int -&gt; int Expr</code>의 의미는 다음과 같습니다:</p>
 <ul>
-<li>Takes an <code>int</code> argument</li>
-<li>Produces a value of type <code>int Expr</code> (not just <code>'a Expr</code>)</li>
+<li><code>int</code> 인자를 받음</li>
+<li><code>int Expr</code> 타입의 값을 생성함 (단순한 <code>'a Expr</code>이 아님)</li>
 </ul>
-<p>Type parameters go after the type name: <code>type Expr 'a</code>.
-Return types use <code>int Expr</code> (not <code>Expr int</code> or <code>Expr&lt;int&gt;</code>).</p>
-<h2 id="type-refinement-in-match"><a class="header" href="#type-refinement-in-match">Type Refinement in Match</a></h2>
-<p>The key power of GADTs: when you match on a constructor, the compiler
-knows the exact type parameter. This requires a type annotation on the
-match expression:</p>
+<p>타입 매개변수는 타입 이름 뒤에 위치합니다: <code>type Expr 'a</code>.
+반환 타입은 <code>int Expr</code> 형태입니다 (<code>Expr int</code>이나 <code>Expr&lt;int&gt;</code>가 아님).</p>
+<h2 id="match에서의-타입-정제"><a class="header" href="#match에서의-타입-정제">match에서의 타입 정제</a></h2>
+<p>GADT의 핵심 능력: 생성자를 매치하면 컴파일러가 정확한 타입 매개변수를 알 수 있습니다.
+이를 위해 match 표현식에 타입 주석(annotation)이 필요합니다:</p>
 <pre><code>$ cat eval.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 let eval e =
@@ -212,15 +211,15 @@ let result = eval (IntLit 42)
 $ langthree eval.l3
 42
 </code></pre>
-<p>The annotation <code>: int</code> goes at the END of the match, inside the parentheses.
-This puts the match expression in “check mode” so the compiler can refine
-types per branch:</p>
+<p><code>: int</code> 주석은 match의 끝에, 괄호 안에 위치합니다.
+이렇게 하면 match 표현식이 “검사 모드(check mode)“에 놓여서 컴파일러가
+각 분기별로 타입을 정제할 수 있습니다:</p>
 <ul>
-<li>In the <code>IntLit n</code> branch, <code>n</code> is known to be <code>int</code></li>
-<li>In the <code>BoolLit b</code> branch, <code>b</code> is known to be <code>bool</code></li>
+<li><code>IntLit n</code> 분기에서 <code>n</code>은 <code>int</code>임이 확정됨</li>
+<li><code>BoolLit b</code> 분기에서 <code>b</code>는 <code>bool</code>임이 확정됨</li>
 </ul>
-<h2 id="the-annotation-is-required"><a class="header" href="#the-annotation-is-required">The Annotation Is Required</a></h2>
-<p>Without the type annotation, GADT matching fails with E0401:</p>
+<h2 id="주석은-필수"><a class="header" href="#주석은-필수">주석은 필수</a></h2>
+<p>타입 주석이 없으면 GADT 매칭은 E0401 오류로 실패합니다:</p>
 <pre><code>$ cat no_anno.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 let eval e =
@@ -234,9 +233,9 @@ error[E0401]: GADT match requires type annotation on scrutinee of type 'm
  --&gt; :0:0-1:0
    = hint: Add a type annotation to the match scrutinee: match (expr : Type) with ...
 </code></pre>
-<p>The fix: wrap the match in parentheses and add <code>: ResultType</code> at the end.</p>
-<h2 id="recursive-gadt-evaluation"><a class="header" href="#recursive-gadt-evaluation">Recursive GADT Evaluation</a></h2>
-<p>For recursive constructors like <code>Add</code>, use <code>let rec ... in</code>:</p>
+<p>해결 방법: match를 괄호로 감싸고 끝에 <code>: ResultType</code>을 추가하세요.</p>
+<h2 id="재귀-gadt-평가"><a class="header" href="#재귀-gadt-평가">재귀 GADT 평가</a></h2>
+<p><code>Add</code>와 같은 재귀 생성자의 경우 <code>let rec ... in</code>을 사용합니다:</p>
 <pre><code>$ cat calc.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr | Add : int Expr * int Expr -&gt; int Expr
 let result =
@@ -246,12 +245,12 @@ let result =
 $ langthree calc.l3
 42
 </code></pre>
-<p>Since <code>let rec</code> only works at expression level, the recursive evaluator
-is defined inside a <code>let ... in</code> block.</p>
-<h2 id="gadt-exhaustiveness"><a class="header" href="#gadt-exhaustiveness">GADT Exhaustiveness</a></h2>
-<p>The compiler correctly filters impossible constructors based on type
-information. Given a value of type <code>int Expr</code>, only <code>IntLit</code> and <code>Add</code>
-are possible – <code>BoolLit</code> cannot produce an <code>int Expr</code>:</p>
+<p><code>let rec</code>은 표현식 수준에서만 동작하므로, 재귀 평가기(evaluator)는
+<code>let ... in</code> 블록 안에 정의합니다.</p>
+<h2 id="gadt-완전성-검사"><a class="header" href="#gadt-완전성-검사">GADT 완전성 검사</a></h2>
+<p>컴파일러는 타입 정보를 기반으로 불가능한 생성자를 올바르게 필터링합니다.
+<code>int Expr</code> 타입의 값이 주어지면 <code>IntLit</code>과 <code>Add</code>만 가능합니다
+– <code>BoolLit</code>은 <code>int Expr</code>를 생성할 수 없습니다:</p>
 <pre><code>$ cat filter.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 let eval_int e =
@@ -263,10 +262,10 @@ let result = eval_int (IntLit 7)
 $ langthree filter.l3
 7
 </code></pre>
-<p>No warning about missing <code>BoolLit</code> – the compiler knows it is impossible
-for an <code>int Expr</code> value.</p>
-<h2 id="multiple-type-parameters-in-action"><a class="header" href="#multiple-type-parameters-in-action">Multiple Type Parameters in Action</a></h2>
-<p>GADTs can encode richer type relationships:</p>
+<p><code>BoolLit</code> 누락에 대한 경고가 없습니다 – 컴파일러가 <code>int Expr</code> 값에 대해
+이것이 불가능함을 알고 있기 때문입니다.</p>
+<h2 id="여러-타입-매개변수의-활용"><a class="header" href="#여러-타입-매개변수의-활용">여러 타입 매개변수의 활용</a></h2>
+<p>GADT는 더 풍부한 타입 관계를 인코딩할 수 있습니다:</p>
 <pre><code>$ cat typed.l3
 type Val 'a = VInt : int -&gt; int Val | VBool : bool -&gt; bool Val | VStr : string -&gt; string Val
 let show_int v =
@@ -278,8 +277,8 @@ let result = show_int (VInt 99)
 $ langthree typed.l3
 "99"
 </code></pre>
-<h2 id="practical-example-type-safe-evaluator"><a class="header" href="#practical-example-type-safe-evaluator">Practical Example: Type-Safe Evaluator</a></h2>
-<p>Combining everything – a small expression language with integer arithmetic:</p>
+<h2 id="실용-예제-타입-안전한-평가기"><a class="header" href="#실용-예제-타입-안전한-평가기">실용 예제: 타입 안전한 평가기</a></h2>
+<p>모든 것을 결합하여 – 정수 연산을 가진 작은 표현식 언어:</p>
 <pre><code>$ cat typed_eval.l3
 type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr | Add : int Expr * int Expr -&gt; int Expr | Neg : int Expr -&gt; int Expr
 let result =
@@ -289,21 +288,21 @@ let result =
 $ langthree typed_eval.l3
 7
 </code></pre>
-<p>The expression <code>Add(IntLit 10, Neg(IntLit 3))</code> evaluates to <code>10 + (-3) = 7</code>.
-Each constructor constrains its return type, so the compiler knows all branches
-produce an <code>int</code>.</p>
-<h2 id="summary-of-gadt-syntax"><a class="header" href="#summary-of-gadt-syntax">Summary of GADT Syntax</a></h2>
+<p><code>Add(IntLit 10, Neg(IntLit 3))</code> 표현식은 <code>10 + (-3) = 7</code>로 평가됩니다.
+각 생성자가 반환 타입을 제약하므로, 컴파일러는 모든 분기가
+<code>int</code>를 생성함을 알 수 있습니다.</p>
+<h2 id="gadt-구문-요약"><a class="header" href="#gadt-구문-요약">GADT 구문 요약</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Feature</th><th>Syntax</th></tr>
+<tr><th>기능</th><th>구문</th></tr>
 </thead>
 <tbody>
-<tr><td>Type declaration</td><td><code>type Expr 'a = ...</code></td></tr>
-<tr><td>Constructor</td><td><code>IntLit : int -&gt; int Expr</code></td></tr>
-<tr><td>Return type</td><td><code>int Expr</code> (param before name)</td></tr>
-<tr><td>Match annotation</td><td><code>(match e with | ... : int)</code></td></tr>
-<tr><td>If any ctor is GADT</td><td>All ctors treated as GADT</td></tr>
+<tr><td>타입 선언</td><td><code>type Expr 'a = ...</code></td></tr>
+<tr><td>생성자</td><td><code>IntLit : int -&gt; int Expr</code></td></tr>
+<tr><td>반환 타입</td><td><code>int Expr</code> (매개변수가 이름 앞에 위치)</td></tr>
+<tr><td>match 주석</td><td><code>(match e with | ... : int)</code></td></tr>
+<tr><td>하나의 생성자라도 GADT이면</td><td>모든 생성자가 GADT로 취급됨</td></tr>
 </tbody>
 </table>
 </div>

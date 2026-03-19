@@ -1,15 +1,13 @@
-# Chapter 14: Algorithms and Data Structures
+# 14장: Algorithms and Data Structures
 
-This chapter demonstrates how to implement classic algorithms and data structures
-in LangThree. If you have experience with functional programming in OCaml, Haskell,
-or similar languages, you will find the patterns familiar -- but LangThree has its
-own idioms worth understanding.
+이 장에서는 LangThree에서 전형적인 알고리즘과 자료구조를 구현하는 방법을 보여줍니다.
+OCaml, Haskell 또는 유사한 언어로 함수형 프로그래밍 경험이 있다면 익숙한 패턴이겠지만,
+LangThree만의 고유한 관용구를 이해할 필요가 있습니다.
 
-## Recursive Patterns in LangThree
+## LangThree의 재귀 패턴
 
-All recursion in LangThree uses `let rec` at the **expression level** with `in`.
-There is no `let rec` at module level. Recursive functions are defined inside an
-expression and chained together:
+LangThree의 모든 재귀는 `in`과 함께 **표현식 수준**에서 `let rec`을 사용합니다.
+모듈 수준의 `let rec`은 없습니다. 재귀 함수는 표현식 내부에서 정의되며 서로 체이닝됩니다:
 
 ```
 let result =
@@ -17,8 +15,8 @@ let result =
     in f 10
 ```
 
-When a recursive function needs **two or more parameters**, the second parameter
-is passed via a closure:
+재귀 함수가 **두 개 이상의 매개변수**를 필요로 할 때, 두 번째 매개변수는
+클로저를 통해 전달됩니다:
 
 ```
 let result =
@@ -26,7 +24,7 @@ let result =
     in f 1 2
 ```
 
-Multiple recursive helpers are chained with `let rec ... in let rec ... in`:
+여러 재귀 헬퍼는 `let rec ... in let rec ... in`으로 체이닝합니다:
 
 ```
 let answer =
@@ -36,15 +34,15 @@ let answer =
     in helper2 start
 ```
 
-This pattern appears throughout the chapter. Each algorithm is self-contained:
-define helpers with `let rec ... in`, then call the entry point at the end.
+이 패턴은 이 장 전체에 걸쳐 등장합니다. 각 알고리즘은 독립적으로 구성되어 있습니다:
+`let rec ... in`으로 헬퍼를 정의한 후, 마지막에 진입점을 호출합니다.
 
-## Number Theory
+## 정수론
 
-### Factorial
+### 팩토리얼
 
-The classic recursive factorial. Note that `let rec` must appear inside an
-expression -- here it lives inside the `let result = ...` binding:
+전형적인 재귀 팩토리얼입니다. `let rec`은 표현식 내부에 있어야 합니다
+-- 여기서는 `let result = ...` 바인딩 안에 위치합니다:
 
 ```
 $ cat factorial.l3
@@ -56,12 +54,12 @@ $ langthree factorial.l3
 3628800
 ```
 
-`fact 10` computes 10 * 9 * 8 * ... * 1 = 3628800.
+`fact 10`은 10 * 9 * 8 * ... * 1 = 3628800을 계산합니다.
 
-### Fibonacci
+### 피보나치
 
-Naive recursive Fibonacci. The double recursion makes this exponential, but it
-demonstrates the pattern clearly:
+단순 재귀 피보나치입니다. 이중 재귀로 인해 지수 시간이 걸리지만,
+패턴을 명확하게 보여줍니다:
 
 ```
 $ cat fibonacci.l3
@@ -73,13 +71,13 @@ $ langthree fibonacci.l3
 55
 ```
 
-The sequence is 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, **55**.
+수열은 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, **55**입니다.
 
-### GCD and LCM
+### GCD와 LCM
 
-Euclid's algorithm for greatest common divisor, then least common multiple
-derived from it. Since `gcd` needs two parameters and is recursive, the second
-parameter comes via a closure (`fun b -> ...`):
+유클리드 알고리즘으로 최대공약수를 구한 다음, 이를 이용해 최소공배수를 유도합니다.
+`gcd`는 두 개의 매개변수가 필요하고 재귀적이므로, 두 번째 매개변수는
+클로저(`fun b -> ...`)를 통해 전달됩니다:
 
 ```
 $ cat gcd_lcm.l3
@@ -93,15 +91,15 @@ $ langthree gcd_lcm.l3
 (12, 36)
 ```
 
-`gcd 48 36` reduces: gcd 48 36 -> gcd 36 12 -> gcd 12 0 -> 12.
-`lcm 12 18` computes 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36.
+`gcd 48 36`의 축약: gcd 48 36 -> gcd 36 12 -> gcd 12 0 -> 12.
+`lcm 12 18`은 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36을 계산합니다.
 
-Note `a - (a / b) * b` is the modulo operation, since LangThree uses integer
-division for `/`.
+`a - (a / b) * b`는 나머지(modulo) 연산입니다. LangThree의 `/`는 정수 나눗셈이기
+때문입니다.
 
-### Exponentiation
+### 거듭제곱
 
-Compute `base^exp` by repeated multiplication:
+반복 곱셈으로 `base^exp`를 계산합니다:
 
 ```
 $ cat power.l3
@@ -113,16 +111,16 @@ $ langthree power.l3
 1024
 ```
 
-`power 2 10` computes 2^10 = 1024. The two-parameter recursive pattern is the
-same as `gcd`: the first parameter `base` is the `let rec` parameter, the second
-`exp` arrives via `fun exp -> ...`.
+`power 2 10`은 2^10 = 1024를 계산합니다. 두 매개변수 재귀 패턴은
+`gcd`와 동일합니다: 첫 번째 매개변수 `base`가 `let rec` 매개변수이고,
+두 번째 `exp`는 `fun exp -> ...`를 통해 전달됩니다.
 
-## List Utilities
+## 리스트 유틸리티
 
 ### Reverse
 
-Reverse a list using a tail-recursive accumulator. The accumulator `acc` is the
-`let rec` parameter; the list `xs` arrives via closure:
+꼬리 재귀 누적자를 사용하여 리스트를 뒤집습니다. 누적자 `acc`가
+`let rec` 매개변수이고, 리스트 `xs`는 클로저를 통해 전달됩니다:
 
 ```
 $ cat reverse.l3
@@ -134,13 +132,12 @@ $ langthree reverse.l3
 [5, 4, 3, 2, 1]
 ```
 
-This is tail-recursive: each step conses the head onto the accumulator and
-recurses on the tail. No stack growth.
+이것은 꼬리 재귀입니다: 각 단계에서 head를 누적자에 cons하고 tail에 대해 재귀합니다.
+스택이 증가하지 않습니다.
 
 ### Flatten
 
-Flatten a list of lists into a single list. This requires an `app` (append)
-helper:
+리스트의 리스트를 단일 리스트로 평탄화합니다. `app` (append) 헬퍼가 필요합니다:
 
 ```
 $ cat flatten.l3
@@ -154,12 +151,12 @@ $ langthree flatten.l3
 [1, 2, 3, 4, 5, 6]
 ```
 
-`flatten` processes each sub-list, appending it to the flattened rest.
+`flatten`은 각 하위 리스트를 처리하여 평탄화된 나머지에 덧붙입니다.
 
 ### Zip
 
-Combine two lists element-wise into a list of pairs. The nested match handles
-the case where either list runs out:
+두 리스트를 원소별로 쌍의 리스트로 결합합니다. 중첩된 match가 어느 한 리스트가
+끝나는 경우를 처리합니다:
 
 ```
 $ cat zip.l3
@@ -171,11 +168,11 @@ $ langthree zip.l3
 [(1, 10), (2, 20), (3, 30)]
 ```
 
-When the lists have different lengths, `zip` stops at the shorter one.
+리스트의 길이가 다르면 `zip`은 짧은 쪽에서 멈춥니다.
 
-### Maximum of a List
+### 리스트의 최댓값
 
-Find the maximum element. The base case matches a singleton list `x :: []`:
+최대 원소를 찾습니다. 기저 사례는 단일 원소 리스트 `x :: []`를 매칭합니다:
 
 ```
 $ cat max_list.l3
@@ -189,9 +186,8 @@ $ langthree max_list.l3
 
 ### Fold (Left)
 
-A left fold applies a binary function across a list, threading an accumulator.
-This is the workhorse of functional programming -- many other operations can be
-expressed as folds:
+왼쪽 폴드는 리스트에 이항 함수를 적용하며 누적자를 전달합니다.
+함수형 프로그래밍의 핵심 도구로, 다른 많은 연산을 폴드로 표현할 수 있습니다:
 
 ```
 $ cat fold.l3
@@ -203,14 +199,15 @@ $ langthree fold.l3
 55
 ```
 
-The fold computes 0 + 1*1 + 2*2 + 3*3 + 4*4 + 5*5 = 1 + 4 + 9 + 16 + 25 = 55.
+이 폴드는 0 + 1*1 + 2*2 + 3*3 + 4*4 + 5*5 = 1 + 4 + 9 + 16 + 25 = 55를 계산합니다.
 
-`fold` takes three parameters via nested closures: the function `f` is the
-`let rec` parameter, `acc` arrives via the first `fun`, and `xs` via the second.
+`fold`는 중첩 클로저를 통해 세 개의 매개변수를 받습니다: 함수 `f`가
+`let rec` 매개변수이고, `acc`는 첫 번째 `fun`을 통해, `xs`는 두 번째 `fun`을 통해
+전달됩니다.
 
-### Map via Fold
+### Fold를 이용한 Map
 
-Once you have `fold`, you can build `map` on top of it:
+`fold`가 있으면 그 위에 `map`을 구축할 수 있습니다:
 
 ```
 $ cat map_via_fold.l3
@@ -226,26 +223,28 @@ $ langthree map_via_fold.l3
 [1, 4, 9, 16, 25]
 ```
 
-The fold builds the result in reverse, so we reverse it at the end.
+폴드가 결과를 역순으로 생성하므로, 마지막에 뒤집습니다.
 
 ### Length
 
-Count the elements of a list:
+리스트의 원소 수를 셉니다:
 
 ```
 funlang> let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t in length [10, 20, 30, 40]
 4
 ```
 
-## Sorting Algorithms
+## 정렬 알고리즘
 
-Sorting is a great lens for comparing algorithmic approaches. All three sorts
-below take an unsorted list and return a new sorted list -- no mutation involved.
+정렬은 알고리즘적 접근 방식을 비교하기에 좋은 주제입니다. 아래 세 가지 정렬 모두
+정렬되지 않은 리스트를 받아 새로운 정렬된 리스트를 반환합니다 -- 변이(mutation)가
+관여하지 않습니다.
 
-### Insertion Sort
+### 삽입 정렬
 
-Build a sorted list by inserting each element into its correct position.
-Two recursive helpers: `insert` places one element, `sort` processes the list:
+각 원소를 올바른 위치에 삽입하여 정렬된 리스트를 구축합니다.
+두 개의 재귀 헬퍼가 있습니다: `insert`는 원소 하나를 배치하고, `sort`는 리스트를
+처리합니다:
 
 ```
 $ cat insertion_sort.l3
@@ -259,13 +258,13 @@ $ langthree insertion_sort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-`insert` walks the sorted list until it finds the right spot. `sort` recursively
-sorts the tail, then inserts the head. O(n^2) worst case, but simple and stable.
+`insert`는 올바른 위치를 찾을 때까지 정렬된 리스트를 순회합니다. `sort`는 tail을
+재귀적으로 정렬한 후 head를 삽입합니다. 최악의 경우 O(n^2)이지만, 단순하고 안정적입니다.
 
-### Quicksort
+### 퀵정렬
 
-Partition around a pivot, recursively sort each half, and append. This needs
-three helpers -- `filter`, `app` (append), and `qsort` itself:
+피벗을 기준으로 분할하고, 각 반쪽을 재귀적으로 정렬한 후 합칩니다.
+세 개의 헬퍼가 필요합니다 -- `filter`, `app` (append), 그리고 `qsort` 자체:
 
 ```
 $ cat quicksort.l3
@@ -281,14 +280,14 @@ $ langthree quicksort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-The pivot is simply the head of the list. `filter` selects elements less than
-the pivot (`lo`) and elements greater than or equal (`hi`). The sorted result
-is `qsort lo ++ [pivot] ++ qsort hi`.
+피벗은 단순히 리스트의 head입니다. `filter`가 피벗보다 작은 원소(`lo`)와
+크거나 같은 원소(`hi`)를 선택합니다. 정렬된 결과는
+`qsort lo ++ [pivot] ++ qsort hi`입니다.
 
-### Merge Sort
+### 병합 정렬
 
-Split the list in half, sort each half, then merge. This requires several
-helpers -- `length`, `take`, `drop`, `merge`, and `msort`:
+리스트를 반으로 나누고, 각 반쪽을 정렬한 후 병합합니다. 여러 헬퍼가 필요합니다
+-- `length`, `take`, `drop`, `merge`, 그리고 `msort`:
 
 ```
 $ cat merge_sort.l3
@@ -308,19 +307,19 @@ $ langthree merge_sort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-This is a top-down merge sort. `take` and `drop` split the list at the midpoint.
-`merge` interleaves two sorted lists by comparing heads. O(n log n) guaranteed.
+이것은 하향식 병합 정렬입니다. `take`과 `drop`이 리스트를 중간점에서 분할합니다.
+`merge`는 head를 비교하여 두 정렬된 리스트를 교차 배치합니다. O(n log n)이 보장됩니다.
 
-Notice how the `let rec ... in` chain builds up a library of helpers. Each later
-function can call all previous ones. This is the idiomatic LangThree pattern for
-non-trivial programs.
+`let rec ... in` 체인이 헬퍼 라이브러리를 구축하는 방식에 주목하세요. 이후 함수는
+이전에 정의된 모든 함수를 호출할 수 있습니다. 이것이 복잡한 프로그램을 위한
+LangThree의 관용적 패턴입니다.
 
-## Tree Data Structures
+## 트리 자료구조
 
-### Binary Search Tree and Tree Sort
+### 이진 탐색 트리와 트리 정렬
 
-Define a binary tree type, then implement insert, build, and in-order traversal.
-The result is a tree-based sort:
+이진 트리 타입을 정의한 후, 삽입, 구축, 중위 순회를 구현합니다.
+결과는 트리 기반 정렬입니다:
 
 ```
 $ cat tree_sort.l3
@@ -340,17 +339,16 @@ $ langthree tree_sort.l3
 [1, 2, 3, 5, 7, 8, 9]
 ```
 
-The `Tree` type is an algebraic data type with two constructors: `Leaf` (empty)
-and `Node` carrying a left subtree, a value, and a right subtree.
+`Tree` 타입은 두 개의 생성자를 가진 대수적 데이터 타입입니다: `Leaf` (비어 있음)와
+왼쪽 하위 트리, 값, 오른쪽 하위 트리를 포함하는 `Node`.
 
-`treeInsert` places a value into the BST by comparing with the node value and
-recursing left or right. `buildTree` folds a list into a tree by inserting each
-element. `inorder` traversal produces a sorted list.
+`treeInsert`는 노드 값과 비교하여 왼쪽 또는 오른쪽으로 재귀하며 BST에 값을 배치합니다.
+`buildTree`는 각 원소를 삽입하여 리스트를 트리로 접습니다.
+`inorder` 순회는 정렬된 리스트를 생성합니다.
 
-### Peano Naturals and Church-Style Arithmetic
+### 페아노 자연수와 Church 스타일 산술
 
-Natural numbers as an algebraic type, with addition and multiplication defined
-by structural recursion:
+자연수를 대수적 타입으로 표현하고, 구조적 재귀로 덧셈과 곱셈을 정의합니다:
 
 ```
 $ cat peano.l3
@@ -372,21 +370,21 @@ $ langthree peano.l3
 12
 ```
 
-`add` peels off `Succ` from `a` and wraps the result: add (Succ (Succ Zero)) b
-= Succ (Succ b). `mul` uses repeated addition: mul (Succ (Succ Zero)) b =
+`add`는 `a`에서 `Succ`를 벗기고 결과를 감쌉니다: add (Succ (Succ Zero)) b
+= Succ (Succ b). `mul`은 반복 덧셈을 사용합니다: mul (Succ (Succ Zero)) b =
 add b (add b Zero).
 
-Three times four is twelve -- verified by converting back to `int` with `toInt`.
+3 곱하기 4는 12입니다 -- `toInt`로 `int`로 변환하여 검증합니다.
 
-This example shows how LangThree's algebraic types and pattern matching make it
-natural to define and compute with custom numeric representations.
+이 예제는 LangThree의 대수적 타입과 패턴 매칭이 사용자 정의 수 표현을 정의하고
+계산하는 데 얼마나 자연스러운지 보여줍니다.
 
-## Practical Examples
+## 실용 예제
 
-### Balanced Parentheses Checker
+### 균형 괄호 검사기
 
-Check whether a sequence of parentheses is balanced. Since LangThree does not
-have a char type, we encode `(` as 1 and `)` as 0:
+괄호 시퀀스가 균형 잡혀 있는지 확인합니다. LangThree에는 char 타입이 없으므로,
+`(`를 1로, `)`를 0으로 인코딩합니다:
 
 ```
 $ cat balanced.l3
@@ -398,16 +396,16 @@ $ langthree balanced.l3
 (true, false)
 ```
 
-The first sequence `(())` is balanced, so `check` returns `true`. The second
-sequence `())( ` has a closing paren before a matching open, so `check` returns
-`false` immediately when `depth` would go negative.
+첫 번째 시퀀스 `(())`는 균형이 맞으므로 `check`가 `true`를 반환합니다. 두 번째
+시퀀스 `())(` 는 대응하는 여는 괄호 없이 닫는 괄호가 나타나므로, `depth`가
+음수가 될 때 `check`가 즉시 `false`를 반환합니다.
 
-The algorithm is a single pass: increment depth on `(`, decrement on `)`, fail
-if depth goes below zero, and succeed only if depth is zero at the end.
+이 알고리즘은 단일 패스입니다: `(`에서 depth를 증가시키고, `)`에서 감소시키며,
+depth가 0 아래로 내려가면 실패하고, 끝에서 depth가 0일 때만 성공합니다.
 
-### Option Chaining with Safe Division
+### Option 체이닝과 안전한 나눗셈
 
-Use the Prelude `Option` type to chain computations that might fail:
+Prelude의 `Option` 타입을 사용하여 실패할 수 있는 계산을 체이닝합니다:
 
 ```
 $ cat safe_div.l3
@@ -428,12 +426,12 @@ $ langthree safe_div.l3
 (Some 20, Some 5, None)
 ```
 
-`safediv 100 5` gives `Some 20`. Dividing that by 4 gives `Some 5`. Dividing by
-zero gives `None`, and the `None` propagates through subsequent `bind` calls.
+`safediv 100 5`는 `Some 20`을 줍니다. 그것을 4로 나누면 `Some 5`가 됩니다.
+0으로 나누면 `None`이 되며, `None`은 이후 `bind` 호출을 통해 전파됩니다.
 
-### Expression Evaluator
+### 수식 평가기
 
-Build a small arithmetic expression tree and evaluate it:
+간단한 산술 수식 트리를 구축하고 평가합니다:
 
 ```
 $ cat expr_eval.l3
@@ -450,13 +448,12 @@ $ langthree expr_eval.l3
 17
 ```
 
-`Mul (Lit 3, Lit 4)` evaluates to 12, then `Add (_, Lit 5)` gives 17. The
-recursive evaluator mirrors the tree structure exactly -- one branch per
-constructor.
+`Mul (Lit 3, Lit 4)`는 12로 평가되고, `Add (_, Lit 5)`는 17을 줍니다.
+재귀 평가기는 트리 구조를 정확히 반영합니다 -- 생성자당 하나의 분기입니다.
 
-### Counting with Filter and Length
+### Filter와 Length를 이용한 카운팅
 
-Combine helpers to count elements satisfying a predicate:
+헬퍼를 조합하여 조건을 만족하는 원소의 수를 셉니다:
 
 ```
 $ cat count_evens.l3
@@ -472,29 +469,29 @@ $ langthree count_evens.l3
 5
 ```
 
-There are 5 even numbers in 1..10. The predicate `x - (x / 2) * 2 = 0` checks
-evenness using integer arithmetic (since there is no `mod` operator).
+1..10에는 5개의 짝수가 있습니다. `x - (x / 2) * 2 = 0` 조건은
+정수 산술로 짝수 여부를 확인합니다 (`mod` 연산자가 없으므로).
 
-## Summary
+## 요약
 
-| Pattern | Example |
+| 패턴 | 예제 |
 |---|---|
-| Single-param recursion | `let rec f x = ... f ... in f start` |
-| Multi-param recursion | `let rec f x = fun y -> ... f ... in f a b` |
-| Chained helpers | `let rec h1 ... in let rec h2 ... in h2 start` |
-| Accumulator pattern | `let rec go acc = fun xs -> ... go (acc') t in go init list` |
-| ADT + recursion | `type T = ... let rec f t = match t with ...` |
-| Option chaining | `bind (safediv a b) (fun x -> safediv x c)` |
+| 단일 매개변수 재귀 | `let rec f x = ... f ... in f start` |
+| 다중 매개변수 재귀 | `let rec f x = fun y -> ... f ... in f a b` |
+| 체이닝된 헬퍼 | `let rec h1 ... in let rec h2 ... in h2 start` |
+| 누적자 패턴 | `let rec go acc = fun xs -> ... go (acc') t in go init list` |
+| ADT + 재귀 | `type T = ... let rec f t = match t with ...` |
+| Option 체이닝 | `bind (safediv a b) (fun x -> safediv x c)` |
 
-Key takeaways:
+핵심 요점:
 
-- **`let rec` is expression-level only.** All recursion lives inside a
-  `let name = let rec ... in ...` binding.
-- **Multi-parameter recursive functions** use `fun` for the second parameter
-  onward: `let rec f x = fun y -> ...`.
-- **Chain helpers** with `let rec ... in let rec ... in`. Each helper can call
-  all previously defined helpers.
-- **Algebraic data types** combine naturally with recursive functions for trees,
-  expression languages, and custom numeric types.
-- **The Prelude `Option` type** provides `None` and `Some` for safe computation
-  without exceptions.
+- **`let rec`은 표현식 수준에서만 사용 가능합니다.** 모든 재귀는
+  `let name = let rec ... in ...` 바인딩 안에 위치합니다.
+- **다중 매개변수 재귀 함수**는 두 번째 매개변수부터 `fun`을 사용합니다:
+  `let rec f x = fun y -> ...`.
+- **헬퍼 체이닝**은 `let rec ... in let rec ... in`으로 합니다. 각 헬퍼는
+  이전에 정의된 모든 헬퍼를 호출할 수 있습니다.
+- **대수적 데이터 타입**은 재귀 함수와 자연스럽게 결합되어 트리, 수식 언어,
+  사용자 정의 수 타입에 활용됩니다.
+- **Prelude의 `Option` 타입**은 예외 없이 안전한 계산을 위해 `None`과 `Some`을
+  제공합니다.

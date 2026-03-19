@@ -1,14 +1,14 @@
-# Chapter 7: GADTs (Generalized Algebraic Data Types)
+# 제7장: GADT (일반화된 대수적 데이터 타입, Generalized Algebraic Data Types)
 
-## What Are GADTs?
+## GADT란 무엇인가?
 
-Regular ADTs give every constructor the same return type.
-GADTs let each constructor specify its own return type, enabling the type
-system to refine types within pattern match branches.
+일반 ADT에서는 모든 생성자가 동일한 반환 타입을 가집니다.
+GADT는 각 생성자가 자신만의 반환 타입을 지정할 수 있게 하여,
+패턴 매치 분기 내에서 타입 시스템이 타입을 정제(refine)할 수 있도록 합니다.
 
-## GADT Constructor Syntax
+## GADT 생성자 구문
 
-Each constructor declares its argument and return type with `:` and `->`:
+각 생성자는 `:`와 `->`를 사용하여 인자 타입과 반환 타입을 선언합니다:
 
 ```
 $ cat expr.l3
@@ -19,19 +19,18 @@ $ langthree expr.l3
 IntLit 42
 ```
 
-Compare with a regular ADT where you would write `IntLit of int`.
-In GADT syntax, `IntLit : int -> int Expr` means:
-- Takes an `int` argument
-- Produces a value of type `int Expr` (not just `'a Expr`)
+일반 ADT에서 `IntLit of int`이라고 쓰는 것과 비교해 보세요.
+GADT 구문에서 `IntLit : int -> int Expr`의 의미는 다음과 같습니다:
+- `int` 인자를 받음
+- `int Expr` 타입의 값을 생성함 (단순한 `'a Expr`이 아님)
 
-Type parameters go after the type name: `type Expr 'a`.
-Return types use `int Expr` (not `Expr int` or `Expr<int>`).
+타입 매개변수는 타입 이름 뒤에 위치합니다: `type Expr 'a`.
+반환 타입은 `int Expr` 형태입니다 (`Expr int`이나 `Expr<int>`가 아님).
 
-## Type Refinement in Match
+## match에서의 타입 정제
 
-The key power of GADTs: when you match on a constructor, the compiler
-knows the exact type parameter. This requires a type annotation on the
-match expression:
+GADT의 핵심 능력: 생성자를 매치하면 컴파일러가 정확한 타입 매개변수를 알 수 있습니다.
+이를 위해 match 표현식에 타입 주석(annotation)이 필요합니다:
 
 ```
 $ cat eval.l3
@@ -47,15 +46,15 @@ $ langthree eval.l3
 42
 ```
 
-The annotation `: int` goes at the END of the match, inside the parentheses.
-This puts the match expression in "check mode" so the compiler can refine
-types per branch:
-- In the `IntLit n` branch, `n` is known to be `int`
-- In the `BoolLit b` branch, `b` is known to be `bool`
+`: int` 주석은 match의 끝에, 괄호 안에 위치합니다.
+이렇게 하면 match 표현식이 "검사 모드(check mode)"에 놓여서 컴파일러가
+각 분기별로 타입을 정제할 수 있습니다:
+- `IntLit n` 분기에서 `n`은 `int`임이 확정됨
+- `BoolLit b` 분기에서 `b`는 `bool`임이 확정됨
 
-## The Annotation Is Required
+## 주석은 필수
 
-Without the type annotation, GADT matching fails with E0401:
+타입 주석이 없으면 GADT 매칭은 E0401 오류로 실패합니다:
 
 ```
 $ cat no_anno.l3
@@ -72,11 +71,11 @@ error[E0401]: GADT match requires type annotation on scrutinee of type 'm
    = hint: Add a type annotation to the match scrutinee: match (expr : Type) with ...
 ```
 
-The fix: wrap the match in parentheses and add `: ResultType` at the end.
+해결 방법: match를 괄호로 감싸고 끝에 `: ResultType`을 추가하세요.
 
-## Recursive GADT Evaluation
+## 재귀 GADT 평가
 
-For recursive constructors like `Add`, use `let rec ... in`:
+`Add`와 같은 재귀 생성자의 경우 `let rec ... in`을 사용합니다:
 
 ```
 $ cat calc.l3
@@ -89,14 +88,14 @@ $ langthree calc.l3
 42
 ```
 
-Since `let rec` only works at expression level, the recursive evaluator
-is defined inside a `let ... in` block.
+`let rec`은 표현식 수준에서만 동작하므로, 재귀 평가기(evaluator)는
+`let ... in` 블록 안에 정의합니다.
 
-## GADT Exhaustiveness
+## GADT 완전성 검사
 
-The compiler correctly filters impossible constructors based on type
-information. Given a value of type `int Expr`, only `IntLit` and `Add`
-are possible -- `BoolLit` cannot produce an `int Expr`:
+컴파일러는 타입 정보를 기반으로 불가능한 생성자를 올바르게 필터링합니다.
+`int Expr` 타입의 값이 주어지면 `IntLit`과 `Add`만 가능합니다
+-- `BoolLit`은 `int Expr`를 생성할 수 없습니다:
 
 ```
 $ cat filter.l3
@@ -111,12 +110,12 @@ $ langthree filter.l3
 7
 ```
 
-No warning about missing `BoolLit` -- the compiler knows it is impossible
-for an `int Expr` value.
+`BoolLit` 누락에 대한 경고가 없습니다 -- 컴파일러가 `int Expr` 값에 대해
+이것이 불가능함을 알고 있기 때문입니다.
 
-## Multiple Type Parameters in Action
+## 여러 타입 매개변수의 활용
 
-GADTs can encode richer type relationships:
+GADT는 더 풍부한 타입 관계를 인코딩할 수 있습니다:
 
 ```
 $ cat typed.l3
@@ -131,9 +130,9 @@ $ langthree typed.l3
 "99"
 ```
 
-## Practical Example: Type-Safe Evaluator
+## 실용 예제: 타입 안전한 평가기
 
-Combining everything -- a small expression language with integer arithmetic:
+모든 것을 결합하여 -- 정수 연산을 가진 작은 표현식 언어:
 
 ```
 $ cat typed_eval.l3
@@ -146,16 +145,16 @@ $ langthree typed_eval.l3
 7
 ```
 
-The expression `Add(IntLit 10, Neg(IntLit 3))` evaluates to `10 + (-3) = 7`.
-Each constructor constrains its return type, so the compiler knows all branches
-produce an `int`.
+`Add(IntLit 10, Neg(IntLit 3))` 표현식은 `10 + (-3) = 7`로 평가됩니다.
+각 생성자가 반환 타입을 제약하므로, 컴파일러는 모든 분기가
+`int`를 생성함을 알 수 있습니다.
 
-## Summary of GADT Syntax
+## GADT 구문 요약
 
-| Feature | Syntax |
-|---------|--------|
-| Type declaration | `type Expr 'a = ...` |
-| Constructor | `IntLit : int -> int Expr` |
-| Return type | `int Expr` (param before name) |
-| Match annotation | `(match e with \| ... : int)` |
-| If any ctor is GADT | All ctors treated as GADT |
+| 기능 | 구문 |
+|------|------|
+| 타입 선언 | `type Expr 'a = ...` |
+| 생성자 | `IntLit : int -> int Expr` |
+| 반환 타입 | `int Expr` (매개변수가 이름 앞에 위치) |
+| match 주석 | `(match e with \| ... : int)` |
+| 하나의 생성자라도 GADT이면 | 모든 생성자가 GADT로 취급됨 |

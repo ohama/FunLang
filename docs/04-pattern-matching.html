@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,16 +174,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-4-pattern-matching"><a class="header" href="#chapter-4-pattern-matching">Chapter 4: Pattern Matching</a></h1>
-<p>Pattern matching is the primary control flow mechanism in LangThree.
-It combines destructuring, conditional dispatch, and variable binding in a single construct.
-The compiler checks exhaustiveness and compiles patterns to efficient decision trees.</p>
-<h2 id="basic-match-syntax"><a class="header" href="#basic-match-syntax">Basic Match Syntax</a></h2>
-<p>Match expressions use <code>|</code> pipes aligned with the <code>match</code> keyword:</p>
+                        <h1 id="4장-패턴-매칭-pattern-matching"><a class="header" href="#4장-패턴-매칭-pattern-matching">4장: 패턴 매칭 (Pattern Matching)</a></h1>
+<p>패턴 매칭(pattern matching)은 LangThree의 핵심 제어 흐름 메커니즘입니다.
+구조 분해(destructuring), 조건부 디스패치(conditional dispatch), 변수 바인딩(variable binding)을
+하나의 구문으로 결합합니다.
+컴파일러는 완전성(exhaustiveness)을 검사하고 패턴을 효율적인 결정 트리(decision tree)로 컴파일합니다.</p>
+<h2 id="기본-match-구문"><a class="header" href="#기본-match-구문">기본 Match 구문</a></h2>
+<p>Match 표현식은 <code>match</code> 키워드에 맞춰 정렬된 <code>|</code> 파이프를 사용합니다:</p>
 <pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
 "other"
 </code></pre>
-<p>In file mode, multi-line match uses indentation:</p>
+<p>파일 모드에서 여러 줄의 match는 들여쓰기를 사용합니다:</p>
 <pre><code>$ cat classify.l3
 let classify x =
     match x with
@@ -195,17 +196,17 @@ let result = classify 1
 $ langthree classify.l3
 "one"
 </code></pre>
-<p>Pipes must align with the <code>match</code> keyword column – not indented from it.</p>
-<h2 id="pattern-types"><a class="header" href="#pattern-types">Pattern Types</a></h2>
-<h3 id="constant-patterns"><a class="header" href="#constant-patterns">Constant Patterns</a></h3>
-<p>Integer and boolean literals:</p>
+<p>파이프는 <code>match</code> 키워드의 열(column)에 맞춰야 하며, 그보다 들여쓰기하면 안 됩니다.</p>
+<h2 id="패턴-종류"><a class="header" href="#패턴-종류">패턴 종류</a></h2>
+<h3 id="상수-패턴-constant-patterns"><a class="header" href="#상수-패턴-constant-patterns">상수 패턴 (Constant Patterns)</a></h3>
+<p>정수 및 불리언 리터럴:</p>
 <pre><code>funlang&gt; match true with | true -&gt; "yes" | false -&gt; "no"
 "yes"
 
 funlang&gt; match 3 with | 1 -&gt; "one" | 2 -&gt; "two" | 3 -&gt; "three" | _ -&gt; "other"
 "three"
 </code></pre>
-<p>Multiple constants for dispatch tables:</p>
+<p>디스패치 테이블을 위한 다중 상수 사용:</p>
 <pre><code>$ cat daytype.l3
 let dayType d =
     match d with
@@ -222,16 +223,16 @@ let result = dayType 3
 $ langthree daytype.l3
 "Wednesday"
 </code></pre>
-<p><strong>Note:</strong> String constant patterns are not supported. Use <code>if ... then ... else</code> for string comparison.</p>
-<h3 id="variable-and-wildcard-patterns"><a class="header" href="#variable-and-wildcard-patterns">Variable and Wildcard Patterns</a></h3>
-<p>A variable pattern binds the matched value to a name. <code>_</code> is a wildcard that discards the value:</p>
+<p><strong>참고:</strong> 문자열 상수 패턴은 지원되지 않습니다. 문자열 비교에는 <code>if ... then ... else</code>를 사용하세요.</p>
+<h3 id="변수-및-와일드카드-패턴-variable-and-wildcard-patterns"><a class="header" href="#변수-및-와일드카드-패턴-variable-and-wildcard-patterns">변수 및 와일드카드 패턴 (Variable and Wildcard Patterns)</a></h3>
+<p>변수 패턴은 매칭된 값을 이름에 바인딩합니다. <code>_</code>는 값을 버리는 와일드카드(wildcard)입니다:</p>
 <pre><code>funlang&gt; match 42 with | x -&gt; x + 1
 43
 
 funlang&gt; match 42 with | _ -&gt; 0
 0
 </code></pre>
-<p>Variable patterns always match – they act as catch-all cases:</p>
+<p>변수 패턴은 항상 매칭됩니다 – 모든 값을 잡는 기본 케이스(catch-all) 역할을 합니다:</p>
 <pre><code>$ cat sign.l3
 let sign x =
     match x with
@@ -243,21 +244,21 @@ let result = (sign 5, sign 0, sign (0 - 3))
 $ langthree sign.l3
 (1, 0, -1)
 </code></pre>
-<p><strong>Shadowing:</strong> A variable in a pattern shadows any outer binding with the same name:</p>
+<p><strong>섀도잉(Shadowing):</strong> 패턴 내의 변수는 같은 이름의 외부 바인딩을 가립니다:</p>
 <pre><code>funlang&gt; let x = 10 in match 5 with | x -&gt; x
 5
 </code></pre>
-<p>The inner <code>x</code> binds to 5, not 10.</p>
-<h3 id="tuple-patterns"><a class="header" href="#tuple-patterns">Tuple Patterns</a></h3>
-<p>Decompose tuples in-place:</p>
+<p>내부 <code>x</code>는 10이 아닌 5에 바인딩됩니다.</p>
+<h3 id="튜플-패턴-tuple-patterns"><a class="header" href="#튜플-패턴-tuple-patterns">튜플 패턴 (Tuple Patterns)</a></h3>
+<p>튜플을 제자리에서 분해합니다:</p>
 <pre><code>funlang&gt; match (1, 2) with | (a, b) -&gt; a + b
 3
 </code></pre>
-<p>Nested tuple patterns:</p>
+<p>중첩 튜플 패턴:</p>
 <pre><code>funlang&gt; match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -&gt; a + b + c + d
 10
 </code></pre>
-<p>Combine tuples with constants and wildcards:</p>
+<p>튜플을 상수 및 와일드카드와 결합:</p>
 <pre><code>$ cat classify_pair.l3
 let classify pair =
     match pair with
@@ -269,15 +270,15 @@ let result = classify (true, 42)
 $ langthree classify_pair.l3
 "positive-true: 42"
 </code></pre>
-<h3 id="list-patterns"><a class="header" href="#list-patterns">List Patterns</a></h3>
-<p>Match on empty list, cons, or specific lengths:</p>
+<h3 id="리스트-패턴-list-patterns"><a class="header" href="#리스트-패턴-list-patterns">리스트 패턴 (List Patterns)</a></h3>
+<p>빈 리스트, cons, 또는 특정 길이에 대해 매칭합니다:</p>
 <pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 
 funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
-<p>Precise length matching:</p>
+<p>정확한 길이 매칭:</p>
 <pre><code>$ cat list_describe.l3
 let describe xs =
     match xs with
@@ -295,8 +296,8 @@ let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 $ langthree list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 </code></pre>
-<h3 id="constructor-patterns"><a class="header" href="#constructor-patterns">Constructor Patterns</a></h3>
-<p>Match algebraic data type constructors:</p>
+<h3 id="생성자-패턴-constructor-patterns"><a class="header" href="#생성자-패턴-constructor-patterns">생성자 패턴 (Constructor Patterns)</a></h3>
+<p>대수적 데이터 타입(algebraic data type)의 생성자를 매칭합니다:</p>
 <pre><code>$ cat shape.l3
 type Shape = Circle of int | Rect of int * int
 
@@ -309,7 +310,7 @@ let result = area (Circle 5)
 $ langthree shape.l3
 75
 </code></pre>
-<p>Constructors without data (nullary):</p>
+<p>데이터가 없는 생성자 (nullary):</p>
 <pre><code>$ cat card.l3
 type Card = Ace | King | Queen | Jack | Num of int
 
@@ -326,7 +327,7 @@ let result = value Ace + value King + value (Num 5)
 $ langthree card.l3
 26
 </code></pre>
-<p>Wildcard inside constructors:</p>
+<p>생성자 내부에서 와일드카드 사용:</p>
 <pre><code>$ cat is_leaf.l3
 type Tree = Leaf | Node of Tree * int * Tree
 
@@ -340,9 +341,9 @@ let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
 $ langthree is_leaf.l3
 (true, false)
 </code></pre>
-<h3 id="nested-patterns"><a class="header" href="#nested-patterns">Nested Patterns</a></h3>
-<p>Patterns compose arbitrarily – constructors inside constructors, lists inside tuples, etc:</p>
-<p><strong>Option inside Option:</strong></p>
+<h3 id="중첩-패턴-nested-patterns"><a class="header" href="#중첩-패턴-nested-patterns">중첩 패턴 (Nested Patterns)</a></h3>
+<p>패턴은 자유롭게 합성할 수 있습니다 – 생성자 안의 생성자, 튜플 안의 리스트 등:</p>
+<p><strong>Option 안의 Option:</strong></p>
 <pre><code>$ cat deep_option.l3
 let deepGet opt =
     match opt with
@@ -360,11 +361,11 @@ let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 $ langthree deep_option.l3
 "42 | inner none | mid none | outer none"
 </code></pre>
-<p><strong>List of tuples:</strong></p>
+<p><strong>튜플의 리스트:</strong></p>
 <pre><code>funlang&gt; let rec sumFirst xs = match xs with | [] -&gt; 0 | (a, _) :: rest -&gt; a + sumFirst rest in sumFirst [(1, "a"), (2, "b"), (3, "c")]
 6
 </code></pre>
-<p><strong>Constructor with tuple inside list:</strong></p>
+<p><strong>리스트 안의 튜플을 포함하는 생성자:</strong></p>
 <pre><code>$ cat nested_complex.l3
 type Opt 'a = None | Some of 'a
 let result =
@@ -376,8 +377,8 @@ let result =
 $ langthree nested_complex.l3
 1
 </code></pre>
-<h3 id="record-patterns"><a class="header" href="#record-patterns">Record Patterns</a></h3>
-<p>Destructure record fields in a match:</p>
+<h3 id="레코드-패턴-record-patterns"><a class="header" href="#레코드-패턴-record-patterns">레코드 패턴 (Record Patterns)</a></h3>
+<p>match에서 레코드 필드를 구조 분해합니다:</p>
 <pre><code>$ cat record_match.l3
 type Point = { x: int; y: int }
 let p = { x = 1; y = 2 }
@@ -388,7 +389,7 @@ let result =
 $ langthree record_match.l3
 3
 </code></pre>
-<p>Partial record patterns – match only some fields:</p>
+<p>부분 레코드 패턴 – 일부 필드만 매칭:</p>
 <pre><code>$ cat record_partial.l3
 type Person = { name: string; age: int; active: bool }
 
@@ -401,10 +402,10 @@ let result = greet { name = "Alice"; age = 30; active = true }
 $ langthree record_partial.l3
 "Alice is 30"
 </code></pre>
-<h2 id="when-guards"><a class="header" href="#when-guards">When Guards</a></h2>
-<p>Add boolean conditions to patterns with <code>when</code>. The guard is evaluated
-after the pattern matches. If the guard fails, matching falls through to
-the next clause.</p>
+<h2 id="when-가드-when-guards"><a class="header" href="#when-가드-when-guards">When 가드 (When Guards)</a></h2>
+<p><code>when</code>을 사용하여 패턴에 불리언 조건을 추가합니다. 가드는
+패턴이 매칭된 후에 평가됩니다. 가드가 실패하면 다음 절(clause)로
+매칭이 계속됩니다.</p>
 <pre><code>$ cat guard.l3
 let classify n =
     match n with
@@ -416,8 +417,8 @@ let result = classify 5
 $ langthree guard.l3
 "positive"
 </code></pre>
-<h3 id="guards-for-range-classification"><a class="header" href="#guards-for-range-classification">Guards for Range Classification</a></h3>
-<p>Multiple guards create range-based dispatch:</p>
+<h3 id="범위-분류를-위한-가드-guards-for-range-classification"><a class="header" href="#범위-분류를-위한-가드-guards-for-range-classification">범위 분류를 위한 가드 (Guards for Range Classification)</a></h3>
+<p>여러 가드를 사용하여 범위 기반 디스패치를 만들 수 있습니다:</p>
 <pre><code>$ cat grade.l3
 let grade score =
     match score with
@@ -431,8 +432,8 @@ let result = grade 85
 $ langthree grade.l3
 "B"
 </code></pre>
-<h3 id="guards-with-constructors"><a class="header" href="#guards-with-constructors">Guards with Constructors</a></h3>
-<p>Combine structural matching with value conditions:</p>
+<h3 id="생성자와-가드-결합"><a class="header" href="#생성자와-가드-결합">생성자와 가드 결합</a></h3>
+<p>구조적 매칭과 값 조건을 결합합니다:</p>
 <pre><code>$ cat shape_guard.l3
 type Shape = Circle of int | Rect of int * int
 
@@ -450,9 +451,9 @@ let result = (r1, r2, r3)
 $ langthree shape_guard.l3
 (true, false, true)
 </code></pre>
-<h3 id="guard-fallthrough"><a class="header" href="#guard-fallthrough">Guard Fallthrough</a></h3>
-<p>When a guard fails, matching continues with the next clause – it does
-NOT skip to the default. This enables layered conditions:</p>
+<h3 id="가드-폴스루-guard-fallthrough"><a class="header" href="#가드-폴스루-guard-fallthrough">가드 폴스루 (Guard Fallthrough)</a></h3>
+<p>가드가 실패하면 기본 케이스로 건너뛰는 것이 <strong>아니라</strong> 다음 절로
+매칭이 계속됩니다. 이를 통해 계층적 조건을 구성할 수 있습니다:</p>
 <pre><code>$ cat fallthrough.l3
 let classify x =
     match x with
@@ -466,8 +467,8 @@ let result = classify 50
 $ langthree fallthrough.l3
 "medium"
 </code></pre>
-<h2 id="match-on-computed-values"><a class="header" href="#match-on-computed-values">Match on Computed Values</a></h2>
-<p>Match on the result of an expression, not just a variable:</p>
+<h2 id="계산된-값에-대한-match"><a class="header" href="#계산된-값에-대한-match">계산된 값에 대한 Match</a></h2>
+<p>변수뿐만 아니라 표현식의 결과에 대해서도 매칭할 수 있습니다:</p>
 <pre><code>$ cat match_expr.l3
 let abs x = if x &lt; 0 then 0 - x else x
 let classify x =
@@ -481,8 +482,8 @@ let result = classify (0 - 42)
 $ langthree match_expr.l3
 "medium"
 </code></pre>
-<h2 id="exhaustiveness-checking"><a class="header" href="#exhaustiveness-checking">Exhaustiveness Checking</a></h2>
-<p>The compiler warns about missing cases (W0001):</p>
+<h2 id="완전성-검사-exhaustiveness-checking"><a class="header" href="#완전성-검사-exhaustiveness-checking">완전성 검사 (Exhaustiveness Checking)</a></h2>
+<p>컴파일러는 누락된 케이스에 대해 경고합니다 (W0001):</p>
 <pre><code>$ cat exhaustive.l3
 type Color = Red | Green | Blue
 let result =
@@ -496,8 +497,8 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 </code></pre>
-<h3 id="redundancy-warnings"><a class="header" href="#redundancy-warnings">Redundancy Warnings</a></h3>
-<p>The compiler also warns about unreachable patterns (W0002):</p>
+<h3 id="중복-경고-redundancy-warnings"><a class="header" href="#중복-경고-redundancy-warnings">중복 경고 (Redundancy Warnings)</a></h3>
+<p>컴파일러는 도달 불가능한 패턴에 대해서도 경고합니다 (W0002):</p>
 <pre><code>$ cat redundant.l3
 let result =
     match 1 with
@@ -510,9 +511,9 @@ Warning: warning[W0002]: Redundant pattern match clause. This pattern is never r
    = hint: Remove this clause or reorder the patterns
 "catch all"
 </code></pre>
-<p>The wildcard <code>_</code> catches everything, so the <code>| 1</code> clause is unreachable.</p>
-<h3 id="exhaustiveness-with-tuples-of-adts"><a class="header" href="#exhaustiveness-with-tuples-of-adts">Exhaustiveness with Tuples of ADTs</a></h3>
-<p>Pattern exhaustiveness works across nested structures:</p>
+<p>와일드카드 <code>_</code>가 모든 값을 잡으므로, <code>| 1</code> 절은 도달 불가능합니다.</p>
+<h3 id="adt-튜플의-완전성-검사"><a class="header" href="#adt-튜플의-완전성-검사">ADT 튜플의 완전성 검사</a></h3>
+<p>패턴 완전성 검사는 중첩된 구조에서도 작동합니다:</p>
 <pre><code>$ cat color_mix.l3
 type Color = Red | Green | Blue
 
@@ -531,40 +532,40 @@ let result = mix Red Blue
 $ langthree color_mix.l3
 "purple"
 </code></pre>
-<h2 id="let-pattern-destructuring"><a class="header" href="#let-pattern-destructuring">Let-Pattern Destructuring</a></h2>
-<p>Destructure without a full <code>match</code>:</p>
+<h2 id="let-패턴-구조-분해-let-pattern-destructuring"><a class="header" href="#let-패턴-구조-분해-let-pattern-destructuring">Let 패턴 구조 분해 (Let-Pattern Destructuring)</a></h2>
+<p>전체 <code>match</code> 없이 구조 분해할 수 있습니다:</p>
 <pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
 3
 
 funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
-<h2 id="decision-tree-compilation"><a class="header" href="#decision-tree-compilation">Decision Tree Compilation</a></h2>
-<p>LangThree compiles pattern matches to binary decision trees using the
-Jules Jacobs algorithm. This means:</p>
+<h2 id="결정-트리-컴파일-decision-tree-compilation"><a class="header" href="#결정-트리-컴파일-decision-tree-compilation">결정 트리 컴파일 (Decision Tree Compilation)</a></h2>
+<p>LangThree는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
+이진 결정 트리(binary decision tree)로 컴파일합니다. 이는 다음을 의미합니다:</p>
 <ul>
-<li><strong>No redundant tests:</strong> Each constructor is tested at most once per execution path</li>
-<li><strong>Efficient dispatch:</strong> O(depth) per match, not O(clauses)</li>
-<li><strong>Clause sharing:</strong> Common sub-patterns share decision nodes</li>
+<li><strong>중복 테스트 없음:</strong> 각 생성자는 실행 경로당 최대 한 번만 테스트됩니다</li>
+<li><strong>효율적인 디스패치:</strong> match당 O(depth)이며, O(clauses)가 아닙니다</li>
+<li><strong>절 공유:</strong> 공통 하위 패턴이 결정 노드를 공유합니다</li>
 </ul>
-<p>You don’t need to think about this for correctness, but it means complex
-matches are efficient even with many clauses.</p>
-<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
-<h3 id="recursive-list-processing"><a class="header" href="#recursive-list-processing">Recursive List Processing</a></h3>
-<p>The standard pattern for list recursion: match empty vs cons, recurse on tail.</p>
-<p><strong>Sum a list:</strong></p>
+<p>정확성을 위해 이를 신경 쓸 필요는 없지만, 많은 절이 있는 복잡한
+매칭도 효율적으로 처리된다는 것을 의미합니다.</p>
+<h2 id="실전-예제"><a class="header" href="#실전-예제">실전 예제</a></h2>
+<h3 id="재귀적-리스트-처리"><a class="header" href="#재귀적-리스트-처리">재귀적 리스트 처리</a></h3>
+<p>리스트 재귀의 표준 패턴: 빈 리스트와 cons를 매칭하고, 꼬리(tail)에 대해 재귀합니다.</p>
+<p><strong>리스트 합계:</strong></p>
 <pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
-<p><strong>Count elements:</strong></p>
+<p><strong>요소 개수 세기:</strong></p>
 <pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]
 3
 </code></pre>
-<p><strong>Filter with predicate (closure capture):</strong></p>
+<p><strong>조건 함수로 필터링 (클로저 캡처):</strong></p>
 <pre><code>funlang&gt; let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t in filter (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5, 6]
 [4, 5, 6]
 </code></pre>
-<p><strong>Take while predicate holds:</strong></p>
+<p><strong>조건이 참인 동안 가져오기(take while):</strong></p>
 <pre><code>$ cat take_while.l3
 let result =
     let rec takeWhile pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: takeWhile pred t else []
@@ -573,8 +574,8 @@ let result =
 $ langthree take_while.l3
 [1, 2, 3, 4]
 </code></pre>
-<h3 id="adt-expression-evaluator"><a class="header" href="#adt-expression-evaluator">ADT Expression Evaluator</a></h3>
-<p>Pattern matching shines with recursive ADT traversal:</p>
+<h3 id="adt-표현식-평가기-adt-expression-evaluator"><a class="header" href="#adt-표현식-평가기-adt-expression-evaluator">ADT 표현식 평가기 (ADT Expression Evaluator)</a></h3>
+<p>패턴 매칭은 재귀적 ADT 순회에서 특히 빛을 발합니다:</p>
 <pre><code>$ cat expr_eval.l3
 type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
 
@@ -585,9 +586,9 @@ let result =
 $ langthree expr_eval.l3
 17
 </code></pre>
-<p><code>eval (Add (Mul (Num 3, Num 4), Num 5))</code> computes <code>(3 * 4) + 5 = 17</code>.</p>
-<h3 id="lookup-in-association-list"><a class="header" href="#lookup-in-association-list">Lookup in Association List</a></h3>
-<p>Pattern matching on list of tuples for key-value lookup:</p>
+<p><code>eval (Add (Mul (Num 3, Num 4), Num 5))</code>는 <code>(3 * 4) + 5 = 17</code>을 계산합니다.</p>
+<h3 id="연관-리스트에서-조회-lookup-in-association-list"><a class="header" href="#연관-리스트에서-조회-lookup-in-association-list">연관 리스트에서 조회 (Lookup in Association List)</a></h3>
+<p>튜플 리스트에 대한 패턴 매칭으로 키-값 조회를 수행합니다:</p>
 <pre><code>$ cat lookup.l3
 let result =
     let rec lookup key = fun xs -&gt; match xs with | [] -&gt; None | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
@@ -602,8 +603,8 @@ let result =
 $ langthree lookup.l3
 (Some "two", None)
 </code></pre>
-<h3 id="tree-traversal-with-pattern-matching"><a class="header" href="#tree-traversal-with-pattern-matching">Tree Traversal with Pattern Matching</a></h3>
-<p>All tree operations are natural pattern matches:</p>
+<h3 id="패턴-매칭을-이용한-트리-순회"><a class="header" href="#패턴-매칭을-이용한-트리-순회">패턴 매칭을 이용한 트리 순회</a></h3>
+<p>모든 트리 연산은 자연스러운 패턴 매칭으로 표현됩니다:</p>
 <pre><code>$ cat tree_ops.l3
 type Tree = Leaf | Node of Tree * int * Tree
 
@@ -620,8 +621,8 @@ let result =
 $ langthree tree_ops.l3
 (3, 4, 10)
 </code></pre>
-<h3 id="insertion-sort-via-pattern-matching"><a class="header" href="#insertion-sort-via-pattern-matching">Insertion Sort via Pattern Matching</a></h3>
-<p>Two recursive functions chained together:</p>
+<h3 id="패턴-매칭을-이용한-삽입-정렬-insertion-sort"><a class="header" href="#패턴-매칭을-이용한-삽입-정렬-insertion-sort">패턴 매칭을 이용한 삽입 정렬 (Insertion Sort)</a></h3>
+<p>두 개의 재귀 함수를 연결합니다:</p>
 <pre><code>$ cat isort.l3
 let sorted =
     let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
@@ -634,23 +635,23 @@ let result = sorted
 $ langthree isort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 </code></pre>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<h2 id="요약"><a class="header" href="#요약">요약</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Pattern</th><th>Syntax</th><th>Example</th></tr>
+<tr><th>패턴</th><th>구문</th><th>예제</th></tr>
 </thead>
 <tbody>
-<tr><td>Constant</td><td><code>0</code>, <code>true</code></td><td><code>| 0 -&gt; "zero"</code></td></tr>
-<tr><td>Variable</td><td><code>x</code></td><td><code>| x -&gt; x + 1</code></td></tr>
-<tr><td>Wildcard</td><td><code>_</code></td><td><code>| _ -&gt; "default"</code></td></tr>
-<tr><td>Tuple</td><td><code>(a, b)</code></td><td><code>| (x, y) -&gt; x + y</code></td></tr>
-<tr><td>List empty</td><td><code>[]</code></td><td><code>| [] -&gt; "empty"</code></td></tr>
-<tr><td>List cons</td><td><code>h :: t</code></td><td><code>| x :: rest -&gt; x</code></td></tr>
-<tr><td>Constructor</td><td><code>Some x</code></td><td><code>| Some v -&gt; v</code></td></tr>
-<tr><td>Record</td><td><code>{ x = a }</code></td><td><code>| { x = a } -&gt; a</code></td></tr>
-<tr><td>Nested</td><td><code>Some (x :: _)</code></td><td><code>| Some (h :: _) -&gt; h</code></td></tr>
-<tr><td>With guard</td><td><code>x when cond</code></td><td><code>| n when n &gt; 0 -&gt; "pos"</code></td></tr>
+<tr><td>상수</td><td><code>0</code>, <code>true</code></td><td><code>| 0 -&gt; "zero"</code></td></tr>
+<tr><td>변수</td><td><code>x</code></td><td><code>| x -&gt; x + 1</code></td></tr>
+<tr><td>와일드카드</td><td><code>_</code></td><td><code>| _ -&gt; "default"</code></td></tr>
+<tr><td>튜플</td><td><code>(a, b)</code></td><td><code>| (x, y) -&gt; x + y</code></td></tr>
+<tr><td>빈 리스트</td><td><code>[]</code></td><td><code>| [] -&gt; "empty"</code></td></tr>
+<tr><td>리스트 cons</td><td><code>h :: t</code></td><td><code>| x :: rest -&gt; x</code></td></tr>
+<tr><td>생성자</td><td><code>Some x</code></td><td><code>| Some v -&gt; v</code></td></tr>
+<tr><td>레코드</td><td><code>{ x = a }</code></td><td><code>| { x = a } -&gt; a</code></td></tr>
+<tr><td>중첩</td><td><code>Some (x :: _)</code></td><td><code>| Some (h :: _) -&gt; h</code></td></tr>
+<tr><td>가드 포함</td><td><code>x when cond</code></td><td><code>| n when n &gt; 0 -&gt; "pos"</code></td></tr>
 </tbody>
 </table>
 </div>

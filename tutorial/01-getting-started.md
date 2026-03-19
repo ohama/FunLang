@@ -1,28 +1,28 @@
-# Chapter 1: Getting Started
+# 1장: 시작하기 (Getting Started)
 
-LangThree is a statically-typed functional language with F#-style indentation syntax,
-algebraic data types (including GADTs), pattern matching with decision tree compilation,
-and a module system.
+LangThree는 F# 스타일의 들여쓰기 구문을 사용하는 정적 타입(statically-typed) 함수형 언어로,
+대수적 데이터 타입(algebraic data types, GADTs 포함), 결정 트리 컴파일 방식의 패턴 매칭(pattern matching),
+그리고 모듈 시스템을 지원합니다.
 
-## Running LangThree
+## LangThree 실행하기
 
-**REPL (interactive mode)** starts an interactive session (no arguments):
+**REPL (대화형 모드)** 는 인자 없이 실행하면 대화형 세션을 시작합니다:
 
 ```
 $ langthree
 funlang>
 ```
 
-Type expressions directly at the prompt and see results immediately.
+프롬프트에서 직접 표현식을 입력하면 결과를 즉시 확인할 수 있습니다.
 
-**Expression mode** evaluates a single expression from the command line:
+**표현식 모드(Expression mode)** 는 커맨드 라인에서 단일 표현식을 평가합니다:
 
 ```
 $ langthree --expr '1 + 2'
 3
 ```
 
-**File mode** evaluates a program file. The last binding's value is printed:
+**파일 모드(File mode)** 는 프로그램 파일을 평가합니다. 마지막 바인딩의 값이 출력됩니다:
 
 ```
 $ cat hello.l3
@@ -33,7 +33,7 @@ $ langthree hello.l3
 "hello world"
 ```
 
-**Diagnostic modes** inspect compilation without evaluating:
+**진단 모드(Diagnostic modes)** 는 평가 없이 컴파일 결과를 검사합니다:
 
 ```
 $ langthree --emit-ast --expr '1 + 2'
@@ -43,9 +43,9 @@ $ langthree --emit-type --expr '1 + 2'
 int
 ```
 
-## Integers and Arithmetic
+## 정수와 산술 연산
 
-Standard arithmetic operators with usual precedence. Division is integer division.
+표준 산술 연산자를 지원하며 일반적인 우선순위를 따릅니다. 나눗셈은 정수 나눗셈(integer division)입니다.
 
 ```
 funlang> 1 + 2 * 3
@@ -61,9 +61,9 @@ funlang> -5
 -5
 ```
 
-## Booleans
+## 불리언 (Booleans)
 
-`true` and `false` with short-circuit `&&` and `||`.
+`true`와 `false`를 지원하며, 단락 평가(short-circuit) 방식의 `&&`와 `||`를 사용합니다.
 
 ```
 funlang> true && false
@@ -73,7 +73,7 @@ funlang> true || false
 true
 ```
 
-Short-circuit evaluation means the right operand is not evaluated when unnecessary:
+단락 평가(short-circuit evaluation)란 불필요한 경우 오른쪽 피연산자를 평가하지 않는 것을 의미합니다:
 
 ```
 funlang> false && (1/0 = 0)
@@ -83,17 +83,17 @@ funlang> true || (1/0 = 0)
 true
 ```
 
-There is no `not` function. Negate booleans with `if`:
+`not` 함수는 없습니다. 불리언을 부정하려면 `if`를 사용하세요:
 
 ```
 funlang> if true then false else true
 false
 ```
 
-## Strings
+## 문자열 (Strings)
 
-String literals use double quotes with standard escape sequences (`\n`, `\t`, `\\`, `\"`).
-Concatenation uses the `+` operator.
+문자열 리터럴은 큰따옴표를 사용하며 표준 이스케이프 시퀀스(`\n`, `\t`, `\\`, `\"`)를 지원합니다.
+문자열 연결(concatenation)에는 `+` 연산자를 사용합니다.
 
 ```
 funlang> "hello" + " world"
@@ -104,7 +104,7 @@ funlang> "line1\nline2"
 line2"
 ```
 
-Built-in string functions:
+내장 문자열 함수:
 
 ```
 funlang> string_length "hello"
@@ -117,9 +117,9 @@ funlang> to_string 42
 "42"
 ```
 
-## Comparison Operators
+## 비교 연산자
 
-Equality is `=` (not `==`). Inequality is `<>`.
+등호는 `=`입니다 (`==`가 아닙니다). 부등호는 `<>`입니다.
 
 ```
 funlang> 1 = 1
@@ -135,18 +135,18 @@ funlang> 3 >= 3
 true
 ```
 
-## Conditionals
+## 조건문 (Conditionals)
 
 ```
 funlang> if 1 < 2 then "yes" else "no"
 "yes"
 ```
 
-Both branches must have the same type. The `else` branch is required.
+두 분기(branch)는 동일한 타입이어야 합니다. `else` 분기는 필수입니다.
 
-## Comments
+## 주석 (Comments)
 
-Line comments with `//` and block comments with `(* ... *)`:
+`//`로 줄 주석을, `(* ... *)`로 블록 주석을 작성합니다:
 
 ```
 funlang> 1 + 2 // this is ignored
@@ -156,9 +156,9 @@ funlang> (* block comment *) 1 + 2
 3
 ```
 
-## Unit Type
+## 유닛 타입 (Unit Type)
 
-The unit type `()` represents "no meaningful value", used for side effects:
+유닛 타입 `()`는 "의미 있는 값이 없음"을 나타내며, 부수 효과(side effects)에 사용됩니다:
 
 ```
 funlang> ()
@@ -169,9 +169,9 @@ hello
 ()
 ```
 
-## Syntax Notes
+## 구문 참고 사항
 
-- **Indentation-based** -- no semicolons or braces for blocks (F#-style)
-- **File mode**: `let` bindings at top level, no `in` needed; last binding's value is printed
-- **REPL / Expression mode**: use `let x = ... in body` for local bindings
-- `match` pipes must align with the `match` keyword column
+- **들여쓰기 기반** -- 블록에 세미콜론이나 중괄호가 필요 없습니다 (F# 스타일)
+- **파일 모드**: 최상위 레벨에서 `let` 바인딩을 사용하며 `in`이 필요 없습니다; 마지막 바인딩의 값이 출력됩니다
+- **REPL / 표현식 모드**: 지역 바인딩에 `let x = ... in body`를 사용합니다
+- `match` 파이프는 `match` 키워드의 열(column)에 맞춰 정렬해야 합니다

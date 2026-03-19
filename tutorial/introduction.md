@@ -1,4 +1,4 @@
-# LangThree Tutorial
+# LangThree 튜토리얼
 
 함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼입니다.
 
@@ -30,3 +30,4 @@ LangThree는 F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입
 **참조**
 - [Prelude and Standard Library](12-prelude.md) — Option, Prelude 시스템
 - [CLI Reference](13-cli-reference.md) — 모든 CLI 모드
+- [Algorithms and Data Structures](14-algorithms.md) — 알고리즘, 자료구조

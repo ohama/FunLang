@@ -1,8 +1,8 @@
-# Chapter 9: Exceptions
+# 제9장: 예외 (Exceptions)
 
-## Exception Declaration
+## 예외 선언
 
-Declare an exception type with `exception`:
+`exception`으로 예외 타입을 선언합니다:
 
 ```
 $ cat exc_basic.l3
@@ -17,9 +17,9 @@ $ langthree exc_basic.l3
 42
 ```
 
-## Exceptions with Data
+## 데이터를 가진 예외
 
-Constructors can carry values with `of`:
+생성자는 `of`를 사용하여 값을 포함할 수 있습니다:
 
 ```
 $ cat exc_data.l3
@@ -34,12 +34,12 @@ $ langthree exc_data.l3
 "error: bad input"
 ```
 
-Note: `raise` takes an atom, so constructor application needs parentheses:
-`raise (InvalidArg "bad input")`, not `raise InvalidArg "bad input"`.
+참고: `raise`는 원자(atom)를 받으므로, 생성자 적용에는 괄호가 필요합니다:
+`raise (InvalidArg "bad input")`, `raise InvalidArg "bad input"`이 아닙니다.
 
-## Multiple Handlers
+## 여러 핸들러
 
-Match different exception types in the same `try-with`:
+동일한 `try-with`에서 여러 예외 타입을 매치할 수 있습니다:
 
 ```
 $ cat exc_multi.l3
@@ -56,9 +56,9 @@ $ langthree exc_multi.l3
 "timeout after 30s"
 ```
 
-## When Guards
+## when 가드
 
-Add conditions to exception handlers with `when`:
+`when`으로 예외 핸들러에 조건을 추가할 수 있습니다:
 
 ```
 $ cat exc_guard.l3
@@ -74,12 +74,12 @@ $ langthree exc_guard.l3
 "error: 42"
 ```
 
-The guard is evaluated after the pattern matches. If it fails,
-matching continues with the next handler.
+가드는 패턴이 매치된 후에 평가됩니다. 가드가 실패하면
+다음 핸들러로 매칭이 계속됩니다.
 
-## Nested Try-With
+## 중첩된 try-with
 
-Unhandled exceptions propagate to outer handlers:
+처리되지 않은 예외는 외부 핸들러로 전파됩니다:
 
 ```
 $ cat exc_nested.l3
@@ -99,13 +99,13 @@ $ langthree exc_nested.l3
 "inner caught"
 ```
 
-If the inner handler does not match, the exception propagates outward.
-Change the inner `raise` to `raise Outer` and the inner handler's
-catch-all would match instead.
+내부 핸들러가 매치되지 않으면 예외가 외부로 전파됩니다.
+내부의 `raise`를 `raise Outer`로 변경하면 내부 핸들러의
+catch-all이 대신 매치됩니다.
 
-## Exception Re-raising
+## 예외 재발생
 
-When no handler matches, the exception automatically re-raises:
+어떤 핸들러도 매치되지 않으면 예외는 자동으로 재발생(re-raise)됩니다:
 
 ```
 $ cat exc_reraise.l3
@@ -125,10 +125,10 @@ $ langthree exc_reraise.l3
 "inner fallback"
 ```
 
-## Non-Exhaustive Handler Warning (W0003)
+## 비완전 핸들러 경고 (W0003)
 
-Since exceptions are an open type (new exceptions can be declared
-anywhere), the compiler warns when a handler lacks a catch-all:
+예외는 개방 타입(open type)이므로 (새로운 예외를 어디서든 선언할 수 있음),
+핸들러에 catch-all이 없으면 컴파일러가 경고합니다:
 
 ```
 $ cat exc_warn.l3
@@ -145,7 +145,7 @@ Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions ar
 42
 ```
 
-Add `| _ -> ...` to silence the warning:
+경고를 없애려면 `| _ -> ...`를 추가하세요:
 
 ```
 $ cat exc_nowarn.l3
@@ -160,9 +160,9 @@ $ langthree exc_nowarn.l3
 42
 ```
 
-## Practical Example: Safe Division
+## 실용 예제: 안전한 나눗셈
 
-Combining exceptions with functions:
+예외와 함수를 결합한 예제:
 
 ```
 $ cat safe_div.l3
@@ -180,9 +180,9 @@ $ langthree safe_div.l3
 -1
 ```
 
-## Syntax Notes
+## 구문 참고 사항
 
-- **`raise` takes an atom:** Use parentheses for constructors with data: `raise (Error msg)`
-- **`try` indentation:** Pipes in `with` handlers align like `match` pipes
-- **Open type:** Exception types cannot be exhaustively matched (hence W0003)
-- **Catch-all:** Add `| _ -> ...` as a final handler to cover all exceptions
+- **`raise`는 원자를 받음:** 데이터를 가진 생성자에는 괄호를 사용: `raise (Error msg)`
+- **`try` 들여쓰기:** `with` 핸들러의 파이프는 `match` 파이프와 같은 방식으로 정렬
+- **개방 타입:** 예외 타입은 완전한 매칭이 불가능 (따라서 W0003 경고 발생)
+- **catch-all:** 모든 예외를 포괄하려면 마지막 핸들러로 `| _ -> ...`를 추가

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,9 +174,9 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-8-modules-and-namespaces"><a class="header" href="#chapter-8-modules-and-namespaces">Chapter 8: Modules and Namespaces</a></h1>
-<h2 id="module-declaration"><a class="header" href="#module-declaration">Module Declaration</a></h2>
-<p>Define a module with <code>module M =</code> followed by an indented body:</p>
+                        <h1 id="제8장-모듈과-네임스페이스-modules-and-namespaces"><a class="header" href="#제8장-모듈과-네임스페이스-modules-and-namespaces">제8장: 모듈과 네임스페이스 (Modules and Namespaces)</a></h1>
+<h2 id="모듈-선언"><a class="header" href="#모듈-선언">모듈 선언</a></h2>
+<p><code>module M =</code> 뒤에 들여쓰기된 본문으로 모듈을 정의합니다:</p>
 <pre><code>$ cat config.l3
 module Config =
     let width = 800
@@ -187,9 +187,9 @@ let result = Config.title + " (" + to_string Config.width + "x" + to_string Conf
 $ langthree config.l3
 "My App (800x600)"
 </code></pre>
-<p>Indentation defines the module body scope – no <code>end</code> keyword needed.</p>
-<h2 id="qualified-access"><a class="header" href="#qualified-access">Qualified Access</a></h2>
-<p>Access module members with dot notation:</p>
+<p>들여쓰기가 모듈 본문의 범위를 결정합니다 – <code>end</code> 키워드가 필요하지 않습니다.</p>
+<h2 id="한정된-접근"><a class="header" href="#한정된-접근">한정된 접근</a></h2>
+<p>점 표기법(dot notation)으로 모듈 멤버에 접근합니다:</p>
 <pre><code>$ cat qualified.l3
 module Math =
     let double x = x * 2
@@ -199,8 +199,8 @@ let result = Math.double 5 + Math.triple 3
 $ langthree qualified.l3
 19
 </code></pre>
-<h2 id="open-directive"><a class="header" href="#open-directive">Open Directive</a></h2>
-<p>Bring all module members into scope with <code>open</code>:</p>
+<h2 id="open-지시문"><a class="header" href="#open-지시문">open 지시문</a></h2>
+<p><code>open</code>으로 모듈의 모든 멤버를 현재 스코프에 가져옵니다:</p>
 <pre><code>$ cat open_mod.l3
 module M =
     let x = 10
@@ -211,9 +211,9 @@ let result = x + y
 $ langthree open_mod.l3
 30
 </code></pre>
-<p>After <code>open M</code>, you can use <code>x</code> and <code>y</code> directly without the <code>M.</code> prefix.</p>
-<h2 id="nested-modules"><a class="header" href="#nested-modules">Nested Modules</a></h2>
-<p>Modules can nest. Each level uses further indentation:</p>
+<p><code>open M</code> 이후에는 <code>M.</code> 접두사 없이 <code>x</code>와 <code>y</code>를 직접 사용할 수 있습니다.</p>
+<h2 id="중첩-모듈"><a class="header" href="#중첩-모듈">중첩 모듈</a></h2>
+<p>모듈은 중첩될 수 있습니다. 각 수준은 더 깊은 들여쓰기를 사용합니다:</p>
 <pre><code>$ cat nested.l3
 module Outer =
     module Inner =
@@ -223,10 +223,10 @@ let result = Outer.Inner.value
 $ langthree nested.l3
 42
 </code></pre>
-<p>Chained qualified access works to any depth.</p>
-<h2 id="multiple-modules"><a class="header" href="#multiple-modules">Multiple Modules</a></h2>
-<p>A file can contain multiple module declarations. Modules are resolved
-top-to-bottom – later modules can reference earlier ones:</p>
+<p>연쇄된 한정 접근은 어떤 깊이에서든 동작합니다.</p>
+<h2 id="여러-모듈"><a class="header" href="#여러-모듈">여러 모듈</a></h2>
+<p>하나의 파일에 여러 모듈 선언을 포함할 수 있습니다. 모듈은
+위에서 아래로 해석됩니다 – 나중의 모듈이 이전 모듈을 참조할 수 있습니다:</p>
 <pre><code>$ cat multi_mod.l3
 module A =
     let x = 10
@@ -237,9 +237,9 @@ let result = A.x + B.y
 $ langthree multi_mod.l3
 30
 </code></pre>
-<h2 id="modules-with-type-declarations"><a class="header" href="#modules-with-type-declarations">Modules with Type Declarations</a></h2>
-<p>Modules can contain ADT definitions. Use <code>open</code> to bring constructors
-into scope, or qualified access for nullary constructors:</p>
+<h2 id="타입-선언을-포함하는-모듈"><a class="header" href="#타입-선언을-포함하는-모듈">타입 선언을 포함하는 모듈</a></h2>
+<p>모듈은 ADT 정의를 포함할 수 있습니다. 생성자를 스코프에 가져오려면
+<code>open</code>을 사용하거나, 인자 없는(nullary) 생성자에 대해 한정된 접근을 사용합니다:</p>
 <pre><code>$ cat mod_type.l3
 module Colors =
     type Color = Red | Green | Blue
@@ -253,7 +253,7 @@ let result =
 $ langthree mod_type.l3
 "green"
 </code></pre>
-<p>Qualified constructor access works for both nullary and data-carrying constructors:</p>
+<p>한정된 생성자 접근은 인자 없는 생성자와 데이터를 가진 생성자 모두에서 동작합니다:</p>
 <pre><code>$ cat mod_ctor.l3
 module M =
     type Opt = MNone | MSome of int
@@ -262,8 +262,8 @@ let result = M.MSome 42
 $ langthree mod_ctor.l3
 MSome 42
 </code></pre>
-<h2 id="module-functions-with-pattern-matching"><a class="header" href="#module-functions-with-pattern-matching">Module Functions with Pattern Matching</a></h2>
-<p>Combine module functions with ADTs:</p>
+<h2 id="패턴-매칭을-사용하는-모듈-함수"><a class="header" href="#패턴-매칭을-사용하는-모듈-함수">패턴 매칭을 사용하는 모듈 함수</a></h2>
+<p>모듈 함수와 ADT를 결합할 수 있습니다:</p>
 <pre><code>$ cat mod_fn.l3
 module M =
     type Opt = MNone | MSome of int
@@ -276,8 +276,8 @@ let result = M.unwrap (M.MSome 42)
 $ langthree mod_fn.l3
 42
 </code></pre>
-<h2 id="namespace-declaration"><a class="header" href="#namespace-declaration">Namespace Declaration</a></h2>
-<p>A <code>namespace</code> declaration wraps the entire file’s contents:</p>
+<h2 id="네임스페이스-선언"><a class="header" href="#네임스페이스-선언">네임스페이스 선언</a></h2>
+<p><code>namespace</code> 선언은 파일의 전체 내용을 감쌉니다:</p>
 <pre><code>$ cat ns.l3
 namespace App
 let x = 42
@@ -286,10 +286,10 @@ let result = x + 1
 $ langthree ns.l3
 43
 </code></pre>
-<p>Unlike <code>module</code>, a namespace does not create a nested scope – declarations
-are at the top level.</p>
-<h2 id="practical-example-layered-configuration"><a class="header" href="#practical-example-layered-configuration">Practical Example: Layered Configuration</a></h2>
-<p>Multiple modules organizing related values:</p>
+<p><code>module</code>과 달리 namespace는 중첩된 스코프를 생성하지 않습니다 – 선언은
+최상위 수준에 위치합니다.</p>
+<h2 id="실용-예제-계층화된-설정"><a class="header" href="#실용-예제-계층화된-설정">실용 예제: 계층화된 설정</a></h2>
+<p>관련된 값을 정리하는 여러 모듈:</p>
 <pre><code>$ cat layers.l3
 module DB =
     let host = "localhost"
@@ -302,12 +302,12 @@ let result = App.name + " v" + to_string App.version + " -&gt; " + DB.host + ":"
 $ langthree layers.l3
 "MyService v1 -&gt; localhost:5432"
 </code></pre>
-<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
+<h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <ul>
-<li><strong>Indentation-based:</strong> Module body is delimited by indentation, not <code>end</code> or <code>}</code></li>
-<li><strong>Top-to-bottom ordering:</strong> Modules must be defined before they are referenced (no circular dependencies)</li>
-<li><strong><code>module M =</code></strong> uses <code>=</code> for nested modules; top-level <code>namespace</code> has no <code>=</code></li>
-<li><strong>Qualified access</strong> works for values, functions, and constructors</li>
+<li><strong>들여쓰기 기반:</strong> 모듈 본문은 들여쓰기로 구분되며, <code>end</code>나 <code>}</code>가 아님</li>
+<li><strong>위에서 아래 순서:</strong> 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)</li>
+<li><strong><code>module M =</code></strong> 은 중첩 모듈에 <code>=</code>을 사용; 최상위 <code>namespace</code>는 <code>=</code>이 없음</li>
+<li><strong>한정된 접근</strong>은 값, 함수, 생성자에 대해 동작함</li>
 </ul>
 
                     </main>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
+            window.path_to_searchindex_js = "searchindex-407c0bff.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -174,9 +174,9 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="chapter-5-algebraic-data-types"><a class="header" href="#chapter-5-algebraic-data-types">Chapter 5: Algebraic Data Types</a></h1>
-<h2 id="simple-enumerations"><a class="header" href="#simple-enumerations">Simple Enumerations</a></h2>
-<p>Define a type with named constructors:</p>
+                        <h1 id="제5장-대수적-데이터-타입-algebraic-data-types"><a class="header" href="#제5장-대수적-데이터-타입-algebraic-data-types">제5장: 대수적 데이터 타입 (Algebraic Data Types)</a></h1>
+<h2 id="단순-열거형"><a class="header" href="#단순-열거형">단순 열거형</a></h2>
+<p>이름 있는 생성자(constructor)를 가진 타입을 정의합니다:</p>
 <pre><code>$ cat color.l3
 type Color = Red | Green | Blue
 let result =
@@ -188,8 +188,8 @@ let result =
 $ langthree color.l3
 "green"
 </code></pre>
-<h2 id="leading-pipe-syntax"><a class="header" href="#leading-pipe-syntax">Leading Pipe Syntax</a></h2>
-<p>For multi-line type definitions, a leading pipe is allowed:</p>
+<h2 id="선행-파이프-구문"><a class="header" href="#선행-파이프-구문">선행 파이프 구문</a></h2>
+<p>여러 줄의 타입 정의에서는 선행 파이프(leading pipe)를 사용할 수 있습니다:</p>
 <pre><code>$ cat direction.l3
 type Direction =
     | North
@@ -206,8 +206,8 @@ let result =
 $ langthree direction.l3
 "up"
 </code></pre>
-<h2 id="constructors-with-data"><a class="header" href="#constructors-with-data">Constructors with Data</a></h2>
-<p>Constructors can carry values with <code>of</code>:</p>
+<h2 id="데이터를-가진-생성자"><a class="header" href="#데이터를-가진-생성자">데이터를 가진 생성자</a></h2>
+<p>생성자는 <code>of</code>를 사용하여 값을 포함할 수 있습니다:</p>
 <pre><code>$ cat shape.l3
 type Shape = Circle of int | Rect of int * int
 let area s =
@@ -219,9 +219,9 @@ let result = area (Rect (3, 4))
 $ langthree shape.l3
 12
 </code></pre>
-<p>A constructor with a tuple argument is destructured in the pattern.</p>
-<h2 id="parametric-types"><a class="header" href="#parametric-types">Parametric Types</a></h2>
-<p>Type parameters go AFTER the type name:</p>
+<p>튜플 인자를 가진 생성자는 패턴에서 구조 분해(destructuring)됩니다.</p>
+<h2 id="매개변수화된-타입"><a class="header" href="#매개변수화된-타입">매개변수화된 타입</a></h2>
+<p>타입 매개변수(type parameter)는 타입 이름 뒤에 위치합니다:</p>
 <pre><code>$ cat option.l3
 type Option 'a = None | Some of 'a
 let x = Some 42
@@ -233,12 +233,12 @@ let result =
 $ langthree option.l3
 42
 </code></pre>
-<p>Check inferred types with <code>--emit-type</code>:</p>
+<p><code>--emit-type</code>으로 추론된 타입을 확인할 수 있습니다:</p>
 <pre><code>$ langthree --emit-type option.l3
 result : int
 x : Option&lt;int&gt;
 </code></pre>
-<p>Multiple type parameters:</p>
+<p>여러 개의 타입 매개변수도 사용할 수 있습니다:</p>
 <pre><code>$ cat either.l3
 type Either 'a 'b = Left of 'a | Right of 'b
 let result =
@@ -249,8 +249,8 @@ let result =
 $ langthree either.l3
 42
 </code></pre>
-<h2 id="recursive-types"><a class="header" href="#recursive-types">Recursive Types</a></h2>
-<p>Types can refer to themselves:</p>
+<h2 id="재귀-타입"><a class="header" href="#재귀-타입">재귀 타입</a></h2>
+<p>타입은 자기 자신을 참조할 수 있습니다:</p>
 <pre><code>$ cat intlist.l3
 type IntList = Nil | Cons of int * IntList
 let xs = Cons (1, Cons (2, Cons (3, Nil)))
@@ -261,7 +261,7 @@ let result =
 $ langthree intlist.l3
 6
 </code></pre>
-<p>Binary tree with a depth function:</p>
+<p>깊이(depth) 함수를 가진 이진 트리:</p>
 <pre><code>$ cat tree.l3
 type Tree = Leaf of int | Branch of Tree * Tree
 let t = Branch (Leaf 1, Branch (Leaf 2, Leaf 3))
@@ -272,10 +272,10 @@ let result =
 $ langthree tree.l3
 3
 </code></pre>
-<p>Note: <code>let rec</code> only works at expression level (with <code>in</code>), not at module level.
-For recursive functions in file mode, embed <code>let rec ... in</code> inside a top-level <code>let</code>.</p>
-<h2 id="mutually-recursive-types"><a class="header" href="#mutually-recursive-types">Mutually Recursive Types</a></h2>
-<p>Use <code>and</code> to define types that reference each other:</p>
+<p>참고: <code>let rec</code>은 표현식 수준(<code>in</code>과 함께)에서만 동작하며, 모듈 수준에서는 사용할 수 없습니다.
+파일 모드에서 재귀 함수를 사용하려면 최상위 <code>let</code> 안에 <code>let rec ... in</code>을 포함시키세요.</p>
+<h2 id="상호-재귀-타입"><a class="header" href="#상호-재귀-타입">상호 재귀 타입</a></h2>
+<p><code>and</code>를 사용하여 서로를 참조하는 타입을 정의할 수 있습니다:</p>
 <pre><code>$ cat mutual.l3
 type Tree = Leaf of int | Node of Forest
 and Forest = Empty | Trees of Tree * Forest
@@ -284,8 +284,8 @@ let result = Node (Trees (Leaf 1, Trees (Leaf 2, Empty)))
 $ langthree mutual.l3
 Node (Trees ((Leaf 1, Trees ((Leaf 2, Empty)))))
 </code></pre>
-<h2 id="exhaustiveness-checking"><a class="header" href="#exhaustiveness-checking">Exhaustiveness Checking</a></h2>
-<p>The compiler warns when match patterns are incomplete:</p>
+<h2 id="완전성-검사"><a class="header" href="#완전성-검사">완전성 검사</a></h2>
+<p>컴파일러는 match 패턴이 불완전할 때 경고합니다:</p>
 <pre><code>$ cat exhaustive.l3
 type Color = Red | Green | Blue
 let result =
@@ -299,10 +299,10 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 </code></pre>
-<p>The program still runs, but the warning tells you which cases are missing.
-Add a wildcard <code>_</code> or cover all constructors to silence it.</p>
-<h2 id="practical-example-simple-calculator"><a class="header" href="#practical-example-simple-calculator">Practical Example: Simple Calculator</a></h2>
-<p>An expression type for a calculator:</p>
+<p>프로그램은 여전히 실행되지만, 경고가 누락된 케이스를 알려줍니다.
+와일드카드 <code>_</code>를 추가하거나 모든 생성자를 다루면 경고가 사라집니다.</p>
+<h2 id="실용-예제-간단한-계산기"><a class="header" href="#실용-예제-간단한-계산기">실용 예제: 간단한 계산기</a></h2>
+<p>계산기를 위한 표현식 타입:</p>
 <pre><code>$ cat calc.l3
 type Expr = Num of int | Plus of Expr * Expr | Mul of Expr * Expr
 let e = Plus (Num 2, Mul (Num 3, Num 4))

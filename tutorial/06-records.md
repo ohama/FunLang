@@ -1,8 +1,8 @@
-# Chapter 6: Records
+# 제6장: 레코드 (Records)
 
-## Record Type Declaration
+## 레코드 타입 선언
 
-Define a record with named fields:
+이름 있는 필드를 가진 레코드를 정의합니다:
 
 ```
 $ cat point.l3
@@ -14,12 +14,12 @@ $ langthree point.l3
 7
 ```
 
-**Important:** Field names must be globally unique across all record types.
-Two record types cannot share a field name.
+**중요:** 필드 이름은 모든 레코드 타입에 걸쳐 전역적으로 고유해야 합니다.
+두 레코드 타입이 같은 필드 이름을 공유할 수 없습니다.
 
-## Field Access
+## 필드 접근
 
-Use dot notation to access fields:
+점 표기법(dot notation)으로 필드에 접근합니다:
 
 ```
 $ cat access.l3
@@ -31,9 +31,9 @@ $ langthree access.l3
 "Alice is 30"
 ```
 
-## Chained Field Access
+## 연쇄 필드 접근
 
-Dot notation chains for nested records:
+중첩된 레코드에 대해 점 표기법을 연쇄할 수 있습니다:
 
 ```
 $ cat nested.l3
@@ -46,9 +46,9 @@ $ langthree nested.l3
 42
 ```
 
-## Copy-and-Update
+## 복사 후 갱신
 
-Create a modified copy with `{ record with field = value }`:
+`{ record with field = value }` 구문으로 수정된 복사본을 생성합니다:
 
 ```
 $ cat update.l3
@@ -61,7 +61,7 @@ $ langthree update.l3
 { px = 10; py = 2 }
 ```
 
-Update multiple fields at once:
+여러 필드를 한 번에 갱신할 수 있습니다:
 
 ```
 $ cat multi_update.l3
@@ -73,11 +73,11 @@ $ langthree multi_update.l3
 { vx = 10; vy = 20; vz = 3 }
 ```
 
-The original record is unchanged -- copy-and-update produces a new value.
+원본 레코드는 변경되지 않습니다 -- 복사 후 갱신은 새로운 값을 생성합니다.
 
-## Record Pattern Matching
+## 레코드 패턴 매칭
 
-Destructure records in `match` expressions:
+`match` 표현식에서 레코드를 구조 분해할 수 있습니다:
 
 ```
 $ cat record_match.l3
@@ -91,9 +91,9 @@ $ langthree record_match.l3
 7
 ```
 
-## Mutable Fields
+## 가변 필드
 
-Declare a field as `mutable` to allow in-place updates:
+`mutable`로 필드를 선언하면 제자리 갱신(in-place update)이 가능합니다:
 
 ```
 $ cat counter.l3
@@ -108,12 +108,12 @@ $ langthree counter.l3
 3
 ```
 
-The `<-` operator updates the field in place and returns unit `()`.
-Use `let _ =` to sequence mutations at module level.
+`<-` 연산자는 필드를 제자리에서 갱신하고 unit `()`을 반환합니다.
+모듈 수준에서 변이(mutation)를 순차적으로 실행하려면 `let _ =`을 사용하세요.
 
-## Parametric Records
+## 매개변수화된 레코드
 
-Records can have type parameters (placed after the type name):
+레코드는 타입 매개변수를 가질 수 있습니다 (타입 이름 뒤에 위치):
 
 ```
 $ cat pair.l3
@@ -125,9 +125,9 @@ $ langthree pair.l3
 3
 ```
 
-## Structural Equality
+## 구조적 동치
 
-Records support structural equality comparison:
+레코드는 구조적 동치 비교를 지원합니다:
 
 ```
 $ cat equality.l3
@@ -142,9 +142,9 @@ $ langthree equality.l3
 "not equal"
 ```
 
-## Practical Example: Mutable State
+## 실용 예제: 가변 상태
 
-A bank account with deposit and balance check:
+입금과 잔액 확인이 가능한 은행 계좌:
 
 ```
 $ cat account.l3
@@ -158,8 +158,8 @@ $ langthree account.l3
 120
 ```
 
-## Limitations
+## 제한 사항
 
-- **No field punning:** You cannot write `{ px; py }` as shorthand for `{ px = px; py = py }`.
-- **Globally unique fields:** Two record types cannot share the same field name.
-  The compiler resolves record types from their field names, so uniqueness is required.
+- **필드 단축 표기 불가:** `{ px = px; py = py }`의 축약형으로 `{ px; py }`를 사용할 수 없습니다.
+- **전역적으로 고유한 필드:** 두 레코드 타입이 같은 필드 이름을 공유할 수 없습니다.
+  컴파일러가 필드 이름으로 레코드 타입을 결정하므로, 고유성이 필요합니다.

@@ -1,8 +1,8 @@
-# Chapter 11: Strings and Output
+# 11장: Strings and Output
 
-## String Literals
+## 문자열 리터럴
 
-String literals use double quotes with standard escape sequences:
+문자열 리터럴은 큰따옴표와 표준 이스케이프 시퀀스를 사용합니다:
 
 ```
 funlang> "hello world"
@@ -12,20 +12,20 @@ funlang> "tab\there"
 "tab	here"
 ```
 
-## String Concatenation
+## 문자열 연결
 
-The `+` operator concatenates strings:
+`+` 연산자로 문자열을 연결합니다:
 
 ```
 funlang> "hello" + " " + "world"
 "hello world"
 ```
 
-## Built-in String Functions
+## 내장 문자열 함수
 
 ### string_length
 
-Returns the number of characters:
+문자 수를 반환합니다:
 
 ```
 funlang> string_length "hello"
@@ -37,14 +37,14 @@ funlang> string_length ""
 
 ### string_concat
 
-Curried concatenation -- takes two strings:
+커링된 연결 함수 -- 두 개의 문자열을 받습니다:
 
 ```
 funlang> string_concat "hello" " world"
 "hello world"
 ```
 
-Since it is curried, partial application works:
+커링되어 있으므로 부분 적용이 가능합니다:
 
 ```
 $ cat prefix.l3
@@ -57,19 +57,19 @@ $ langthree prefix.l3
 
 ### string_sub
 
-Extract a substring with start index and length:
+시작 인덱스와 길이로 부분 문자열을 추출합니다:
 
 ```
 funlang> string_sub "hello" 1 3
 "ell"
 ```
 
-`string_sub s start len` returns characters from index `start` for `len` characters.
-Indices are zero-based.
+`string_sub s start len`은 인덱스 `start`부터 `len`개의 문자를 반환합니다.
+인덱스는 0부터 시작합니다.
 
 ### string_contains
 
-Check if a string contains a substring:
+문자열이 부분 문자열을 포함하는지 확인합니다:
 
 ```
 funlang> string_contains "hello world" "world"
@@ -81,7 +81,7 @@ false
 
 ### to_string
 
-Convert values to their string representation:
+값을 문자열 표현으로 변환합니다:
 
 ```
 funlang> to_string 42
@@ -94,33 +94,33 @@ funlang> to_string "already a string"
 "already a string"
 ```
 
-Accepts `int`, `bool`, and `string` at runtime.
+런타임에 `int`, `bool`, `string`을 받습니다.
 
 ### string_to_int
 
-Parse a string as an integer:
+문자열을 정수로 파싱합니다:
 
 ```
 funlang> string_to_int "123"
 123
 ```
 
-## Print Functions
+## 출력 함수
 
 ### print
 
-Writes a string to output with no newline, returns unit:
+줄바꿈 없이 문자열을 출력하고, unit을 반환합니다:
 
 ```
 funlang> print "hello"
 hello()
 ```
 
-In the interactive session, the side-effect text appears immediately before the `()` result.
+대화형 세션에서는 부수 효과 텍스트가 `()` 결과 바로 앞에 나타납니다.
 
 ### println
 
-Writes a string with a trailing newline, returns unit:
+줄바꿈을 포함하여 문자열을 출력하고, unit을 반환합니다:
 
 ```
 funlang> println "hello"
@@ -130,16 +130,16 @@ hello
 
 ### printf
 
-Formatted output using specifiers:
+지정자를 사용한 형식화 출력:
 
-| Specifier | Type | Example |
+| 지정자 | 타입 | 예제 |
 |-----------|------|---------|
 | `%d` | int | `printf "%d" 42` |
 | `%s` | string | `printf "%s" "hi"` |
 | `%b` | bool | `printf "%b" true` |
-| `%%` | literal `%` | `printf "100%%"` |
+| `%%` | 리터럴 `%` | `printf "100%%"` |
 
-`printf` is curried -- each specifier consumes one argument:
+`printf`는 커링되어 있으며, 각 지정자가 하나의 인자를 소비합니다:
 
 ```
 $ cat printf_demo.l3
@@ -151,7 +151,7 @@ Alice is 30 years old
 0
 ```
 
-Multiple specifiers:
+복수 지정자:
 
 ```
 $ cat printf_multi.l3
@@ -163,9 +163,9 @@ name=Bob, active=true
 0
 ```
 
-## Side-Effect Sequencing
+## 부수 효과 순서 지정
 
-Use `let _ =` to sequence operations that return unit:
+unit을 반환하는 연산을 순서대로 실행하려면 `let _ =`를 사용합니다:
 
 ```
 $ cat sequence.l3
@@ -181,19 +181,19 @@ third
 "done"
 ```
 
-Each `let _ =` binds the unit result and discards it, ensuring
-the side effects execute in order.
+각 `let _ =`는 unit 결과를 바인딩하고 버림으로써, 부수 효과가 순서대로
+실행되도록 보장합니다.
 
-## Pipe with String Functions
+## 문자열 함수와 파이프
 
-String functions work naturally with the pipe operator:
+문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:
 
 ```
 funlang> "hello" |> string_length
 5
 ```
 
-Build pipelines with string transformations:
+문자열 변환으로 파이프라인을 구성합니다:
 
 ```
 $ cat string_pipe.l3
@@ -203,9 +203,9 @@ $ langthree string_pipe.l3
 "answer: 42"
 ```
 
-## Practical Example: Formatted Report
+## 실용 예제: 형식화된 보고서
 
-Combining string operations for structured output:
+구조화된 출력을 위한 문자열 연산 조합:
 
 ```
 $ cat report.l3
@@ -221,10 +221,10 @@ height: 600
 "report complete"
 ```
 
-## Notes
+## 참고 사항
 
-- **`string_sub` uses start+length** (not start+end): `string_sub "hello" 1 3` = `"ell"`
-- **`string_concat` is curried:** `string_concat "prefix"` returns a function
-- **`to_string`** accepts int, bool, and string (polymorphic type, runtime-checked)
-- **`printf`** is curried: each `%` specifier consumes one additional argument
-- **Sequencing:** Use `let _ =` at module level to chain side effects
+- **`string_sub`는 시작+길이를 사용합니다** (시작+끝이 아님): `string_sub "hello" 1 3` = `"ell"`
+- **`string_concat`는 커링되어 있습니다:** `string_concat "prefix"`는 함수를 반환합니다
+- **`to_string`**은 int, bool, string을 받습니다 (다형 타입, 런타임 검사)
+- **`printf`**는 커링되어 있습니다: 각 `%` 지정자가 하나의 추가 인자를 소비합니다
+- **순서 지정:** 모듈 수준에서 부수 효과를 체이닝하려면 `let _ =`를 사용하세요

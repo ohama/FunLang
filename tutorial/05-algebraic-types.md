@@ -1,8 +1,8 @@
-# Chapter 5: Algebraic Data Types
+# 제5장: 대수적 데이터 타입 (Algebraic Data Types)
 
-## Simple Enumerations
+## 단순 열거형
 
-Define a type with named constructors:
+이름 있는 생성자(constructor)를 가진 타입을 정의합니다:
 
 ```
 $ cat color.l3
@@ -17,9 +17,9 @@ $ langthree color.l3
 "green"
 ```
 
-## Leading Pipe Syntax
+## 선행 파이프 구문
 
-For multi-line type definitions, a leading pipe is allowed:
+여러 줄의 타입 정의에서는 선행 파이프(leading pipe)를 사용할 수 있습니다:
 
 ```
 $ cat direction.l3
@@ -39,9 +39,9 @@ $ langthree direction.l3
 "up"
 ```
 
-## Constructors with Data
+## 데이터를 가진 생성자
 
-Constructors can carry values with `of`:
+생성자는 `of`를 사용하여 값을 포함할 수 있습니다:
 
 ```
 $ cat shape.l3
@@ -56,11 +56,11 @@ $ langthree shape.l3
 12
 ```
 
-A constructor with a tuple argument is destructured in the pattern.
+튜플 인자를 가진 생성자는 패턴에서 구조 분해(destructuring)됩니다.
 
-## Parametric Types
+## 매개변수화된 타입
 
-Type parameters go AFTER the type name:
+타입 매개변수(type parameter)는 타입 이름 뒤에 위치합니다:
 
 ```
 $ cat option.l3
@@ -75,7 +75,7 @@ $ langthree option.l3
 42
 ```
 
-Check inferred types with `--emit-type`:
+`--emit-type`으로 추론된 타입을 확인할 수 있습니다:
 
 ```
 $ langthree --emit-type option.l3
@@ -83,7 +83,7 @@ result : int
 x : Option<int>
 ```
 
-Multiple type parameters:
+여러 개의 타입 매개변수도 사용할 수 있습니다:
 
 ```
 $ cat either.l3
@@ -97,9 +97,9 @@ $ langthree either.l3
 42
 ```
 
-## Recursive Types
+## 재귀 타입
 
-Types can refer to themselves:
+타입은 자기 자신을 참조할 수 있습니다:
 
 ```
 $ cat intlist.l3
@@ -113,7 +113,7 @@ $ langthree intlist.l3
 6
 ```
 
-Binary tree with a depth function:
+깊이(depth) 함수를 가진 이진 트리:
 
 ```
 $ cat tree.l3
@@ -127,12 +127,12 @@ $ langthree tree.l3
 3
 ```
 
-Note: `let rec` only works at expression level (with `in`), not at module level.
-For recursive functions in file mode, embed `let rec ... in` inside a top-level `let`.
+참고: `let rec`은 표현식 수준(`in`과 함께)에서만 동작하며, 모듈 수준에서는 사용할 수 없습니다.
+파일 모드에서 재귀 함수를 사용하려면 최상위 `let` 안에 `let rec ... in`을 포함시키세요.
 
-## Mutually Recursive Types
+## 상호 재귀 타입
 
-Use `and` to define types that reference each other:
+`and`를 사용하여 서로를 참조하는 타입을 정의할 수 있습니다:
 
 ```
 $ cat mutual.l3
@@ -144,9 +144,9 @@ $ langthree mutual.l3
 Node (Trees ((Leaf 1, Trees ((Leaf 2, Empty)))))
 ```
 
-## Exhaustiveness Checking
+## 완전성 검사
 
-The compiler warns when match patterns are incomplete:
+컴파일러는 match 패턴이 불완전할 때 경고합니다:
 
 ```
 $ cat exhaustive.l3
@@ -163,12 +163,12 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
 1
 ```
 
-The program still runs, but the warning tells you which cases are missing.
-Add a wildcard `_` or cover all constructors to silence it.
+프로그램은 여전히 실행되지만, 경고가 누락된 케이스를 알려줍니다.
+와일드카드 `_`를 추가하거나 모든 생성자를 다루면 경고가 사라집니다.
 
-## Practical Example: Simple Calculator
+## 실용 예제: 간단한 계산기
 
-An expression type for a calculator:
+계산기를 위한 표현식 타입:
 
 ```
 $ cat calc.l3
