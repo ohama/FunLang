@@ -45,9 +45,9 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TCO-01 | 15 | Pending |
-| TCO-02 | 15 | Pending |
-| TCO-03 | 15 | Pending |
+| TCO-01 | 15 | Complete |
+| TCO-02 | 15 | Complete |
+| TCO-03 | 15 | Complete |
 | PAT-01 | 16 | Pending |
 | PAT-02 | 16 | Pending |
 | PAT-03 | 16 | Pending |

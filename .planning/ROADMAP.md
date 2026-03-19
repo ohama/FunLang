@@ -2,15 +2,15 @@
 
 ## Current Milestone: v1.4 Language Completion
 
-### Phase 15: Tail Call Optimization
+### Phase 15: Tail Call Optimization (COMPLETE)
 
 **Goal:** 꼬리 위치 호출을 trampoline 방식으로 최적화하여 대규모 재귀에서도 stack overflow 방지
 **Depends on:** v1.3 (complete)
 **Requirements:** TCO-01, TCO-02, TCO-03
-**Plans:** 0 plans
+**Status:** COMPLETE — TailCall DU + trampoline, 513 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 15 to break down)
+- [x] 15-01: Trampoline TCO (TailCall DU, tailPos parameter, trampoline loop, 4 TCO tests)
 
 **Success Criteria:**
 1. `let rec loop n = if n = 0 then 0 else loop (n - 1) in loop 1000000` — stack overflow 없이 동작
