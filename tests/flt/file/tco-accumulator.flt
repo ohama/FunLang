@@ -1,0 +1,7 @@
+// Test: tail-recursive accumulator with 1M iterations (curried multi-arg)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let rec sum n = fun acc -> if n = 0 then acc else sum (n - 1) (acc + 1) in sum 1000000 0
+// --- Output:
+1000000
