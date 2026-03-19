@@ -149,7 +149,6 @@ type nonTerminalId =
     | NONTERM_PatternList
     | NONTERM_Pattern
     | NONTERM_MatchClauses
-    | NONTERM_OrPattern
     | NONTERM_AnnotParamList
     | NONTERM_AnnotParam
     | NONTERM_TypeExpr
@@ -172,11 +171,8 @@ type nonTerminalId =
     | NONTERM_RecordExprInner
     | NONTERM_RecordFieldBindings
     | NONTERM_RecordPatFields
-    | NONTERM_TypeAliasDeclaration
-    | NONTERM_AliasTypeExpr
-    | NONTERM_AliasArrowType
-    | NONTERM_AliasTupleType
-    | NONTERM_AliasAtomicType
+    | NONTERM_LetRecDeclaration
+    | NONTERM_LetRecContinuation
     | NONTERM_QualifiedIdent
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int

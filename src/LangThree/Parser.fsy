@@ -401,6 +401,11 @@ Decls:
         { [ExceptionDecl($2, Some $4, ruleSpan parseState 1 4)] }
     | EXCEPTION IDENT OF TypeExpr Decls
         { ExceptionDecl($2, Some $4, ruleSpan parseState 1 4) :: $5 }
+    // Phase 18 (Mutual Recursion): Module-level let rec (single and mutual)
+    | LetRecDeclaration
+        { $1 }
+    | LetRecDeclaration Decls
+        { $1 @ $2 }
     // Phase 5 (Modules): Open directive
     | OPEN QualifiedIdent
         { [OpenDecl($2, ruleSpan parseState 1 2)] }
@@ -472,6 +477,7 @@ RecordPatFields:
     | IDENT EQUALS Pattern SEMICOLON RecordPatFields    { ($1, $3) :: $5 }
     | IDENT EQUALS Pattern SEMICOLON                    { [($1, $3)] }
 
+
 // Phase 17 (Type Aliases): Type alias declaration
 // type Name = TypeExpr (RHS starts with type keyword like int, bool, string, or type variable)
 // Distinguished from ADT (type Name = Ctor) because ADT constructors start with uppercase IDENT
@@ -503,6 +509,35 @@ AliasAtomicType:
     | AliasAtomicType TYPE_LIST     { TEList($1) }
     | AliasAtomicType IDENT         { Ast.TEData($2, [$1]) }
     | LPAREN TypeExpr RPAREN        { $2 }
+
+// Phase 18 (Mutual Recursion): Module-level let rec declaration
+// Produces a list containing a single LetRecDecl (possibly with multiple bindings via AND_KW)
+LetRecDeclaration:
+    | LET REC IDENT ParamList EQUALS Expr LetRecContinuation
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 6)) $4 $6
+          match lambda with
+          | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
+          | _ -> failwith "impossible: empty param list" }
+    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT LetRecContinuation
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 8)) $4 $7
+          match lambda with
+          | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
+          | _ -> failwith "impossible: empty param list" }
+
+// Continuation for mutual recursion: and g y = body2 [and h z = body3 ...]
+LetRecContinuation:
+    |                                   { [] }
+    | AND_KW IDENT ParamList EQUALS Expr LetRecContinuation
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
+          match lambda with
+          | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 5) :: $6
+          | _ -> failwith "impossible: empty param list" }
+    | AND_KW IDENT ParamList EQUALS INDENT Expr DEDENT LetRecContinuation
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
+          match lambda with
+          | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 7) :: $8
+          | _ -> failwith "impossible: empty param list" }
+
 
 // Phase 5 (Modules): Qualified identifier for module paths (A.B.C)
 QualifiedIdent:

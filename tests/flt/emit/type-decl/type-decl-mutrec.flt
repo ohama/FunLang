@@ -1,0 +1,10 @@
+// Test: --emit-type shows correct types for mutual recursive functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
+// --- Input:
+let rec even n = if n = 0 then true else odd (n - 1)
+and odd n = if n = 0 then false else even (n - 1)
+let result = even 4
+// --- Output:
+even : int -> bool
+odd : int -> bool
+result : bool

@@ -686,14 +686,14 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 18 (Ranges): List range [start..stop] or [start..step..stop]
     | Range (startExpr, stopExpr, stepOpt, _) ->
-        let startVal = eval recEnv moduleEnv env startExpr
-        let stopVal = eval recEnv moduleEnv env stopExpr
+        let startVal = eval recEnv moduleEnv env false startExpr
+        let stopVal = eval recEnv moduleEnv env false stopExpr
         match startVal, stopVal with
         | IntValue start, IntValue stop ->
             let step =
                 match stepOpt with
                 | Some stepExpr ->
-                    match eval recEnv moduleEnv env stepExpr with
+                    match eval recEnv moduleEnv env false stepExpr with
                     | IntValue s -> s
                     | _ -> failwith "Type error: range step must be integer"
                 | None -> 1
@@ -773,6 +773,27 @@ let rec evalModuleDecls
                     (env'', modEnv)
                 | None -> (env, modEnv)  // Already caught by type checker
             | _ -> (env, modEnv)  // Multi-segment open paths: v2
+        | LetRecDecl(bindings, _) ->
+            // Phase 18: Mutual recursive function evaluation
+            // Strategy: use BuiltinValue wrappers that close over a shared mutable
+            // env ref. Each function, when called, evaluates its body in the shared
+            // env (which contains all mutual functions). This gives true circular
+            // references without needing recursive AST wrapping.
+            let sharedEnvRef = ref env
+            // Create BuiltinValue wrappers for each function
+            let funcValues =
+                bindings |> List.map (fun (name, param, body, _) ->
+                    let wrapper = BuiltinValue (fun argVal ->
+                        let currentEnv = !sharedEnvRef
+                        let callEnv = Map.add param argVal currentEnv
+                        eval recEnv modEnv callEnv false body)
+                    (name, wrapper))
+            // Register all functions in the shared env
+            let mutualEnv =
+                funcValues |> List.fold (fun acc (name, v) ->
+                    Map.add name v acc) env
+            sharedEnvRef := mutualEnv
+            (mutualEnv, modEnv)
         | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
             // Register constructor values/functions in the environment
             let dummySpan = unknownSpan

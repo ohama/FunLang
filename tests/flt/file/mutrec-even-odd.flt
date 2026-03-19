@@ -1,0 +1,8 @@
+// Test: mutual recursion with let rec ... and ... at module level
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec even n = if n = 0 then true else odd (n - 1)
+and odd n = if n = 0 then false else even (n - 1)
+let result = even 10
+// --- Output:
+true
