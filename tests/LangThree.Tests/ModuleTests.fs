@@ -48,7 +48,7 @@ let evalModule (input: string) : Ast.Value =
             Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
         // Evaluate the last let binding's body
         match decls |> List.rev |> List.tryPick (function Ast.LetDecl(_, body, _) -> Some body | _ -> None) with
-        | Some lastBody -> Eval.eval recEnv moduleEnv finalEnv lastBody
+        | Some lastBody -> Eval.eval recEnv moduleEnv finalEnv false lastBody
         | None -> failtest "No let binding found to evaluate"
 
 // Helper to expect a type error with a specific code
