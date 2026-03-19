@@ -54,15 +54,16 @@ Plans:
 
 ---
 
-### Phase 18: List Ranges & Mutual Recursive Functions
+### Phase 18: List Ranges & Mutual Recursive Functions (COMPLETE)
 
 **Goal:** 리스트 범위 문법과 상호 재귀 함수 선언을 추가
 **Depends on:** Phase 15
 **Requirements:** RANGE-01, RANGE-02, MUTREC-01, MUTREC-02
-**Plans:** 0 plans
+**Status:** COMPLETE — [1..5] ranges + let rec ... and ..., 533 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [x] 18-01: List range syntax (DOTDOT token, Range AST, 4 range tests)
+- [x] 18-02: Mutual recursive functions (LetRecDecl, shared-ref closures, 4 mutrec tests)
 
 **Success Criteria:**
 1. `[1..5]` evaluates to `[1, 2, 3, 4, 5]`

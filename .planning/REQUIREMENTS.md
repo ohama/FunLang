@@ -53,10 +53,10 @@
 | PAT-03 | 16 | Complete |
 | ALIAS-01 | 17 | Complete |
 | ALIAS-02 | 17 | Complete |
-| RANGE-01 | 18 | Pending |
-| RANGE-02 | 18 | Pending |
-| MUTREC-01 | 18 | Pending |
-| MUTREC-02 | 18 | Pending |
+| RANGE-01 | 18 | Complete |
+| RANGE-02 | 18 | Complete |
+| MUTREC-01 | 18 | Complete |
+| MUTREC-02 | 18 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 12 total
