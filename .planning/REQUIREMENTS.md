@@ -51,8 +51,8 @@
 | PAT-01 | 16 | Complete |
 | PAT-02 | 16 | Complete |
 | PAT-03 | 16 | Complete |
-| ALIAS-01 | 17 | Pending |
-| ALIAS-02 | 17 | Pending |
+| ALIAS-01 | 17 | Complete |
+| ALIAS-02 | 17 | Complete |
 | RANGE-01 | 18 | Pending |
 | RANGE-02 | 18 | Pending |
 | MUTREC-01 | 18 | Pending |

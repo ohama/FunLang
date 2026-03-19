@@ -37,15 +37,15 @@ Plans:
 
 ---
 
-### Phase 17: Type Aliases
+### Phase 17: Type Aliases (COMPLETE)
 
 **Goal:** 타입 별칭으로 타입 가독성 향상
 **Depends on:** Phase 15
 **Requirements:** ALIAS-01, ALIAS-02
-**Plans:** 0 plans
+**Status:** COMPLETE — TypeAliasDecl + transparent expansion, 525 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+- [x] 17-01: Type alias implementation (TypeAliasDecl, parser grammar, 5 tests)
 
 **Success Criteria:**
 1. `type Name = string` — Name을 string으로 사용 가능
