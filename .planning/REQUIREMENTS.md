@@ -48,9 +48,9 @@
 | TCO-01 | 15 | Complete |
 | TCO-02 | 15 | Complete |
 | TCO-03 | 15 | Complete |
-| PAT-01 | 16 | Pending |
-| PAT-02 | 16 | Pending |
-| PAT-03 | 16 | Pending |
+| PAT-01 | 16 | Complete |
+| PAT-02 | 16 | Complete |
+| PAT-03 | 16 | Complete |
 | ALIAS-01 | 17 | Pending |
 | ALIAS-02 | 17 | Pending |
 | RANGE-01 | 18 | Pending |

@@ -19,15 +19,15 @@ Plans:
 
 ---
 
-### Phase 16: Or-Patterns & String Patterns
+### Phase 16: Or-Patterns & String Patterns (COMPLETE)
 
 **Goal:** Or-패턴과 문자열 패턴 매칭을 추가하여 패턴 매칭 완성도 향상
 **Depends on:** Phase 15
 **Requirements:** PAT-01, PAT-02, PAT-03
-**Plans:** 0 plans
+**Status:** COMPLETE — StringConst + OrPat, 520 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 16 to break down)
+- [x] 16-01: String patterns + Or-patterns (StringConst, OrPat, LALR(1) grammar, 7 tests)
 
 **Success Criteria:**
 1. `match x with | 1 | 2 | 3 -> "small" | _ -> "big"` 동작
