@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Milestone: v1.4 (not started)
-Phase: Not started
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-19 — v1.3 milestone complete
+Milestone: v1.4 Language Completion
+Phase: 18 of ? (list-ranges-mutual-recursion)
+Plan: 01 of 02
+Status: In progress
+Last activity: 2026-03-19 — Completed 18-01-PLAN.md (List Range Syntax)
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (1/2 plans)
 
 ## Performance Metrics
 
@@ -44,9 +44,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 | 13 | 2 | 11 min | 5.5 min |
 | 14 | 2 | 9 min | 4.5 min |
 
+| 18 | 1 | 6 min | 6.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 13-01 (6min), 13-02 (5min), 14-01 (5min), 14-02 (4min)
-- Trend: 13 tutorial chapters complete with 224 CLI-verified examples. v1.3 milestone complete.
+- Last 5 plans: 13-02 (5min), 14-01 (5min), 14-02 (4min), 18-01 (6min)
+- Trend: v1.4 milestone started. Range syntax complete.
 
 *Updated after each plan completion*
 
@@ -315,7 +317,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 14-02-PLAN.md (Tutorial Chapters 12-13) — v1.3 milestone complete
+Stopped at: Completed 18-01-PLAN.md (List Range Syntax)
 Resume file: None
 
 ---
