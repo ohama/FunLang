@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Milestone: v1.3 Tutorial Documentation
-Phase: 13 (tutorial-core) — Complete
-Plan: 02 of 02
-Status: Phase complete
-Last activity: 2026-03-19 — Completed 13-02-PLAN.md (Tutorial Chapters 5-7)
+Phase: 14 (tutorial-practical) — In progress
+Plan: 01 of 02
+Status: In progress
+Last activity: 2026-03-19 — Completed 14-01-PLAN.md (Tutorial Chapters 8-11)
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 ██ (2/2) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 ███░ (3/4)
 
 ## Performance Metrics
 
@@ -42,10 +42,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 �
 | 12 | 2 | 13 min | 6.5 min |
 
 | 13 | 2 | 11 min | 5.5 min |
+| 14 | 1 | 5 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 12-01 (2min), 12-02 (11min), 13-01 (6min), 13-02 (5min)
-- Trend: All 7 tutorial chapters complete with 106 CLI-verified examples.
+- Last 5 plans: 12-02 (11min), 13-01 (6min), 13-02 (5min), 14-01 (5min)
+- Trend: 11 tutorial chapters complete with 159 CLI-verified examples (106 + 53).
 
 *Updated after each plan completion*
 
@@ -314,7 +315,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 13-02-PLAN.md (Tutorial Chapters 5-7) — Phase 13 complete
+Stopped at: Completed 14-01-PLAN.md (Tutorial Chapters 8-11)
 Resume file: None
 
 ---
