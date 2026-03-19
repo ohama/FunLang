@@ -4,6 +4,10 @@ FunLang을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 
 
 F# 스타일의 문법과 현대적인 타입 시스템(ADT, GADT, Records)을 갖춘 언어를 목표로 합니다.
 
+## Documentation
+
+[LangThree Tutorial](docs/index.html)
+
 ## Features (Planned)
 
 | Feature | Description | Status |

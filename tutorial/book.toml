@@ -1,0 +1,18 @@
+[book]
+title = "LangThree Tutorial"
+authors = ["ohama"]
+language = "ko"
+description = "함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼"
+src = "."
+
+[build]
+build-dir = "../docs"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+
+[output.html.search]
+enable = true
+limit-results = 30
