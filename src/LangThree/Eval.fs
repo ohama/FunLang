@@ -790,5 +790,8 @@ let rec evalModuleDecls
                     Map.add name (FunctionValue(param, body, env)) env
             // Also register in moduleEnv's CtorEnv if we're inside a module
             (env', modEnv)
+        | TypeAliasDecl _ ->
+            // Type aliases are purely a type-level feature, no runtime behavior
+            (env, modEnv)
         | _ -> (env, modEnv)  // RecordTypeDecl handled elsewhere
     ) (initialEnv, moduleEnv)

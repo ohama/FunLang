@@ -598,6 +598,12 @@ let rec typeCheckDecls
                 // Already processed in first pass (ExceptionDecl: TODO in Plan 02)
                 (env, cEnv, rEnv, mods, warns)
 
+            | TypeAliasDecl _ ->
+                // Type aliases are transparent -- they don't create new types.
+                // TEName "AliasName" in type annotations elaborates to a fresh TVar
+                // which unifies with the actual type at use sites.
+                (env, cEnv, rEnv, mods, warns)
+
             | ModuleDecl(name, innerDecls, span) ->
                 // Check duplicate module name
                 if Map.containsKey name mods then
