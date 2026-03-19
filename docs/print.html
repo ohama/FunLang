@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-e74fd1ab.js";
+            window.path_to_searchindex_js = "searchindex-83e57ab4.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -521,6 +521,9 @@ take the list as their one argument. Use closures to capture extra state.</p>
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="chapter-4-pattern-matching"><a class="header" href="#chapter-4-pattern-matching">Chapter 4: Pattern Matching</a></h1>
+<p>Pattern matching is the primary control flow mechanism in LangThree.
+It combines destructuring, conditional dispatch, and variable binding in a single construct.
+The compiler checks exhaustiveness and compiles patterns to efficient decision trees.</p>
 <h2 id="basic-match-syntax"><a class="header" href="#basic-match-syntax">Basic Match Syntax</a></h2>
 <p>Match expressions use <code>|</code> pipes aligned with the <code>match</code> keyword:</p>
 <pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
@@ -544,67 +547,183 @@ $ langthree classify.l3
 <p>Integer and boolean literals:</p>
 <pre><code>funlang&gt; match true with | true -&gt; "yes" | false -&gt; "no"
 "yes"
+
+funlang&gt; match 3 with | 1 -&gt; "one" | 2 -&gt; "two" | 3 -&gt; "three" | _ -&gt; "other"
+"three"
 </code></pre>
-<p><strong>Note:</strong> String constant patterns are not supported.</p>
+<p>Multiple constants for dispatch tables:</p>
+<pre><code>$ cat daytype.l3
+let dayType d =
+    match d with
+    | 1 -&gt; "Monday"
+    | 2 -&gt; "Tuesday"
+    | 3 -&gt; "Wednesday"
+    | 4 -&gt; "Thursday"
+    | 5 -&gt; "Friday"
+    | 6 -&gt; "Saturday"
+    | 7 -&gt; "Sunday"
+    | _ -&gt; "invalid"
+let result = dayType 3
+
+$ langthree daytype.l3
+"Wednesday"
+</code></pre>
+<p><strong>Note:</strong> String constant patterns are not supported. Use <code>if ... then ... else</code> for string comparison.</p>
 <h3 id="variable-and-wildcard-patterns"><a class="header" href="#variable-and-wildcard-patterns">Variable and Wildcard Patterns</a></h3>
-<p>A variable binds the matched value; <code>_</code> discards it:</p>
+<p>A variable pattern binds the matched value to a name. <code>_</code> is a wildcard that discards the value:</p>
 <pre><code>funlang&gt; match 42 with | x -&gt; x + 1
 43
 
 funlang&gt; match 42 with | _ -&gt; 0
 0
 </code></pre>
+<p>Variable patterns always match – they act as catch-all cases:</p>
+<pre><code>$ cat sign.l3
+let sign x =
+    match x with
+    | 0 -&gt; 0
+    | n when n &gt; 0 -&gt; 1
+    | _ -&gt; 0 - 1
+let result = (sign 5, sign 0, sign (0 - 3))
+
+$ langthree sign.l3
+(1, 0, -1)
+</code></pre>
+<p><strong>Shadowing:</strong> A variable in a pattern shadows any outer binding with the same name:</p>
+<pre><code>funlang&gt; let x = 10 in match 5 with | x -&gt; x
+5
+</code></pre>
+<p>The inner <code>x</code> binds to 5, not 10.</p>
 <h3 id="tuple-patterns"><a class="header" href="#tuple-patterns">Tuple Patterns</a></h3>
 <p>Decompose tuples in-place:</p>
 <pre><code>funlang&gt; match (1, 2) with | (a, b) -&gt; a + b
 3
 </code></pre>
+<p>Nested tuple patterns:</p>
+<pre><code>funlang&gt; match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -&gt; a + b + c + d
+10
+</code></pre>
+<p>Combine tuples with constants and wildcards:</p>
+<pre><code>$ cat classify_pair.l3
+let classify pair =
+    match pair with
+    | (true, 0) -&gt; "zero-true"
+    | (true, x) -&gt; "positive-true: " + to_string x
+    | (false, _) -&gt; "false"
+let result = classify (true, 42)
+
+$ langthree classify_pair.l3
+"positive-true: 42"
+</code></pre>
 <h3 id="list-patterns"><a class="header" href="#list-patterns">List Patterns</a></h3>
-<p>Match on empty, cons, or literal lists:</p>
+<p>Match on empty list, cons, or specific lengths:</p>
 <pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 
 funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
-<h3 id="constructor-patterns"><a class="header" href="#constructor-patterns">Constructor Patterns</a></h3>
-<p>Match algebraic data type constructors (must be in scope):</p>
-<pre><code>$ cat option_match.l3
-type Option 'a = None | Some of 'a
-let result =
-    match Some 42 with
-    | Some x -&gt; x
-    | None -&gt; 0
+<p>Precise length matching:</p>
+<pre><code>$ cat list_describe.l3
+let describe xs =
+    match xs with
+    | [] -&gt; "empty"
+    | x :: [] -&gt; "singleton: " + to_string x
+    | x :: y :: [] -&gt; "pair: " + to_string x + "," + to_string y
+    | x :: y :: z :: _ -&gt; "three+: " + to_string x + "," + to_string y + "," + to_string z
 
-$ langthree option_match.l3
-42
+let r1 = describe []
+let r2 = describe [42]
+let r3 = describe [1, 2]
+let r4 = describe [10, 20, 30, 40]
+let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
+
+$ langthree list_describe.l3
+"empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 </code></pre>
-<p>Custom ADTs:</p>
+<h3 id="constructor-patterns"><a class="header" href="#constructor-patterns">Constructor Patterns</a></h3>
+<p>Match algebraic data type constructors:</p>
 <pre><code>$ cat shape.l3
-type Shape = Circle of int | Rect of int
+type Shape = Circle of int | Rect of int * int
+
 let area s =
     match s with
     | Circle r -&gt; r * r * 3
-    | Rect side -&gt; side * side
+    | Rect (w, h) -&gt; w * h
 let result = area (Circle 5)
 
 $ langthree shape.l3
 75
 </code></pre>
-<h3 id="nested-patterns"><a class="header" href="#nested-patterns">Nested Patterns</a></h3>
-<p>Patterns compose arbitrarily:</p>
-<pre><code>$ cat nested.l3
-type Option 'a = None | Some of 'a
-let result =
-    match Some (Some 42) with
-    | Some (Some x) -&gt; x
-    | _ -&gt; 0
+<p>Constructors without data (nullary):</p>
+<pre><code>$ cat card.l3
+type Card = Ace | King | Queen | Jack | Num of int
 
-$ langthree nested.l3
-42
+let value c =
+    match c with
+    | Ace -&gt; 11
+    | King -&gt; 10
+    | Queen -&gt; 10
+    | Jack -&gt; 10
+    | Num n -&gt; n
+
+let result = value Ace + value King + value (Num 5)
+
+$ langthree card.l3
+26
+</code></pre>
+<p>Wildcard inside constructors:</p>
+<pre><code>$ cat is_leaf.l3
+type Tree = Leaf | Node of Tree * int * Tree
+
+let isLeaf t =
+    match t with
+    | Leaf -&gt; true
+    | Node (_, _, _) -&gt; false
+
+let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
+
+$ langthree is_leaf.l3
+(true, false)
+</code></pre>
+<h3 id="nested-patterns"><a class="header" href="#nested-patterns">Nested Patterns</a></h3>
+<p>Patterns compose arbitrarily – constructors inside constructors, lists inside tuples, etc:</p>
+<p><strong>Option inside Option:</strong></p>
+<pre><code>$ cat deep_option.l3
+let deepGet opt =
+    match opt with
+    | Some (Some (Some x)) -&gt; to_string x
+    | Some (Some None) -&gt; "inner none"
+    | Some None -&gt; "mid none"
+    | None -&gt; "outer none"
+
+let r1 = deepGet (Some (Some (Some 42)))
+let r2 = deepGet (Some (Some None))
+let r3 = deepGet (Some None)
+let r4 = deepGet None
+let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
+
+$ langthree deep_option.l3
+"42 | inner none | mid none | outer none"
+</code></pre>
+<p><strong>List of tuples:</strong></p>
+<pre><code>funlang&gt; let rec sumFirst xs = match xs with | [] -&gt; 0 | (a, _) :: rest -&gt; a + sumFirst rest in sumFirst [(1, "a"), (2, "b"), (3, "c")]
+6
+</code></pre>
+<p><strong>Constructor with tuple inside list:</strong></p>
+<pre><code>$ cat nested_complex.l3
+type Opt 'a = None | Some of 'a
+let result =
+    match Some [1, 2, 3] with
+    | Some (x :: _) -&gt; x
+    | Some [] -&gt; 0
+    | None -&gt; 0
+
+$ langthree nested_complex.l3
+1
 </code></pre>
 <h3 id="record-patterns"><a class="header" href="#record-patterns">Record Patterns</a></h3>
-<p>Destructure record fields:</p>
+<p>Destructure record fields in a match:</p>
 <pre><code>$ cat record_match.l3
 type Point = { x: int; y: int }
 let p = { x = 1; y = 2 }
@@ -615,8 +734,23 @@ let result =
 $ langthree record_match.l3
 3
 </code></pre>
+<p>Partial record patterns – match only some fields:</p>
+<pre><code>$ cat record_partial.l3
+type Person = { name: string; age: int; active: bool }
+
+let greet p =
+    match p with
+    | { name = n; age = a } -&gt; n + " is " + to_string a
+
+let result = greet { name = "Alice"; age = 30; active = true }
+
+$ langthree record_partial.l3
+"Alice is 30"
+</code></pre>
 <h2 id="when-guards"><a class="header" href="#when-guards">When Guards</a></h2>
-<p>Add conditions to patterns with <code>when</code>:</p>
+<p>Add boolean conditions to patterns with <code>when</code>. The guard is evaluated
+after the pattern matches. If the guard fails, matching falls through to
+the next clause.</p>
 <pre><code>$ cat guard.l3
 let classify n =
     match n with
@@ -628,10 +762,73 @@ let result = classify 5
 $ langthree guard.l3
 "positive"
 </code></pre>
-<p>Guards are evaluated after the pattern matches. If the guard fails,
-matching continues with the next clause.</p>
+<h3 id="guards-for-range-classification"><a class="header" href="#guards-for-range-classification">Guards for Range Classification</a></h3>
+<p>Multiple guards create range-based dispatch:</p>
+<pre><code>$ cat grade.l3
+let grade score =
+    match score with
+    | s when s &gt;= 90 -&gt; "A"
+    | s when s &gt;= 80 -&gt; "B"
+    | s when s &gt;= 70 -&gt; "C"
+    | s when s &gt;= 60 -&gt; "D"
+    | _ -&gt; "F"
+let result = grade 85
+
+$ langthree grade.l3
+"B"
+</code></pre>
+<h3 id="guards-with-constructors"><a class="header" href="#guards-with-constructors">Guards with Constructors</a></h3>
+<p>Combine structural matching with value conditions:</p>
+<pre><code>$ cat shape_guard.l3
+type Shape = Circle of int | Rect of int * int
+
+let isLarge s =
+    match s with
+    | Circle r when r &gt; 10 -&gt; true
+    | Rect (w, h) when w * h &gt; 100 -&gt; true
+    | _ -&gt; false
+
+let r1 = isLarge (Circle 15)
+let r2 = isLarge (Circle 5)
+let r3 = isLarge (Rect (20, 10))
+let result = (r1, r2, r3)
+
+$ langthree shape_guard.l3
+(true, false, true)
+</code></pre>
+<h3 id="guard-fallthrough"><a class="header" href="#guard-fallthrough">Guard Fallthrough</a></h3>
+<p>When a guard fails, matching continues with the next clause – it does
+NOT skip to the default. This enables layered conditions:</p>
+<pre><code>$ cat fallthrough.l3
+let classify x =
+    match x with
+    | n when n &gt; 100 -&gt; "large"
+    | n when n &gt; 10 -&gt; "medium"
+    | n when n &gt; 0 -&gt; "small"
+    | 0 -&gt; "zero"
+    | _ -&gt; "negative"
+let result = classify 50
+
+$ langthree fallthrough.l3
+"medium"
+</code></pre>
+<h2 id="match-on-computed-values"><a class="header" href="#match-on-computed-values">Match on Computed Values</a></h2>
+<p>Match on the result of an expression, not just a variable:</p>
+<pre><code>$ cat match_expr.l3
+let abs x = if x &lt; 0 then 0 - x else x
+let classify x =
+    match abs x with
+    | 0 -&gt; "zero"
+    | n when n &lt; 10 -&gt; "small"
+    | n when n &lt; 100 -&gt; "medium"
+    | _ -&gt; "large"
+let result = classify (0 - 42)
+
+$ langthree match_expr.l3
+"medium"
+</code></pre>
 <h2 id="exhaustiveness-checking"><a class="header" href="#exhaustiveness-checking">Exhaustiveness Checking</a></h2>
-<p>The compiler warns about missing cases:</p>
+<p>The compiler warns about missing cases (W0001):</p>
 <pre><code>$ cat exhaustive.l3
 type Color = Red | Green | Blue
 let result =
@@ -645,7 +842,41 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 </code></pre>
-<p>Add a wildcard or cover all cases to silence the warning.</p>
+<h3 id="redundancy-warnings"><a class="header" href="#redundancy-warnings">Redundancy Warnings</a></h3>
+<p>The compiler also warns about unreachable patterns (W0002):</p>
+<pre><code>$ cat redundant.l3
+let result =
+    match 1 with
+    | _ -&gt; "catch all"
+    | 1 -&gt; "one"
+
+$ langthree redundant.l3
+Warning: warning[W0002]: Redundant pattern match clause. This pattern is never reached
+ --&gt; :0:0-1:0
+   = hint: Remove this clause or reorder the patterns
+"catch all"
+</code></pre>
+<p>The wildcard <code>_</code> catches everything, so the <code>| 1</code> clause is unreachable.</p>
+<h3 id="exhaustiveness-with-tuples-of-adts"><a class="header" href="#exhaustiveness-with-tuples-of-adts">Exhaustiveness with Tuples of ADTs</a></h3>
+<p>Pattern exhaustiveness works across nested structures:</p>
+<pre><code>$ cat color_mix.l3
+type Color = Red | Green | Blue
+
+let mix a b =
+    match (a, b) with
+    | (Red, Blue) -&gt; "purple"
+    | (Blue, Red) -&gt; "purple"
+    | (Red, Green) -&gt; "yellow"
+    | (Green, Red) -&gt; "yellow"
+    | (Blue, Green) -&gt; "cyan"
+    | (Green, Blue) -&gt; "cyan"
+    | _ -&gt; "same"
+
+let result = mix Red Blue
+
+$ langthree color_mix.l3
+"purple"
+</code></pre>
 <h2 id="let-pattern-destructuring"><a class="header" href="#let-pattern-destructuring">Let-Pattern Destructuring</a></h2>
 <p>Destructure without a full <code>match</code>:</p>
 <pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
@@ -654,15 +885,121 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
 funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
-<h2 id="practical-example-list-processing"><a class="header" href="#practical-example-list-processing">Practical Example: List Processing</a></h2>
-<p>Combine patterns with recursion:</p>
+<h2 id="decision-tree-compilation"><a class="header" href="#decision-tree-compilation">Decision Tree Compilation</a></h2>
+<p>LangThree compiles pattern matches to binary decision trees using the
+Jules Jacobs algorithm. This means:</p>
+<ul>
+<li><strong>No redundant tests:</strong> Each constructor is tested at most once per execution path</li>
+<li><strong>Efficient dispatch:</strong> O(depth) per match, not O(clauses)</li>
+<li><strong>Clause sharing:</strong> Common sub-patterns share decision nodes</li>
+</ul>
+<p>You don’t need to think about this for correctness, but it means complex
+matches are efficient even with many clauses.</p>
+<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
+<h3 id="recursive-list-processing"><a class="header" href="#recursive-list-processing">Recursive List Processing</a></h3>
+<p>The standard pattern for list recursion: match empty vs cons, recurse on tail.</p>
+<p><strong>Sum a list:</strong></p>
 <pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
-<p>Count list elements:</p>
+<p><strong>Count elements:</strong></p>
 <pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]
 3
 </code></pre>
+<p><strong>Filter with predicate (closure capture):</strong></p>
+<pre><code>funlang&gt; let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t in filter (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5, 6]
+[4, 5, 6]
+</code></pre>
+<p><strong>Take while predicate holds:</strong></p>
+<pre><code>$ cat take_while.l3
+let result =
+    let rec takeWhile pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: takeWhile pred t else []
+    in takeWhile (fun x -&gt; x &lt; 5) [1, 2, 3, 4, 5, 6, 7]
+
+$ langthree take_while.l3
+[1, 2, 3, 4]
+</code></pre>
+<h3 id="adt-expression-evaluator"><a class="header" href="#adt-expression-evaluator">ADT Expression Evaluator</a></h3>
+<p>Pattern matching shines with recursive ADT traversal:</p>
+<pre><code>$ cat expr_eval.l3
+type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
+
+let result =
+    let rec eval e = match e with | Num n -&gt; n | Add (a, b) -&gt; eval a + eval b | Mul (a, b) -&gt; eval a * eval b
+    in eval (Add (Mul (Num 3, Num 4), Num 5))
+
+$ langthree expr_eval.l3
+17
+</code></pre>
+<p><code>eval (Add (Mul (Num 3, Num 4), Num 5))</code> computes <code>(3 * 4) + 5 = 17</code>.</p>
+<h3 id="lookup-in-association-list"><a class="header" href="#lookup-in-association-list">Lookup in Association List</a></h3>
+<p>Pattern matching on list of tuples for key-value lookup:</p>
+<pre><code>$ cat lookup.l3
+let result =
+    let rec lookup key = fun xs -&gt; match xs with | [] -&gt; None | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
+    in
+    let env = [(1, "one"), (2, "two"), (3, "three")]
+    in
+    let r1 = lookup 2 env
+    in
+    let r2 = lookup 9 env
+    in (r1, r2)
+
+$ langthree lookup.l3
+(Some "two", None)
+</code></pre>
+<h3 id="tree-traversal-with-pattern-matching"><a class="header" href="#tree-traversal-with-pattern-matching">Tree Traversal with Pattern Matching</a></h3>
+<p>All tree operations are natural pattern matches:</p>
+<pre><code>$ cat tree_ops.l3
+type Tree = Leaf | Node of Tree * int * Tree
+
+let result =
+    let rec depth t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; let dl = depth l in let dr = depth r in if dl &gt; dr then dl + 1 else dr + 1
+    in
+    let rec size t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; 1 + size l + size r
+    in
+    let rec sumTree t = match t with | Leaf -&gt; 0 | Node (l, v, r) -&gt; sumTree l + v + sumTree r
+    in
+    let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
+    in (depth t, size t, sumTree t)
+
+$ langthree tree_ops.l3
+(3, 4, 10)
+</code></pre>
+<h3 id="insertion-sort-via-pattern-matching"><a class="header" href="#insertion-sort-via-pattern-matching">Insertion Sort via Pattern Matching</a></h3>
+<p>Two recursive functions chained together:</p>
+<pre><code>$ cat isort.l3
+let sorted =
+    let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
+    in
+    let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
+    in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+
+let result = sorted
+
+$ langthree isort.l3
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Pattern</th><th>Syntax</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>Constant</td><td><code>0</code>, <code>true</code></td><td><code>| 0 -&gt; "zero"</code></td></tr>
+<tr><td>Variable</td><td><code>x</code></td><td><code>| x -&gt; x + 1</code></td></tr>
+<tr><td>Wildcard</td><td><code>_</code></td><td><code>| _ -&gt; "default"</code></td></tr>
+<tr><td>Tuple</td><td><code>(a, b)</code></td><td><code>| (x, y) -&gt; x + y</code></td></tr>
+<tr><td>List empty</td><td><code>[]</code></td><td><code>| [] -&gt; "empty"</code></td></tr>
+<tr><td>List cons</td><td><code>h :: t</code></td><td><code>| x :: rest -&gt; x</code></td></tr>
+<tr><td>Constructor</td><td><code>Some x</code></td><td><code>| Some v -&gt; v</code></td></tr>
+<tr><td>Record</td><td><code>{ x = a }</code></td><td><code>| { x = a } -&gt; a</code></td></tr>
+<tr><td>Nested</td><td><code>Some (x :: _)</code></td><td><code>| Some (h :: _) -&gt; h</code></td></tr>
+<tr><td>With guard</td><td><code>x when cond</code></td><td><code>| n when n &gt; 0 -&gt; "pos"</code></td></tr>
+</tbody>
+</table>
+</div>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="chapter-5-algebraic-data-types"><a class="header" href="#chapter-5-algebraic-data-types">Chapter 5: Algebraic Data Types</a></h1>
 <h2 id="simple-enumerations"><a class="header" href="#simple-enumerations">Simple Enumerations</a></h2>
@@ -1924,7 +2261,7 @@ add b (add b Zero).</p>
 <p>Three times four is twelve – verified by converting back to <code>int</code> with <code>toInt</code>.</p>
 <p>This example shows how LangThree’s algebraic types and pattern matching make it
 natural to define and compute with custom numeric representations.</p>
-<h2 id="practical-examples"><a class="header" href="#practical-examples">Practical Examples</a></h2>
+<h2 id="practical-examples-1"><a class="header" href="#practical-examples-1">Practical Examples</a></h2>
 <h3 id="balanced-parentheses-checker"><a class="header" href="#balanced-parentheses-checker">Balanced Parentheses Checker</a></h3>
 <p>Check whether a sequence of parentheses is balanced. Since LangThree does not
 have a char type, we encode <code>(</code> as 1 and <code>)</code> as 0:</p>
@@ -1996,7 +2333,7 @@ $ langthree count_evens.l3
 </code></pre>
 <p>There are 5 even numbers in 1..10. The predicate <code>x - (x / 2) * 2 = 0</code> checks
 evenness using integer arithmetic (since there is no <code>mod</code> operator).</p>
-<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<h2 id="summary-1"><a class="header" href="#summary-1">Summary</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
