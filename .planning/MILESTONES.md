@@ -1,5 +1,29 @@
 # Project Milestones: LangThree
 
+## v1.3 Tutorial Documentation (Shipped: 2026-03-19)
+
+**Delivered:** 함수형 프로그래밍 경험자를 위한 포괄적 LangThree 튜토리얼 13개 챕터, 224개 CLI-verified 예제
+
+**Phases completed:** 13-14 (4 plans total)
+
+**Key accomplishments:**
+- 13개 마크다운 튜토리얼 챕터 (기초부터 GADT, 모듈, 예외, 파이프, CLI까지)
+- 224개 CLI에서 실제 실행 검증된 코드 예제
+- 2,524 lines of tutorial documentation
+- Prelude 시스템과 Option 타입 활용법 문서화
+
+**Stats:**
+- 13 tutorial files, 2,524 lines of markdown
+- 224 CLI-verified examples
+- 2 phases, 4 plans
+- 1 day (2026-03-19)
+
+**Git range:** `feat(13-01)` → `docs(14-02)`
+
+**What's next:** v1.4 Language Completion (TCO, or-patterns, type aliases, list ranges, mutual recursion)
+
+---
+
 ## v1.2 Practical Language Features (Shipped: 2026-03-18)
 
 **Delivered:** 파이프/합성 연산자, unit 타입, 문자열 내장 함수, printf 포맷 출력, Prelude 디렉토리 기반 표준 라이브러리, Option 타입
