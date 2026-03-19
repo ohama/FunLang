@@ -12,7 +12,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 >
 > Settings → Pages → Source: `Deploy from a branch` → Branch: `master` / `/docs` → Save
 
-[LangThree Tutorial](https://ohama.github.io/LangThree/) — 13 chapters, 224 runnable examples
+[LangThree Tutorial](https://ohama.github.io/LangThree/) — 14 chapters, 250+ runnable examples
 
 ## Features
 
@@ -30,13 +30,16 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 | **String Operations** | string_length, string_concat, string_sub, to_string 등 | v1.2 ✓ |
 | **Printf Output** | print, println, printf with format specifiers | v1.2 ✓ |
 | **Prelude** | Prelude/*.fun directory loading, Option type | v1.2 ✓ |
-| **Tutorial** | 13 chapters, 224 CLI-verified examples | v1.3 ✓ |
+| **Tutorial** | 14 chapters with algorithms, 250+ CLI-verified examples | v1.3 ✓ |
 
 ## Quick Start
 
 ```bash
 # Build
 dotnet build src/LangThree/LangThree.fsproj -c Release
+
+# REPL (no arguments)
+src/LangThree/bin/Release/net10.0/LangThree
 
 # Expression mode
 src/LangThree/bin/Release/net10.0/LangThree --expr '1 + 2 * 3'
@@ -48,9 +51,6 @@ src/LangThree/bin/Release/net10.0/LangThree myfile.lt
 # Type inference
 src/LangThree/bin/Release/net10.0/LangThree --emit-type --expr 'fun x -> x + 1'
 # => int -> int
-
-# REPL
-src/LangThree/bin/Release/net10.0/LangThree --repl
 ```
 
 ## Example
@@ -92,8 +92,41 @@ with
 let _ = printf "result=%d safe=%d\n" result safe
 
 // String operations
-let len = string_length "hello"
 let msg = "hello" |> string_length |> to_string
+
+// ADT equality
+let eq = Some 1 = Some 1
+```
+
+## Algorithms (from Tutorial Ch.14)
+
+```fsharp
+// Quicksort
+let sorted =
+    let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+    in
+    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
+    in
+    let rec qsort xs = match xs with | [] -> [] | pivot :: rest ->
+        let lo = filter (fun x -> x < pivot) rest in
+        let hi = filter (fun x -> x >= pivot) rest in
+        app (qsort lo) (pivot :: qsort hi)
+    in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+// => [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+// BST Tree Sort
+type Tree = Leaf | Node of Tree * int * Tree
+
+let sorted =
+    let rec treeInsert x = fun t -> match t with
+        | Leaf -> Node (Leaf, x, Leaf)
+        | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
+    in
+    let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
+    in
+    let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> app (inorder l) (v :: inorder r)
+    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+// => [1, 2, 3, 5, 7, 8, 9]
 ```
 
 ## Project Structure
@@ -103,8 +136,8 @@ LangThree/
 ├── src/LangThree/       # Interpreter source (23 files, 9,112 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (196 tests)
-│   └── flt/             # fslit integration tests (260 tests)
-├── tutorial/            # mdBook tutorial (13 chapters)
+│   └── flt/             # fslit integration tests (294 tests)
+├── tutorial/            # mdBook tutorial (14 chapters)
 ├── Prelude/             # Standard library (Option.fun)
 ├── docs/                # Built tutorial site (GitHub Pages)
 └── plans/               # Design documents
@@ -124,10 +157,10 @@ LangThree/
 # F# unit tests (196)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (260)
+# fslit integration tests (294)
 /path/to/fslit tests/flt/
 
-# Total: 456 tests
+# Total: 490 tests
 ```
 
 ## Milestones
