@@ -1,0 +1,17 @@
+// Test: deeply nested Option pattern matching (3 levels)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let deepGet opt =
+    match opt with
+    | Some (Some (Some x)) -> to_string x
+    | Some (Some None) -> "inner none"
+    | Some None -> "mid none"
+    | None -> "outer none"
+
+let r1 = deepGet (Some (Some (Some 42)))
+let r2 = deepGet (Some (Some None))
+let r3 = deepGet (Some None)
+let r4 = deepGet None
+let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
+// --- Output:
+"42 | inner none | mid none | outer none"

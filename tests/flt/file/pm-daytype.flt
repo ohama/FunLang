@@ -1,0 +1,16 @@
+// Test: constant pattern dispatch table (dayType)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let dayType d =
+    match d with
+    | 1 -> "Monday"
+    | 2 -> "Tuesday"
+    | 3 -> "Wednesday"
+    | 4 -> "Thursday"
+    | 5 -> "Friday"
+    | 6 -> "Saturday"
+    | 7 -> "Sunday"
+    | _ -> "invalid"
+let result = dayType 3
+// --- Output:
+"Wednesday"

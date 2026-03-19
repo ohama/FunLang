@@ -1,0 +1,12 @@
+// Test: record pattern matching only some fields
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Person = { name: string; age: int; active: bool }
+
+let greet p =
+    match p with
+    | { name = n; age = a } -> n + " is " + to_string a
+
+let result = greet { name = "Alice"; age = 30; active = true }
+// --- Output:
+"Alice is 30"

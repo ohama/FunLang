@@ -1,0 +1,8 @@
+// Test: pattern matching on list of tuples (summing first elements)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest
+    in sumFirst [(1, "a"), (2, "b"), (3, "c")]
+// --- Output:
+6

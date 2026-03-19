@@ -1,0 +1,17 @@
+// Test: when guards combined with constructor patterns
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Shape = Circle of int | Rect of int * int
+
+let isLarge s =
+    match s with
+    | Circle r when r > 10 -> true
+    | Rect (w, h) when w * h > 100 -> true
+    | _ -> false
+
+let r1 = isLarge (Circle 15)
+let r2 = isLarge (Circle 5)
+let r3 = isLarge (Rect (20, 10))
+let result = (r1, r2, r3)
+// --- Output:
+(true, false, true)

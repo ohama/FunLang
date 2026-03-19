@@ -1,0 +1,10 @@
+// Test: recursive ADT expression evaluator via pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
+
+let result =
+    let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
+    in eval (Add (Mul (Num 3, Num 4), Num 5))
+// --- Output:
+17

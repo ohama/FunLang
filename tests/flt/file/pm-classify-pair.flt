@@ -1,0 +1,11 @@
+// Test: tuple pattern with constant, variable, and wildcard
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify pair =
+    match pair with
+    | (true, 0) -> "zero-true"
+    | (true, x) -> "positive-true: " + to_string x
+    | (false, _) -> "false"
+let result = classify (true, 42)
+// --- Output:
+"positive-true: 42"

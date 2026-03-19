@@ -1,0 +1,16 @@
+// Test: tree depth, size, and sum via pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Tree = Leaf | Node of Tree * int * Tree
+
+let result =
+    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> let dl = depth l in let dr = depth r in if dl > dr then dl + 1 else dr + 1
+    in
+    let rec size t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + size l + size r
+    in
+    let rec sumTree t = match t with | Leaf -> 0 | Node (l, v, r) -> sumTree l + v + sumTree r
+    in
+    let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
+    in (depth t, size t, sumTree t)
+// --- Output:
+(3, 4, 10)

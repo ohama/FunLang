@@ -1,0 +1,16 @@
+// Test: mixed nullary and data constructors (Card value)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Card = Ace | King | Queen | Jack | Num of int
+
+let value c =
+    match c with
+    | Ace -> 11
+    | King -> 10
+    | Queen -> 10
+    | Jack -> 10
+    | Num n -> n
+
+let result = value Ace + value King + value (Num 5)
+// --- Output:
+26

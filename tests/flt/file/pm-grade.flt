@@ -1,0 +1,13 @@
+// Test: when guards for range classification
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let grade score =
+    match score with
+    | s when s >= 90 -> "A"
+    | s when s >= 80 -> "B"
+    | s when s >= 70 -> "C"
+    | s when s >= 60 -> "D"
+    | _ -> "F"
+let result = grade 85
+// --- Output:
+"B"

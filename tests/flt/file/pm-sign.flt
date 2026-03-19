@@ -1,0 +1,11 @@
+// Test: sign function with variable, guard, and wildcard patterns
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let sign x =
+    match x with
+    | 0 -> 0
+    | n when n > 0 -> 1
+    | _ -> 0 - 1
+let result = (sign 5, sign 0, sign (0 - 3))
+// --- Output:
+(1, 0, -1)
