@@ -1,0 +1,6 @@
+// Test: range [3..3] produces single-element list
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = [3..3]
+// --- Output:
+[3]
