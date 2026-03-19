@@ -48,6 +48,7 @@ let patternToConstructor (pat: Pattern) : (string * int) option =
     | ConstPat(IntConst n, _) -> Some("#int_" + string n, 0)
     | ConstPat(BoolConst b, _) -> Some("#bool_" + (string b).ToLower(), 0)
     | ConstPat(StringConst s, _) -> Some("#str_" + s, 0)
+    | OrPat _ -> None  // OrPat should be expanded before reaching here
     | RecordPat(fields, _) ->
         let fieldNames = fields |> List.map fst |> List.sort |> String.concat ","
         Some("#record:" + fieldNames, List.length fields)
@@ -64,6 +65,7 @@ let extractSubPatterns (pat: Pattern) : Pattern list =
     | ConsPat(h, t, _) -> [h; t]
     | EmptyListPat _ -> []
     | ConstPat _ -> []
+    | OrPat _ -> []  // OrPat should be expanded before reaching here
     | RecordPat(fields, _) ->
         fields |> List.sortBy fst |> List.map snd
     | VarPat _ | WildcardPat _ -> []
@@ -226,11 +228,19 @@ let evalDecisionTree (evalFn: Env -> bool -> Expr -> Value) (env: Env) (tailPos:
 // ============================================================
 // 10. compileMatch: entry point, converts MatchClause list to DecisionTree
 // ============================================================
+/// Expand or-patterns at the top level: OrPat([p1; p2; p3]) becomes three clauses
+let expandOrPatterns (clauses: MatchClause list) : MatchClause list =
+    clauses |> List.collect (fun (pat, guard, body) ->
+        match pat with
+        | OrPat(pats, _) -> pats |> List.map (fun p -> (p, guard, body))
+        | _ -> [(pat, guard, body)])
+
 let compileMatch (clauses: MatchClause list) : DecisionTree * TestVar =
     resetTestVarCounter()
     let rootVar = freshTestVar()
+    let expandedClauses = expandOrPatterns clauses
     let rows =
-        clauses |> List.mapi (fun i (pattern, guard, body) ->
+        expandedClauses |> List.mapi (fun i (pattern, guard, body) ->
             { Patterns = Map.ofList [(rootVar, pattern)]
               Guard = guard
               Body = body

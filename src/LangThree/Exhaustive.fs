@@ -72,7 +72,7 @@ let rec formatPattern (pat: CasePat) : string =
 
 /// Specialize a single row for constructor C.
 /// Returns None if the row doesn't match C, Some of the expanded row if it does.
-let specializeRow (ctor: ConstructorInfo) (row: CasePat list) : CasePat list option =
+let rec specializeRow (ctor: ConstructorInfo) (row: CasePat list) : CasePat list option =
     match row with
     | [] -> None
     | firstPat :: rest ->
@@ -87,9 +87,10 @@ let specializeRow (ctor: ConstructorInfo) (row: CasePat list) : CasePat list opt
             // Wildcard matches any constructor: expand to arity wildcards
             let wildcards = List.replicate ctor.Arity WildcardPat
             Some (wildcards @ rest)
-        | OrPat _ ->
-            // Future: handle or-patterns
-            None
+        | OrPat pats ->
+            // Or-pattern: try each alternative, take first that matches
+            pats |> List.tryPick (fun altPat ->
+                specializeRow ctor (altPat :: rest))
 
 /// Specialize a pattern matrix for constructor C
 /// Filters rows matching C and expands constructor arguments
@@ -307,3 +308,4 @@ let rec astPatToCasePat (pat: Ast.Pattern) : CasePat =
     | Ast.EmptyListPat _ -> WildcardPat
     | Ast.ConstPat _ -> WildcardPat
     | Ast.RecordPat _ -> WildcardPat
+    | Ast.OrPat(pats, _) -> OrPat(pats |> List.map astPatToCasePat)
