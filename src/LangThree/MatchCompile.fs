@@ -190,7 +190,8 @@ let destructureValue (ctor: string) (value: Value) : Value list =
 // ============================================================
 // 9. evalDecisionTree: walk the tree at runtime
 // ============================================================
-let evalDecisionTree (evalFn: Env -> Expr -> Value) (env: Env) (varEnv: Map<TestVar, Value>) (tree: DecisionTree) : Value =
+/// Phase 15: evalFn callback takes tailPos: bool to thread tail position through match clause bodies
+let evalDecisionTree (evalFn: Env -> bool -> Expr -> Value) (env: Env) (tailPos: bool) (varEnv: Map<TestVar, Value>) (tree: DecisionTree) : Value =
     let rec walk (env: Env) (varEnv: Map<TestVar, Value>) (tree: DecisionTree) : Value =
         match tree with
         | Fail -> failwith "Match failure: no pattern matched"
@@ -199,10 +200,10 @@ let evalDecisionTree (evalFn: Env -> Expr -> Value) (env: Env) (varEnv: Map<Test
                 bindings |> Map.fold (fun e name tv ->
                     Map.add name (Map.find tv varEnv) e) env
             match guard with
-            | None -> evalFn bodyEnv body
+            | None -> evalFn bodyEnv tailPos body
             | Some guardExpr ->
-                match evalFn bodyEnv guardExpr with
-                | BoolValue true -> evalFn bodyEnv body
+                match evalFn bodyEnv false guardExpr with
+                | BoolValue true -> evalFn bodyEnv tailPos body
                 | _ ->
                     match fallback with
                     | Some fb -> walk env varEnv fb

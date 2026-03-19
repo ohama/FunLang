@@ -166,7 +166,7 @@ let main argv =
                     1
                 | Ok _ ->
                     // Type check passed, evaluate
-                    let result = eval Map.empty Map.empty initialEnv ast
+                    let result = eval Map.empty Map.empty initialEnv false ast
                     printfn "%s" (formatValue result)
                     0
             with ex ->

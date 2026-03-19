@@ -309,7 +309,8 @@ let rec matchPattern (pat: Pattern) (value: Value) : (string * Value) list optio
     | _ -> None  // Type mismatch (e.g., TuplePat vs IntValue)
 
 /// Evaluate match clauses sequentially, returning first match
-and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (scrutinee: Value) (clauses: MatchClause list) : Value =
+/// Phase 15: tailPos parameter for tail call optimization
+and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (tailPos: bool) (scrutinee: Value) (clauses: MatchClause list) : Value =
     match clauses with
     | [] -> failwith "Match failure: no pattern matched"
     | (pattern, guard, resultExpr) :: rest ->
@@ -318,18 +319,34 @@ and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>
             let extendedEnv = List.fold (fun e (n, v) -> Map.add n v e) env bindings
             match guard with
             | None ->
-                eval recEnv moduleEnv extendedEnv resultExpr
+                eval recEnv moduleEnv extendedEnv tailPos resultExpr
             | Some guardExpr ->
-                match eval recEnv moduleEnv extendedEnv guardExpr with
-                | BoolValue true -> eval recEnv moduleEnv extendedEnv resultExpr
-                | _ -> evalMatchClauses recEnv moduleEnv env scrutinee rest
+                match eval recEnv moduleEnv extendedEnv false guardExpr with
+                | BoolValue true -> eval recEnv moduleEnv extendedEnv tailPos resultExpr
+                | _ -> evalMatchClauses recEnv moduleEnv env tailPos scrutinee rest
         | None ->
-            evalMatchClauses recEnv moduleEnv env scrutinee rest
+            evalMatchClauses recEnv moduleEnv env tailPos scrutinee rest
+
+/// Apply a function value to an argument (shared by App, PipeRight, and trampoline loop)
+/// Phase 15: When tailPos=true, body evaluates in tail position so nested tail calls return TailCall
+and applyFunc (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (funcVal: Value) (argVal: Value) (funcExpr: Expr) (tailPos: bool) : Value =
+    match funcVal with
+    | FunctionValue (param, body, closureEnv) ->
+        // For recursive functions: when calling by name, add self to closure
+        let augmentedClosureEnv =
+            match funcExpr with
+            | Var (name, _) -> Map.add name funcVal closureEnv
+            | _ -> closureEnv
+        let callEnv = Map.add param argVal augmentedClosureEnv
+        eval recEnv moduleEnv callEnv tailPos body
+    | BuiltinValue fn -> fn argVal
+    | _ -> failwith "Type error: attempted to call non-function"
 
 /// Evaluate an expression in an environment
 /// Returns Value (IntValue, BoolValue, or FunctionValue)
 /// Raises exception for type errors and undefined variables
-and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (expr: Expr) : Value =
+/// Phase 15: tailPos parameter enables tail call optimization via trampoline
+and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (tailPos: bool) (expr: Expr) : Value =
     match expr with
     | Number (n, _) -> IntValue n
     | Bool (b, _) -> BoolValue b
@@ -341,21 +358,21 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | None -> failwithf "Undefined variable: %s" name
 
     | Let (name, binding, body, _) ->
-        let value = eval recEnv moduleEnv env binding
+        let value = eval recEnv moduleEnv env false binding
         let extendedEnv = Map.add name value env
-        eval recEnv moduleEnv extendedEnv body
+        eval recEnv moduleEnv extendedEnv tailPos body
 
     // Phase 1 (v3.0): Tuples
     | Tuple (exprs, _) ->
-        let values = List.map (eval recEnv moduleEnv env) exprs
+        let values = List.map (eval recEnv moduleEnv env false) exprs
         TupleValue values
 
     | LetPat (pat, bindingExpr, bodyExpr, _) ->
-        let value = eval recEnv moduleEnv env bindingExpr
+        let value = eval recEnv moduleEnv env false bindingExpr
         match matchPattern pat value with
         | Some bindings ->
             let extendedEnv = List.fold (fun e (n, v) -> Map.add n v e) env bindings
-            eval recEnv moduleEnv extendedEnv bodyExpr
+            eval recEnv moduleEnv extendedEnv tailPos bodyExpr
         | None ->
             match pat, value with
             | TuplePat (pats, _), TupleValue vals ->
@@ -368,119 +385,119 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 3 (v3.0): Pattern Matching -- compiled via decision tree (Phase 7)
     | Match (scrutinee, clauses, _) ->
-        let value = eval recEnv moduleEnv env scrutinee
+        let value = eval recEnv moduleEnv env false scrutinee
         let tree, rootVar = MatchCompile.compileMatch clauses
-        let evalFn e expr = eval recEnv moduleEnv e expr
+        let evalFn e tp expr = eval recEnv moduleEnv e tp expr
         let varEnv = Map.ofList [(rootVar, value)]
-        MatchCompile.evalDecisionTree evalFn env varEnv tree
+        MatchCompile.evalDecisionTree evalFn env tailPos varEnv tree
 
     // Phase 2 (v3.0): Lists
     | EmptyList _ ->
         ListValue []
 
     | List (exprs, _) ->
-        let values = List.map (eval recEnv moduleEnv env) exprs
+        let values = List.map (eval recEnv moduleEnv env false) exprs
         ListValue values
 
     | Cons (headExpr, tailExpr, _) ->
-        let headVal = eval recEnv moduleEnv env headExpr
-        match eval recEnv moduleEnv env tailExpr with
+        let headVal = eval recEnv moduleEnv env false headExpr
+        match eval recEnv moduleEnv env false tailExpr with
         | ListValue tailVals -> ListValue (headVal :: tailVals)
         | _ -> failwith "Type error: cons (::) requires list as second argument"
 
     // Arithmetic operations - type check for IntValue
     | Add (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> IntValue (l + r)
         | StringValue l, StringValue r -> StringValue (l + r)
         | _ -> failwith "Type error: + requires operands of same type (int or string)"
 
     | Subtract (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> IntValue (l - r)
         | _ -> failwith "Type error: - requires integer operands"
 
     | Multiply (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> IntValue (l * r)
         | _ -> failwith "Type error: * requires integer operands"
 
     | Divide (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> IntValue (l / r)
         | _ -> failwith "Type error: / requires integer operands"
 
     | Negate (e, _) ->
-        match eval recEnv moduleEnv env e with
+        match eval recEnv moduleEnv env false e with
         | IntValue n -> IntValue (-n)
         | _ -> failwith "Type error: unary - requires integer operand"
 
     // Comparison operators - type check for IntValue, return BoolValue
     | LessThan (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l < r)
         | _ -> failwith "Type error: < requires integer operands"
 
     | GreaterThan (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l > r)
         | _ -> failwith "Type error: > requires integer operands"
 
     | LessEqual (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l <= r)
         | _ -> failwith "Type error: <= requires integer operands"
 
     | GreaterEqual (left, right, _) ->
-        match eval recEnv moduleEnv env left, eval recEnv moduleEnv env right with
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l >= r)
         | _ -> failwith "Type error: >= requires integer operands"
 
     // Equal and NotEqual delegate to valuesEqual for all value types
     | Equal (left, right, _) ->
-        let l = eval recEnv moduleEnv env left
-        let r = eval recEnv moduleEnv env right
+        let l = eval recEnv moduleEnv env false left
+        let r = eval recEnv moduleEnv env false right
         BoolValue (valuesEqual l r)
 
     | NotEqual (left, right, _) ->
-        let l = eval recEnv moduleEnv env left
-        let r = eval recEnv moduleEnv env right
+        let l = eval recEnv moduleEnv env false left
+        let r = eval recEnv moduleEnv env false right
         BoolValue (not (valuesEqual l r))
 
     // Logical operators - short-circuit evaluation
     | And (left, right, _) ->
-        match eval recEnv moduleEnv env left with
+        match eval recEnv moduleEnv env false left with
         | BoolValue false -> BoolValue false
         | BoolValue true ->
-            match eval recEnv moduleEnv env right with
+            match eval recEnv moduleEnv env false right with
             | BoolValue b -> BoolValue b
             | _ -> failwith "Type error: && requires boolean operands"
         | _ -> failwith "Type error: && requires boolean operands"
 
     | Or (left, right, _) ->
-        match eval recEnv moduleEnv env left with
+        match eval recEnv moduleEnv env false left with
         | BoolValue true -> BoolValue true
         | BoolValue false ->
-            match eval recEnv moduleEnv env right with
+            match eval recEnv moduleEnv env false right with
             | BoolValue b -> BoolValue b
             | _ -> failwith "Type error: || requires boolean operands"
         | _ -> failwith "Type error: || requires boolean operands"
 
-    // If-then-else - condition must be boolean
+    // If-then-else - condition must be boolean; branches inherit tailPos
     | If (condition, thenBranch, elseBranch, _) ->
-        match eval recEnv moduleEnv env condition with
-        | BoolValue true -> eval recEnv moduleEnv env thenBranch
-        | BoolValue false -> eval recEnv moduleEnv env elseBranch
+        match eval recEnv moduleEnv env false condition with
+        | BoolValue true -> eval recEnv moduleEnv env tailPos thenBranch
+        | BoolValue false -> eval recEnv moduleEnv env tailPos elseBranch
         | _ -> failwith "Type error: if condition must be boolean"
 
     // Phase 2 (ADT): Constructor evaluation
     | Constructor (name, argOpt, _) ->
-        let argValue = argOpt |> Option.map (eval recEnv moduleEnv env)
+        let argValue = argOpt |> Option.map (eval recEnv moduleEnv env false)
         DataValue (name, argValue)
 
     // v6.0: Type annotations - erased at runtime
     | Annot (expr, _, _) ->
-        eval recEnv moduleEnv env expr  // Just evaluate the underlying expression
+        eval recEnv moduleEnv env tailPos expr  // Just evaluate the underlying expression
 
     | LambdaAnnot (param, _, body, _) ->
         FunctionValue (param, body, env)  // Same as regular lambda at runtime
@@ -491,37 +508,35 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     | Lambda (param, body, _) ->
         FunctionValue (param, body, env)
 
-    // Function application
+    // Function application with trampoline for TCO (Phase 15)
     | App (funcExpr, argExpr, _) ->
-        let funcVal = eval recEnv moduleEnv env funcExpr
-        match funcVal with
-        | FunctionValue (param, body, closureEnv) ->
-            let argValue = eval recEnv moduleEnv env argExpr
-            // For recursive functions: when calling by name, add self to closure
-            // This enables recursion by ensuring the function can find itself
-            let augmentedClosureEnv =
-                match funcExpr with
-                | Var (name, _) -> Map.add name funcVal closureEnv
-                | _ -> closureEnv
-            let callEnv = Map.add param argValue augmentedClosureEnv
-            eval recEnv moduleEnv callEnv body
-        | BuiltinValue fn ->
-            let argValue = eval recEnv moduleEnv env argExpr
-            fn argValue
-        | _ -> failwith "Type error: attempted to call non-function"
+        let funcVal = eval recEnv moduleEnv env false funcExpr
+        let argValue = eval recEnv moduleEnv env false argExpr
+        // When in tail position, return TailCall to let the caller's trampoline handle it
+        if tailPos then
+            TailCall (funcVal, argValue)
+        else
+            // Not in tail position: apply and trampoline any TailCall chain
+            let mutable result = applyFunc recEnv moduleEnv funcVal argValue funcExpr true
+            while (match result with TailCall _ -> true | _ -> false) do
+                match result with
+                | TailCall (f, a) ->
+                    result <- applyFunc recEnv moduleEnv f a funcExpr true
+                | _ -> ()
+            result
 
     // Let rec - recursive function definition
     // Creates a function whose closure will be augmented at call time (in App)
     | LetRec (name, param, funcBody, inExpr, _) ->
         let funcVal = FunctionValue (param, funcBody, env)
         let recFuncEnv = Map.add name funcVal env
-        eval recEnv moduleEnv recFuncEnv inExpr
+        eval recEnv moduleEnv recFuncEnv tailPos inExpr
 
     // Phase 3 (Records): Record expression - create RecordValue with resolved type name
     | RecordExpr (_, fieldExprs, _) ->
         let fieldValues =
             fieldExprs
-            |> List.map (fun (name, expr) -> (name, ref (eval recEnv moduleEnv env expr)))
+            |> List.map (fun (name, expr) -> (name, ref (eval recEnv moduleEnv env false expr)))
             |> Map.ofList
         let fieldNames = fieldExprs |> List.map fst |> Set.ofList
         let typeName = resolveRecordTypeName recEnv fieldNames
@@ -569,7 +584,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         | None -> failwithf "Module %s.%s has no member %s" modName innerField fieldName
                 | None ->
                     // innerField is not a submodule, try evaluating as record field access
-                    let v = eval recEnv moduleEnv env expr
+                    let v = eval recEnv moduleEnv env false expr
                     match v with
                     | RecordValue (_, fields) ->
                         match Map.tryFind fieldName fields with
@@ -578,7 +593,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                     | _ -> failwithf "Field access on non-record/module value: %s" (formatValue v)
             | None ->
                 // Regular record field access on chained expression
-                let v = eval recEnv moduleEnv env expr
+                let v = eval recEnv moduleEnv env false expr
                 match v with
                 | RecordValue (_, fields) ->
                     match Map.tryFind fieldName fields with
@@ -587,7 +602,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                 | _ -> failwithf "Field access on non-record value: %s" (formatValue v)
         | _ ->
             // Regular record field access
-            match eval recEnv moduleEnv env expr with
+            match eval recEnv moduleEnv env false expr with
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef
@@ -596,46 +611,52 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 3 (Records): Copy-and-update (record update)
     | RecordUpdate (source, updates, _) ->
-        match eval recEnv moduleEnv env source with
+        match eval recEnv moduleEnv env false source with
         | RecordValue (typeName, fields) ->
             let copiedFields = fields |> Map.map (fun _ vr -> ref !vr)
             let updatedFields =
                 updates
                 |> List.fold (fun acc (name, expr) ->
-                    Map.add name (ref (eval recEnv moduleEnv env expr)) acc) copiedFields
+                    Map.add name (ref (eval recEnv moduleEnv env false expr)) acc) copiedFields
             RecordValue (typeName, updatedFields)
         | v -> failwithf "Copy-and-update on non-record value: %s" (formatValue v)
 
     // Phase 6 (Exceptions): raise throws, try-with catches
+    // TryWith body is NOT tail position (exception handler needs stack frame)
     | Raise(arg, _) ->
-        let exnVal = eval recEnv moduleEnv env arg
+        let exnVal = eval recEnv moduleEnv env false arg
         raise (LangThreeException exnVal)
     | TryWith(body, handlers, _) ->
         try
-            eval recEnv moduleEnv env body
+            eval recEnv moduleEnv env false body
         with
         | LangThreeException exnVal ->
             try
-                evalMatchClauses recEnv moduleEnv env exnVal handlers
+                evalMatchClauses recEnv moduleEnv env tailPos exnVal handlers
             with
             | e when e.Message = "Match failure: no pattern matched" ->
                 // No handler matched: re-raise the original exception
                 raise (LangThreeException exnVal)
 
     // Phase 9 (Pipe & Composition): Pipe and composition operators
+    // PipeRight uses same trampoline pattern as App (Phase 15)
     | PipeRight (left, right, _) ->
-        let argVal = eval recEnv moduleEnv env left
-        let funcVal = eval recEnv moduleEnv env right
-        match funcVal with
-        | FunctionValue (param, body, closureEnv) ->
-            let callEnv = Map.add param argVal closureEnv
-            eval recEnv moduleEnv callEnv body
-        | BuiltinValue fn -> fn argVal
-        | _ -> failwith "Type error: |> requires function on right side"
+        let argVal = eval recEnv moduleEnv env false left
+        let funcVal = eval recEnv moduleEnv env false right
+        if tailPos then
+            TailCall (funcVal, argVal)
+        else
+            let mutable result = applyFunc recEnv moduleEnv funcVal argVal right true
+            while (match result with TailCall _ -> true | _ -> false) do
+                match result with
+                | TailCall (f, a) ->
+                    result <- applyFunc recEnv moduleEnv f a right true
+                | _ -> ()
+            result
 
     | ComposeRight (left, right, _) ->
-        let fVal = eval recEnv moduleEnv env left
-        let gVal = eval recEnv moduleEnv env right
+        let fVal = eval recEnv moduleEnv env false left
+        let gVal = eval recEnv moduleEnv env false right
         // Use unique names to avoid collision in chained composition
         composeCounter <- composeCounter + 1
         let counter = composeCounter
@@ -647,8 +668,8 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         FunctionValue(param, body, closureEnv)
 
     | ComposeLeft (left, right, _) ->
-        let fVal = eval recEnv moduleEnv env left
-        let gVal = eval recEnv moduleEnv env right
+        let fVal = eval recEnv moduleEnv env false left
+        let gVal = eval recEnv moduleEnv env false right
         composeCounter <- composeCounter + 1
         let counter = composeCounter
         let param = sprintf "__compose_x_%d" counter
@@ -660,18 +681,18 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 3 (Records): Mutable field assignment
     | SetField (expr, fieldName, value, _) ->
-        match eval recEnv moduleEnv env expr with
+        match eval recEnv moduleEnv env false expr with
         | RecordValue (_, fields) ->
             match Map.tryFind fieldName fields with
             | Some valueRef ->
-                valueRef := eval recEnv moduleEnv env value
+                valueRef := eval recEnv moduleEnv env false value
                 TupleValue []
             | None -> failwithf "Field not found: %s" fieldName
         | v -> failwithf "SetField on non-record value: %s" (formatValue v)
 
 /// Convenience function for top-level evaluation
 let evalExpr (expr: Expr) : Value =
-    eval Map.empty Map.empty emptyEnv expr
+    eval Map.empty Map.empty emptyEnv false expr
 
 /// Evaluate module declarations, building value and module environments
 let rec evalModuleDecls
@@ -684,7 +705,7 @@ let rec evalModuleDecls
     |> List.fold (fun (env, modEnv) decl ->
         match decl with
         | LetDecl(name, body, _) ->
-            let value = eval recEnv modEnv env body
+            let value = eval recEnv modEnv env false body
             (Map.add name value env, modEnv)
         | ModuleDecl(name, innerDecls, _) ->
             let innerEnv, innerModEnv = evalModuleDecls recEnv modEnv env innerDecls
