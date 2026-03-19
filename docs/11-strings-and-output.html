@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -177,29 +177,29 @@
                         <h1 id="chapter-11-strings-and-output"><a class="header" href="#chapter-11-strings-and-output">Chapter 11: Strings and Output</a></h1>
 <h2 id="string-literals"><a class="header" href="#string-literals">String Literals</a></h2>
 <p>String literals use double quotes with standard escape sequences:</p>
-<pre><code>$ langthree --expr '"hello world"'
+<pre><code>funlang&gt; "hello world"
 "hello world"
 
-$ langthree --expr '"tab\there"'
+funlang&gt; "tab\there"
 "tab	here"
 </code></pre>
 <h2 id="string-concatenation"><a class="header" href="#string-concatenation">String Concatenation</a></h2>
 <p>The <code>+</code> operator concatenates strings:</p>
-<pre><code>$ langthree --expr '"hello" + " " + "world"'
+<pre><code>funlang&gt; "hello" + " " + "world"
 "hello world"
 </code></pre>
 <h2 id="built-in-string-functions"><a class="header" href="#built-in-string-functions">Built-in String Functions</a></h2>
 <h3 id="string_length"><a class="header" href="#string_length">string_length</a></h3>
 <p>Returns the number of characters:</p>
-<pre><code>$ langthree --expr 'string_length "hello"'
+<pre><code>funlang&gt; string_length "hello"
 5
 
-$ langthree --expr 'string_length ""'
+funlang&gt; string_length ""
 0
 </code></pre>
 <h3 id="string_concat"><a class="header" href="#string_concat">string_concat</a></h3>
 <p>Curried concatenation – takes two strings:</p>
-<pre><code>$ langthree --expr 'string_concat "hello" " world"'
+<pre><code>funlang&gt; string_concat "hello" " world"
 "hello world"
 </code></pre>
 <p>Since it is curried, partial application works:</p>
@@ -212,46 +212,46 @@ $ langthree prefix.l3
 </code></pre>
 <h3 id="string_sub"><a class="header" href="#string_sub">string_sub</a></h3>
 <p>Extract a substring with start index and length:</p>
-<pre><code>$ langthree --expr 'string_sub "hello" 1 3'
+<pre><code>funlang&gt; string_sub "hello" 1 3
 "ell"
 </code></pre>
 <p><code>string_sub s start len</code> returns characters from index <code>start</code> for <code>len</code> characters.
 Indices are zero-based.</p>
 <h3 id="string_contains"><a class="header" href="#string_contains">string_contains</a></h3>
 <p>Check if a string contains a substring:</p>
-<pre><code>$ langthree --expr 'string_contains "hello world" "world"'
+<pre><code>funlang&gt; string_contains "hello world" "world"
 true
 
-$ langthree --expr 'string_contains "hello" "xyz"'
+funlang&gt; string_contains "hello" "xyz"
 false
 </code></pre>
 <h3 id="to_string"><a class="header" href="#to_string">to_string</a></h3>
 <p>Convert values to their string representation:</p>
-<pre><code>$ langthree --expr 'to_string 42'
+<pre><code>funlang&gt; to_string 42
 "42"
 
-$ langthree --expr 'to_string true'
+funlang&gt; to_string true
 "true"
 
-$ langthree --expr 'to_string "already a string"'
+funlang&gt; to_string "already a string"
 "already a string"
 </code></pre>
 <p>Accepts <code>int</code>, <code>bool</code>, and <code>string</code> at runtime.</p>
 <h3 id="string_to_int"><a class="header" href="#string_to_int">string_to_int</a></h3>
 <p>Parse a string as an integer:</p>
-<pre><code>$ langthree --expr 'string_to_int "123"'
+<pre><code>funlang&gt; string_to_int "123"
 123
 </code></pre>
 <h2 id="print-functions"><a class="header" href="#print-functions">Print Functions</a></h2>
 <h3 id="print"><a class="header" href="#print">print</a></h3>
 <p>Writes a string to output with no newline, returns unit:</p>
-<pre><code>$ langthree --expr 'print "hello"'
+<pre><code>funlang&gt; print "hello"
 hello()
 </code></pre>
-<p>In <code>--expr</code> mode, the side-effect text appears immediately before the <code>()</code> result.</p>
+<p>In the interactive session, the side-effect text appears immediately before the <code>()</code> result.</p>
 <h3 id="println"><a class="header" href="#println">println</a></h3>
 <p>Writes a string with a trailing newline, returns unit:</p>
-<pre><code>$ langthree --expr 'println "hello"'
+<pre><code>funlang&gt; println "hello"
 hello
 ()
 </code></pre>
@@ -306,7 +306,7 @@ third
 the side effects execute in order.</p>
 <h2 id="pipe-with-string-functions"><a class="header" href="#pipe-with-string-functions">Pipe with String Functions</a></h2>
 <p>String functions work naturally with the pipe operator:</p>
-<pre><code>$ langthree --expr '"hello" |&gt; string_length'
+<pre><code>funlang&gt; "hello" |&gt; string_length
 5
 </code></pre>
 <p>Build pipelines with string transformations:</p>

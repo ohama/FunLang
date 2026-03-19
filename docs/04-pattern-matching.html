@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -177,7 +177,7 @@
                         <h1 id="chapter-4-pattern-matching"><a class="header" href="#chapter-4-pattern-matching">Chapter 4: Pattern Matching</a></h1>
 <h2 id="basic-match-syntax"><a class="header" href="#basic-match-syntax">Basic Match Syntax</a></h2>
 <p>Match expressions use <code>|</code> pipes aligned with the <code>match</code> keyword:</p>
-<pre><code>$ langthree --expr 'match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"'
+<pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
 "other"
 </code></pre>
 <p>In file mode, multi-line match uses indentation:</p>
@@ -196,29 +196,29 @@ $ langthree classify.l3
 <h2 id="pattern-types"><a class="header" href="#pattern-types">Pattern Types</a></h2>
 <h3 id="constant-patterns"><a class="header" href="#constant-patterns">Constant Patterns</a></h3>
 <p>Integer and boolean literals:</p>
-<pre><code>$ langthree --expr 'match true with | true -&gt; "yes" | false -&gt; "no"'
+<pre><code>funlang&gt; match true with | true -&gt; "yes" | false -&gt; "no"
 "yes"
 </code></pre>
 <p><strong>Note:</strong> String constant patterns are not supported.</p>
 <h3 id="variable-and-wildcard-patterns"><a class="header" href="#variable-and-wildcard-patterns">Variable and Wildcard Patterns</a></h3>
 <p>A variable binds the matched value; <code>_</code> discards it:</p>
-<pre><code>$ langthree --expr 'match 42 with | x -&gt; x + 1'
+<pre><code>funlang&gt; match 42 with | x -&gt; x + 1
 43
 
-$ langthree --expr 'match 42 with | _ -&gt; 0'
+funlang&gt; match 42 with | _ -&gt; 0
 0
 </code></pre>
 <h3 id="tuple-patterns"><a class="header" href="#tuple-patterns">Tuple Patterns</a></h3>
 <p>Decompose tuples in-place:</p>
-<pre><code>$ langthree --expr 'match (1, 2) with | (a, b) -&gt; a + b'
+<pre><code>funlang&gt; match (1, 2) with | (a, b) -&gt; a + b
 3
 </code></pre>
 <h3 id="list-patterns"><a class="header" href="#list-patterns">List Patterns</a></h3>
 <p>Match on empty, cons, or literal lists:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x'
+<pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 
-$ langthree --expr 'match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0'
+funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
 <h3 id="constructor-patterns"><a class="header" href="#constructor-patterns">Constructor Patterns</a></h3>
@@ -302,19 +302,19 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
 <p>Add a wildcard or cover all cases to silence the warning.</p>
 <h2 id="let-pattern-destructuring"><a class="header" href="#let-pattern-destructuring">Let-Pattern Destructuring</a></h2>
 <p>Destructure without a full <code>match</code>:</p>
-<pre><code>$ langthree --expr 'let (x, y) = (1, 2) in x + y'
+<pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
 3
 
-$ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
+funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="practical-example-list-processing"><a class="header" href="#practical-example-list-processing">Practical Example: List Processing</a></h2>
 <p>Combine patterns with recursion:</p>
-<pre><code>$ langthree --expr 'let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
 <p>Count list elements:</p>
-<pre><code>$ langthree --expr 'let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]'
+<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]
 3
 </code></pre>
 

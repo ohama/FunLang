@@ -5,30 +5,30 @@
 Lambda syntax uses `fun`:
 
 ```
-$ langthree --expr '(fun x -> x + 1) 10'
+funlang> (fun x -> x + 1) 10
 11
 ```
 
 With type annotation:
 
 ```
-$ langthree --expr '(fun (x: int) -> x + 1) 10'
+funlang> (fun (x: int) -> x + 1) 10
 11
 ```
 
-## Let Bindings (Expression Mode)
+## Let Bindings (REPL / Expression Mode)
 
-In `--expr` mode, bind values with `let ... in`:
+In the REPL, bind values with `let ... in`:
 
 ```
-$ langthree --expr 'let x = 5 in x + 1'
+funlang> let x = 5 in x + 1
 6
 ```
 
 Bindings can be chained:
 
 ```
-$ langthree --expr 'let x = 5 in let y = x + 1 in y * 2'
+funlang> let x = 5 in let y = x + 1 in y * 2
 12
 ```
 
@@ -78,7 +78,7 @@ Use `let rec` for recursion. This only works at expression level (with `in`),
 **not** at module level -- a known limitation.
 
 ```
-$ langthree --expr 'let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5'
+funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
 120
 ```
 
@@ -86,7 +86,7 @@ $ langthree --expr 'let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in f
 recursive functions, take a single tuple or use nested lambdas inside the body:
 
 ```
-$ langthree --expr 'let rec len xs = match xs with | [] -> 0 | _ :: rest -> 1 + len rest in len [1, 2, 3]'
+funlang> let rec len xs = match xs with | [] -> 0 | _ :: rest -> 1 + len rest in len [1, 2, 3]
 3
 ```
 
@@ -160,14 +160,14 @@ $ langthree curry.l3
 The pipe operator `|>` passes a value as the last argument:
 
 ```
-$ langthree --expr '5 |> (fun x -> x + 1)'
+funlang> 5 |> (fun x -> x + 1)
 6
 ```
 
 Composition operators `>>` (left-to-right) and `<<` (right-to-left):
 
 ```
-$ langthree --expr 'let f = (fun x -> x + 1) >> (fun x -> x * 2) in f 3'
+funlang> let f = (fun x -> x + 1) >> (fun x -> x * 2) in f 3
 8
 ```
 

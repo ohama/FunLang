@@ -176,10 +176,10 @@ in file mode, token emission reveals how the IndentFilter interprets your whites
 
 ## REPL
 
-Start an interactive session with `--repl` or with no arguments:
+Start an interactive session by running `langthree` with no arguments:
 
 ```
-$ langthree --repl
+$ langthree
 FunLang REPL
 Type '#quit' or Ctrl+D to quit.
 
@@ -205,7 +205,7 @@ Exit with `#quit` or Ctrl+D.
 | `--emit-ast` | Show parsed AST | AST of expression | All declarations |
 | `--emit-type` | Show inferred types | Type of expression | All binding types |
 | `--emit-tokens` | Show lexer tokens | Raw tokens | Tokens with IndentFilter |
-| `--repl` | Interactive session | Per-line evaluation | N/A |
+| *(no args)* | REPL interactive session | Per-line evaluation | N/A |
 
 Diagnostic flags combine with either `--expr` or a filename:
 

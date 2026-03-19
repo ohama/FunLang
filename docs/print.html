@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -212,7 +212,12 @@
 algebraic data types (including GADTs), pattern matching with decision tree compilation,
 and a module system.</p>
 <h2 id="running-langthree"><a class="header" href="#running-langthree">Running LangThree</a></h2>
-<p><strong>Expression mode</strong> evaluates a single expression:</p>
+<p><strong>REPL (interactive mode)</strong> starts an interactive session (no arguments):</p>
+<pre><code>$ langthree
+funlang&gt;
+</code></pre>
+<p>Type expressions directly at the prompt and see results immediately.</p>
+<p><strong>Expression mode</strong> evaluates a single expression from the command line:</p>
 <pre><code>$ langthree --expr '1 + 2'
 3
 </code></pre>
@@ -231,95 +236,92 @@ Add (Number 1, Number 2)
 $ langthree --emit-type --expr '1 + 2'
 int
 </code></pre>
-<p><strong>REPL</strong> starts an interactive session:</p>
-<pre><code>$ langthree --repl
-</code></pre>
 <h2 id="integers-and-arithmetic"><a class="header" href="#integers-and-arithmetic">Integers and Arithmetic</a></h2>
 <p>Standard arithmetic operators with usual precedence. Division is integer division.</p>
-<pre><code>$ langthree --expr '1 + 2 * 3'
+<pre><code>funlang&gt; 1 + 2 * 3
 7
 
-$ langthree --expr '10 - 3'
+funlang&gt; 10 - 3
 7
 
-$ langthree --expr '10 / 3'
+funlang&gt; 10 / 3
 3
 
-$ langthree --expr '-5'
+funlang&gt; -5
 -5
 </code></pre>
 <h2 id="booleans"><a class="header" href="#booleans">Booleans</a></h2>
 <p><code>true</code> and <code>false</code> with short-circuit <code>&amp;&amp;</code> and <code>||</code>.</p>
-<pre><code>$ langthree --expr 'true &amp;&amp; false'
+<pre><code>funlang&gt; true &amp;&amp; false
 false
 
-$ langthree --expr 'true || false'
+funlang&gt; true || false
 true
 </code></pre>
 <p>Short-circuit evaluation means the right operand is not evaluated when unnecessary:</p>
-<pre><code>$ langthree --expr 'false &amp;&amp; (1/0 = 0)'
+<pre><code>funlang&gt; false &amp;&amp; (1/0 = 0)
 false
 
-$ langthree --expr 'true || (1/0 = 0)'
+funlang&gt; true || (1/0 = 0)
 true
 </code></pre>
 <p>There is no <code>not</code> function. Negate booleans with <code>if</code>:</p>
-<pre><code>$ langthree --expr 'if true then false else true'
+<pre><code>funlang&gt; if true then false else true
 false
 </code></pre>
 <h2 id="strings"><a class="header" href="#strings">Strings</a></h2>
 <p>String literals use double quotes with standard escape sequences (<code>\n</code>, <code>\t</code>, <code>\\</code>, <code>\"</code>).
 Concatenation uses the <code>+</code> operator.</p>
-<pre><code>$ langthree --expr '"hello" + " world"'
+<pre><code>funlang&gt; "hello" + " world"
 "hello world"
 
-$ langthree --expr '"line1\nline2"'
+funlang&gt; "line1\nline2"
 "line1
 line2"
 </code></pre>
 <p>Built-in string functions:</p>
-<pre><code>$ langthree --expr 'string_length "hello"'
+<pre><code>funlang&gt; string_length "hello"
 5
 
-$ langthree --expr 'string_sub "hello" 1 3'
+funlang&gt; string_sub "hello" 1 3
 "ell"
 
-$ langthree --expr 'to_string 42'
+funlang&gt; to_string 42
 "42"
 </code></pre>
 <h2 id="comparison-operators"><a class="header" href="#comparison-operators">Comparison Operators</a></h2>
 <p>Equality is <code>=</code> (not <code>==</code>). Inequality is <code>&lt;&gt;</code>.</p>
-<pre><code>$ langthree --expr '1 = 1'
+<pre><code>funlang&gt; 1 = 1
 true
 
-$ langthree --expr '1 &lt;&gt; 2'
+funlang&gt; 1 &lt;&gt; 2
 true
 
-$ langthree --expr '3 &lt; 5'
+funlang&gt; 3 &lt; 5
 true
 
-$ langthree --expr '3 &gt;= 3'
+funlang&gt; 3 &gt;= 3
 true
 </code></pre>
 <h2 id="conditionals"><a class="header" href="#conditionals">Conditionals</a></h2>
-<pre><code>$ langthree --expr 'if 1 &lt; 2 then "yes" else "no"'
+<pre><code>funlang&gt; if 1 &lt; 2 then "yes" else "no"
 "yes"
 </code></pre>
 <p>Both branches must have the same type. The <code>else</code> branch is required.</p>
 <h2 id="comments"><a class="header" href="#comments">Comments</a></h2>
 <p>Line comments with <code>//</code> and block comments with <code>(* ... *)</code>:</p>
-<pre><code>$ langthree --expr '1 + 2 // this is ignored'
+<pre><code>funlang&gt; 1 + 2 // this is ignored
 3
 
-$ langthree --expr '(* block comment *) 1 + 2'
+funlang&gt; (* block comment *) 1 + 2
 3
 </code></pre>
 <h2 id="unit-type"><a class="header" href="#unit-type">Unit Type</a></h2>
 <p>The unit type <code>()</code> represents “no meaningful value”, used for side effects:</p>
-<pre><code>$ langthree --expr '()'
+<pre><code>funlang&gt; ()
 ()
 
-$ langthree --expr 'println "hello"'
+funlang&gt; println "hello"
 hello
 ()
 </code></pre>
@@ -327,27 +329,27 @@ hello
 <ul>
 <li><strong>Indentation-based</strong> – no semicolons or braces for blocks (F#-style)</li>
 <li><strong>File mode</strong>: <code>let</code> bindings at top level, no <code>in</code> needed; last binding’s value is printed</li>
-<li><strong>Expression mode</strong>: use <code>let x = ... in body</code> for local bindings</li>
+<li><strong>REPL / Expression mode</strong>: use <code>let x = ... in body</code> for local bindings</li>
 <li><code>match</code> pipes must align with the <code>match</code> keyword column</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="chapter-2-functions"><a class="header" href="#chapter-2-functions">Chapter 2: Functions</a></h1>
 <h2 id="anonymous-functions"><a class="header" href="#anonymous-functions">Anonymous Functions</a></h2>
 <p>Lambda syntax uses <code>fun</code>:</p>
-<pre><code>$ langthree --expr '(fun x -&gt; x + 1) 10'
+<pre><code>funlang&gt; (fun x -&gt; x + 1) 10
 11
 </code></pre>
 <p>With type annotation:</p>
-<pre><code>$ langthree --expr '(fun (x: int) -&gt; x + 1) 10'
+<pre><code>funlang&gt; (fun (x: int) -&gt; x + 1) 10
 11
 </code></pre>
-<h2 id="let-bindings-expression-mode"><a class="header" href="#let-bindings-expression-mode">Let Bindings (Expression Mode)</a></h2>
-<p>In <code>--expr</code> mode, bind values with <code>let ... in</code>:</p>
-<pre><code>$ langthree --expr 'let x = 5 in x + 1'
+<h2 id="let-bindings-repl--expression-mode"><a class="header" href="#let-bindings-repl--expression-mode">Let Bindings (REPL / Expression Mode)</a></h2>
+<p>In the REPL, bind values with <code>let ... in</code>:</p>
+<pre><code>funlang&gt; let x = 5 in x + 1
 6
 </code></pre>
 <p>Bindings can be chained:</p>
-<pre><code>$ langthree --expr 'let x = 5 in let y = x + 1 in y * 2'
+<pre><code>funlang&gt; let x = 5 in let y = x + 1 in y * 2
 12
 </code></pre>
 <h2 id="let-bindings-file-mode"><a class="header" href="#let-bindings-file-mode">Let Bindings (File Mode)</a></h2>
@@ -382,12 +384,12 @@ $ langthree multi2.l3
 <h2 id="recursive-functions"><a class="header" href="#recursive-functions">Recursive Functions</a></h2>
 <p>Use <code>let rec</code> for recursion. This only works at expression level (with <code>in</code>),
 <strong>not</strong> at module level – a known limitation.</p>
-<pre><code>$ langthree --expr 'let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5'
+<pre><code>funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5
 120
 </code></pre>
 <p><strong>Limitation:</strong> <code>let rec</code> supports only a single parameter. For multi-parameter
 recursive functions, take a single tuple or use nested lambdas inside the body:</p>
-<pre><code>$ langthree --expr 'let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1, 2, 3]'
+<pre><code>funlang&gt; let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1, 2, 3]
 3
 </code></pre>
 <p>In file mode, embed <code>let rec ... in</code> inside a top-level <code>let</code>:</p>
@@ -439,11 +441,11 @@ $ langthree curry.l3
 </code></pre>
 <h2 id="pipe-and-composition-operators"><a class="header" href="#pipe-and-composition-operators">Pipe and Composition Operators</a></h2>
 <p>The pipe operator <code>|&gt;</code> passes a value as the last argument:</p>
-<pre><code>$ langthree --expr '5 |&gt; (fun x -&gt; x + 1)'
+<pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
 <p>Composition operators <code>&gt;&gt;</code> (left-to-right) and <code>&lt;&lt;</code> (right-to-left):</p>
-<pre><code>$ langthree --expr 'let f = (fun x -&gt; x + 1) &gt;&gt; (fun x -&gt; x * 2) in f 3'
+<pre><code>funlang&gt; let f = (fun x -&gt; x + 1) &gt;&gt; (fun x -&gt; x * 2) in f 3
 8
 </code></pre>
 <p>Here <code>f 3</code> computes <code>(3 + 1) * 2 = 8</code>.</p>
@@ -451,77 +453,77 @@ $ langthree curry.l3
 <h1 id="chapter-3-lists-and-tuples"><a class="header" href="#chapter-3-lists-and-tuples">Chapter 3: Lists and Tuples</a></h1>
 <h2 id="list-basics"><a class="header" href="#list-basics">List Basics</a></h2>
 <p>Lists are ordered, homogeneous collections:</p>
-<pre><code>$ langthree --expr '[1, 2, 3]'
+<pre><code>funlang&gt; [1, 2, 3]
 [1, 2, 3]
 
-$ langthree --expr '[]'
+funlang&gt; []
 []
 </code></pre>
 <p>The cons operator <code>::</code> prepends an element:</p>
-<pre><code>$ langthree --expr '1 :: [2, 3]'
+<pre><code>funlang&gt; 1 :: [2, 3]
 [1, 2, 3]
 
-$ langthree --expr '1 :: 2 :: 3 :: []'
+funlang&gt; 1 :: 2 :: 3 :: []
 [1, 2, 3]
 </code></pre>
 <h2 id="tuples"><a class="header" href="#tuples">Tuples</a></h2>
 <p>Tuples are fixed-size, heterogeneous collections:</p>
-<pre><code>$ langthree --expr '(1, "hello")'
+<pre><code>funlang&gt; (1, "hello")
 (1, "hello")
 
-$ langthree --expr '(1, "hello", true)'
+funlang&gt; (1, "hello", true)
 (1, "hello", true)
 </code></pre>
 <p>Decompose tuples with pattern binding:</p>
-<pre><code>$ langthree --expr 'let (x, y) = (1, 2) in x + y'
+<pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
 3
 
-$ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
+funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="unit"><a class="header" href="#unit">Unit</a></h2>
 <p>The unit type <code>()</code> represents “no value”:</p>
-<pre><code>$ langthree --expr '()'
+<pre><code>funlang&gt; ()
 ()
 </code></pre>
 <h2 id="combining-lists-and-tuples"><a class="header" href="#combining-lists-and-tuples">Combining Lists and Tuples</a></h2>
 <p>Lists of tuples:</p>
-<pre><code>$ langthree --expr '[(1, "a"), (2, "b")]'
+<pre><code>funlang&gt; [(1, "a"), (2, "b")]
 [(1, "a"), (2, "b")]
 </code></pre>
 <h2 id="recursive-list-functions"><a class="header" href="#recursive-list-functions">Recursive List Functions</a></h2>
 <p>Since <code>let rec</code> only supports a single parameter, recursive list functions
 take the list as their one argument. Use closures to capture extra state.</p>
 <p><strong>Length:</strong></p>
-<pre><code>$ langthree --expr 'let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]'
+<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]
 4
 </code></pre>
 <p><strong>Sum:</strong></p>
-<pre><code>$ langthree --expr 'let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
 <p><strong>Map</strong> (applying a function to each element):</p>
-<pre><code>$ langthree --expr 'let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]'
+<pre><code>funlang&gt; let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]
 [10, 20, 30]
 </code></pre>
 <p><strong>Filter</strong> (capture the predicate in a closure):</p>
-<pre><code>$ langthree --expr 'let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]
 [3, 4, 5]
 </code></pre>
 <h2 id="pattern-matching-on-lists"><a class="header" href="#pattern-matching-on-lists">Pattern Matching on Lists</a></h2>
 <p>Preview of Chapter 4 – <code>match</code> with list patterns:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x'
+<pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 </code></pre>
 <p>Nested destructuring:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0'
+<pre><code>funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="chapter-4-pattern-matching"><a class="header" href="#chapter-4-pattern-matching">Chapter 4: Pattern Matching</a></h1>
 <h2 id="basic-match-syntax"><a class="header" href="#basic-match-syntax">Basic Match Syntax</a></h2>
 <p>Match expressions use <code>|</code> pipes aligned with the <code>match</code> keyword:</p>
-<pre><code>$ langthree --expr 'match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"'
+<pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
 "other"
 </code></pre>
 <p>In file mode, multi-line match uses indentation:</p>
@@ -540,29 +542,29 @@ $ langthree classify.l3
 <h2 id="pattern-types"><a class="header" href="#pattern-types">Pattern Types</a></h2>
 <h3 id="constant-patterns"><a class="header" href="#constant-patterns">Constant Patterns</a></h3>
 <p>Integer and boolean literals:</p>
-<pre><code>$ langthree --expr 'match true with | true -&gt; "yes" | false -&gt; "no"'
+<pre><code>funlang&gt; match true with | true -&gt; "yes" | false -&gt; "no"
 "yes"
 </code></pre>
 <p><strong>Note:</strong> String constant patterns are not supported.</p>
 <h3 id="variable-and-wildcard-patterns"><a class="header" href="#variable-and-wildcard-patterns">Variable and Wildcard Patterns</a></h3>
 <p>A variable binds the matched value; <code>_</code> discards it:</p>
-<pre><code>$ langthree --expr 'match 42 with | x -&gt; x + 1'
+<pre><code>funlang&gt; match 42 with | x -&gt; x + 1
 43
 
-$ langthree --expr 'match 42 with | _ -&gt; 0'
+funlang&gt; match 42 with | _ -&gt; 0
 0
 </code></pre>
 <h3 id="tuple-patterns"><a class="header" href="#tuple-patterns">Tuple Patterns</a></h3>
 <p>Decompose tuples in-place:</p>
-<pre><code>$ langthree --expr 'match (1, 2) with | (a, b) -&gt; a + b'
+<pre><code>funlang&gt; match (1, 2) with | (a, b) -&gt; a + b
 3
 </code></pre>
 <h3 id="list-patterns"><a class="header" href="#list-patterns">List Patterns</a></h3>
 <p>Match on empty, cons, or literal lists:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x'
+<pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 
-$ langthree --expr 'match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0'
+funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
 <h3 id="constructor-patterns"><a class="header" href="#constructor-patterns">Constructor Patterns</a></h3>
@@ -646,19 +648,19 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
 <p>Add a wildcard or cover all cases to silence the warning.</p>
 <h2 id="let-pattern-destructuring"><a class="header" href="#let-pattern-destructuring">Let-Pattern Destructuring</a></h2>
 <p>Destructure without a full <code>match</code>:</p>
-<pre><code>$ langthree --expr 'let (x, y) = (1, 2) in x + y'
+<pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
 3
 
-$ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
+funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="practical-example-list-processing"><a class="header" href="#practical-example-list-processing">Practical Example: List Processing</a></h2>
 <p>Combine patterns with recursion:</p>
-<pre><code>$ langthree --expr 'let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
 <p>Count list elements:</p>
-<pre><code>$ langthree --expr 'let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]'
+<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10, 20, 30]
 3
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -1350,7 +1352,7 @@ $ langthree safe_div.l3
 <h1 id="chapter-10-pipes-and-composition"><a class="header" href="#chapter-10-pipes-and-composition">Chapter 10: Pipes and Composition</a></h1>
 <h2 id="the-pipe-operator"><a class="header" href="#the-pipe-operator">The Pipe Operator</a></h2>
 <p>The pipe operator <code>|&gt;</code> passes a value as the argument to a function:</p>
-<pre><code>$ langthree --expr '5 |&gt; (fun x -&gt; x + 1)'
+<pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
 <p>Pipe chains read left-to-right, describing a data transformation pipeline:</p>
@@ -1365,16 +1367,16 @@ $ langthree pipe_chain.l3
 <p>Here <code>5 |&gt; double |&gt; inc</code> computes <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>.</p>
 <h2 id="pipe-with-built-in-functions"><a class="header" href="#pipe-with-built-in-functions">Pipe with Built-in Functions</a></h2>
 <p>Pipe works with built-in functions, not just user-defined ones:</p>
-<pre><code>$ langthree --expr '"hello" |&gt; string_length'
+<pre><code>funlang&gt; "hello" |&gt; string_length
 5
 </code></pre>
 <p>Curried built-ins work naturally with pipe:</p>
-<pre><code>$ langthree --expr '"world" |&gt; string_concat "hello "'
+<pre><code>funlang&gt; "world" |&gt; string_concat "hello "
 "hello world"
 </code></pre>
 <h2 id="pipe-with-lambdas"><a class="header" href="#pipe-with-lambdas">Pipe with Lambdas</a></h2>
 <p>Pass a lambda as the function:</p>
-<pre><code>$ langthree --expr '10 |&gt; (fun x -&gt; x * x)'
+<pre><code>funlang&gt; 10 |&gt; (fun x -&gt; x * x)
 100
 </code></pre>
 <p>Parentheses around the lambda are required.</p>
@@ -1479,29 +1481,29 @@ operators bind tighter than pipe but looser than arithmetic:</p>
 <h1 id="chapter-11-strings-and-output"><a class="header" href="#chapter-11-strings-and-output">Chapter 11: Strings and Output</a></h1>
 <h2 id="string-literals"><a class="header" href="#string-literals">String Literals</a></h2>
 <p>String literals use double quotes with standard escape sequences:</p>
-<pre><code>$ langthree --expr '"hello world"'
+<pre><code>funlang&gt; "hello world"
 "hello world"
 
-$ langthree --expr '"tab\there"'
+funlang&gt; "tab\there"
 "tab	here"
 </code></pre>
 <h2 id="string-concatenation"><a class="header" href="#string-concatenation">String Concatenation</a></h2>
 <p>The <code>+</code> operator concatenates strings:</p>
-<pre><code>$ langthree --expr '"hello" + " " + "world"'
+<pre><code>funlang&gt; "hello" + " " + "world"
 "hello world"
 </code></pre>
 <h2 id="built-in-string-functions"><a class="header" href="#built-in-string-functions">Built-in String Functions</a></h2>
 <h3 id="string_length"><a class="header" href="#string_length">string_length</a></h3>
 <p>Returns the number of characters:</p>
-<pre><code>$ langthree --expr 'string_length "hello"'
+<pre><code>funlang&gt; string_length "hello"
 5
 
-$ langthree --expr 'string_length ""'
+funlang&gt; string_length ""
 0
 </code></pre>
 <h3 id="string_concat"><a class="header" href="#string_concat">string_concat</a></h3>
 <p>Curried concatenation – takes two strings:</p>
-<pre><code>$ langthree --expr 'string_concat "hello" " world"'
+<pre><code>funlang&gt; string_concat "hello" " world"
 "hello world"
 </code></pre>
 <p>Since it is curried, partial application works:</p>
@@ -1514,46 +1516,46 @@ $ langthree prefix.l3
 </code></pre>
 <h3 id="string_sub"><a class="header" href="#string_sub">string_sub</a></h3>
 <p>Extract a substring with start index and length:</p>
-<pre><code>$ langthree --expr 'string_sub "hello" 1 3'
+<pre><code>funlang&gt; string_sub "hello" 1 3
 "ell"
 </code></pre>
 <p><code>string_sub s start len</code> returns characters from index <code>start</code> for <code>len</code> characters.
 Indices are zero-based.</p>
 <h3 id="string_contains"><a class="header" href="#string_contains">string_contains</a></h3>
 <p>Check if a string contains a substring:</p>
-<pre><code>$ langthree --expr 'string_contains "hello world" "world"'
+<pre><code>funlang&gt; string_contains "hello world" "world"
 true
 
-$ langthree --expr 'string_contains "hello" "xyz"'
+funlang&gt; string_contains "hello" "xyz"
 false
 </code></pre>
 <h3 id="to_string"><a class="header" href="#to_string">to_string</a></h3>
 <p>Convert values to their string representation:</p>
-<pre><code>$ langthree --expr 'to_string 42'
+<pre><code>funlang&gt; to_string 42
 "42"
 
-$ langthree --expr 'to_string true'
+funlang&gt; to_string true
 "true"
 
-$ langthree --expr 'to_string "already a string"'
+funlang&gt; to_string "already a string"
 "already a string"
 </code></pre>
 <p>Accepts <code>int</code>, <code>bool</code>, and <code>string</code> at runtime.</p>
 <h3 id="string_to_int"><a class="header" href="#string_to_int">string_to_int</a></h3>
 <p>Parse a string as an integer:</p>
-<pre><code>$ langthree --expr 'string_to_int "123"'
+<pre><code>funlang&gt; string_to_int "123"
 123
 </code></pre>
 <h2 id="print-functions"><a class="header" href="#print-functions">Print Functions</a></h2>
 <h3 id="print"><a class="header" href="#print">print</a></h3>
 <p>Writes a string to output with no newline, returns unit:</p>
-<pre><code>$ langthree --expr 'print "hello"'
+<pre><code>funlang&gt; print "hello"
 hello()
 </code></pre>
-<p>In <code>--expr</code> mode, the side-effect text appears immediately before the <code>()</code> result.</p>
+<p>In the interactive session, the side-effect text appears immediately before the <code>()</code> result.</p>
 <h3 id="println"><a class="header" href="#println">println</a></h3>
 <p>Writes a string with a trailing newline, returns unit:</p>
-<pre><code>$ langthree --expr 'println "hello"'
+<pre><code>funlang&gt; println "hello"
 hello
 ()
 </code></pre>
@@ -1608,7 +1610,7 @@ third
 the side effects execute in order.</p>
 <h2 id="pipe-with-string-functions"><a class="header" href="#pipe-with-string-functions">Pipe with String Functions</a></h2>
 <p>String functions work naturally with the pipe operator:</p>
-<pre><code>$ langthree --expr '"hello" |&gt; string_length'
+<pre><code>funlang&gt; "hello" |&gt; string_length
 5
 </code></pre>
 <p>Build pipelines with string transformations:</p>
@@ -1658,14 +1660,14 @@ define become available in all subsequent code.</p>
 everywhere without any <code>open</code> directive.</p>
 <h2 id="using-the-option-type"><a class="header" href="#using-the-option-type">Using the Option Type</a></h2>
 <h3 id="creating-option-values"><a class="header" href="#creating-option-values">Creating Option Values</a></h3>
-<p>The <code>Some</code> and <code>None</code> constructors work in both expression mode and file mode:</p>
-<pre><code>$ langthree --expr 'Some 42'
+<p>The <code>Some</code> and <code>None</code> constructors work in both the REPL and file mode:</p>
+<pre><code>funlang&gt; Some 42
 Some 42
 
-$ langthree --expr 'Some "hello"'
+funlang&gt; Some "hello"
 Some "hello"
 
-$ langthree --expr 'None'
+funlang&gt; None
 None
 </code></pre>
 <p>Check inferred types:</p>
@@ -1764,7 +1766,7 @@ let result =
 $ langthree result_demo.l3
 3
 </code></pre>
-<p>Prelude types work in both <code>--expr</code> mode and file mode. Constructors from Prelude
+<p>Prelude types work in both the REPL and file mode. Constructors from Prelude
 files are available without <code>open</code>.</p>
 <h2 id="built-in-type-signatures"><a class="header" href="#built-in-type-signatures">Built-in Type Signatures</a></h2>
 <p>Separate from the Prelude, LangThree has a set of <strong>type-only</strong> built-in names.
@@ -1780,7 +1782,7 @@ $ langthree --emit-type --expr 'id'
 'a -&gt; 'a
 </code></pre>
 <p>However, calling these at runtime produces an error:</p>
-<pre><code>$ langthree --expr 'id 42'
+<pre><code>funlang&gt; id 42
 Error: Undefined variable: id
 </code></pre>
 <p>The full list of type-only built-ins:</p>
@@ -1836,11 +1838,11 @@ the built-in environment, not from Prelude files:</p>
 </tbody>
 </table>
 </div>
-<p>These work in both expression mode and file mode:</p>
-<pre><code>$ langthree --expr 'string_length "hello"'
+<p>These work in both the REPL and file mode:</p>
+<pre><code>funlang&gt; string_length "hello"
 5
 
-$ langthree --expr 'to_string 42'
+funlang&gt; to_string 42
 "42"
 </code></pre>
 <p>See <a href="#chapter-11-strings-and-output">Chapter 11: Strings and Output</a> for full details.</p>
@@ -1994,8 +1996,8 @@ LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBE
 This is useful for debugging indentation issues – when a program fails to parse
 in file mode, token emission reveals how the IndentFilter interprets your whitespace.</p>
 <h2 id="repl"><a class="header" href="#repl">REPL</a></h2>
-<p>Start an interactive session with <code>--repl</code> or with no arguments:</p>
-<pre><code>$ langthree --repl
+<p>Start an interactive session by running <code>langthree</code> with no arguments:</p>
+<pre><code>$ langthree
 FunLang REPL
 Type '#quit' or Ctrl+D to quit.
 
@@ -2021,7 +2023,7 @@ supported.</p>
 <tr><td><code>--emit-ast</code></td><td>Show parsed AST</td><td>AST of expression</td><td>All declarations</td></tr>
 <tr><td><code>--emit-type</code></td><td>Show inferred types</td><td>Type of expression</td><td>All binding types</td></tr>
 <tr><td><code>--emit-tokens</code></td><td>Show lexer tokens</td><td>Raw tokens</td><td>Tokens with IndentFilter</td></tr>
-<tr><td><code>--repl</code></td><td>Interactive session</td><td>Per-line evaluation</td><td>N/A</td></tr>
+<tr><td><em>(no args)</em></td><td>REPL interactive session</td><td>Per-line evaluation</td><td>N/A</td></tr>
 </tbody>
 </table>
 </div>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -191,14 +191,14 @@ define become available in all subsequent code.</p>
 everywhere without any <code>open</code> directive.</p>
 <h2 id="using-the-option-type"><a class="header" href="#using-the-option-type">Using the Option Type</a></h2>
 <h3 id="creating-option-values"><a class="header" href="#creating-option-values">Creating Option Values</a></h3>
-<p>The <code>Some</code> and <code>None</code> constructors work in both expression mode and file mode:</p>
-<pre><code>$ langthree --expr 'Some 42'
+<p>The <code>Some</code> and <code>None</code> constructors work in both the REPL and file mode:</p>
+<pre><code>funlang&gt; Some 42
 Some 42
 
-$ langthree --expr 'Some "hello"'
+funlang&gt; Some "hello"
 Some "hello"
 
-$ langthree --expr 'None'
+funlang&gt; None
 None
 </code></pre>
 <p>Check inferred types:</p>
@@ -297,7 +297,7 @@ let result =
 $ langthree result_demo.l3
 3
 </code></pre>
-<p>Prelude types work in both <code>--expr</code> mode and file mode. Constructors from Prelude
+<p>Prelude types work in both the REPL and file mode. Constructors from Prelude
 files are available without <code>open</code>.</p>
 <h2 id="built-in-type-signatures"><a class="header" href="#built-in-type-signatures">Built-in Type Signatures</a></h2>
 <p>Separate from the Prelude, LangThree has a set of <strong>type-only</strong> built-in names.
@@ -313,7 +313,7 @@ $ langthree --emit-type --expr 'id'
 'a -&gt; 'a
 </code></pre>
 <p>However, calling these at runtime produces an error:</p>
-<pre><code>$ langthree --expr 'id 42'
+<pre><code>funlang&gt; id 42
 Error: Undefined variable: id
 </code></pre>
 <p>The full list of type-only built-ins:</p>
@@ -369,11 +369,11 @@ the built-in environment, not from Prelude files:</p>
 </tbody>
 </table>
 </div>
-<p>These work in both expression mode and file mode:</p>
-<pre><code>$ langthree --expr 'string_length "hello"'
+<p>These work in both the REPL and file mode:</p>
+<pre><code>funlang&gt; string_length "hello"
 5
 
-$ langthree --expr 'to_string 42'
+funlang&gt; to_string 42
 "42"
 </code></pre>
 <p>See <a href="11-strings-and-output.html">Chapter 11: Strings and Output</a> for full details.</p>

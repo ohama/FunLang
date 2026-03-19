@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -177,7 +177,7 @@
                         <h1 id="chapter-10-pipes-and-composition"><a class="header" href="#chapter-10-pipes-and-composition">Chapter 10: Pipes and Composition</a></h1>
 <h2 id="the-pipe-operator"><a class="header" href="#the-pipe-operator">The Pipe Operator</a></h2>
 <p>The pipe operator <code>|&gt;</code> passes a value as the argument to a function:</p>
-<pre><code>$ langthree --expr '5 |&gt; (fun x -&gt; x + 1)'
+<pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
 <p>Pipe chains read left-to-right, describing a data transformation pipeline:</p>
@@ -192,16 +192,16 @@ $ langthree pipe_chain.l3
 <p>Here <code>5 |&gt; double |&gt; inc</code> computes <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>.</p>
 <h2 id="pipe-with-built-in-functions"><a class="header" href="#pipe-with-built-in-functions">Pipe with Built-in Functions</a></h2>
 <p>Pipe works with built-in functions, not just user-defined ones:</p>
-<pre><code>$ langthree --expr '"hello" |&gt; string_length'
+<pre><code>funlang&gt; "hello" |&gt; string_length
 5
 </code></pre>
 <p>Curried built-ins work naturally with pipe:</p>
-<pre><code>$ langthree --expr '"world" |&gt; string_concat "hello "'
+<pre><code>funlang&gt; "world" |&gt; string_concat "hello "
 "hello world"
 </code></pre>
 <h2 id="pipe-with-lambdas"><a class="header" href="#pipe-with-lambdas">Pipe with Lambdas</a></h2>
 <p>Pass a lambda as the function:</p>
-<pre><code>$ langthree --expr '10 |&gt; (fun x -&gt; x * x)'
+<pre><code>funlang&gt; 10 |&gt; (fun x -&gt; x * x)
 100
 </code></pre>
 <p>Parentheses around the lambda are required.</p>

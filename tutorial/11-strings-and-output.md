@@ -5,10 +5,10 @@
 String literals use double quotes with standard escape sequences:
 
 ```
-$ langthree --expr '"hello world"'
+funlang> "hello world"
 "hello world"
 
-$ langthree --expr '"tab\there"'
+funlang> "tab\there"
 "tab	here"
 ```
 
@@ -17,7 +17,7 @@ $ langthree --expr '"tab\there"'
 The `+` operator concatenates strings:
 
 ```
-$ langthree --expr '"hello" + " " + "world"'
+funlang> "hello" + " " + "world"
 "hello world"
 ```
 
@@ -28,10 +28,10 @@ $ langthree --expr '"hello" + " " + "world"'
 Returns the number of characters:
 
 ```
-$ langthree --expr 'string_length "hello"'
+funlang> string_length "hello"
 5
 
-$ langthree --expr 'string_length ""'
+funlang> string_length ""
 0
 ```
 
@@ -40,7 +40,7 @@ $ langthree --expr 'string_length ""'
 Curried concatenation -- takes two strings:
 
 ```
-$ langthree --expr 'string_concat "hello" " world"'
+funlang> string_concat "hello" " world"
 "hello world"
 ```
 
@@ -60,7 +60,7 @@ $ langthree prefix.l3
 Extract a substring with start index and length:
 
 ```
-$ langthree --expr 'string_sub "hello" 1 3'
+funlang> string_sub "hello" 1 3
 "ell"
 ```
 
@@ -72,10 +72,10 @@ Indices are zero-based.
 Check if a string contains a substring:
 
 ```
-$ langthree --expr 'string_contains "hello world" "world"'
+funlang> string_contains "hello world" "world"
 true
 
-$ langthree --expr 'string_contains "hello" "xyz"'
+funlang> string_contains "hello" "xyz"
 false
 ```
 
@@ -84,13 +84,13 @@ false
 Convert values to their string representation:
 
 ```
-$ langthree --expr 'to_string 42'
+funlang> to_string 42
 "42"
 
-$ langthree --expr 'to_string true'
+funlang> to_string true
 "true"
 
-$ langthree --expr 'to_string "already a string"'
+funlang> to_string "already a string"
 "already a string"
 ```
 
@@ -101,7 +101,7 @@ Accepts `int`, `bool`, and `string` at runtime.
 Parse a string as an integer:
 
 ```
-$ langthree --expr 'string_to_int "123"'
+funlang> string_to_int "123"
 123
 ```
 
@@ -112,18 +112,18 @@ $ langthree --expr 'string_to_int "123"'
 Writes a string to output with no newline, returns unit:
 
 ```
-$ langthree --expr 'print "hello"'
+funlang> print "hello"
 hello()
 ```
 
-In `--expr` mode, the side-effect text appears immediately before the `()` result.
+In the interactive session, the side-effect text appears immediately before the `()` result.
 
 ### println
 
 Writes a string with a trailing newline, returns unit:
 
 ```
-$ langthree --expr 'println "hello"'
+funlang> println "hello"
 hello
 ()
 ```
@@ -189,7 +189,7 @@ the side effects execute in order.
 String functions work naturally with the pipe operator:
 
 ```
-$ langthree --expr '"hello" |> string_length'
+funlang> "hello" |> string_length
 5
 ```
 

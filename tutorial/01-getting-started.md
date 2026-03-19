@@ -6,7 +6,16 @@ and a module system.
 
 ## Running LangThree
 
-**Expression mode** evaluates a single expression:
+**REPL (interactive mode)** starts an interactive session (no arguments):
+
+```
+$ langthree
+funlang>
+```
+
+Type expressions directly at the prompt and see results immediately.
+
+**Expression mode** evaluates a single expression from the command line:
 
 ```
 $ langthree --expr '1 + 2'
@@ -34,27 +43,21 @@ $ langthree --emit-type --expr '1 + 2'
 int
 ```
 
-**REPL** starts an interactive session:
-
-```
-$ langthree --repl
-```
-
 ## Integers and Arithmetic
 
 Standard arithmetic operators with usual precedence. Division is integer division.
 
 ```
-$ langthree --expr '1 + 2 * 3'
+funlang> 1 + 2 * 3
 7
 
-$ langthree --expr '10 - 3'
+funlang> 10 - 3
 7
 
-$ langthree --expr '10 / 3'
+funlang> 10 / 3
 3
 
-$ langthree --expr '-5'
+funlang> -5
 -5
 ```
 
@@ -63,27 +66,27 @@ $ langthree --expr '-5'
 `true` and `false` with short-circuit `&&` and `||`.
 
 ```
-$ langthree --expr 'true && false'
+funlang> true && false
 false
 
-$ langthree --expr 'true || false'
+funlang> true || false
 true
 ```
 
 Short-circuit evaluation means the right operand is not evaluated when unnecessary:
 
 ```
-$ langthree --expr 'false && (1/0 = 0)'
+funlang> false && (1/0 = 0)
 false
 
-$ langthree --expr 'true || (1/0 = 0)'
+funlang> true || (1/0 = 0)
 true
 ```
 
 There is no `not` function. Negate booleans with `if`:
 
 ```
-$ langthree --expr 'if true then false else true'
+funlang> if true then false else true
 false
 ```
 
@@ -93,10 +96,10 @@ String literals use double quotes with standard escape sequences (`\n`, `\t`, `\
 Concatenation uses the `+` operator.
 
 ```
-$ langthree --expr '"hello" + " world"'
+funlang> "hello" + " world"
 "hello world"
 
-$ langthree --expr '"line1\nline2"'
+funlang> "line1\nline2"
 "line1
 line2"
 ```
@@ -104,13 +107,13 @@ line2"
 Built-in string functions:
 
 ```
-$ langthree --expr 'string_length "hello"'
+funlang> string_length "hello"
 5
 
-$ langthree --expr 'string_sub "hello" 1 3'
+funlang> string_sub "hello" 1 3
 "ell"
 
-$ langthree --expr 'to_string 42'
+funlang> to_string 42
 "42"
 ```
 
@@ -119,23 +122,23 @@ $ langthree --expr 'to_string 42'
 Equality is `=` (not `==`). Inequality is `<>`.
 
 ```
-$ langthree --expr '1 = 1'
+funlang> 1 = 1
 true
 
-$ langthree --expr '1 <> 2'
+funlang> 1 <> 2
 true
 
-$ langthree --expr '3 < 5'
+funlang> 3 < 5
 true
 
-$ langthree --expr '3 >= 3'
+funlang> 3 >= 3
 true
 ```
 
 ## Conditionals
 
 ```
-$ langthree --expr 'if 1 < 2 then "yes" else "no"'
+funlang> if 1 < 2 then "yes" else "no"
 "yes"
 ```
 
@@ -146,10 +149,10 @@ Both branches must have the same type. The `else` branch is required.
 Line comments with `//` and block comments with `(* ... *)`:
 
 ```
-$ langthree --expr '1 + 2 // this is ignored'
+funlang> 1 + 2 // this is ignored
 3
 
-$ langthree --expr '(* block comment *) 1 + 2'
+funlang> (* block comment *) 1 + 2
 3
 ```
 
@@ -158,10 +161,10 @@ $ langthree --expr '(* block comment *) 1 + 2'
 The unit type `()` represents "no meaningful value", used for side effects:
 
 ```
-$ langthree --expr '()'
+funlang> ()
 ()
 
-$ langthree --expr 'println "hello"'
+funlang> println "hello"
 hello
 ()
 ```
@@ -170,5 +173,5 @@ hello
 
 - **Indentation-based** -- no semicolons or braces for blocks (F#-style)
 - **File mode**: `let` bindings at top level, no `in` needed; last binding's value is printed
-- **Expression mode**: use `let x = ... in body` for local bindings
+- **REPL / Expression mode**: use `let x = ... in body` for local bindings
 - `match` pipes must align with the `match` keyword column

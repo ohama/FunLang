@@ -5,7 +5,7 @@
 The pipe operator `|>` passes a value as the argument to a function:
 
 ```
-$ langthree --expr '5 |> (fun x -> x + 1)'
+funlang> 5 |> (fun x -> x + 1)
 6
 ```
 
@@ -28,14 +28,14 @@ Here `5 |> double |> inc` computes `inc (double 5)` = `inc 10` = `11`.
 Pipe works with built-in functions, not just user-defined ones:
 
 ```
-$ langthree --expr '"hello" |> string_length'
+funlang> "hello" |> string_length
 5
 ```
 
 Curried built-ins work naturally with pipe:
 
 ```
-$ langthree --expr '"world" |> string_concat "hello "'
+funlang> "world" |> string_concat "hello "
 "hello world"
 ```
 
@@ -44,7 +44,7 @@ $ langthree --expr '"world" |> string_concat "hello "'
 Pass a lambda as the function:
 
 ```
-$ langthree --expr '10 |> (fun x -> x * x)'
+funlang> 10 |> (fun x -> x * x)
 100
 ```
 

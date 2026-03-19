@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -302,8 +302,8 @@ LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBE
 This is useful for debugging indentation issues – when a program fails to parse
 in file mode, token emission reveals how the IndentFilter interprets your whitespace.</p>
 <h2 id="repl"><a class="header" href="#repl">REPL</a></h2>
-<p>Start an interactive session with <code>--repl</code> or with no arguments:</p>
-<pre><code>$ langthree --repl
+<p>Start an interactive session by running <code>langthree</code> with no arguments:</p>
+<pre><code>$ langthree
 FunLang REPL
 Type '#quit' or Ctrl+D to quit.
 
@@ -329,7 +329,7 @@ supported.</p>
 <tr><td><code>--emit-ast</code></td><td>Show parsed AST</td><td>AST of expression</td><td>All declarations</td></tr>
 <tr><td><code>--emit-type</code></td><td>Show inferred types</td><td>Type of expression</td><td>All binding types</td></tr>
 <tr><td><code>--emit-tokens</code></td><td>Show lexer tokens</td><td>Raw tokens</td><td>Tokens with IndentFilter</td></tr>
-<tr><td><code>--repl</code></td><td>Interactive session</td><td>Per-line evaluation</td><td>N/A</td></tr>
+<tr><td><em>(no args)</em></td><td>REPL interactive session</td><td>Per-line evaluation</td><td>N/A</td></tr>
 </tbody>
 </table>
 </div>

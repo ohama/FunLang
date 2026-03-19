@@ -25,16 +25,16 @@ everywhere without any `open` directive.
 
 ### Creating Option Values
 
-The `Some` and `None` constructors work in both expression mode and file mode:
+The `Some` and `None` constructors work in both the REPL and file mode:
 
 ```
-$ langthree --expr 'Some 42'
+funlang> Some 42
 Some 42
 
-$ langthree --expr 'Some "hello"'
+funlang> Some "hello"
 Some "hello"
 
-$ langthree --expr 'None'
+funlang> None
 None
 ```
 
@@ -162,7 +162,7 @@ $ langthree result_demo.l3
 3
 ```
 
-Prelude types work in both `--expr` mode and file mode. Constructors from Prelude
+Prelude types work in both the REPL and file mode. Constructors from Prelude
 files are available without `open`.
 
 ## Built-in Type Signatures
@@ -185,7 +185,7 @@ $ langthree --emit-type --expr 'id'
 However, calling these at runtime produces an error:
 
 ```
-$ langthree --expr 'id 42'
+funlang> id 42
 Error: Undefined variable: id
 ```
 
@@ -237,13 +237,13 @@ the built-in environment, not from Prelude files:
 | `println` | `string -> unit` | Print with newline |
 | `printf` | `string -> ...` | Formatted output |
 
-These work in both expression mode and file mode:
+These work in both the REPL and file mode:
 
 ```
-$ langthree --expr 'string_length "hello"'
+funlang> string_length "hello"
 5
 
-$ langthree --expr 'to_string 42'
+funlang> to_string 42
 "42"
 ```
 

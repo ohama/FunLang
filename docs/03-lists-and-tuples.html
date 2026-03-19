@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -177,70 +177,70 @@
                         <h1 id="chapter-3-lists-and-tuples"><a class="header" href="#chapter-3-lists-and-tuples">Chapter 3: Lists and Tuples</a></h1>
 <h2 id="list-basics"><a class="header" href="#list-basics">List Basics</a></h2>
 <p>Lists are ordered, homogeneous collections:</p>
-<pre><code>$ langthree --expr '[1, 2, 3]'
+<pre><code>funlang&gt; [1, 2, 3]
 [1, 2, 3]
 
-$ langthree --expr '[]'
+funlang&gt; []
 []
 </code></pre>
 <p>The cons operator <code>::</code> prepends an element:</p>
-<pre><code>$ langthree --expr '1 :: [2, 3]'
+<pre><code>funlang&gt; 1 :: [2, 3]
 [1, 2, 3]
 
-$ langthree --expr '1 :: 2 :: 3 :: []'
+funlang&gt; 1 :: 2 :: 3 :: []
 [1, 2, 3]
 </code></pre>
 <h2 id="tuples"><a class="header" href="#tuples">Tuples</a></h2>
 <p>Tuples are fixed-size, heterogeneous collections:</p>
-<pre><code>$ langthree --expr '(1, "hello")'
+<pre><code>funlang&gt; (1, "hello")
 (1, "hello")
 
-$ langthree --expr '(1, "hello", true)'
+funlang&gt; (1, "hello", true)
 (1, "hello", true)
 </code></pre>
 <p>Decompose tuples with pattern binding:</p>
-<pre><code>$ langthree --expr 'let (x, y) = (1, 2) in x + y'
+<pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
 3
 
-$ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
+funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="unit"><a class="header" href="#unit">Unit</a></h2>
 <p>The unit type <code>()</code> represents “no value”:</p>
-<pre><code>$ langthree --expr '()'
+<pre><code>funlang&gt; ()
 ()
 </code></pre>
 <h2 id="combining-lists-and-tuples"><a class="header" href="#combining-lists-and-tuples">Combining Lists and Tuples</a></h2>
 <p>Lists of tuples:</p>
-<pre><code>$ langthree --expr '[(1, "a"), (2, "b")]'
+<pre><code>funlang&gt; [(1, "a"), (2, "b")]
 [(1, "a"), (2, "b")]
 </code></pre>
 <h2 id="recursive-list-functions"><a class="header" href="#recursive-list-functions">Recursive List Functions</a></h2>
 <p>Since <code>let rec</code> only supports a single parameter, recursive list functions
 take the list as their one argument. Use closures to capture extra state.</p>
 <p><strong>Length:</strong></p>
-<pre><code>$ langthree --expr 'let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]'
+<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]
 4
 </code></pre>
 <p><strong>Sum:</strong></p>
-<pre><code>$ langthree --expr 'let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
 <p><strong>Map</strong> (applying a function to each element):</p>
-<pre><code>$ langthree --expr 'let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]'
+<pre><code>funlang&gt; let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]
 [10, 20, 30]
 </code></pre>
 <p><strong>Filter</strong> (capture the predicate in a closure):</p>
-<pre><code>$ langthree --expr 'let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]'
+<pre><code>funlang&gt; let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]
 [3, 4, 5]
 </code></pre>
 <h2 id="pattern-matching-on-lists"><a class="header" href="#pattern-matching-on-lists">Pattern Matching on Lists</a></h2>
 <p>Preview of Chapter 4 – <code>match</code> with list patterns:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x'
+<pre><code>funlang&gt; match [1, 2, 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 </code></pre>
 <p>Nested destructuring:</p>
-<pre><code>$ langthree --expr 'match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0'
+<pre><code>funlang&gt; match [1, 2, 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
 

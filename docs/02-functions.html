@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1dd1e8f4.js";
+            window.path_to_searchindex_js = "searchindex-789ab13d.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-2ec4169e.js"></script>
@@ -177,20 +177,20 @@
                         <h1 id="chapter-2-functions"><a class="header" href="#chapter-2-functions">Chapter 2: Functions</a></h1>
 <h2 id="anonymous-functions"><a class="header" href="#anonymous-functions">Anonymous Functions</a></h2>
 <p>Lambda syntax uses <code>fun</code>:</p>
-<pre><code>$ langthree --expr '(fun x -&gt; x + 1) 10'
+<pre><code>funlang&gt; (fun x -&gt; x + 1) 10
 11
 </code></pre>
 <p>With type annotation:</p>
-<pre><code>$ langthree --expr '(fun (x: int) -&gt; x + 1) 10'
+<pre><code>funlang&gt; (fun (x: int) -&gt; x + 1) 10
 11
 </code></pre>
-<h2 id="let-bindings-expression-mode"><a class="header" href="#let-bindings-expression-mode">Let Bindings (Expression Mode)</a></h2>
-<p>In <code>--expr</code> mode, bind values with <code>let ... in</code>:</p>
-<pre><code>$ langthree --expr 'let x = 5 in x + 1'
+<h2 id="let-bindings-repl--expression-mode"><a class="header" href="#let-bindings-repl--expression-mode">Let Bindings (REPL / Expression Mode)</a></h2>
+<p>In the REPL, bind values with <code>let ... in</code>:</p>
+<pre><code>funlang&gt; let x = 5 in x + 1
 6
 </code></pre>
 <p>Bindings can be chained:</p>
-<pre><code>$ langthree --expr 'let x = 5 in let y = x + 1 in y * 2'
+<pre><code>funlang&gt; let x = 5 in let y = x + 1 in y * 2
 12
 </code></pre>
 <h2 id="let-bindings-file-mode"><a class="header" href="#let-bindings-file-mode">Let Bindings (File Mode)</a></h2>
@@ -225,12 +225,12 @@ $ langthree multi2.l3
 <h2 id="recursive-functions"><a class="header" href="#recursive-functions">Recursive Functions</a></h2>
 <p>Use <code>let rec</code> for recursion. This only works at expression level (with <code>in</code>),
 <strong>not</strong> at module level – a known limitation.</p>
-<pre><code>$ langthree --expr 'let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5'
+<pre><code>funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5
 120
 </code></pre>
 <p><strong>Limitation:</strong> <code>let rec</code> supports only a single parameter. For multi-parameter
 recursive functions, take a single tuple or use nested lambdas inside the body:</p>
-<pre><code>$ langthree --expr 'let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1, 2, 3]'
+<pre><code>funlang&gt; let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1, 2, 3]
 3
 </code></pre>
 <p>In file mode, embed <code>let rec ... in</code> inside a top-level <code>let</code>:</p>
@@ -282,11 +282,11 @@ $ langthree curry.l3
 </code></pre>
 <h2 id="pipe-and-composition-operators"><a class="header" href="#pipe-and-composition-operators">Pipe and Composition Operators</a></h2>
 <p>The pipe operator <code>|&gt;</code> passes a value as the last argument:</p>
-<pre><code>$ langthree --expr '5 |&gt; (fun x -&gt; x + 1)'
+<pre><code>funlang&gt; 5 |&gt; (fun x -&gt; x + 1)
 6
 </code></pre>
 <p>Composition operators <code>&gt;&gt;</code> (left-to-right) and <code>&lt;&lt;</code> (right-to-left):</p>
-<pre><code>$ langthree --expr 'let f = (fun x -&gt; x + 1) &gt;&gt; (fun x -&gt; x * 2) in f 3'
+<pre><code>funlang&gt; let f = (fun x -&gt; x + 1) &gt;&gt; (fun x -&gt; x * 2) in f 3
 8
 </code></pre>
 <p>Here <code>f 3</code> computes <code>(3 + 1) * 2 = 8</code>.</p>

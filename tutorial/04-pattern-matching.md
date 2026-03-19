@@ -5,7 +5,7 @@
 Match expressions use `|` pipes aligned with the `match` keyword:
 
 ```
-$ langthree --expr 'match 2 with | 0 -> "zero" | 1 -> "one" | _ -> "other"'
+funlang> match 2 with | 0 -> "zero" | 1 -> "one" | _ -> "other"
 "other"
 ```
 
@@ -33,7 +33,7 @@ Pipes must align with the `match` keyword column -- not indented from it.
 Integer and boolean literals:
 
 ```
-$ langthree --expr 'match true with | true -> "yes" | false -> "no"'
+funlang> match true with | true -> "yes" | false -> "no"
 "yes"
 ```
 
@@ -44,10 +44,10 @@ $ langthree --expr 'match true with | true -> "yes" | false -> "no"'
 A variable binds the matched value; `_` discards it:
 
 ```
-$ langthree --expr 'match 42 with | x -> x + 1'
+funlang> match 42 with | x -> x + 1
 43
 
-$ langthree --expr 'match 42 with | _ -> 0'
+funlang> match 42 with | _ -> 0
 0
 ```
 
@@ -56,7 +56,7 @@ $ langthree --expr 'match 42 with | _ -> 0'
 Decompose tuples in-place:
 
 ```
-$ langthree --expr 'match (1, 2) with | (a, b) -> a + b'
+funlang> match (1, 2) with | (a, b) -> a + b
 3
 ```
 
@@ -65,10 +65,10 @@ $ langthree --expr 'match (1, 2) with | (a, b) -> a + b'
 Match on empty, cons, or literal lists:
 
 ```
-$ langthree --expr 'match [1, 2, 3] with | [] -> "empty" | x :: _ -> to_string x'
+funlang> match [1, 2, 3] with | [] -> "empty" | x :: _ -> to_string x
 "1"
 
-$ langthree --expr 'match [1, 2, 3] with | a :: b :: _ -> a + b | _ -> 0'
+funlang> match [1, 2, 3] with | a :: b :: _ -> a + b | _ -> 0
 3
 ```
 
@@ -181,10 +181,10 @@ Add a wildcard or cover all cases to silence the warning.
 Destructure without a full `match`:
 
 ```
-$ langthree --expr 'let (x, y) = (1, 2) in x + y'
+funlang> let (x, y) = (1, 2) in x + y
 3
 
-$ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
+funlang> let (a, b, c) = (1, 2, 3) in a + b + c
 6
 ```
 
@@ -193,13 +193,13 @@ $ langthree --expr 'let (a, b, c) = (1, 2, 3) in a + b + c'
 Combine patterns with recursion:
 
 ```
-$ langthree --expr 'let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1, 2, 3, 4, 5]'
+funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1, 2, 3, 4, 5]
 15
 ```
 
 Count list elements:
 
 ```
-$ langthree --expr 'let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [10, 20, 30]'
+funlang> let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [10, 20, 30]
 3
 ```
