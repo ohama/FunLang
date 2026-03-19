@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.4 Language Completion — Phase 15 complete
+**Current focus:** v1.4 Language Completion — Phase 16 complete
 
 ## Current Position
 
 Milestone: v1.4 Language Completion
-Phase: 15 (tail-call-optimization) — Complete
+Phase: 16 (or-string-patterns) — Complete
 Plan: 01 of 01
 Status: Phase complete
-Last activity: 2026-03-19 — Completed 15-01-PLAN.md
+Last activity: 2026-03-19 — Completed 16-01-PLAN.md
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 phase 15 (1 plan) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 phases 13-16 (7 plans) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 43
+- Total plans completed: 44
 - Average duration: 4.5 min
-- Total execution time: ~3.24 hours
+- Total execution time: ~3.36 hours
 
 **By Phase:**
 
@@ -44,10 +44,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 | 13 | 2 | 11 min | 5.5 min |
 | 14 | 2 | 9 min | 4.5 min |
 | 15 | 1 | 7 min | 7.0 min |
+| 16 | 1 | 7 min | 7.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 13-02 (5min), 14-01 (5min), 14-02 (4min), 15-01 (7min)
-- Trend: TCO implemented via trampoline pattern. 513 tests (196 F# + 317 fslit).
+- Last 5 plans: 14-01 (5min), 14-02 (4min), 15-01 (7min), 16-01 (7min)
+- Trend: Or-patterns and string patterns added. 520 tests (196 F# + 324 fslit).
 
 *Updated after each plan completion*
 
@@ -283,6 +284,13 @@ Recent decisions affecting current work:
 - print/println in --expr mode: side-effect text appears immediately before () result on same line (no newline between)
 - println in --expr mode: side-effect text on its own line, () result on the next line
 
+**From 16-01 (Or-Patterns & String Patterns):**
+- Unparenthesized or-patterns via OrPattern nonterminal in Parser.fsy -- zero LALR(1) conflicts
+- OrPat expanded to multiple rows in compileMatch entry point (top-level expansion only, no nested)
+- StringConst uses #str_ prefix in MatchCompile (consistent with #int_, #bool_)
+- specializeRow in Exhaustive.fs made recursive for or-pattern alternative expansion
+- astPatToCasePat converts Ast.OrPat to Exhaustive.OrPat (already stubbed in CasePat DU)
+
 **From 15-01 (Trampoline TCO):**
 - TailCall of func: Value * arg: Value added to Value DU -- transient sentinel, never compared or printed to user
 - eval takes tailPos: bool; default false, inherit true only for tail positions (Let body, If branches, Match bodies, LetRec inExpr)
@@ -324,9 +332,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Completed 15-01-PLAN.md (Trampoline TCO) — Phase 15 complete
+Stopped at: Completed 16-01-PLAN.md (Or-Patterns & String Patterns) — Phase 16 complete
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-19 (Phase 15 TCO complete)*
+*Last updated: 2026-03-19 (Phase 16 or-string-patterns complete)*
