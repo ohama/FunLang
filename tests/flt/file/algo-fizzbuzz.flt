@@ -1,7 +1,10 @@
 // Test: FizzBuzz using or-patterns and list ranges
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec map f = fun xs -> match xs with | [] -> [] | h :: t -> f h :: map f t
+let rec map f = fun xs ->
+    match xs with
+    | [] -> []
+    | h :: t -> f h :: map f t
 
 let fizzbuzz n =
     let r3 = n - (n / 3) * 3

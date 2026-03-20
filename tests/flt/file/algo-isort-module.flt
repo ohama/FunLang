@@ -1,9 +1,15 @@
 // Test: insertion sort using module-level let rec
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec insert x = fun xs -> match xs with | [] -> x :: [] | h :: t -> if x <= h then x :: h :: t else h :: insert x t
+let rec insert x = fun xs ->
+    match xs with
+    | [] -> x :: []
+    | h :: t -> if x <= h then x :: h :: t else h :: insert x t
 
-let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
+let rec sort xs =
+    match xs with
+    | [] -> []
+    | h :: t -> insert h (sort t)
 
 let result = sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
 // --- Output:

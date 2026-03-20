@@ -2,7 +2,10 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let result =
-    let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
+    let rec rev acc = fun xs ->
+        match xs with
+        | [] -> acc
+        | h :: t -> rev (h :: acc) t
     in rev [] [1, 2, 3, 4, 5]
 // --- Output:
 [5, 4, 3, 2, 1]

@@ -4,7 +4,7 @@
 type Tree = Leaf | Node of Tree * int * Tree
 
 let result =
-    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> let dl = depth l in let dr = depth r in if dl > dr then dl + 1 else dr + 1
+    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + max (depth l) (depth r)
     in
     let rec size t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + size l + size r
     in

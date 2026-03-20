@@ -2,9 +2,15 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let sorted =
-    let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+    let rec filter pred = fun xs ->
+        match xs with
+        | [] -> []
+        | h :: t -> if pred h then h :: filter pred t else filter pred t
     in
-    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
+    let rec app xs = fun ys ->
+        match xs with
+        | [] -> ys
+        | h :: t -> h :: app t ys
     in
     let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in app (qsort lo) (pivot :: qsort hi)
     in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]

@@ -2,7 +2,10 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let result =
-    let rec check depth = fun cs -> match cs with | [] -> depth = 0 | c :: rest -> if c = 1 then check (depth + 1) rest else if c = 0 then if depth > 0 then check (depth - 1) rest else false else check depth rest
+    let rec check depth = fun cs ->
+        match cs with
+        | [] -> depth = 0
+        | c :: rest -> if c = 1 then check (depth + 1) rest else if c = 0 then if depth > 0 then check (depth - 1) rest else false else check depth rest
     in (check 0 [1, 1, 0, 0], check 0 [1, 0, 0, 1])
 // --- Output:
 (true, false)

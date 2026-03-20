@@ -1,11 +1,20 @@
 // Test: Collatz sequence with TCO and module-level let rec
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec collatz n = fun acc -> if n = 1 then n :: acc else if n - (n / 2) * 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
+let rec collatz n = fun acc ->
+    if n = 1 then n :: acc
+    else if n - (n / 2) * 2 = 0 then collatz (n / 2) (n :: acc)
+    else collatz (3 * n + 1) (n :: acc)
 
-let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
+let rec rev acc = fun xs ->
+    match xs with
+    | [] -> acc
+    | h :: t -> rev (h :: acc) t
 
-let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
+let rec length xs =
+    match xs with
+    | [] -> 0
+    | _ :: t -> 1 + length t
 
 let seq = rev [] (collatz 27 [])
 let result = length seq

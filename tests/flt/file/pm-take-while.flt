@@ -2,7 +2,10 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let result =
-    let rec takeWhile pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: takeWhile pred t else []
+    let rec takeWhile pred = fun xs ->
+        match xs with
+        | [] -> []
+        | h :: t -> if pred h then h :: takeWhile pred t else []
     in takeWhile (fun x -> x < 5) [1, 2, 3, 4, 5, 6, 7]
 // --- Output:
 [1, 2, 3, 4]

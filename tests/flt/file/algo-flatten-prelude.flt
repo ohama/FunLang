@@ -1,7 +1,10 @@
 // Test: flatten using Prelude ++ operator
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec myFlatten xss = match xss with | [] -> [] | xs :: rest -> xs ++ myFlatten rest
+let rec myFlatten xss =
+    match xss with
+    | [] -> []
+    | xs :: rest -> xs ++ myFlatten rest
 
 let result = myFlatten [[1, 2], [3], [], [4, 5]]
 // --- Output:

@@ -1,7 +1,10 @@
 // Test: quicksort using Prelude ++ operator (no manual append)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -> []
+    | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
 
 let result = qsort [5, 3, 8, 1, 9, 2, 7]
 // --- Output:

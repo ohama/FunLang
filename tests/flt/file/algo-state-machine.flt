@@ -1,8 +1,16 @@
 // Test: state machine using mutual recursion
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
-and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
+let rec stateA xs =
+    match xs with
+    | [] -> "ended in A"
+    | 0 :: rest -> stateB rest
+    | _ :: rest -> stateA rest
+and stateB xs =
+    match xs with
+    | [] -> "ended in B"
+    | 1 :: rest -> stateA rest
+    | _ :: rest -> stateB rest
 
 let result = stateA [1, 0, 1, 0]
 // --- Output:
