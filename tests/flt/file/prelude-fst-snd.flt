@@ -1,0 +1,6 @@
+// Test: Prelude fst and snd functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = (fst (1, 2), snd (1, 2), fst ("a", "b"), snd (true, false))
+// --- Output:
+(1, 2, "a", false)

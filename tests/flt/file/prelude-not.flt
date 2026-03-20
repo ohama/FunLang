@@ -1,0 +1,6 @@
+// Test: Prelude not function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = (not true, not false, not (1 = 2))
+// --- Output:
+(false, true, true)

@@ -1,0 +1,6 @@
+// Test: Prelude abs function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = (abs 5, abs (0 - 5), abs 0)
+// --- Output:
+(5, 5, 0)

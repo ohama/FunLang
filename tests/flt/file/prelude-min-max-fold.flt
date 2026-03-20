@@ -1,0 +1,8 @@
+// Test: min/max with fold for list min/max
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let listMin xs = fold min (hd xs) (tl xs)
+let listMax xs = fold max (hd xs) (tl xs)
+let result = (listMin [3, 1, 4, 1, 5, 9], listMax [3, 1, 4, 1, 5, 9])
+// --- Output:
+(1, 9)

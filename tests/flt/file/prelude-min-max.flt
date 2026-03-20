@@ -1,0 +1,6 @@
+// Test: Prelude min and max functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = (min 3 5, max 3 5, min 10 2, max 0 0)
+// --- Output:
+(3, 5, 2, 0)
