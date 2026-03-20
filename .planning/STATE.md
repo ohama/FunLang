@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 22 — negative patterns, tuple lambda
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v1.5 User-Defined Operators & Utilities
-Phase: 22 (negative-patterns-tuple-lambda)
-Plan: 01 of 01
-Status: Phase 22 complete
-Last activity: 2026-03-20 — Completed 22-01-PLAN.md
+Milestone: v1.6 (not started)
+Phase: Not started
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-03-20 — v1.5 milestone complete
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓ + Phase 21 (1 plan) ✓ + Phase 22 (1 plan) ✓
+Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓
 
 ## Performance Metrics
 

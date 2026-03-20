@@ -1,5 +1,28 @@
 # Project Milestones: LangThree
 
+## v1.5 User-Defined Operators & Utilities (Shipped: 2026-03-20)
+
+**Delivered:** 사용자 정의 연산자 (INFIXOP0-4), Prelude 유틸리티, sprintf/printfn/%, 음수 패턴, 튜플 람다
+
+**Phases completed:** 19-22 (4 plans total)
+
+**Key accomplishments:**
+- 사용자 정의 중위 연산자: `let (++) a b = ...` + `[1,2] ++ [3,4]`
+- Prelude 유틸리티: not, min, max, abs, fst, snd, ignore
+- Prelude 연산자: `++`, `<|>`, `^^`
+- `sprintf "%d" 42` → `"42"`, `printfn`, `%` 모듈로
+- 음수 패턴 `| -1 ->`, 튜플 람다 `fun (x,y) ->`
+
+**Stats:**
+- 23 source files, 10,304 lines of F#
+- 608 tests (196 F# + 412 fslit), all passing
+- 4 phases, 4 plans
+- 1 day (2026-03-20)
+
+**Git range:** `feat(19-01)` → `feat(22-01)`
+
+---
+
 ## v1.4 Language Completion (Shipped: 2026-03-20)
 
 **Delivered:** TCO, or-패턴/문자열 패턴, 타입 별칭, 리스트 범위, 상호 재귀 함수로 언어 완성도 달성
