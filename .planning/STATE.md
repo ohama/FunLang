@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.5 User-Defined Operators — Defining requirements
+**Current focus:** v1.5 User-Defined Operators — Complete
 
 ## Current Position
 
 Milestone: v1.5 User-Defined Operators
-Phase: 19 — Not started
-Plan: Not started
-Status: Defining requirements
-Last activity: 2026-03-20 — v1.5 milestone started
+Phase: 19 of 19 (user-defined-operators)
+Plan: 01 of 01
+Status: v1.5 milestone complete
+Last activity: 2026-03-20 — Completed 19-01-PLAN.md
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 42
-- Average duration: 4.4 min
-- Total execution time: ~3.12 hours
+- Total plans completed: 43
+- Average duration: 4.5 min
+- Total execution time: ~3.27 hours
 
 **By Phase:**
 
@@ -44,9 +44,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 | 13 | 2 | 11 min | 5.5 min |
 | 14 | 2 | 9 min | 4.5 min |
 
+| 19 | 1 | 9 min | 9.0 min |
+
 **Recent Trend:**
-- Last 5 plans: 13-01 (6min), 13-02 (5min), 14-01 (5min), 14-02 (4min)
-- Trend: 13 tutorial chapters complete with 224 CLI-verified examples. v1.3 milestone complete.
+- Last 5 plans: 14-01 (5min), 14-02 (4min), 18-01 (5min), 18-02 (5min), 19-01 (9min)
+- Trend: v1.5 milestone complete. User-defined operators with OCaml INFIXOP0-4 approach.
 
 *Updated after each plan completion*
 
@@ -282,6 +284,12 @@ Recent decisions affecting current work:
 - print/println in --expr mode: side-effect text appears immediately before () result on same line (no newline between)
 - println in --expr mode: side-effect text on its own line, () result on the next line
 
+**From 19-01 (User-Defined Operators):**
+- OCaml INFIXOP0-4 first-character classification for operator precedence buckets
+- Operators starting with * require spaces in parenthesized form: ( ** ) not (**), because (* starts block comments
+- Custom operators must be 2+ characters; single-char operators always lexed as built-in tokens
+- No new AST nodes: operators desugar to App(App(Var(op), lhs), rhs)
+
 **From 18-02 (Mutual Recursive Functions):**
 - LetRecDecl of bindings: (string * string * Expr * Span) list * Span in Decl DU
 - LetRecDeclaration/LetRecContinuation parser pattern mirrors TypeDeclaration/TypeDeclContinuation
@@ -321,8 +329,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19
-Stopped at: Completed 18-02-PLAN.md (Mutual Recursive Functions) — Phase 18 complete
+Last session: 2026-03-20
+Stopped at: Completed 19-01-PLAN.md (User-Defined Operators) — v1.5 milestone complete
 Resume file: None
 
 ---
