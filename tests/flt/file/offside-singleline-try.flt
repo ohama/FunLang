@@ -1,0 +1,11 @@
+// Test: single-line try-with as let RHS with implicit in
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception E
+
+let result =
+    let x = 42
+    let y = try raise E with | E -> 0
+    x + y
+// --- Output:
+42

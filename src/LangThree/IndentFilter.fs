@@ -332,6 +332,16 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 state <- { state with JustSawTry = true; PrevToken = Some token }
                 yield token
 
+            | Parser.PIPE when state.JustSawMatch ->
+                // PIPE on same line as MATCH → single-line match, no InMatch needed
+                state <- { state with JustSawMatch = false; PrevToken = Some token }
+                yield token
+
+            | Parser.PIPE when state.JustSawTry ->
+                // PIPE on same line as TRY → single-line try-with, no InTry needed
+                state <- { state with JustSawTry = false; PrevToken = Some token }
+                yield token
+
             | Parser.LET ->
                 // Push InLetDecl if in expression context (blockLet = true)
                 // Must be inside an indented block (depth > 1) AND in expression context

@@ -1,0 +1,8 @@
+// Test: single-line match as let RHS with implicit in
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let y = match 5 with | x -> x * 2
+    y + 1
+// --- Output:
+11
