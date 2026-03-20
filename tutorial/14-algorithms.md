@@ -316,7 +316,9 @@ $ cat merge_sort.l3
 let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
 let rec take n = fun xs -> if n = 0 then [] else match xs with | [] -> [] | h :: t -> h :: take (n - 1) t
 let rec drop n = fun xs -> if n = 0 then xs else match xs with | [] -> [] | _ :: t -> drop (n - 1) t
+// 두 정렬된 리스트의 head를 비교하며 병합
 let rec merge xs = fun ys -> match xs with | [] -> ys | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+// 리스트를 반으로 나눠 각각 정렬 후 병합 (O(n log n))
 let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
 
 let result = msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
@@ -343,6 +345,7 @@ head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.
 $ cat tree_sort.l3
 type Tree = Leaf | Node of Tree * int * Tree
 
+// BST 삽입: 값을 비교하여 왼쪽 또는 오른쪽 하위 트리에 재귀 삽입
 let rec treeInsert x = fun t -> match t with | Leaf -> Node (Leaf, x, Leaf) | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
 let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
 let rec append xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: append t ys
@@ -425,14 +428,16 @@ $ cat collatz.l3
 let rec collatz n = fun acc -> if n = 1 then n :: acc else if n % 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
 let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
 
-let result = rev [] (collatz 27 [])
+// 수열의 길이만 확인 (27에서 시작하면 112단계를 거쳐 1에 도달)
+let seq = rev [] (collatz 27 [])
+let result = length seq
 
 $ langthree collatz.l3
-[27, 82, 41, 124, 62, 31, 94, 47, 142, 71, 214, 107, 322, 161, 484, 242, 121, 364, 182, 91, 274, 137, 412, 206, 103, 310, 155, 466, 233, 700, 350, 175, 526, 263, 790, 395, 1186, 593, 1780, 890, 445, 1336, 668, 334, 167, 502, 251, 754, 377, 1132, 566, 283, 850, 425, 1276, 638, 319, 958, 479, 1438, 719, 2158, 1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308, 1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160, 80, 40, 20, 10, 5, 16, 8, 4, 2, 1]
+112
 ```
 
 `collatz`는 꼬리 재귀 함수로, 누적자 `acc`에 각 단계의 값을 기록합니다.
-결과가 역순으로 쌓이므로 `rev`로 뒤집습니다. 27에서 시작하면 111단계를 거쳐
+결과가 역순으로 쌓이므로 `rev`로 뒤집습니다. 27에서 시작하면 112단계를 거쳐
 1에 도달합니다. `n % 2 = 0`으로 짝수/홀수를 판별합니다.
 
 ### FizzBuzz

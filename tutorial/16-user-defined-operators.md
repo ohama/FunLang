@@ -80,6 +80,7 @@ $ langthree qsort_op.l3
 
 ```
 $ cat format_op.l3
+// 리스트를 "[1, 2, 3]" 형태의 문자열로 변환
 let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList

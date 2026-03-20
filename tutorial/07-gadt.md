@@ -81,6 +81,7 @@ error[E0401]: GADT match requires type annotation on scrutinee of type 'm
 $ cat calc.l3
 type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr | Add : int Expr * int Expr -> int Expr
 let result =
+    // GADT 재귀 평가기: 각 생성자를 매칭하여 int로 변환
     let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b : int) in
     eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
@@ -138,6 +139,7 @@ $ langthree typed.l3
 $ cat typed_eval.l3
 type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr | Add : int Expr * int Expr -> int Expr | Neg : int Expr -> int Expr
 let result =
+    // Neg 포함 GADT 평가기: Add(10, Neg(3)) = 10 + (-3) = 7
     let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b | Neg x -> 0 - eval x : int) in
     eval (Add (IntLit 10, Neg (IntLit 3)))
 

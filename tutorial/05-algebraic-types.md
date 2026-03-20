@@ -120,7 +120,8 @@ $ cat tree.l3
 type Tree = Leaf of int | Branch of Tree * Tree
 let t = Branch (Leaf 1, Branch (Leaf 2, Leaf 3))
 let result =
-    let rec depth t = match t with | Leaf _ -> 1 | Branch (l, r) -> 1 + (let dl = depth l in let dr = depth r in if dl > dr then dl else dr) in
+    // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
+    let rec depth t = match t with | Leaf _ -> 1 | Branch (l, r) -> 1 + max (depth l) (depth r) in
     depth t
 
 $ langthree tree.l3

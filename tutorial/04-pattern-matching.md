@@ -699,10 +699,13 @@ $ cat tree_ops.l3
 type Tree = Leaf | Node of Tree * int * Tree
 
 let result =
-    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> let dl = depth l in let dr = depth r in if dl > dr then dl + 1 else dr + 1
+    // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
+    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + max (depth l) (depth r)
     in
+    // 트리의 노드 수
     let rec size t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + size l + size r
     in
+    // 트리의 모든 값의 합
     let rec sumTree t = match t with | Leaf -> 0 | Node (l, v, r) -> sumTree l + v + sumTree r
     in
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))

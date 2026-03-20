@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-978b60cd.js";
+            window.path_to_searchindex_js = "searchindex-c76bd3b5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-af8dc7fd.js"></script>
@@ -312,6 +312,7 @@ Some 42
 <p><strong>혼합 파이프라인:</strong></p>
 <p>여러 연산자를 파이프 |&gt;와 함께 사용할 수 있습니다:</p>
 <pre><code>$ cat mixed_pipeline.l3
+// 리스트를 "[1, 2, 3]" 형태의 문자열로 변환
 let formatList xs = "[" ^^ fold (fun acc -&gt; fun x -&gt; if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
 
 let result = [1..5] |&gt; filter (fun x -&gt; x &gt; 2) |&gt; formatList

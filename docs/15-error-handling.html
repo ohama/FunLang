@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-978b60cd.js";
+            window.path_to_searchindex_js = "searchindex-c76bd3b5.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-af8dc7fd.js"></script>
@@ -180,38 +180,38 @@
 언제 어떤 것을 사용해야 하는지 설명합니다.</p>
 <h2 id="세-가지-접근법-비교"><a class="header" href="#세-가지-접근법-비교">세 가지 접근법 비교</a></h2>
 <p>같은 문제를 세 가지 방식으로 풀어보겠습니다: 리스트에서 조건을 만족하는
-첫 번째 원소의 인덱스를 찾는 함수입니다.</p>
+첫 번째 원소를 찾는 함수입니다.</p>
 <h3 id="exception-방식"><a class="header" href="#exception-방식">Exception 방식</a></h3>
 <pre><code>$ cat find_exc.l3
-exception NotFound of string
+exception NotFound
 
-let rec findIdx pred = fun xs -&gt; fun i -&gt; match xs with | [] -&gt; raise (NotFound "not found") | h :: t -&gt; if pred h then i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
+let rec find pred = fun xs -&gt; match xs with | [] -&gt; raise NotFound | h :: t -&gt; if pred h then h else find pred t
 
-let result = try
-    findIdx (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] 0
-with
-| NotFound _ -&gt; 0 - 1
+let result = try find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] with | NotFound -&gt; 0 - 1
 
 $ langthree find_exc.l3
-3
+4
 </code></pre>
 <h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
 <pre><code>$ cat find_opt.l3
-let rec findIdx pred = fun xs -&gt; fun i -&gt; match xs with | [] -&gt; None | h :: t -&gt; if pred h then Some i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 Option으로 반환
+let rec find pred = fun xs -&gt; match xs with | [] -&gt; None | h :: t -&gt; if pred h then Some h else find pred t
 
-let result = optionDefault (0 - 1) (findIdx (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] 0)
+let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
 $ langthree find_opt.l3
-3
+4
 </code></pre>
 <h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
 <pre><code>$ cat find_res.l3
-let rec findIdx pred = fun xs -&gt; fun i -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 Result로 반환
+let rec find pred = fun xs -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok h else find pred t
 
-let result = resultDefault (0 - 1) (findIdx (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] 0)
+let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
 $ langthree find_res.l3
-3
+4
 </code></pre>
 <p>세 가지 모두 같은 결과를 반환합니다. 그러나 <strong>코드의 의미와 안전성</strong>에서 큰 차이가 있습니다.</p>
 <h2 id="왜-optionresult를-권장하는가"><a class="header" href="#왜-optionresult를-권장하는가">왜 Option/Result를 권장하는가</a></h2>

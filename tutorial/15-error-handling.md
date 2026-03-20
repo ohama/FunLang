@@ -7,47 +7,47 @@ LangThree는 에러를 처리하는 세 가지 방법을 제공합니다:
 ## 세 가지 접근법 비교
 
 같은 문제를 세 가지 방식으로 풀어보겠습니다: 리스트에서 조건을 만족하는
-첫 번째 원소의 인덱스를 찾는 함수입니다.
+첫 번째 원소를 찾는 함수입니다.
 
 ### Exception 방식
 
 ```
 $ cat find_exc.l3
-exception NotFound of string
+exception NotFound
 
-let rec findIdx pred = fun xs -> fun i -> match xs with | [] -> raise (NotFound "not found") | h :: t -> if pred h then i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
+let rec find pred = fun xs -> match xs with | [] -> raise NotFound | h :: t -> if pred h then h else find pred t
 
-let result = try
-    findIdx (fun x -> x > 3) [1, 2, 3, 4, 5] 0
-with
-| NotFound _ -> 0 - 1
+let result = try find (fun x -> x > 3) [1, 2, 3, 4, 5] with | NotFound -> 0 - 1
 
 $ langthree find_exc.l3
-3
+4
 ```
 
 ### Option 방식
 
 ```
 $ cat find_opt.l3
-let rec findIdx pred = fun xs -> fun i -> match xs with | [] -> None | h :: t -> if pred h then Some i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 Option으로 반환
+let rec find pred = fun xs -> match xs with | [] -> None | h :: t -> if pred h then Some h else find pred t
 
-let result = optionDefault (0 - 1) (findIdx (fun x -> x > 3) [1, 2, 3, 4, 5] 0)
+let result = optionDefault (0 - 1) (find (fun x -> x > 3) [1, 2, 3, 4, 5])
 
 $ langthree find_opt.l3
-3
+4
 ```
 
 ### Result 방식
 
 ```
 $ cat find_res.l3
-let rec findIdx pred = fun xs -> fun i -> match xs with | [] -> Error "not found" | h :: t -> if pred h then Ok i else findIdx pred t (i + 1)
+// 조건을 만족하는 첫 번째 원소를 Result로 반환
+let rec find pred = fun xs -> match xs with | [] -> Error "not found" | h :: t -> if pred h then Ok h else find pred t
 
-let result = resultDefault (0 - 1) (findIdx (fun x -> x > 3) [1, 2, 3, 4, 5] 0)
+let result = resultDefault (0 - 1) (find (fun x -> x > 3) [1, 2, 3, 4, 5])
 
 $ langthree find_res.l3
-3
+4
 ```
 
 세 가지 모두 같은 결과를 반환합니다. 그러나 **코드의 의미와 안전성**에서 큰 차이가 있습니다.
