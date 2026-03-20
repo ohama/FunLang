@@ -81,7 +81,7 @@ false
 
 ### to_string
 
-값을 문자열 표현으로 변환합니다:
+모든 타입의 값을 문자열 표현으로 변환합니다:
 
 ```
 funlang> to_string 42
@@ -94,7 +94,21 @@ funlang> to_string "already a string"
 "already a string"
 ```
 
-런타임에 `int`, `bool`, `string`을 받습니다.
+ADT, 리스트, 튜플, 레코드 등 모든 복합 타입도 지원합니다:
+
+```
+funlang> to_string (Some 42)
+"Some 42"
+
+funlang> to_string [1, 2, 3]
+"[1, 2, 3]"
+
+funlang> to_string (1, true)
+"(1, true)"
+```
+
+**참고:** 문자열은 그대로 반환됩니다 (따옴표 없음, F# `string` 함수와 동일).
+복합 타입 내부의 문자열에는 따옴표가 포함됩니다: `to_string (Some "hi")` → `Some "hi"`.
 
 ### string_to_int
 
@@ -225,6 +239,6 @@ height: 600
 
 - **`string_sub`는 시작+길이를 사용합니다** (시작+끝이 아님): `string_sub "hello" 1 3` = `"ell"`
 - **`string_concat`는 커링되어 있습니다:** `string_concat "prefix"`는 함수를 반환합니다
-- **`to_string`**은 int, bool, string을 받습니다 (다형 타입, 런타임 검사)
+- **`to_string`**은 모든 타입을 받습니다 — 문자열은 그대로, 복합 타입은 구조적 표현
 - **`printf`**는 커링되어 있습니다: 각 `%` 지정자가 하나의 추가 인자를 소비합니다
 - **순서 지정:** 모듈 수준에서 부수 효과를 체이닝하려면 `let _ =`를 사용하세요

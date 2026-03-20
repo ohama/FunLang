@@ -351,7 +351,7 @@ Prelude 함수와는 별도로, LangThree에는 내장 환경(`initialBuiltinEnv
 | `string_concat` | `string -> string -> string` | 두 문자열을 연결 |
 | `string_sub` | `string -> int -> int -> string` | 부분 문자열 (시작, 길이) |
 | `string_contains` | `string -> string -> bool` | 부분 문자열 포함 여부 |
-| `to_string` | `'a -> string` | int/bool/string을 문자열로 변환 |
+| `to_string` | `'a -> string` | 모든 타입을 문자열로 변환 (문자열은 그대로) |
 | `string_to_int` | `string -> int` | 문자열을 정수로 파싱 |
 | `print` | `string -> unit` | 줄바꿈 없이 출력 |
 | `println` | `string -> unit` | 줄바꿈 포함 출력 |
@@ -365,7 +365,13 @@ funlang> string_length "hello"
 
 funlang> to_string 42
 "42"
+
+funlang> to_string (Some [1, 2, 3])
+"Some [1, 2, 3]"
 ```
+
+`to_string`은 모든 타입을 지원합니다 — ADT, 리스트, 튜플, 레코드 등.
+문자열은 따옴표 없이 그대로 반환됩니다 (F# `string` 함수와 동일).
 
 자세한 내용은 [Chapter 11: Strings and Output](11-strings-and-output.md)을 참조하세요.
 

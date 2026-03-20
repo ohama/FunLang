@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-28ab9312.js";
+            window.path_to_searchindex_js = "searchindex-b4c8ddc9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-af8dc7fd.js"></script>
@@ -425,7 +425,7 @@ $ langthree string_build.l3
 <tr><td><code>string_concat</code></td><td><code>string -&gt; string -&gt; string</code></td><td>두 문자열을 연결</td></tr>
 <tr><td><code>string_sub</code></td><td><code>string -&gt; int -&gt; int -&gt; string</code></td><td>부분 문자열 (시작, 길이)</td></tr>
 <tr><td><code>string_contains</code></td><td><code>string -&gt; string -&gt; bool</code></td><td>부분 문자열 포함 여부</td></tr>
-<tr><td><code>to_string</code></td><td><code>'a -&gt; string</code></td><td>int/bool/string을 문자열로 변환</td></tr>
+<tr><td><code>to_string</code></td><td><code>'a -&gt; string</code></td><td>모든 타입을 문자열로 변환 (문자열은 그대로)</td></tr>
 <tr><td><code>string_to_int</code></td><td><code>string -&gt; int</code></td><td>문자열을 정수로 파싱</td></tr>
 <tr><td><code>print</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 없이 출력</td></tr>
 <tr><td><code>println</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 포함 출력</td></tr>
@@ -439,7 +439,12 @@ $ langthree string_build.l3
 
 funlang&gt; to_string 42
 "42"
+
+funlang&gt; to_string (Some [1, 2, 3])
+"Some [1, 2, 3]"
 </code></pre>
+<p><code>to_string</code>은 모든 타입을 지원합니다 — ADT, 리스트, 튜플, 레코드 등.
+문자열은 따옴표 없이 그대로 반환됩니다 (F# <code>string</code> 함수와 동일).</p>
 <p>자세한 내용은 <a href="11-strings-and-output.html">Chapter 11: Strings and Output</a>을 참조하세요.</p>
 <h2 id="prelude-vs-내장-함수-요약"><a class="header" href="#prelude-vs-내장-함수-요약">Prelude vs 내장 함수 요약</a></h2>
 <div class="table-wrapper">
