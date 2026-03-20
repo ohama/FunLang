@@ -59,7 +59,15 @@ funlang> 10 / 3
 
 funlang> -5
 -5
+
+funlang> 10 % 3
+1
+
+funlang> 7 % 2
+1
 ```
+
+`%`는 나머지(모듈로) 연산자입니다.
 
 ## 불리언 (Booleans)
 
@@ -83,10 +91,10 @@ funlang> true || (1/0 = 0)
 true
 ```
 
-`not` 함수는 없습니다. 불리언을 부정하려면 `if`를 사용하세요:
+`not` 함수로 불리언을 부정할 수 있습니다:
 
 ```
-funlang> if true then false else true
+funlang> not true
 false
 ```
 

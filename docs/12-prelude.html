@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b4c8ddc9.js";
+            window.path_to_searchindex_js = "searchindex-978b60cd.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-af8dc7fd.js"></script>
@@ -354,6 +354,22 @@ funlang&gt; append [1, 2] [3, 4]
 <pre><code>funlang&gt; compose inc double 5
 11
 </code></pre>
+<h3 id="유틸리티-함수"><a class="header" href="#유틸리티-함수">유틸리티 함수</a></h3>
+<pre><code>funlang&gt; not true
+false
+
+funlang&gt; (min 3 5, max 3 5)
+(3, 5)
+
+funlang&gt; abs (0 - 42)
+42
+
+funlang&gt; (fst (1, 2), snd (1, 2))
+(1, 2)
+
+funlang&gt; ignore 42
+()
+</code></pre>
 <h2 id="파이프라인과-함께-사용하기"><a class="header" href="#파이프라인과-함께-사용하기">파이프라인과 함께 사용하기</a></h2>
 <p>Prelude 함수들은 파이프 연산자 <code>|&gt;</code>와 결합하면 강력한 데이터 처리 파이프라인을
 구성할 수 있습니다:</p>
@@ -430,6 +446,8 @@ $ langthree string_build.l3
 <tr><td><code>print</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 없이 출력</td></tr>
 <tr><td><code>println</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 포함 출력</td></tr>
 <tr><td><code>printf</code></td><td><code>string -&gt; ...</code></td><td>형식화 출력</td></tr>
+<tr><td><code>sprintf</code></td><td><code>string -&gt; ...</code></td><td>형식화 문자열 반환</td></tr>
+<tr><td><code>printfn</code></td><td><code>string -&gt; ...</code></td><td>형식화 출력 + 줄바꿈</td></tr>
 </tbody>
 </table>
 </div>
@@ -453,9 +471,10 @@ funlang&gt; to_string (Some [1, 2, 3])
 <tr><th>분류</th><th>출처</th><th>예제</th></tr>
 </thead>
 <tbody>
-<tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code> 등</td></tr>
+<tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code>, <code>not</code>, <code>min</code>, <code>max</code>, <code>abs</code>, <code>fst</code>, <code>snd</code>, <code>ignore</code> 등</td></tr>
 <tr><td>Prelude 연산자</td><td><code>Prelude/*.fun</code> 파일</td><td><code>++</code> (리스트 연결), <code>&lt;|&gt;</code> (Option 대안), <code>^^</code> (문자열 연결)</td></tr>
-<tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code> 등</td></tr>
+<tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code>, <code>sprintf</code>, <code>printfn</code> 등</td></tr>
+<tr><td>산술 연산자</td><td>내장</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (모듈로)</td></tr>
 </tbody>
 </table>
 </div>

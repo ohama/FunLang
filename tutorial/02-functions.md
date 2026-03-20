@@ -16,6 +16,16 @@ funlang> (fun (x: int) -> x + 1) 10
 11
 ```
 
+튜플 파라미터를 직접 구조 분해할 수 있습니다:
+
+```
+funlang> (fun (x, y) -> x + y) (1, 2)
+3
+
+funlang> (fun (a, b, c) -> a + b + c) (1, 2, 3)
+6
+```
+
 ## Let 바인딩 (REPL / 표현식 모드)
 
 REPL에서는 `let ... in`으로 값을 바인딩합니다:

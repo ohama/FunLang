@@ -252,6 +252,25 @@ funlang> compose inc double 5
 11
 ```
 
+### 유틸리티 함수
+
+```
+funlang> not true
+false
+
+funlang> (min 3 5, max 3 5)
+(3, 5)
+
+funlang> abs (0 - 42)
+42
+
+funlang> (fst (1, 2), snd (1, 2))
+(1, 2)
+
+funlang> ignore 42
+()
+```
+
 ## 파이프라인과 함께 사용하기
 
 Prelude 함수들은 파이프 연산자 `|>`와 결합하면 강력한 데이터 처리 파이프라인을
@@ -356,6 +375,8 @@ Prelude 함수와는 별도로, LangThree에는 내장 환경(`initialBuiltinEnv
 | `print` | `string -> unit` | 줄바꿈 없이 출력 |
 | `println` | `string -> unit` | 줄바꿈 포함 출력 |
 | `printf` | `string -> ...` | 형식화 출력 |
+| `sprintf` | `string -> ...` | 형식화 문자열 반환 |
+| `printfn` | `string -> ...` | 형식화 출력 + 줄바꿈 |
 
 이들은 REPL과 파일 모드 모두에서 동작합니다:
 
@@ -379,9 +400,10 @@ funlang> to_string (Some [1, 2, 3])
 
 | 분류 | 출처 | 예제 |
 |----------|--------|---------|
-| Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `map`, `filter`, `fold`, `id`, `compose` 등 |
+| Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `map`, `filter`, `fold`, `id`, `compose`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore` 등 |
 | Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
-| 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf` 등 |
+| 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
+| 산술 연산자 | 내장 | `+`, `-`, `*`, `/`, `%` (모듈로) |
 
 두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.
 

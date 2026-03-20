@@ -177,6 +177,50 @@ name=Bob, active=true
 0
 ```
 
+### printfn
+
+`printf`와 동일하지만 자동으로 줄바꿈을 추가합니다:
+
+```
+$ cat printfn_demo.l3
+let _ = printfn "name=%s, age=%d" "Alice" 30
+let result = 0
+
+$ langthree printfn_demo.l3
+name=Alice, age=30
+0
+```
+
+`printf "...\n"`을 쓸 필요 없이 `printfn "..."`을 사용하세요.
+
+### sprintf
+
+형식화된 문자열을 **반환**합니다 (출력하지 않음):
+
+```
+funlang> sprintf "%d + %d = %d" 1 2 3
+"1 + 2 = 3"
+
+funlang> sprintf "name=%s" "Alice"
+"name=Alice"
+```
+
+`^^`와 `to_string` 대신 `sprintf`를 사용하면 더 간결합니다:
+
+```
+$ cat sprintf_vs.l3
+// 이전: 수동 연결
+let old = "result=" ^^ to_string 42
+
+// 이후: sprintf
+let new_ = sprintf "result=%d" 42
+
+let result = (old, new_)
+
+$ langthree sprintf_vs.l3
+("result=42", "result=42")
+```
+
 ## 부수 효과 순서 지정
 
 unit을 반환하는 연산을 순서대로 실행하려면 `let _ =`를 사용합니다:

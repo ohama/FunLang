@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b4c8ddc9.js";
+            window.path_to_searchindex_js = "searchindex-978b60cd.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-af8dc7fd.js"></script>
@@ -298,6 +298,38 @@ let result = 0
 $ langthree printf_multi.l3
 name=Bob, active=true
 0
+</code></pre>
+<h3 id="printfn"><a class="header" href="#printfn">printfn</a></h3>
+<p><code>printf</code>와 동일하지만 자동으로 줄바꿈을 추가합니다:</p>
+<pre><code>$ cat printfn_demo.l3
+let _ = printfn "name=%s, age=%d" "Alice" 30
+let result = 0
+
+$ langthree printfn_demo.l3
+name=Alice, age=30
+0
+</code></pre>
+<p><code>printf "...\n"</code>을 쓸 필요 없이 <code>printfn "..."</code>을 사용하세요.</p>
+<h3 id="sprintf"><a class="header" href="#sprintf">sprintf</a></h3>
+<p>형식화된 문자열을 <strong>반환</strong>합니다 (출력하지 않음):</p>
+<pre><code>funlang&gt; sprintf "%d + %d = %d" 1 2 3
+"1 + 2 = 3"
+
+funlang&gt; sprintf "name=%s" "Alice"
+"name=Alice"
+</code></pre>
+<p><code>^^</code>와 <code>to_string</code> 대신 <code>sprintf</code>를 사용하면 더 간결합니다:</p>
+<pre><code>$ cat sprintf_vs.l3
+// 이전: 수동 연결
+let old = "result=" ^^ to_string 42
+
+// 이후: sprintf
+let new_ = sprintf "result=%d" 42
+
+let result = (old, new_)
+
+$ langthree sprintf_vs.l3
+("result=42", "result=42")
 </code></pre>
 <h2 id="부수-효과-순서-지정"><a class="header" href="#부수-효과-순서-지정">부수 효과 순서 지정</a></h2>
 <p>unit을 반환하는 연산을 순서대로 실행하려면 <code>let _ =</code>를 사용합니다:</p>

@@ -45,6 +45,13 @@ funlang> match 3 with | 1 -> "one" | 2 -> "two" | 3 -> "three" | _ -> "other"
 "three"
 ```
 
+음수 정수도 패턴으로 사용할 수 있습니다:
+
+```
+funlang> match (0 - 1) with | -1 -> "neg one" | 0 -> "zero" | _ -> "other"
+"neg one"
+```
+
 디스패치 테이블을 위한 다중 상수 사용:
 
 ```
