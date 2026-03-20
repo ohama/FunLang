@@ -1,0 +1,9 @@
+// Test: implicit in — F#-style let sequence without explicit in
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let x = 1
+    let y = 2
+    x + y
+// --- Output:
+3

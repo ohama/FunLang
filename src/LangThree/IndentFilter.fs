@@ -25,11 +25,13 @@ type FilterState = {
     Context: SyntaxContext list // Stack of syntax contexts for nesting
     JustSawMatch: bool          // Flag: did we just see MATCH token?
     JustSawTry: bool            // Flag: did we just see TRY token?
+    InModuleEquals: bool        // Flag: next EQUALS is module (not expression)
     PrevToken: Parser.token option  // Previous token for function app detection
+    LetSeqDepth: int            // Number of implicit-in let bindings at current indent level
 }
 
 /// Initial state
-let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; InModuleEquals = false; PrevToken = None; LetSeqDepth = 0 }
 
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
@@ -215,9 +217,65 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                     |> List.skip (index + 1)
                     |> List.tryFind (fun t -> match t with Parser.NEWLINE _ -> false | _ -> true)
 
-                let (newState, emitted) = processNewlineWithContext config state col nextToken
-                state <- { newState with LineNum = state.LineNum + 1 }
-                yield! emitted
+                let (newState_, emitted) = processNewlineWithContext config state col nextToken
+                let newState = { newState_ with LineNum = state.LineNum + 1 }
+
+                // Implicit IN: inside an indented block (stack depth > 1),
+                // insert IN tokens to allow F#-style let sequences without explicit `in`:
+                //   let x = 1
+                //   let y = 2    ← implicit IN here
+                //   x + y        ← implicit IN here (body of let chain)
+                let isInIndentBlock =
+                    List.isEmpty emitted &&              // same level (no INDENT/DEDENT)
+                    newState.IndentStack.Length > 1 &&    // inside indented block (not top-level)
+                    (match state.PrevToken with           // no explicit IN already present
+                     | Some Parser.IN -> false
+                     | _ -> true) &&
+                    (match newState.Context with          // not in match/try/funcapp context
+                     | InMatch _ :: _ | InTry _ :: _ | InFunctionApp _ :: _ -> false
+                     | _ -> true)
+
+                let nextIsLet = match nextToken with | Some Parser.LET -> true | _ -> false
+                let nextIsIn = match nextToken with | Some Parser.IN -> true | _ -> false
+
+                // Check if we just emitted INDENT and next is LET → start let sequence
+                // Only in expression context (after EQUALS with expression-level tokens),
+                // NOT in module/namespace blocks.
+                // Module blocks: prevToken before NEWLINE is a type constructor, IDENT from type decl, etc.
+                // Expression blocks: prevToken is EQUALS (from let x = INDENT)
+                let prevIsExprStart =
+                    match state.PrevToken with
+                    | Some Parser.EQUALS when not state.InModuleEquals -> true  // let x = INDENT let ...
+                    | Some Parser.ARROW -> true   // fun x -> INDENT let ...
+                    | Some Parser.IN -> true      // ... in INDENT let ...
+                    | _ -> false
+                // Reset InModuleEquals after the NEWLINE following module = INDENT
+                let newStateWithModuleReset =
+                    if state.InModuleEquals then { newState with InModuleEquals = false }
+                    else newState
+                let justIndented =
+                    (not (List.isEmpty emitted)) &&
+                    List.contains Parser.INDENT emitted &&
+                    nextIsLet &&
+                    prevIsExprStart
+
+                if justIndented then
+                    // INDENT before LET → entering a let sequence block
+                    state <- { newStateWithModuleReset with LetSeqDepth = 1 }
+                    yield! emitted
+                elif isInIndentBlock && nextIsLet && state.LetSeqDepth > 0 then
+                    // Another let at same level in an active let sequence → implicit IN
+                    state <- { newStateWithModuleReset with LetSeqDepth = state.LetSeqDepth + 1 }
+                    yield Parser.IN
+                elif isInIndentBlock && state.LetSeqDepth > 0 && not nextIsLet && not nextIsIn then
+                    // Body expression after let sequence → final implicit IN
+                    // Skip if next is explicit IN (user wrote "in" keyword)
+                    state <- { newStateWithModuleReset with LetSeqDepth = 0 }
+                    yield Parser.IN
+                else
+                    state <- newStateWithModuleReset
+                    if nextIsIn then state <- { state with LetSeqDepth = 0 }
+                    yield! emitted
 
             | Parser.EOF ->
                 // Emit DEDENTs for all open indents before EOF
@@ -226,6 +284,11 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                     state <- newState
                     yield! tokens
                 yield Parser.EOF
+
+            | Parser.MODULE ->
+                // Mark that next EQUALS is module (not expression)
+                state <- { state with InModuleEquals = true; PrevToken = Some token }
+                yield token
 
             | Parser.MATCH ->
                 // Mark that we just saw MATCH, will enter context on next NEWLINE
