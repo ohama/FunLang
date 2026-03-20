@@ -1,0 +1,18 @@
+// Test: negative pattern in temperature classification function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify temp =
+    match temp with
+    | -40 -> "extreme cold"
+    | -10 -> "cold"
+    | 0 -> "freezing"
+    | 20 -> "mild"
+    | _ -> "unknown"
+let r1 = classify (0 - 40)
+let r2 = classify (0 - 10)
+let r3 = classify 0
+let r4 = classify 20
+let r5 = classify 5
+let result = if r1 = "extreme cold" then if r2 = "cold" then if r3 = "freezing" then if r4 = "mild" then if r5 = "unknown" then true else false else false else false else false else false
+// --- Output:
+true

@@ -1,0 +1,11 @@
+// Test: tuple lambda with 3 parameters and nested use
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add3 = fun (a, b, c) -> a + b + c
+let r1 = add3 (1, 2, 3)
+let apply = fun (f, x, y) -> f (x, y)
+let mul = fun (a, b) -> a * b
+let r2 = apply (mul, 4, 5)
+let result = if r1 = 6 then if r2 = 20 then true else false else false
+// --- Output:
+true

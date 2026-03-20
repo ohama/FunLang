@@ -1,0 +1,11 @@
+// Test: basic tuple parameter lambda
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add = fun (x, y) -> x + y
+let r1 = add (1, 2)
+let swap = fun (a, b) -> (b, a)
+let p = swap (10, 20)
+let r2 = match p with | (a, b) -> a + b
+let result = if r1 = 3 then if r2 = 30 then true else false else false
+// --- Output:
+true

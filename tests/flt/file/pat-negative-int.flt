@@ -1,0 +1,16 @@
+// Test: negative integer pattern matching
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let classify n =
+    match n with
+    | -1 -> "neg one"
+    | 0 -> "zero"
+    | 1 -> "pos one"
+    | _ -> "other"
+let r1 = classify (0 - 1)
+let r2 = classify 0
+let r3 = classify 1
+let r4 = classify 42
+let result = if r1 = "neg one" then if r2 = "zero" then if r3 = "pos one" then if r4 = "other" then true else false else false else false else false
+// --- Output:
+true
