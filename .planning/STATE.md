@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 21 — sprintf, printfn, modulo
+**Current focus:** Phase 22 — negative patterns, tuple lambda
 
 ## Current Position
 
 Milestone: v1.5 User-Defined Operators & Utilities
-Phase: 21 (sprintf-printfn-modulo)
+Phase: 22 (negative-patterns-tuple-lambda)
 Plan: 01 of 01
-Status: Phase 21 complete
-Last activity: 2026-03-20 — Completed 21-01-PLAN.md
+Status: Phase 22 complete
+Last activity: 2026-03-20 — Completed 22-01-PLAN.md
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓ + Phase 21 (1 plan) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓ + Phase 21 (1 plan) ✓ + Phase 22 (1 plan) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 43
+- Total plans completed: 44
 - Average duration: 4.5 min
-- Total execution time: ~3.27 hours
+- Total execution time: ~3.35 hours
 
 **By Phase:**
 
@@ -46,10 +46,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 
 | 19 | 1 | 9 min | 9.0 min |
 | 21 | 1 | 6 min | 6.0 min |
+| 22 | 1 | 5 min | 5.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 14-02 (4min), 18-01 (5min), 18-02 (5min), 19-01 (9min), 21-01 (6min)
-- Trend: sprintf/printfn/modulo added. Reusing printf infrastructure kept it fast.
+- Last 5 plans: 18-01 (5min), 18-02 (5min), 19-01 (9min), 21-01 (6min), 22-01 (5min)
+- Trend: Parser-only changes (negative patterns, tuple lambda) completed quickly with zero conflicts.
 
 *Updated after each plan completion*
 
@@ -298,6 +299,11 @@ Recent decisions affecting current work:
 - Eval: BuiltinValue wrappers with shared mutable ref Env for true circular mutual references
 - Immutable Map envs cannot create circular references; ref cell approach required for arbitrary-depth mutual recursion
 
+**From 22-01 (Negative Patterns & Tuple Lambda):**
+- Negative pattern: MINUS NUMBER in Pattern rule produces ConstPat(IntConst(-N)), no AST/Eval/MatchCompile changes needed
+- Tuple lambda: FUN TuplePattern ARROW Expr desugars to Lambda("__tuple_arg", LetPat(TuplePat(...), Var("__tuple_arg"), body))
+- Zero LALR(1) conflicts: PatternList requires COMMA, disambiguates from COLON in annotated lambda
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -331,7 +337,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 21-01-PLAN.md (sprintf, printfn, modulo)
+Stopped at: Completed 22-01-PLAN.md (negative patterns, tuple lambda)
 Resume file: None
 
 ---
