@@ -39,15 +39,15 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| LEX-01 | 19 | Pending |
-| LEX-02 | 19 | Pending |
-| DEF-01 | 19 | Pending |
-| DEF-02 | 19 | Pending |
-| DEF-03 | 19 | Pending |
-| USE-01 | 19 | Pending |
-| USE-02 | 19 | Pending |
-| USE-03 | 19 | Pending |
-| INTEROP-01 | 19 | Pending |
+| LEX-01 | 19 | Complete |
+| LEX-02 | 19 | Complete |
+| DEF-01 | 19 | Complete |
+| DEF-02 | 19 | Complete |
+| DEF-03 | 19 | Complete |
+| USE-01 | 19 | Complete |
+| USE-02 | 19 | Complete |
+| USE-03 | 19 | Complete |
+| INTEROP-01 | 19 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 9 total

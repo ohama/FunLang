@@ -2,15 +2,15 @@
 
 ## Current Milestone: v1.5 User-Defined Operators
 
-### Phase 19: User-Defined Operators
+### Phase 19: User-Defined Operators (COMPLETE)
 
 **Goal:** 사용자 정의 중위 연산자 — 정의, 우선순위, 사용을 LALR(1) 파서와 호환되게 구현
 **Depends on:** v1.4 (complete)
 **Requirements:** LEX-01, LEX-02, DEF-01, DEF-02, DEF-03, USE-01, USE-02, USE-03, INTEROP-01
-**Plans:** 0 plans
+**Status:** COMPLETE — INFIXOP0-4 + let (op) + (op) function form, 577 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 19 to break down)
+- [x] 19-01: User-Defined Operators (INFIXOP0-4, operator definition, 6 tests)
 
 **Success Criteria:**
 1. `let (++) a b = append a b` — 사용자 연산자 정의 동작
