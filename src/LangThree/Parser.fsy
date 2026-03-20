@@ -283,6 +283,8 @@ Pattern:
     | UNDERSCORE                  { WildcardPat(symSpan parseState 1) }
     // Phase 3 (v3.0): Extended patterns for match expressions
     | NUMBER                      { ConstPat(IntConst($1), symSpan parseState 1) }
+    // Phase 22: Negative integer pattern (e.g., -1, -42)
+    | MINUS NUMBER                { ConstPat(IntConst(- $2), ruleSpan parseState 1 2) }
     | TRUE                        { ConstPat(BoolConst(true), symSpan parseState 1) }
     | FALSE                       { ConstPat(BoolConst(false), symSpan parseState 1) }
     | STRING                      { ConstPat(StringConst($1), symSpan parseState 1) }
