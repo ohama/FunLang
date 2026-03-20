@@ -17,6 +17,9 @@ type SyntaxContext =
     | InMatch of baseColumn: int        // Match expression with pipe alignment
     | InTry of baseColumn: int          // Try-with expression with pipe alignment
     | InFunctionApp of baseColumn: int  // Multi-line function application
+    | InLetDecl of blockLet: bool * offsideCol: int  // Let binding with offside tracking
+    | InExprBlock of baseColumn: int                  // Expression block (let RHS, lambda body)
+    | InModule                                        // Module body (no implicit IN)
 
 /// State maintained during filtering
 type FilterState = {
@@ -25,13 +28,12 @@ type FilterState = {
     Context: SyntaxContext list // Stack of syntax contexts for nesting
     JustSawMatch: bool          // Flag: did we just see MATCH token?
     JustSawTry: bool            // Flag: did we just see TRY token?
-    InModuleEquals: bool        // Flag: next EQUALS is module (not expression)
+    JustSawModule: bool         // Flag: did we just see MODULE token?
     PrevToken: Parser.token option  // Previous token for function app detection
-    LetSeqDepth: int            // Number of implicit-in let bindings at current indent level
 }
 
 /// Initial state
-let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; InModuleEquals = false; PrevToken = None; LetSeqDepth = 0 }
+let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
 
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
@@ -92,6 +94,18 @@ let isAtom (token: Parser.token) : bool =
     | Parser.STRING _ | Parser.LPAREN -> true
     | _ -> false
 
+/// Check if a context is an expression context (where block-let produces implicit IN)
+let isExprContext (ctx: SyntaxContext list) : bool =
+    match ctx with
+    | InLetDecl _ :: _ -> true      // nested let inside another let body
+    | InExprBlock _ :: _ -> true    // expression block (let RHS, lambda body)
+    | InMatch _ :: _ -> true        // match body is expression context
+    | InTry _ :: _ -> true          // try body is expression context
+    | InModule :: _ -> false        // module body - declarations, no implicit in
+    | TopLevel :: _ -> false        // top level - declarations
+    | InFunctionApp _ :: _ -> true  // function app is expression context
+    | [] -> false
+
 /// Process NEWLINE with context awareness for special indentation rules
 let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: int) (nextToken: Parser.token option) : FilterState * Parser.token list =
     // If we just saw MATCH, enter match context with current indent level BEFORE processing
@@ -142,7 +156,7 @@ let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: 
         | _ ->
             // Process normal indentation
             let (newState, tokens) = processNewline config stateWithTryContext col
-            // Update context based on DEDENTs (pop match/try contexts if dedented below them)
+            // Update context based on DEDENTs (pop match/try/module/letdecl contexts if dedented below them)
             let updatedState =
                 if List.contains Parser.DEDENT tokens then
                     // Pop contexts that are at or above the current indent level
@@ -151,6 +165,9 @@ let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: 
                         | InMatch baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
                         | InTry baseCol :: rest when newState.IndentStack.Head < baseCol -> popContexts rest
                         | InFunctionApp baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
+                        // InLetDecl NOT popped here — filter handles it with IN emission
+                        | InExprBlock baseCol :: rest when newState.IndentStack.Head <= baseCol -> popContexts rest
+                        | InModule :: rest when newState.IndentStack.Head <= 0 -> popContexts rest
                         | _ -> ctx
                     { newState with Context = popContexts newState.Context }
                 else
@@ -178,26 +195,18 @@ let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: 
 
 /// Update context stack based on DEDENTs
 let updateContextOnDedent (state: FilterState) : FilterState =
-    match state.Context with
-    | InMatch baseCol :: rest ->
-        // If current indent level is at or below match base, exit context
-        if state.IndentStack.Head <= baseCol then
-            { state with Context = rest }
-        else
-            state
-    | InTry baseCol :: rest ->
-        // If current indent level is below try base, exit context (not at, because try body DEDENTs back to try level before pipes)
-        if state.IndentStack.Head < baseCol then
-            { state with Context = rest }
-        else
-            state
-    | InFunctionApp baseCol :: rest ->
-        // If current indent level is at or below function app base, exit context
-        if state.IndentStack.Head <= baseCol then
-            { state with Context = rest }
-        else
-            state
-    | _ -> state
+    let rec popContexts ctx =
+        match ctx with
+        | InMatch baseCol :: rest when state.IndentStack.Head <= baseCol -> popContexts rest
+        | InTry baseCol :: rest when state.IndentStack.Head < baseCol -> popContexts rest
+        | InFunctionApp baseCol :: rest when state.IndentStack.Head <= baseCol -> popContexts rest
+        | InLetDecl(_, offsideCol) :: rest when state.IndentStack.Head <= offsideCol -> popContexts rest
+        | InExprBlock baseCol :: rest when state.IndentStack.Head <= baseCol -> popContexts rest
+        | InModule :: rest ->
+            // Pop module context when dedenting back to top level
+            if state.IndentStack.Head <= 0 then popContexts rest else ctx
+        | _ -> ctx
+    { state with Context = popContexts state.Context }
 
 /// Filter a token stream, converting NEWLINE(col) to INDENT/DEDENT
 let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq =
@@ -220,64 +229,85 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 let (newState_, emitted) = processNewlineWithContext config state col nextToken
                 let newState = { newState_ with LineNum = state.LineNum + 1 }
 
-                // Implicit IN: inside an indented block (stack depth > 1),
-                // insert IN tokens to allow F#-style let sequences without explicit `in`:
-                //   let x = 1
-                //   let y = 2    ← implicit IN here
-                //   x + y        ← implicit IN here (body of let chain)
-                let isInIndentBlock =
-                    List.isEmpty emitted &&              // same level (no INDENT/DEDENT)
-                    newState.IndentStack.Length > 1 &&    // inside indented block (not top-level)
-                    (match state.PrevToken with           // no explicit IN already present
+                // Offside rule: check if any InLetDecl(blockLet=true) contexts have their
+                // offside column reached by the next token's column.
+                // This applies at same level (no INDENT/DEDENT emitted) and when not in
+                // match/try pipe context.
+                let nextIsExplicitIn = match nextToken with | Some Parser.IN -> true | _ -> false
+                let isAtSameLevel =
+                    List.isEmpty emitted &&
+                    newState.IndentStack.Length > 1 &&
+                    not nextIsExplicitIn &&  // Don't insert implicit IN when explicit IN follows
+                    (match state.PrevToken with
                      | Some Parser.IN -> false
                      | _ -> true) &&
-                    (match newState.Context with          // not in match/try/funcapp context
+                    (match newState.Context with
                      | InMatch _ :: _ | InTry _ :: _ | InFunctionApp _ :: _ -> false
                      | _ -> true)
 
-                let nextIsLet = match nextToken with | Some Parser.LET -> true | _ -> false
-                let nextIsIn = match nextToken with | Some Parser.IN -> true | _ -> false
-
-                // Check if we just emitted INDENT and next is LET → start let sequence
-                // Only in expression context (after EQUALS with expression-level tokens),
-                // NOT in module/namespace blocks.
-                // Module blocks: prevToken before NEWLINE is a type constructor, IDENT from type decl, etc.
-                // Expression blocks: prevToken is EQUALS (from let x = INDENT)
-                let prevIsExprStart =
-                    match state.PrevToken with
-                    | Some Parser.EQUALS when not state.InModuleEquals -> true  // let x = INDENT let ...
-                    | Some Parser.ARROW -> true   // fun x -> INDENT let ...
-                    | Some Parser.IN -> true      // ... in INDENT let ...
-                    | _ -> false
-                // Reset InModuleEquals after the NEWLINE following module = INDENT
-                let newStateWithModuleReset =
-                    if state.InModuleEquals then { newState with InModuleEquals = false }
-                    else newState
-                let justIndented =
-                    (not (List.isEmpty emitted)) &&
-                    List.contains Parser.INDENT emitted &&
-                    nextIsLet &&
-                    prevIsExprStart
-
-                if justIndented then
-                    // INDENT before LET → entering a let sequence block
-                    state <- { newStateWithModuleReset with LetSeqDepth = 1 }
-                    yield! emitted
-                elif isInIndentBlock && nextIsLet && state.LetSeqDepth > 0 then
-                    // Another let at same level in an active let sequence → implicit IN
-                    state <- { newStateWithModuleReset with LetSeqDepth = state.LetSeqDepth + 1 }
-                    yield Parser.IN
-                elif isInIndentBlock && state.LetSeqDepth > 0 && not nextIsLet && not nextIsIn then
-                    // Body expression after let sequence → final implicit IN
-                    // Skip if next is explicit IN (user wrote "in" keyword)
-                    state <- { newStateWithModuleReset with LetSeqDepth = 0 }
-                    yield Parser.IN
+                if isAtSameLevel then
+                    // Check offside: pop InLetDecl contexts where col <= offsideCol, emit IN for each
+                    let rec checkOffside ctx acc =
+                        match ctx with
+                        | InLetDecl(true, offsideCol) :: rest when col <= offsideCol ->
+                            checkOffside rest (Parser.IN :: acc)
+                        | _ -> (ctx, List.rev acc)
+                    let (newCtx, insTokens) = checkOffside newState.Context []
+                    if not (List.isEmpty insTokens) then
+                        state <- { newState with Context = newCtx }
+                        yield! insTokens
+                    else
+                        state <- newState
+                        yield! emitted
                 else
-                    state <- newStateWithModuleReset
-                    if nextIsIn then state <- { state with LetSeqDepth = 0 }
-                    yield! emitted
+                    // Check offside on DEDENT too: pop InLetDecl contexts that are above
+                    // the new indent level, emitting IN for each block-let AFTER the DEDENT.
+                    // Skip if next token is explicit IN (user handles it).
+                    if List.contains Parser.DEDENT emitted then
+                        if nextIsExplicitIn then
+                            // Pop InLetDecl contexts silently (explicit IN will handle them)
+                            let rec popLetDecls ctx =
+                                match ctx with
+                                | InLetDecl(true, offsideCol) :: rest when newState.IndentStack.Head <= offsideCol ->
+                                    popLetDecls rest
+                                | _ -> ctx
+                            state <- { newState with Context = popLetDecls newState.Context }
+                            yield! emitted
+                        else
+                            let rec checkOffsideDedent ctx acc =
+                                match ctx with
+                                | InLetDecl(true, offsideCol) :: rest when newState.IndentStack.Head <= offsideCol ->
+                                    checkOffsideDedent rest (Parser.IN :: acc)
+                                | _ -> (ctx, List.rev acc)
+                            let (newCtx, insTokens) = checkOffsideDedent newState.Context []
+                            state <- { newState with Context = newCtx }
+                            yield! emitted
+                            yield! insTokens
+                    else
+                        state <- newState
+                        // When INDENT is emitted, push appropriate block context
+                        if List.contains Parser.INDENT emitted then
+                            if state.JustSawModule then
+                                state <- { state with Context = InModule :: state.Context; JustSawModule = false }
+                            else
+                                // Push expression block for EQUALS (not module) or ARROW
+                                match state.PrevToken with
+                                | Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN ->
+                                    // baseCol = parent indent level (before INDENT)
+                                    let baseCol = match state.IndentStack with _ :: parent :: _ -> parent | _ -> 0
+                                    state <- { state with Context = InExprBlock(baseCol) :: state.Context }
+                                | _ -> ()
+                        yield! emitted
 
             | Parser.EOF ->
+                // Emit INs for any remaining InLetDecl(blockLet=true) contexts before DEDENTs
+                let rec emitPendingIns ctx acc =
+                    match ctx with
+                    | InLetDecl(true, _) :: rest -> emitPendingIns rest (Parser.IN :: acc)
+                    | _ -> (ctx, List.rev acc)
+                let (ctxAfterIns, insTokens) = emitPendingIns state.Context []
+                state <- { state with Context = ctxAfterIns }
+                yield! insTokens
                 // Emit DEDENTs for all open indents before EOF
                 while state.IndentStack.Length > 1 do
                     let (newState, tokens) = processNewline config state 0
@@ -286,8 +316,8 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 yield Parser.EOF
 
             | Parser.MODULE ->
-                // Mark that next EQUALS is module (not expression)
-                state <- { state with InModuleEquals = true; PrevToken = Some token }
+                // Mark that next INDENT should push InModule context
+                state <- { state with JustSawModule = true; PrevToken = Some token }
                 yield token
 
             | Parser.MATCH ->
@@ -298,6 +328,31 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
             | Parser.TRY ->
                 // Mark that we just saw TRY, will enter context on next NEWLINE
                 state <- { state with JustSawTry = true; PrevToken = Some token }
+                yield token
+
+            | Parser.LET ->
+                // Push InLetDecl if in expression context (blockLet = true)
+                // Must be inside an indented block (depth > 1) AND in expression context
+                let blockLet = state.IndentStack.Length > 1 && isExprContext state.Context
+                if blockLet then
+                    let offsideCol = state.IndentStack.Head
+                    state <- { state with Context = InLetDecl(true, offsideCol) :: state.Context; PrevToken = Some token }
+                else
+                    state <- { state with PrevToken = Some token }
+                yield token
+
+            | Parser.IN ->
+                // Explicit IN: pop the matching InLetDecl from context.
+                // Also pop stale InMatch/InTry at the same indent level that were
+                // pushed from single-line match/try (JustSawMatch consumed on wrong NEWLINE).
+                let currentCol = state.IndentStack.Head
+                let rec popLetDecl ctx =
+                    match ctx with
+                    | InLetDecl(_, _) :: rest -> rest
+                    | InMatch col :: rest when col = currentCol -> popLetDecl rest
+                    | InTry col :: rest when col = currentCol -> popLetDecl rest
+                    | _ -> ctx
+                state <- { state with Context = popLetDecl state.Context; PrevToken = Some token }
                 yield token
 
             | Parser.DEDENT ->

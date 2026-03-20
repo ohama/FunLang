@@ -18,35 +18,35 @@ let configTests = testList "IndentFilter.Config" [
 [<Tests>]
 let processNewlineTests = testList "IndentFilter.processNewline" [
     test "same indent level emits no tokens" {
-        let state = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+        let state = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
         let (newState, tokens) = processNewline defaultConfig state 0
         Expect.equal tokens [] "Same level should emit no tokens"
         Expect.equal newState.IndentStack [0] "Stack unchanged"
     }
 
     test "deeper indent emits INDENT" {
-        let state = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+        let state = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
         let (newState, tokens) = processNewline defaultConfig state 4
         Expect.equal tokens [INDENT] "Should emit INDENT"
         Expect.equal newState.IndentStack [4; 0] "Stack should push 4"
     }
 
     test "shallower indent emits DEDENT" {
-        let state = { IndentStack = [4; 0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+        let state = { IndentStack = [4; 0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
         let (newState, tokens) = processNewline defaultConfig state 0
         Expect.equal tokens [DEDENT] "Should emit DEDENT"
         Expect.equal newState.IndentStack [0] "Stack should pop to [0]"
     }
 
     test "multiple dedents for big unindent" {
-        let state = { IndentStack = [8; 4; 0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+        let state = { IndentStack = [8; 4; 0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
         let (newState, tokens) = processNewline defaultConfig state 0
         Expect.equal tokens [DEDENT; DEDENT] "Should emit 2 DEDENTs"
         Expect.equal newState.IndentStack [0] "Stack should be [0]"
     }
 
     test "invalid indent throws error" {
-        let state = { IndentStack = [4; 0]; LineNum = 5; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; PrevToken = None }
+        let state = { IndentStack = [4; 0]; LineNum = 5; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
         Expect.throws
             (fun () -> processNewline defaultConfig state 2 |> ignore)
             "Should throw for misaligned indent"
@@ -154,11 +154,11 @@ let matchExpressionTests = testList "IndentFilter.matchExpressions" [
         let expected = [
             Parser.MATCH; Parser.IDENT "x"; Parser.WITH;
             Parser.PIPE; Parser.IDENT "Some"; Parser.UNDERSCORE; Parser.ARROW; Parser.INDENT;
-            Parser.LET; Parser.IDENT "y"; Parser.EQUALS; Parser.NUMBER 10;
+            Parser.LET; Parser.IDENT "y"; Parser.EQUALS; Parser.NUMBER 10; Parser.IN;
             Parser.IDENT "y"; Parser.PLUS; Parser.NUMBER 1; Parser.DEDENT;
             Parser.PIPE; Parser.IDENT "None"; Parser.ARROW; Parser.NUMBER 0; Parser.EOF
         ]
-        Expect.equal output expected "Pattern results should indent one level from pipe"
+        Expect.equal output expected "Pattern results should indent one level from pipe with implicit IN"
     }
 ]
 

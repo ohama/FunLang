@@ -101,8 +101,10 @@ Expr:
     | MATCH Expr WITH MatchClauses   { Match($2, $4, ruleSpan parseState 1 4) }
     // Let expression - lowest precedence
     | LET IDENT EQUALS Expr IN Expr  { Let($2, $4, $6, ruleSpan parseState 1 6) }
-    // Indentation-based let: let x = <indent>expr<dedent>
+    // Indentation-based let: let x = <indent>expr<dedent> (standalone, no continuation)
     | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Tuple([], symSpan parseState 6), ruleSpan parseState 1 6) }
+    // Indentation-based let with continuation: let x = <indent>expr<dedent> in expr
+    | LET IDENT EQUALS INDENT Expr DEDENT IN Expr  { Let($2, $5, $8, ruleSpan parseState 1 8) }
     // Phase 1 (v3.0): Let with pattern binding
     | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 10 (Unit): let _ = e1 in e2 wildcard sequencing at expression level
@@ -111,6 +113,8 @@ Expr:
     | IF Expr THEN Expr ELSE Expr    { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 5: Function definitions
     | LET REC IDENT IDENT EQUALS Expr IN Expr  { LetRec($3, $4, $6, $8, ruleSpan parseState 1 8) }
+    // Indentation-based let rec with continuation: let rec f x = <indent>expr<dedent> in expr
+    | LET REC IDENT IDENT EQUALS INDENT Expr DEDENT IN Expr  { LetRec($3, $4, $7, $10, ruleSpan parseState 1 10) }
     | FUN IDENT ARROW Expr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
     | FUN IDENT ARROW INDENT Expr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
     // v6.0: Annotated lambda - fun (x: T) -> e
@@ -135,6 +139,8 @@ Expr:
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $4, ruleSpan parseState 1 4), ruleSpan parseState 1 4) }
     | FUN TuplePattern ARROW INDENT Expr DEDENT
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $5, ruleSpan parseState 1 6), ruleSpan parseState 1 6) }
+    // Indented expression block (e.g., match clause body, general indented expression)
+    | INDENT Expr DEDENT             { $2 }
     // Logical operators (precedence from %left declarations)
     | Expr OR Expr                   { Or($1, $3, ruleSpan parseState 1 3) }
     | Expr AND Expr                  { And($1, $3, ruleSpan parseState 1 3) }
