@@ -167,8 +167,13 @@ let initialBuiltinEnv : Env =
                     | _ -> failwith "string_contains: second argument must be string")
             | _ -> failwith "string_contains: first argument must be string")
 
-        // to_string : 'a -> string  (polymorphic; uses formatValue for all types)
-        "to_string", BuiltinValue (fun v -> StringValue (formatValue v))
+        // to_string : 'a -> string  (polymorphic; F#-style: no quotes on strings)
+        "to_string", BuiltinValue (fun v ->
+            match v with
+            | IntValue n -> StringValue (string n)
+            | BoolValue b -> StringValue (if b then "true" else "false")
+            | StringValue s -> StringValue s  // no quotes (F# `string` behavior)
+            | _ -> StringValue (formatValue v))  // complex types use formatValue
 
         // string_to_int : string -> int
         "string_to_int", BuiltinValue (fun v ->
