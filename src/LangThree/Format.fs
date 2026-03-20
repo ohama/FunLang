@@ -81,6 +81,12 @@ let formatToken (token: Parser.token) : string =
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
     | Parser.COMPOSE_LEFT -> "COMPOSE_LEFT"
+    // Phase 19 (User-Defined Operators): INFIXOP tokens
+    | Parser.INFIXOP0 s -> sprintf "INFIXOP0(%s)" s
+    | Parser.INFIXOP1 s -> sprintf "INFIXOP1(%s)" s
+    | Parser.INFIXOP2 s -> sprintf "INFIXOP2(%s)" s
+    | Parser.INFIXOP3 s -> sprintf "INFIXOP3(%s)" s
+    | Parser.INFIXOP4 s -> sprintf "INFIXOP4(%s)" s
     // Phase 5 (Modules): Module system tokens
     | Parser.MODULE -> "MODULE"
     | Parser.NAMESPACE -> "NAMESPACE"
