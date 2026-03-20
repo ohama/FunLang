@@ -63,7 +63,10 @@ funlang> [3..3]
 ```
 $ cat range_sum.l3
 let result =
-    let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
+    let rec fold f = fun acc -> fun xs ->
+        match xs with
+        | [] -> acc
+        | h :: t -> fold f (f acc h) t
     in fold (fun acc -> fun x -> acc + x) 0 [1..100]
 
 $ langthree range_sum.l3

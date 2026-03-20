@@ -577,7 +577,10 @@ funlang&gt; [0..5..20]
 <p>범위는 파이프 연산자와 함께 유용합니다:</p>
 <pre><code>$ cat range_sum.l3
 let result =
-    let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+    let rec fold f = fun acc -&gt; fun xs -&gt;
+        match xs with
+        | [] -&gt; acc
+        | h :: t -&gt; fold f (f acc h) t
     in fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..100]
 
 $ langthree range_sum.l3
@@ -1150,7 +1153,10 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <p><strong>조건이 참인 동안 가져오기(take while):</strong></p>
 <pre><code>$ cat take_while.l3
 let result =
-    let rec takeWhile pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: takeWhile pred t else []
+    let rec takeWhile pred = fun xs -&gt;
+        match xs with
+        | [] -&gt; []
+        | h :: t -&gt; if pred h then h :: takeWhile pred t else []
     in takeWhile (fun x -&gt; x &lt; 5) [1, 2, 3, 4, 5, 6, 7]
 
 $ langthree take_while.l3
@@ -1173,7 +1179,10 @@ $ langthree expr_eval.l3
 <p>튜플 리스트에 대한 패턴 매칭으로 키-값 조회를 수행합니다:</p>
 <pre><code>$ cat lookup.l3
 let result =
-    let rec lookup key = fun xs -&gt; match xs with | [] -&gt; None | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
+    let rec lookup key = fun xs -&gt;
+        match xs with
+        | [] -&gt; None
+        | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
     in
     let env = [(1, "one"), (2, "two"), (3, "three")]
     in
@@ -1210,7 +1219,10 @@ $ langthree tree_ops.l3
 <p>두 개의 재귀 함수를 연결합니다:</p>
 <pre><code>$ cat isort.l3
 let sorted =
-    let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
+    let rec insert x = fun xs -&gt;
+        match xs with
+        | [] -&gt; x :: []
+        | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
     in
     let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
     in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
@@ -2401,7 +2413,10 @@ v1.4에서는 이들을 모듈 레벨에 선언하여 프로그램 전체에서 
 <h3 id="map"><a class="header" href="#map">Map</a></h3>
 <p>리스트의 각 원소에 함수를 적용하여 새 리스트를 만듭니다:</p>
 <pre><code>$ cat map.l3
-let rec map f = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; f h :: map f t
+let rec map f = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; f h :: map f t
 
 let result = map (fun x -&gt; x * x) [1, 2, 3, 4, 5]
 
@@ -2414,7 +2429,10 @@ $ langthree map.l3
 <h3 id="filter"><a class="header" href="#filter">Filter</a></h3>
 <p>조건을 만족하는 원소만 남깁니다:</p>
 <pre><code>$ cat filter.l3
-let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
 
 let result = filter (fun x -&gt; x % 2 = 0) [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -2427,7 +2445,10 @@ $ langthree filter.l3
 <p>왼쪽 폴드는 리스트를 하나의 값으로 축약합니다. 이항 함수 <code>f</code>, 초기 누적자 <code>acc</code>,
 리스트 <code>xs</code> 세 개의 매개변수를 받습니다:</p>
 <pre><code>$ cat fold.l3
-let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+let rec fold f = fun acc -&gt; fun xs -&gt;
+    match xs with
+    | [] -&gt; acc
+    | h :: t -&gt; fold f (f acc h) t
 
 let result = fold (fun acc -&gt; fun x -&gt; acc + x * x) 0 [1, 2, 3, 4, 5]
 
@@ -2467,7 +2488,10 @@ $ langthree factorial.l3
 <p>단순 재귀 피보나치를 리스트 범위와 <code>map</code>을 결합하여 수열 전체를 출력합니다:</p>
 <pre><code>$ cat fibonacci.l3
 let rec fib n = if n &lt;= 1 then n else fib (n - 1) + fib (n - 2)
-let rec map f = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; f h :: map f t
+let rec map f = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; f h :: map f t
 
 let result = map fib [0..15]
 
@@ -2480,9 +2504,11 @@ $ langthree fibonacci.l3
 <h3 id="gcd와-lcm"><a class="header" href="#gcd와-lcm">GCD와 LCM</a></h3>
 <p>유클리드 알고리즘으로 최대공약수를 구하고, 이를 이용해 최소공배수를 유도합니다:</p>
 <pre><code>$ cat gcd_lcm.l3
-let rec gcd a = fun b -&gt; if b = 0 then a else gcd b (a % b)
+let rec gcd a = fun b -&gt;
+    if b = 0 then a else gcd b (a % b)
 
-let lcm a = fun b -&gt; a / gcd a b * b
+let lcm a = fun b -&gt;
+    a / gcd a b * b
 
 let result = (gcd 48 36, lcm 12 18)
 
@@ -2497,8 +2523,12 @@ $ langthree gcd_lcm.l3
 <h3 id="서로소-coprimes"><a class="header" href="#서로소-coprimes">서로소 (Coprimes)</a></h3>
 <p>GCD와 리스트 범위를 결합하면 주어진 수와 서로소인 수를 구할 수 있습니다:</p>
 <pre><code>$ cat coprimes.l3
-let rec gcd a = fun b -&gt; if b = 0 then a else gcd b (a % b)
-let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+let rec gcd a = fun b -&gt;
+    if b = 0 then a else gcd b (a % b)
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
 
 let coprimes n = filter (fun k -&gt; gcd n k = 1) [1..n]
 let result = coprimes 12
@@ -2512,7 +2542,10 @@ phi(12) = 4의 구체적인 원소들입니다. 리스트 범위 덕분에 <code
 <h3 id="소수-판별-isprime"><a class="header" href="#소수-판별-isprime">소수 판별 (isPrime)</a></h3>
 <p>주어진 범위에서 소수를 걸러냅니다:</p>
 <pre><code>$ cat is_prime.l3
-let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
 let rec checkPrime n = fun d -&gt; if d * d &gt; n then true else if n % d = 0 then false else checkPrime n (d + 1)
 let isPrime n = if n &lt; 2 then false else checkPrime n 2
 
@@ -2527,7 +2560,8 @@ $ langthree is_prime.l3
 <h3 id="거듭제곱"><a class="header" href="#거듭제곱">거듭제곱</a></h3>
 <p>반복 곱셈으로 <code>base^exp</code>를 계산합니다:</p>
 <pre><code>$ cat power.l3
-let rec power base = fun exp -&gt; if exp = 0 then 1 else base * power base (exp - 1)
+let rec power base = fun exp -&gt;
+    if exp = 0 then 1 else base * power base (exp - 1)
 
 let result = power 2 10
 
@@ -2542,7 +2576,10 @@ $ langthree power.l3
 <h3 id="삽입-정렬"><a class="header" href="#삽입-정렬">삽입 정렬</a></h3>
 <p>각 원소를 정렬된 리스트의 올바른 위치에 삽입하여 정렬합니다:</p>
 <pre><code>$ cat insertion_sort.l3
-let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
+let rec insert x = fun xs -&gt;
+    match xs with
+    | [] -&gt; x :: []
+    | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
 
 let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
 
@@ -2557,9 +2594,15 @@ head를 삽입합니다. 최악의 경우 O(n^2)이지만 구현이 단순하고
 <h3 id="퀵정렬"><a class="header" href="#퀵정렬">퀵정렬</a></h3>
 <p>피벗을 기준으로 분할하고, 각 부분을 재귀 정렬한 후 합칩니다:</p>
 <pre><code>$ cat quicksort.l3
-let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
 
-let rec append xs = fun ys -&gt; match xs with | [] -&gt; ys | h :: t -&gt; h :: append t ys
+let rec append xs = fun ys -&gt;
+    match xs with
+    | [] -&gt; ys
+    | h :: t -&gt; h :: append t ys
 
 let rec qsort xs = match xs with | [] -&gt; [] | pivot :: rest -&gt; let lo = filter (fun x -&gt; x &lt; pivot) rest in let hi = filter (fun x -&gt; x &gt;= pivot) rest in append (qsort lo) (pivot :: qsort hi)
 
@@ -2586,10 +2629,15 @@ $ langthree qsort_prelude.l3
 필요한 알고리즘에서 모듈 레벨 선언의 장점이 특히 드러납니다:</p>
 <pre><code>$ cat merge_sort.l3
 let rec length xs = match xs with | [] -&gt; 0 | _ :: t -&gt; 1 + length t
-let rec take n = fun xs -&gt; if n = 0 then [] else match xs with | [] -&gt; [] | h :: t -&gt; h :: take (n - 1) t
-let rec drop n = fun xs -&gt; if n = 0 then xs else match xs with | [] -&gt; [] | _ :: t -&gt; drop (n - 1) t
+let rec take n = fun xs -&gt;
+    if n = 0 then [] else match xs with | [] -&gt; [] | h :: t -&gt; h :: take (n - 1) t
+let rec drop n = fun xs -&gt;
+    if n = 0 then xs else match xs with | [] -&gt; [] | _ :: t -&gt; drop (n - 1) t
 // 두 정렬된 리스트의 head를 비교하며 병합
-let rec merge xs = fun ys -&gt; match xs with | [] -&gt; ys | x :: xt -&gt; match ys with | [] -&gt; xs | y :: yt -&gt; if x &lt;= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+let rec merge xs = fun ys -&gt;
+    match xs with
+    | [] -&gt; ys
+    | x :: xt -&gt; match ys with | [] -&gt; xs | y :: yt -&gt; if x &lt;= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
 // 리스트를 반으로 나눠 각각 정렬 후 병합 (O(n log n))
 let rec msort xs = let len = length xs in if len &lt;= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
 
@@ -2611,9 +2659,15 @@ head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.</p>
 type Tree = Leaf | Node of Tree * int * Tree
 
 // BST 삽입: 값을 비교하여 왼쪽 또는 오른쪽 하위 트리에 재귀 삽입
-let rec treeInsert x = fun t -&gt; match t with | Leaf -&gt; Node (Leaf, x, Leaf) | Node (l, v, r) -&gt; if x &lt;= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
+let rec treeInsert x = fun t -&gt;
+    match t with
+    | Leaf -&gt; Node (Leaf, x, Leaf)
+    | Node (l, v, r) -&gt; if x &lt;= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
 let rec buildTree xs = match xs with | [] -&gt; Leaf | h :: t -&gt; treeInsert h (buildTree t)
-let rec append xs = fun ys -&gt; match xs with | [] -&gt; ys | h :: t -&gt; h :: append t ys
+let rec append xs = fun ys -&gt;
+    match xs with
+    | [] -&gt; ys
+    | h :: t -&gt; h :: append t ys
 let rec inorder t = match t with | Leaf -&gt; [] | Node (l, v, r) -&gt; append (inorder l) (v :: inorder r)
 
 let result = inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
@@ -2632,8 +2686,14 @@ $ langthree tree_sort.l3
 type Nat = Zero | Succ of Nat
 
 let rec toInt n = match n with | Zero -&gt; 0 | Succ p -&gt; 1 + toInt p
-let rec add a = fun b -&gt; match a with | Zero -&gt; b | Succ p -&gt; Succ (add p b)
-let rec mul a = fun b -&gt; match a with | Zero -&gt; Zero | Succ p -&gt; add b (mul p b)
+let rec add a = fun b -&gt;
+    match a with
+    | Zero -&gt; b
+    | Succ p -&gt; Succ (add p b)
+let rec mul a = fun b -&gt;
+    match a with
+    | Zero -&gt; Zero
+    | Succ p -&gt; add b (mul p b)
 
 let three = Succ (Succ (Succ Zero))
 let four = Succ (Succ (Succ (Succ Zero)))
@@ -2654,7 +2714,10 @@ mul (Succ (Succ Zero)) b = add b (add b Zero).</p>
 <p>고대 그리스의 소수 알고리즘입니다. 리스트 범위 <code>[2..50]</code>으로 후보를 생성하고,
 가장 작은 수의 배수를 반복적으로 제거합니다:</p>
 <pre><code>$ cat sieve.l3
-let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
 let rec sieve xs = match xs with | [] -&gt; [] | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n % p &lt;&gt; 0) rest)
 
 let result = sieve [2..50]
@@ -2671,8 +2734,12 @@ $ langthree sieve.l3
 <p>콜라츠 추측은 어떤 양의 정수에서 시작하든 “짝수면 반으로, 홀수면 3n+1“을
 반복하면 결국 1에 도달한다는 것입니다. 수열을 추적합니다:</p>
 <pre><code>$ cat collatz.l3
-let rec collatz n = fun acc -&gt; if n = 1 then n :: acc else if n % 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
-let rec rev acc = fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; rev (h :: acc) t
+let rec collatz n = fun acc -&gt;
+    if n = 1 then n :: acc else if n % 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
+let rec rev acc = fun xs -&gt;
+    match xs with
+    | [] -&gt; acc
+    | h :: t -&gt; rev (h :: acc) t
 
 // 수열의 길이만 확인 (27에서 시작하면 112단계를 거쳐 1에 도달)
 let seq = rev [] (collatz 27 [])
@@ -2687,7 +2754,10 @@ $ langthree collatz.l3
 <h3 id="fizzbuzz"><a class="header" href="#fizzbuzz">FizzBuzz</a></h3>
 <p>프로그래밍 면접의 고전 문제입니다. 리스트 범위와 <code>map</code>을 결합합니다:</p>
 <pre><code>$ cat fizzbuzz.l3
-let rec map f = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; f h :: map f t
+let rec map f = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; f h :: map f t
 
 let fizzbuzz n =
     let r3 = n % 3
@@ -2771,7 +2841,10 @@ $ langthree state_machine.l3
 exception NotFound
 
 // 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; raise NotFound | h :: t -&gt; if pred h then h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; raise NotFound
+    | h :: t -&gt; if pred h then h else find pred t
 
 let result = try find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] with | NotFound -&gt; 0 - 1
 
@@ -2781,7 +2854,10 @@ $ langthree find_exc.l3
 <h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
 <pre><code>$ cat find_opt.l3
 // 조건을 만족하는 첫 번째 원소를 Option으로 반환
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; None | h :: t -&gt; if pred h then Some h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; None
+    | h :: t -&gt; if pred h then Some h else find pred t
 
 let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
@@ -2791,7 +2867,10 @@ $ langthree find_opt.l3
 <h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
 <pre><code>$ cat find_res.l3
 // 조건을 만족하는 첫 번째 원소를 Result로 반환
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; Error "not found"
+    | h :: t -&gt; if pred h then Ok h else find pred t
 
 let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
@@ -2882,7 +2961,10 @@ $ langthree chain_res.l3
 따라서 <code>try</code> 안에서 깊은 재귀를 하면 스택 오버플로우가 발생할 수 있습니다.</p>
 <p>Option/Result를 사용하면 재귀 함수가 <code>try</code> 없이 동작하므로 TCO가 적용됩니다:</p>
 <pre><code>$ cat tco_result.l3
-let rec searchList pred = fun xs -&gt; fun i -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok i else searchList pred t (i + 1)
+let rec searchList pred = fun xs -&gt; fun i -&gt;
+    match xs with
+    | [] -&gt; Error "not found"
+    | h :: t -&gt; if pred h then Ok i else searchList pred t (i + 1)
 
 let result = searchList (fun x -&gt; x = 999999) [1..1000000] 0
 

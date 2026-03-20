@@ -216,7 +216,10 @@ funlang&gt; [0..5..20]
 <p>범위는 파이프 연산자와 함께 유용합니다:</p>
 <pre><code>$ cat range_sum.l3
 let result =
-    let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+    let rec fold f = fun acc -&gt; fun xs -&gt;
+        match xs with
+        | [] -&gt; acc
+        | h :: t -&gt; fold f (f acc h) t
     in fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..100]
 
 $ langthree range_sum.l3

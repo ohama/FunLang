@@ -186,7 +186,10 @@
 exception NotFound
 
 // 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; raise NotFound | h :: t -&gt; if pred h then h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; raise NotFound
+    | h :: t -&gt; if pred h then h else find pred t
 
 let result = try find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] with | NotFound -&gt; 0 - 1
 
@@ -196,7 +199,10 @@ $ langthree find_exc.l3
 <h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
 <pre><code>$ cat find_opt.l3
 // 조건을 만족하는 첫 번째 원소를 Option으로 반환
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; None | h :: t -&gt; if pred h then Some h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; None
+    | h :: t -&gt; if pred h then Some h else find pred t
 
 let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
@@ -206,7 +212,10 @@ $ langthree find_opt.l3
 <h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
 <pre><code>$ cat find_res.l3
 // 조건을 만족하는 첫 번째 원소를 Result로 반환
-let rec find pred = fun xs -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok h else find pred t
+let rec find pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; Error "not found"
+    | h :: t -&gt; if pred h then Ok h else find pred t
 
 let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
 
@@ -297,7 +306,10 @@ $ langthree chain_res.l3
 따라서 <code>try</code> 안에서 깊은 재귀를 하면 스택 오버플로우가 발생할 수 있습니다.</p>
 <p>Option/Result를 사용하면 재귀 함수가 <code>try</code> 없이 동작하므로 TCO가 적용됩니다:</p>
 <pre><code>$ cat tco_result.l3
-let rec searchList pred = fun xs -&gt; fun i -&gt; match xs with | [] -&gt; Error "not found" | h :: t -&gt; if pred h then Ok i else searchList pred t (i + 1)
+let rec searchList pred = fun xs -&gt; fun i -&gt;
+    match xs with
+    | [] -&gt; Error "not found"
+    | h :: t -&gt; if pred h then Ok i else searchList pred t (i + 1)
 
 let result = searchList (fun x -&gt; x = 999999) [1..1000000] 0
 

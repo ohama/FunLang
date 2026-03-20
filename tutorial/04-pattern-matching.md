@@ -645,7 +645,10 @@ funlang> let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if
 ```
 $ cat take_while.l3
 let result =
-    let rec takeWhile pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: takeWhile pred t else []
+    let rec takeWhile pred = fun xs ->
+        match xs with
+        | [] -> []
+        | h :: t -> if pred h then h :: takeWhile pred t else []
     in takeWhile (fun x -> x < 5) [1, 2, 3, 4, 5, 6, 7]
 
 $ langthree take_while.l3
@@ -677,7 +680,10 @@ $ langthree expr_eval.l3
 ```
 $ cat lookup.l3
 let result =
-    let rec lookup key = fun xs -> match xs with | [] -> None | (k, v) :: rest -> if k = key then Some v else lookup key rest
+    let rec lookup key = fun xs ->
+        match xs with
+        | [] -> None
+        | (k, v) :: rest -> if k = key then Some v else lookup key rest
     in
     let env = [(1, "one"), (2, "two"), (3, "three")]
     in
@@ -722,7 +728,10 @@ $ langthree tree_ops.l3
 ```
 $ cat isort.l3
 let sorted =
-    let rec insert x = fun xs -> match xs with | [] -> x :: [] | h :: t -> if x <= h then x :: h :: t else h :: insert x t
+    let rec insert x = fun xs ->
+        match xs with
+        | [] -> x :: []
+        | h :: t -> if x <= h then x :: h :: t else h :: insert x t
     in
     let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
     in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]

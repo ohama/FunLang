@@ -663,7 +663,10 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <p><strong>조건이 참인 동안 가져오기(take while):</strong></p>
 <pre><code>$ cat take_while.l3
 let result =
-    let rec takeWhile pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: takeWhile pred t else []
+    let rec takeWhile pred = fun xs -&gt;
+        match xs with
+        | [] -&gt; []
+        | h :: t -&gt; if pred h then h :: takeWhile pred t else []
     in takeWhile (fun x -&gt; x &lt; 5) [1, 2, 3, 4, 5, 6, 7]
 
 $ langthree take_while.l3
@@ -686,7 +689,10 @@ $ langthree expr_eval.l3
 <p>튜플 리스트에 대한 패턴 매칭으로 키-값 조회를 수행합니다:</p>
 <pre><code>$ cat lookup.l3
 let result =
-    let rec lookup key = fun xs -&gt; match xs with | [] -&gt; None | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
+    let rec lookup key = fun xs -&gt;
+        match xs with
+        | [] -&gt; None
+        | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
     in
     let env = [(1, "one"), (2, "two"), (3, "three")]
     in
@@ -723,7 +729,10 @@ $ langthree tree_ops.l3
 <p>두 개의 재귀 함수를 연결합니다:</p>
 <pre><code>$ cat isort.l3
 let sorted =
-    let rec insert x = fun xs -&gt; match xs with | [] -&gt; x :: [] | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
+    let rec insert x = fun xs -&gt;
+        match xs with
+        | [] -&gt; x :: []
+        | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
     in
     let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
     in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
