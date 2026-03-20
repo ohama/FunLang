@@ -1,0 +1,9 @@
+// Test: Fibonacci sequence mapped over range
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2)
+let rec map f = fun xs -> match xs with | [] -> [] | h :: t -> f h :: map f t
+
+let result = map fib [0..15]
+// --- Output:
+[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]

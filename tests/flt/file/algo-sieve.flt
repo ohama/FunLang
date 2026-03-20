@@ -1,0 +1,10 @@
+// Test: Sieve of Eratosthenes using list range and module-level let rec
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (fun n -> n - (n / p) * p <> 0) rest)
+
+let result = sieve [2..50]
+// --- Output:
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]

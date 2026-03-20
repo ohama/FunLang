@@ -1,0 +1,8 @@
+// Test: sum of 1..100 using fold and list range
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
+
+let result = fold (fun acc -> fun x -> acc + x) 0 [1..100]
+// --- Output:
+5050

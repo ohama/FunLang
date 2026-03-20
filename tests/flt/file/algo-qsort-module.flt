@@ -1,0 +1,10 @@
+// Test: quicksort using module-level let rec
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+let rec append xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: append t ys
+let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in append (qsort lo) (pivot :: qsort hi)
+
+let result = qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+// --- Output:
+[1, 2, 3, 4, 5, 6, 7, 8, 9]

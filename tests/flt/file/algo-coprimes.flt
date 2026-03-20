@@ -1,0 +1,10 @@
+// Test: find coprimes using GCD and list range
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec gcd a = fun b -> if b = 0 then a else gcd b (a - (a / b) * b)
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
+let result = coprimes 12
+// --- Output:
+[1, 5, 7, 11]

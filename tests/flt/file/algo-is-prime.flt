@@ -1,0 +1,12 @@
+// Test: isPrime using module-level let rec and list range
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let rec checkPrime n = fun d -> if d * d > n then true else if n - (n / d) * d = 0 then false else checkPrime n (d + 1)
+
+let isPrime n = if n < 2 then false else checkPrime n 2
+
+let result = filter (fun n -> isPrime n) [2..50]
+// --- Output:
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]

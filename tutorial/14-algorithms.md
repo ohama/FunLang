@@ -1,101 +1,212 @@
-# 14장: Algorithms and Data Structures
+# 14장: 알고리즘과 자료구조
 
-이 장에서는 LangThree에서 전형적인 알고리즘과 자료구조를 구현하는 방법을 보여줍니다.
-OCaml, Haskell 또는 유사한 언어로 함수형 프로그래밍 경험이 있다면 익숙한 패턴이겠지만,
-LangThree만의 고유한 관용구를 이해할 필요가 있습니다.
+LangThree v1.4에서 알고리즘을 구현하는 방법을 살펴봅니다. 이번 버전은
+재귀 함수 작성 방식에 근본적인 변화를 가져왔습니다.
 
-## LangThree의 재귀 패턴
+## v1.4의 변화: 모듈 레벨 `let rec`
 
-LangThree의 모든 재귀는 `in`과 함께 **표현식 수준**에서 `let rec`을 사용합니다.
-모듈 수준의 `let rec`은 없습니다. 재귀 함수는 표현식 내부에서 정의되며 서로 체이닝됩니다:
+v1.3까지 LangThree의 모든 재귀 함수는 표현식 내부에 갇혀 있었습니다.
+정렬 알고리즘 하나를 작성하려면 `let sorted = let rec insert ... in let rec sort ... in sort [...]`
+같은 거대한 단일 표현식이 필요했습니다. 헬퍼 함수가 늘어날수록 들여쓰기와
+`in` 체인이 깊어져 가독성이 떨어졌습니다.
 
-```
-let result =
-    let rec f x = ...
-    in f 10
-```
-
-재귀 함수가 **두 개 이상의 매개변수**를 필요로 할 때, 두 번째 매개변수는
-클로저를 통해 전달됩니다:
+v1.4에서는 **모듈 레벨 `let rec`** 이 도입되었습니다. 이제 각 재귀 함수를
+독립된 최상위 선언으로 작성할 수 있습니다:
 
 ```
-let result =
-    let rec f x = fun y -> ... f something_else another_thing ...
-    in f 1 2
-```
-
-여러 재귀 헬퍼는 `let rec ... in let rec ... in`으로 체이닝합니다:
-
-```
-let answer =
-    let rec helper1 x = ...
+(* v1.3 스타일 -- 모든 것이 하나의 표현식 안에 *)
+let sorted =
+    let rec insert x = fun xs -> ...
     in
-    let rec helper2 y = ... helper1 ... helper2 ...
-    in helper2 start
+    let rec sort xs = ...
+    in sort [5, 3, 1]
+
+(* v1.4 스타일 -- 각 함수가 독립된 선언 *)
+let rec insert x = fun xs -> ...
+let rec sort xs = ...
+let result = sort [5, 3, 1]
 ```
 
-이 패턴은 이 장 전체에 걸쳐 등장합니다. 각 알고리즘은 독립적으로 구성되어 있습니다:
-`let rec ... in`으로 헬퍼를 정의한 후, 마지막에 진입점을 호출합니다.
+이 변화가 가져오는 이점은 명확합니다:
 
-## 정수론
+- **가독성**: 각 함수가 독립된 선언이므로 한눈에 파악할 수 있습니다.
+- **재사용성**: 모듈 레벨 함수는 파일 내 어디서든 호출할 수 있습니다.
+- **유지보수**: 함수를 추가하거나 수정할 때 `in` 체인을 조정할 필요가 없습니다.
+
+v1.4에서 추가된 다른 기능들도 알고리즘 작성을 크게 개선합니다:
+
+- **리스트 범위**: `[1..100]`으로 연속 정수 리스트를 간편하게 생성
+- **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수 정의
+- **Or 패턴**: 패턴 매칭에서 여러 패턴을 하나로 묶기
+
+모듈 레벨 `let rec`의 제약 사항을 기억하세요:
+
+- 매개변수는 **하나만** 직접 받습니다: `let rec f x = body`
+- 두 번째 매개변수부터는 클로저로 전달합니다: `let rec f x = fun y -> body`
+- `match` 표현식은 한 줄에 작성해야 합니다
+
+이제 이 새로운 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.
+
+## 표준 리스트 함수
+
+함수형 프로그래밍에서 `map`, `filter`, `fold`는 가장 기본적인 도구입니다.
+v1.4에서는 이들을 모듈 레벨에 선언하여 프로그램 전체에서 재사용할 수 있습니다.
+
+### Map
+
+리스트의 각 원소에 함수를 적용하여 새 리스트를 만듭니다:
+
+```
+$ cat map.l3
+let rec map f = fun xs -> match xs with | [] -> [] | h :: t -> f h :: map f t
+
+let result = map (fun x -> x * x) [1, 2, 3, 4, 5]
+
+$ langthree map.l3
+[1, 4, 9, 16, 25]
+```
+
+`map`은 두 개의 매개변수를 받습니다. 첫 번째 `f`가 `let rec` 매개변수이고,
+두 번째 `xs`는 `fun xs -> ...`를 통해 전달됩니다. 빈 리스트가 기저 사례이며,
+비어 있지 않으면 head에 `f`를 적용하고 tail에 대해 재귀합니다.
+
+### Filter
+
+조건을 만족하는 원소만 남깁니다:
+
+```
+$ cat filter.l3
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let result = filter (fun x -> x - (x / 2) * 2 = 0) [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+$ langthree filter.l3
+[2, 4, 6, 8, 10]
+```
+
+`x - (x / 2) * 2 = 0`은 정수 산술로 짝수를 판별합니다. LangThree에는
+`mod` 연산자가 없으므로 이 패턴을 사용합니다.
+
+### Fold (왼쪽 폴드)
+
+왼쪽 폴드는 리스트를 하나의 값으로 축약합니다. 이항 함수 `f`, 초기 누적자 `acc`,
+리스트 `xs` 세 개의 매개변수를 받습니다:
+
+```
+$ cat fold.l3
+let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
+
+let result = fold (fun acc -> fun x -> acc + x * x) 0 [1, 2, 3, 4, 5]
+
+$ langthree fold.l3
+55
+```
+
+세 개의 매개변수가 중첩 클로저로 전달됩니다: `f`가 `let rec` 매개변수,
+`acc`가 첫 번째 `fun`, `xs`가 두 번째 `fun`입니다.
+계산 과정은 0 + 1 + 4 + 9 + 16 + 25 = 55입니다.
+
+## 수론
 
 ### 팩토리얼
 
-전형적인 재귀 팩토리얼입니다. `let rec`은 표현식 내부에 있어야 합니다
--- 여기서는 `let result = ...` 바인딩 안에 위치합니다:
+가장 기본적인 재귀 알고리즘입니다. 모듈 레벨 `let rec`으로 깔끔하게 표현됩니다:
 
 ```
 $ cat factorial.l3
-let result =
-    let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
-    in fact 10
+let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
+
+let result = fact 10
 
 $ langthree factorial.l3
 3628800
 ```
 
-`fact 10`은 10 * 9 * 8 * ... * 1 = 3628800을 계산합니다.
+`fact 10`은 10 * 9 * 8 * ... * 1 = 3,628,800을 계산합니다. v1.3에서는
+`let result = let rec fact n = ... in fact 10`이라는 한 덩어리로 작성해야 했지만,
+이제 함수 정의와 호출이 분리되어 훨씬 읽기 좋습니다.
 
-### 피보나치
+### 피보나치 수열
 
-단순 재귀 피보나치입니다. 이중 재귀로 인해 지수 시간이 걸리지만,
-패턴을 명확하게 보여줍니다:
+단순 재귀 피보나치를 리스트 범위와 `map`을 결합하여 수열 전체를 출력합니다:
 
 ```
 $ cat fibonacci.l3
-let result =
-    let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2)
-    in fib 10
+let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2)
+let rec map f = fun xs -> match xs with | [] -> [] | h :: t -> f h :: map f t
+
+let result = map fib [0..15]
 
 $ langthree fibonacci.l3
-55
+[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]
 ```
 
-수열은 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, **55**입니다.
+`[0..15]`는 v1.4의 리스트 범위 기능으로, 0부터 15까지 16개의 정수 리스트를
+자동으로 생성합니다. 이전에는 이런 리스트를 수동으로 나열해야 했습니다.
+`map fib [0..15]`는 각 인덱스에 대한 피보나치 값을 계산합니다.
 
 ### GCD와 LCM
 
-유클리드 알고리즘으로 최대공약수를 구한 다음, 이를 이용해 최소공배수를 유도합니다.
-`gcd`는 두 개의 매개변수가 필요하고 재귀적이므로, 두 번째 매개변수는
-클로저(`fun b -> ...`)를 통해 전달됩니다:
+유클리드 알고리즘으로 최대공약수를 구하고, 이를 이용해 최소공배수를 유도합니다:
 
 ```
 $ cat gcd_lcm.l3
-let result =
-    let rec gcd a = fun b -> if b = 0 then a else gcd b (a - (a / b) * b)
-    in
-    let lcm = fun a -> fun b -> a / gcd a b * b
-    in (gcd 48 36, lcm 12 18)
+let rec gcd a = fun b -> if b = 0 then a else gcd b (a - (a / b) * b)
+
+let lcm a = fun b -> a / gcd a b * b
+
+let result = (gcd 48 36, lcm 12 18)
 
 $ langthree gcd_lcm.l3
 (12, 36)
 ```
 
 `gcd 48 36`의 축약: gcd 48 36 -> gcd 36 12 -> gcd 12 0 -> 12.
-`lcm 12 18`은 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36을 계산합니다.
+`lcm 12 18`은 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36입니다.
 
-`a - (a / b) * b`는 나머지(modulo) 연산입니다. LangThree의 `/`는 정수 나눗셈이기
-때문입니다.
+`a - (a / b) * b`는 나머지(modulo) 연산입니다. LangThree의 `/`는 정수 나눗셈이므로
+이 패턴으로 나머지를 구합니다. `lcm`은 재귀가 아니므로 `let rec` 없이 일반
+`let`으로 정의합니다.
+
+### 서로소 (Coprimes)
+
+GCD와 리스트 범위를 결합하면 주어진 수와 서로소인 수를 구할 수 있습니다:
+
+```
+$ cat coprimes.l3
+let rec gcd a = fun b -> if b = 0 then a else gcd b (a - (a / b) * b)
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
+let result = coprimes 12
+
+$ langthree coprimes.l3
+[1, 5, 7, 11]
+```
+
+`[1..12]` 중에서 12와 GCD가 1인 수만 남깁니다. 이것이 오일러 토션트 함수
+phi(12) = 4의 구체적인 원소들입니다. 리스트 범위 덕분에 `[1..n]`으로
+간결하게 후보를 생성할 수 있습니다.
+
+### 소수 판별 (isPrime)
+
+주어진 범위에서 소수를 걸러냅니다:
+
+```
+$ cat is_prime.l3
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+let rec checkPrime n = fun d -> if d * d > n then true else if n - (n / d) * d = 0 then false else checkPrime n (d + 1)
+let isPrime n = if n < 2 then false else checkPrime n 2
+
+let result = filter (fun n -> isPrime n) [2..50]
+
+$ langthree is_prime.l3
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+```
+
+`checkPrime n d`는 2부터 sqrt(n)까지 나눠보며 소수를 판별합니다.
+`isPrime`은 비재귀 래퍼로, 2 미만인 경우를 먼저 걸러냅니다.
+`[2..50]`에서 소수만 필터링하여 50 이하의 모든 소수를 구합니다.
 
 ### 거듭제곱
 
@@ -103,395 +214,270 @@ $ langthree gcd_lcm.l3
 
 ```
 $ cat power.l3
-let result =
-    let rec power base = fun exp -> if exp = 0 then 1 else base * power base (exp - 1)
-    in power 2 10
+let rec power base = fun exp -> if exp = 0 then 1 else base * power base (exp - 1)
+
+let result = power 2 10
 
 $ langthree power.l3
 1024
 ```
 
-`power 2 10`은 2^10 = 1024를 계산합니다. 두 매개변수 재귀 패턴은
-`gcd`와 동일합니다: 첫 번째 매개변수 `base`가 `let rec` 매개변수이고,
-두 번째 `exp`는 `fun exp -> ...`를 통해 전달됩니다.
-
-## 리스트 유틸리티
-
-### Reverse
-
-꼬리 재귀 누적자를 사용하여 리스트를 뒤집습니다. 누적자 `acc`가
-`let rec` 매개변수이고, 리스트 `xs`는 클로저를 통해 전달됩니다:
-
-```
-$ cat reverse.l3
-let result =
-    let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
-    in rev [] [1, 2, 3, 4, 5]
-
-$ langthree reverse.l3
-[5, 4, 3, 2, 1]
-```
-
-이것은 꼬리 재귀입니다: 각 단계에서 head를 누적자에 cons하고 tail에 대해 재귀합니다.
-스택이 증가하지 않습니다.
-
-### Flatten
-
-리스트의 리스트를 단일 리스트로 평탄화합니다. `app` (append) 헬퍼가 필요합니다:
-
-```
-$ cat flatten.l3
-let result =
-    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
-    in
-    let rec flatten xss = match xss with | [] -> [] | xs :: rest -> app xs (flatten rest)
-    in flatten [[1, 2], [3, 4, 5], [], [6]]
-
-$ langthree flatten.l3
-[1, 2, 3, 4, 5, 6]
-```
-
-`flatten`은 각 하위 리스트를 처리하여 평탄화된 나머지에 덧붙입니다.
-
-### Zip
-
-두 리스트를 원소별로 쌍의 리스트로 결합합니다. 중첩된 match가 어느 한 리스트가
-끝나는 경우를 처리합니다:
-
-```
-$ cat zip.l3
-let result =
-    let rec zip xs = fun ys -> match xs with | [] -> [] | x :: xt -> match ys with | [] -> [] | y :: yt -> (x, y) :: zip xt yt
-    in zip [1, 2, 3] [10, 20, 30]
-
-$ langthree zip.l3
-[(1, 10), (2, 20), (3, 30)]
-```
-
-리스트의 길이가 다르면 `zip`은 짧은 쪽에서 멈춥니다.
-
-### 리스트의 최댓값
-
-최대 원소를 찾습니다. 기저 사례는 단일 원소 리스트 `x :: []`를 매칭합니다:
-
-```
-$ cat max_list.l3
-let result =
-    let rec maxList xs = match xs with | x :: [] -> x | x :: rest -> let m = maxList rest in if x > m then x else m
-    in maxList [3, 7, 2, 9, 1, 8, 4]
-
-$ langthree max_list.l3
-9
-```
-
-### Fold (Left)
-
-왼쪽 폴드는 리스트에 이항 함수를 적용하며 누적자를 전달합니다.
-함수형 프로그래밍의 핵심 도구로, 다른 많은 연산을 폴드로 표현할 수 있습니다:
-
-```
-$ cat fold.l3
-let result =
-    let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
-    in fold (fun acc -> fun x -> acc + x * x) 0 [1, 2, 3, 4, 5]
-
-$ langthree fold.l3
-55
-```
-
-이 폴드는 0 + 1*1 + 2*2 + 3*3 + 4*4 + 5*5 = 1 + 4 + 9 + 16 + 25 = 55를 계산합니다.
-
-`fold`는 중첩 클로저를 통해 세 개의 매개변수를 받습니다: 함수 `f`가
-`let rec` 매개변수이고, `acc`는 첫 번째 `fun`을 통해, `xs`는 두 번째 `fun`을 통해
-전달됩니다.
-
-### Fold를 이용한 Map
-
-`fold`가 있으면 그 위에 `map`을 구축할 수 있습니다:
-
-```
-$ cat map_via_fold.l3
-let result =
-    let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
-    in
-    let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
-    in
-    let map f = fun xs -> rev [] (fold (fun acc -> fun x -> f x :: acc) [] xs)
-    in map (fun x -> x * x) [1, 2, 3, 4, 5]
-
-$ langthree map_via_fold.l3
-[1, 4, 9, 16, 25]
-```
-
-폴드가 결과를 역순으로 생성하므로, 마지막에 뒤집습니다.
-
-### Length
-
-리스트의 원소 수를 셉니다:
-
-```
-funlang> let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t in length [10, 20, 30, 40]
-4
-```
+`power 2 10`은 2^10 = 1024를 계산합니다.
 
 ## 정렬 알고리즘
 
-정렬은 알고리즘적 접근 방식을 비교하기에 좋은 주제입니다. 아래 세 가지 정렬 모두
-정렬되지 않은 리스트를 받아 새로운 정렬된 리스트를 반환합니다 -- 변이(mutation)가
-관여하지 않습니다.
+정렬은 알고리즘을 비교하기 좋은 주제입니다. 모듈 레벨 `let rec` 덕분에
+각 헬퍼 함수가 독립 선언이 되어, v1.3의 깊은 `let rec ... in` 체인보다
+구조가 훨씬 명확해졌습니다.
 
 ### 삽입 정렬
 
-각 원소를 올바른 위치에 삽입하여 정렬된 리스트를 구축합니다.
-두 개의 재귀 헬퍼가 있습니다: `insert`는 원소 하나를 배치하고, `sort`는 리스트를
-처리합니다:
+각 원소를 정렬된 리스트의 올바른 위치에 삽입하여 정렬합니다:
 
 ```
 $ cat insertion_sort.l3
-let sorted =
-    let rec insert x = fun xs -> match xs with | [] -> x :: [] | h :: t -> if x <= h then x :: h :: t else h :: insert x t
-    in
-    let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
-    in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let rec insert x = fun xs -> match xs with | [] -> x :: [] | h :: t -> if x <= h then x :: h :: t else h :: insert x t
+
+let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
+
+let result = sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
 
 $ langthree insertion_sort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-`insert`는 올바른 위치를 찾을 때까지 정렬된 리스트를 순회합니다. `sort`는 tail을
-재귀적으로 정렬한 후 head를 삽입합니다. 최악의 경우 O(n^2)이지만, 단순하고 안정적입니다.
+`insert`와 `sort`가 각각 독립된 최상위 함수입니다. `insert`는 정렬된 리스트에서
+올바른 위치를 찾을 때까지 순회하고, `sort`는 tail을 재귀적으로 정렬한 후
+head를 삽입합니다. 최악의 경우 O(n^2)이지만 구현이 단순하고 안정적(stable)입니다.
 
 ### 퀵정렬
 
-피벗을 기준으로 분할하고, 각 반쪽을 재귀적으로 정렬한 후 합칩니다.
-세 개의 헬퍼가 필요합니다 -- `filter`, `app` (append), 그리고 `qsort` 자체:
+피벗을 기준으로 분할하고, 각 부분을 재귀 정렬한 후 합칩니다:
 
 ```
 $ cat quicksort.l3
-let sorted =
-    let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
-    in
-    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
-    in
-    let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in app (qsort lo) (pivot :: qsort hi)
-    in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let rec append xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: append t ys
+
+let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in append (qsort lo) (pivot :: qsort hi)
+
+let result = qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
 
 $ langthree quicksort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-피벗은 단순히 리스트의 head입니다. `filter`가 피벗보다 작은 원소(`lo`)와
-크거나 같은 원소(`hi`)를 선택합니다. 정렬된 결과는
-`qsort lo ++ [pivot] ++ qsort hi`입니다.
+`filter`, `append`, `qsort` 세 함수가 각각 독립 선언입니다. 피벗은 리스트의
+head를 사용합니다. `filter`로 피벗보다 작은 원소(`lo`)와 크거나 같은
+원소(`hi`)를 분리한 후, 정렬된 결과를 `append (qsort lo) (pivot :: qsort hi)`로
+조합합니다.
 
 ### 병합 정렬
 
-리스트를 반으로 나누고, 각 반쪽을 정렬한 후 병합합니다. 여러 헬퍼가 필요합니다
--- `length`, `take`, `drop`, `merge`, 그리고 `msort`:
+리스트를 반으로 나누고, 각 반쪽을 정렬한 후 병합합니다. 여러 헬퍼 함수가
+필요한 알고리즘에서 모듈 레벨 선언의 장점이 특히 드러납니다:
 
 ```
 $ cat merge_sort.l3
-let sorted =
-    let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
-    in
-    let rec take n = fun xs -> if n = 0 then [] else match xs with | [] -> [] | h :: t -> h :: take (n - 1) t
-    in
-    let rec drop n = fun xs -> if n = 0 then xs else match xs with | [] -> [] | _ :: t -> drop (n - 1) t
-    in
-    let rec merge xs = fun ys -> match xs with | [] -> ys | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
-    in
-    let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
-    in msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
+let rec take n = fun xs -> if n = 0 then [] else match xs with | [] -> [] | h :: t -> h :: take (n - 1) t
+let rec drop n = fun xs -> if n = 0 then xs else match xs with | [] -> [] | _ :: t -> drop (n - 1) t
+let rec merge xs = fun ys -> match xs with | [] -> ys | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
+
+let result = msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
 
 $ langthree merge_sort.l3
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
 ```
 
-이것은 하향식 병합 정렬입니다. `take`과 `drop`이 리스트를 중간점에서 분할합니다.
-`merge`는 head를 비교하여 두 정렬된 리스트를 교차 배치합니다. O(n log n)이 보장됩니다.
+다섯 개의 함수가 각각 한 줄의 최상위 선언입니다. v1.3에서는 이 모든 함수가
+`let sorted = let rec length ... in let rec take ... in let rec drop ... in let rec merge ... in let rec msort ... in msort [...]`
+라는 하나의 거대한 표현식이었습니다. 이제 각 함수를 독립적으로 읽고 이해할 수 있습니다.
 
-`let rec ... in` 체인이 헬퍼 라이브러리를 구축하는 방식에 주목하세요. 이후 함수는
-이전에 정의된 모든 함수를 호출할 수 있습니다. 이것이 복잡한 프로그램을 위한
-LangThree의 관용적 패턴입니다.
+`take`과 `drop`이 리스트를 중간점에서 분할하고, `merge`가 두 정렬된 리스트의
+head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.
 
 ## 트리 자료구조
 
 ### 이진 탐색 트리와 트리 정렬
 
-이진 트리 타입을 정의한 후, 삽입, 구축, 중위 순회를 구현합니다.
-결과는 트리 기반 정렬입니다:
+대수적 데이터 타입으로 이진 트리를 정의하고, 삽입/구축/순회를 구현하여
+트리 기반 정렬을 만듭니다:
 
 ```
 $ cat tree_sort.l3
 type Tree = Leaf | Node of Tree * int * Tree
 
-let sorted =
-    let rec treeInsert x = fun t -> match t with | Leaf -> Node (Leaf, x, Leaf) | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
-    in
-    let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
-    in
-    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
-    in
-    let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> app (inorder l) (v :: inorder r)
-    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+let rec treeInsert x = fun t -> match t with | Leaf -> Node (Leaf, x, Leaf) | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
+let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
+let rec append xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: append t ys
+let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorder l) (v :: inorder r)
+
+let result = inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
 
 $ langthree tree_sort.l3
 [1, 2, 3, 5, 7, 8, 9]
 ```
 
-`Tree` 타입은 두 개의 생성자를 가진 대수적 데이터 타입입니다: `Leaf` (비어 있음)와
-왼쪽 하위 트리, 값, 오른쪽 하위 트리를 포함하는 `Node`.
+`Tree` 타입은 두 생성자를 가진 대수적 데이터 타입입니다: `Leaf`(빈 노드)와
+`Node`(왼쪽 하위 트리, 값, 오른쪽 하위 트리). `treeInsert`는 노드 값과 비교하여
+왼쪽 또는 오른쪽으로 재귀하며 BST 성질을 유지합니다. `buildTree`로 리스트를
+트리로 변환하고, `inorder` 중위 순회로 정렬된 리스트를 추출합니다.
 
-`treeInsert`는 노드 값과 비교하여 왼쪽 또는 오른쪽으로 재귀하며 BST에 값을 배치합니다.
-`buildTree`는 각 원소를 삽입하여 리스트를 트리로 접습니다.
-`inorder` 순회는 정렬된 리스트를 생성합니다.
+### 페아노 자연수
 
-### 페아노 자연수와 Church 스타일 산술
-
-자연수를 대수적 타입으로 표현하고, 구조적 재귀로 덧셈과 곱셈을 정의합니다:
+자연수를 대수적 타입으로 표현하고, 구조적 재귀로 덧셈과 곱셈을 정의합니다.
+수학의 기초를 코드로 직접 표현하는 예제입니다:
 
 ```
 $ cat peano.l3
 type Nat = Zero | Succ of Nat
 
-let result =
-    let rec toInt n = match n with | Zero -> 0 | Succ p -> 1 + toInt p
-    in
-    let rec add a = fun b -> match a with | Zero -> b | Succ p -> Succ (add p b)
-    in
-    let rec mul a = fun b -> match a with | Zero -> Zero | Succ p -> add b (mul p b)
-    in
-    let three = Succ (Succ (Succ Zero))
-    in
-    let four = Succ (Succ (Succ (Succ Zero)))
-    in toInt (mul three four)
+let rec toInt n = match n with | Zero -> 0 | Succ p -> 1 + toInt p
+let rec add a = fun b -> match a with | Zero -> b | Succ p -> Succ (add p b)
+let rec mul a = fun b -> match a with | Zero -> Zero | Succ p -> add b (mul p b)
+
+let three = Succ (Succ (Succ Zero))
+let four = Succ (Succ (Succ (Succ Zero)))
+let result = toInt (mul three four)
 
 $ langthree peano.l3
 12
 ```
 
-`add`는 `a`에서 `Succ`를 벗기고 결과를 감쌉니다: add (Succ (Succ Zero)) b
-= Succ (Succ b). `mul`은 반복 덧셈을 사용합니다: mul (Succ (Succ Zero)) b =
-add b (add b Zero).
+`add`는 `a`에서 `Succ`를 하나씩 벗기고 결과를 감쌉니다:
+add (Succ (Succ Zero)) b = Succ (Succ b). `mul`은 반복 덧셈을 사용합니다:
+mul (Succ (Succ Zero)) b = add b (add b Zero).
 
-3 곱하기 4는 12입니다 -- `toInt`로 `int`로 변환하여 검증합니다.
+3 * 4 = 12를 `toInt`로 검증합니다. 모듈 레벨 선언 덕분에 `toInt`, `add`, `mul`이
+각각 독립된 함수로 깔끔하게 정의됩니다.
 
-이 예제는 LangThree의 대수적 타입과 패턴 매칭이 사용자 정의 수 표현을 정의하고
-계산하는 데 얼마나 자연스러운지 보여줍니다.
+## 새로운 알고리즘
 
-## 실용 예제
+v1.4의 새 기능들 -- 리스트 범위, 상호 재귀, or 패턴 -- 을 활용하는
+알고리즘입니다. 이전 버전에서는 구현하기 어렵거나 불가능했던 것들입니다.
 
-### 균형 괄호 검사기
+### 에라토스테네스의 체
 
-괄호 시퀀스가 균형 잡혀 있는지 확인합니다. LangThree에는 char 타입이 없으므로,
-`(`를 1로, `)`를 0으로 인코딩합니다:
-
-```
-$ cat balanced.l3
-let result =
-    let rec check depth = fun cs -> match cs with | [] -> depth = 0 | c :: rest -> if c = 1 then check (depth + 1) rest else if c = 0 then if depth > 0 then check (depth - 1) rest else false else check depth rest
-    in (check 0 [1, 1, 0, 0], check 0 [1, 0, 0, 1])
-
-$ langthree balanced.l3
-(true, false)
-```
-
-첫 번째 시퀀스 `(())`는 균형이 맞으므로 `check`가 `true`를 반환합니다. 두 번째
-시퀀스 `())(` 는 대응하는 여는 괄호 없이 닫는 괄호가 나타나므로, `depth`가
-음수가 될 때 `check`가 즉시 `false`를 반환합니다.
-
-이 알고리즘은 단일 패스입니다: `(`에서 depth를 증가시키고, `)`에서 감소시키며,
-depth가 0 아래로 내려가면 실패하고, 끝에서 depth가 0일 때만 성공합니다.
-
-### Option 체이닝과 안전한 나눗셈
-
-Prelude의 `Option` 타입을 사용하여 실패할 수 있는 계산을 체이닝합니다:
+고대 그리스의 소수 알고리즘입니다. 리스트 범위 `[2..50]`으로 후보를 생성하고,
+가장 작은 수의 배수를 반복적으로 제거합니다:
 
 ```
-$ cat safe_div.l3
-let safediv a = fun b -> if b = 0 then None else Some (a / b)
+$ cat sieve.l3
+let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
+let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (fun n -> n - (n / p) * p <> 0) rest)
 
-let bind opt = fun f ->
-    match opt with
-    | None -> None
-    | Some v -> f v
+let result = sieve [2..50]
 
-let result =
-    let step1 = safediv 100 5 in
-    let step2 = bind step1 (fun x -> safediv x 4) in
-    let step3 = bind step2 (fun x -> safediv x 0) in
-    (step1, step2, step3)
-
-$ langthree safe_div.l3
-(Some 20, Some 5, None)
+$ langthree sieve.l3
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
 ```
 
-`safediv 100 5`는 `Some 20`을 줍니다. 그것을 4로 나누면 `Some 5`가 됩니다.
-0으로 나누면 `None`이 되며, `None`은 이후 `bind` 호출을 통해 전파됩니다.
+`[2..50]`이 2부터 50까지의 리스트를 생성합니다. `sieve`는 리스트의 첫 원소 `p`를
+소수로 확정하고, 나머지에서 `p`의 배수를 `filter`로 제거한 후 재귀합니다.
+`n - (n / p) * p <> 0`은 `n`이 `p`의 배수가 아닌지 검사합니다.
 
-### 수식 평가기
+이 알고리즘은 리스트 범위 없이는 후보 리스트를 수동으로 나열해야 했을 것입니다.
+`[2..50]` 한 표현으로 깔끔하게 해결됩니다.
 
-간단한 산술 수식 트리를 구축하고 평가합니다:
+### Collatz 수열
 
-```
-$ cat expr_eval.l3
-type Expr =
-    | Lit of int
-    | Add of Expr * Expr
-    | Mul of Expr * Expr
-
-let result =
-    let rec eval e = match e with | Lit n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
-    in eval (Add (Mul (Lit 3, Lit 4), Lit 5))
-
-$ langthree expr_eval.l3
-17
-```
-
-`Mul (Lit 3, Lit 4)`는 12로 평가되고, `Add (_, Lit 5)`는 17을 줍니다.
-재귀 평가기는 트리 구조를 정확히 반영합니다 -- 생성자당 하나의 분기입니다.
-
-### Filter와 Length를 이용한 카운팅
-
-헬퍼를 조합하여 조건을 만족하는 원소의 수를 셉니다:
+콜라츠 추측은 어떤 양의 정수에서 시작하든 "짝수면 반으로, 홀수면 3n+1"을
+반복하면 결국 1에 도달한다는 것입니다. 수열을 추적합니다:
 
 ```
-$ cat count_evens.l3
-let result =
-    let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
-    in
-    let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
-    in
-    let countWhere pred = fun xs -> length (filter pred xs)
-    in countWhere (fun x -> x - (x / 2) * 2 = 0) [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+$ cat collatz.l3
+let rec collatz n = fun acc -> if n = 1 then n :: acc else if n - (n / 2) * 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
+let rec rev acc = fun xs -> match xs with | [] -> acc | h :: t -> rev (h :: acc) t
 
-$ langthree count_evens.l3
-5
+let result = rev [] (collatz 27 [])
+
+$ langthree collatz.l3
+[27, 82, 41, 124, 62, 31, 94, 47, 142, 71, 214, 107, 322, 161, 484, 242, 121, 364, 182, 91, 274, 137, 412, 206, 103, 310, 155, 466, 233, 700, 350, 175, 526, 263, 790, 395, 1186, 593, 1780, 890, 445, 1336, 668, 334, 167, 502, 251, 754, 377, 1132, 566, 283, 850, 425, 1276, 638, 319, 958, 479, 1438, 719, 2158, 1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308, 1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160, 80, 40, 20, 10, 5, 16, 8, 4, 2, 1]
 ```
 
-1..10에는 5개의 짝수가 있습니다. `x - (x / 2) * 2 = 0` 조건은
-정수 산술로 짝수 여부를 확인합니다 (`mod` 연산자가 없으므로).
+`collatz`는 꼬리 재귀 함수로, 누적자 `acc`에 각 단계의 값을 기록합니다.
+결과가 역순으로 쌓이므로 `rev`로 뒤집습니다. 27에서 시작하면 111단계를 거쳐
+1에 도달합니다. `n - (n / 2) * 2 = 0`으로 짝수/홀수를 판별합니다.
+
+### FizzBuzz
+
+프로그래밍 면접의 고전 문제입니다. 리스트 범위와 `map`을 결합합니다:
+
+```
+$ cat fizzbuzz.l3
+let rec map f = fun xs -> match xs with | [] -> [] | h :: t -> f h :: map f t
+
+let fizzbuzz n =
+    let r3 = n - (n / 3) * 3
+    in let r5 = n - (n / 5) * 5
+    in match (r3, r5) with
+    | (0, 0) -> "FizzBuzz"
+    | (0, _) -> "Fizz"
+    | (_, 0) -> "Buzz"
+    | _ -> to_string n
+
+let result = map fizzbuzz [1..20]
+
+$ langthree fizzbuzz.l3
+["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz", "16", "17", "Fizz", "19", "Buzz"]
+```
+
+`fizzbuzz`는 3과 5의 나머지를 튜플로 만들어 패턴 매칭합니다.
+`(0, 0)`이면 둘 다 나누어지므로 "FizzBuzz", `(0, _)`이면 3만 나누어지므로 "Fizz",
+`(_, 0)`이면 5만 나누어지므로 "Buzz", 나머지는 숫자 자체를 문자열로 변환합니다.
+`[1..20]`으로 1부터 20까지 범위를 생성하고 `map fizzbuzz`로 변환합니다.
+
+### 상태 머신 (상호 재귀)
+
+v1.4의 `let rec ... and ...` 구문은 서로를 호출하는 함수를 정의할 수 있게 합니다.
+상태 머신은 상호 재귀의 대표적인 활용 사례입니다:
+
+```
+$ cat state_machine.l3
+let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
+and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
+
+let r1 = stateA [1, 0, 1, 0]
+let r2 = stateA [1, 0, 0]
+let result = (r1, r2)
+
+$ langthree state_machine.l3
+(ended in B, ended in B)
+```
+
+두 상태 A, B 사이를 전이하는 간단한 오토마톤입니다:
+
+- **상태 A**: 입력이 0이면 상태 B로 전이, 그 외에는 A에 머무름
+- **상태 B**: 입력이 1이면 상태 A로 전이, 그 외에는 B에 머무름
+
+`let rec stateA ... and stateB ...`로 두 함수가 서로를 호출할 수 있습니다.
+이전 버전에서는 상호 재귀를 직접 표현할 수 없었기 때문에, 이런 패턴을
+구현하려면 우회적인 방법이 필요했습니다.
+
+첫 번째 입력 `[1, 0, 1, 0]`은 A -> A -> B -> A -> B 경로를 따라 상태 B에서
+끝납니다. 두 번째 `[1, 0, 0]`은 A -> A -> B -> B로 역시 상태 B에서 끝납니다.
 
 ## 요약
 
-| 패턴 | 예제 |
+| 패턴 | v1.4 문법 |
 |---|---|
-| 단일 매개변수 재귀 | `let rec f x = ... f ... in f start` |
-| 다중 매개변수 재귀 | `let rec f x = fun y -> ... f ... in f a b` |
-| 체이닝된 헬퍼 | `let rec h1 ... in let rec h2 ... in h2 start` |
-| 누적자 패턴 | `let rec go acc = fun xs -> ... go (acc') t in go init list` |
+| 모듈 레벨 재귀 | `let rec f x = body` |
+| 다중 매개변수 재귀 | `let rec f x = fun y -> body` |
+| 리스트 범위 | `[1..100]` |
+| 상호 재귀 | `let rec f x = ... and g y = ...` |
 | ADT + 재귀 | `type T = ... let rec f t = match t with ...` |
-| Option 체이닝 | `bind (safediv a b) (fun x -> safediv x c)` |
 
-핵심 요점:
+v1.4에서 달라진 핵심 사항:
 
-- **`let rec`은 표현식 수준에서만 사용 가능합니다.** 모든 재귀는
-  `let name = let rec ... in ...` 바인딩 안에 위치합니다.
-- **다중 매개변수 재귀 함수**는 두 번째 매개변수부터 `fun`을 사용합니다:
-  `let rec f x = fun y -> ...`.
-- **헬퍼 체이닝**은 `let rec ... in let rec ... in`으로 합니다. 각 헬퍼는
-  이전에 정의된 모든 헬퍼를 호출할 수 있습니다.
+- **모듈 레벨 `let rec`**: 재귀 함수를 최상위 선언으로 작성합니다.
+  각 함수가 독립적이어서 읽기 쉽고 재사용하기 좋습니다.
+  `let rec ... in let rec ... in` 체인이 사라졌습니다.
+- **리스트 범위**: `[1..n]`으로 연속 정수 리스트를 생성합니다.
+  에라토스테네스의 체, 소수 필터링, FizzBuzz 등에서 수동 리스트 나열을 대체합니다.
+- **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수를 정의합니다.
+  상태 머신, 홀수/짝수 판별기 등 새로운 알고리즘 패턴이 가능해졌습니다.
 - **대수적 데이터 타입**은 재귀 함수와 자연스럽게 결합되어 트리, 수식 언어,
   사용자 정의 수 타입에 활용됩니다.
-- **Prelude의 `Option` 타입**은 예외 없이 안전한 계산을 위해 `None`과 `Some`을
-  제공합니다.
