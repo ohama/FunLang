@@ -5,6 +5,11 @@ type token =
   | DEDENT
   | INDENT
   | NEWLINE of (int)
+  | INFIXOP0 of (string)
+  | INFIXOP1 of (string)
+  | INFIXOP2 of (string)
+  | INFIXOP3 of (string)
+  | INFIXOP4 of (string)
   | PIPE_RIGHT
   | COMPOSE_RIGHT
   | COMPOSE_LEFT
@@ -17,6 +22,7 @@ type token =
   | OPEN
   | MUTABLE
   | LARROW
+  | DOTDOT
   | LBRACE
   | RBRACE
   | SEMICOLON
@@ -71,6 +77,11 @@ type tokenId =
     | TOKEN_DEDENT
     | TOKEN_INDENT
     | TOKEN_NEWLINE
+    | TOKEN_INFIXOP0
+    | TOKEN_INFIXOP1
+    | TOKEN_INFIXOP2
+    | TOKEN_INFIXOP3
+    | TOKEN_INFIXOP4
     | TOKEN_PIPE_RIGHT
     | TOKEN_COMPOSE_RIGHT
     | TOKEN_COMPOSE_LEFT
@@ -83,6 +94,7 @@ type tokenId =
     | TOKEN_OPEN
     | TOKEN_MUTABLE
     | TOKEN_LARROW
+    | TOKEN_DOTDOT
     | TOKEN_LBRACE
     | TOKEN_RBRACE
     | TOKEN_SEMICOLON
@@ -149,6 +161,7 @@ type nonTerminalId =
     | NONTERM_PatternList
     | NONTERM_Pattern
     | NONTERM_MatchClauses
+    | NONTERM_OrPattern
     | NONTERM_AnnotParamList
     | NONTERM_AnnotParam
     | NONTERM_TypeExpr
@@ -171,8 +184,14 @@ type nonTerminalId =
     | NONTERM_RecordExprInner
     | NONTERM_RecordFieldBindings
     | NONTERM_RecordPatFields
+    | NONTERM_TypeAliasDeclaration
+    | NONTERM_AliasTypeExpr
+    | NONTERM_AliasArrowType
+    | NONTERM_AliasTupleType
+    | NONTERM_AliasAtomicType
     | NONTERM_LetRecDeclaration
     | NONTERM_LetRecContinuation
+    | NONTERM_OpName
     | NONTERM_QualifiedIdent
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int
