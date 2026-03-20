@@ -1,6 +1,6 @@
 // Test: length of a list
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [1, 2, 3]
+let result = let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [1; 2; 3]
 // --- Output:
 3

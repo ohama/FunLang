@@ -8,6 +8,6 @@ let result =
         | h :: t -> h :: app t ys
     in
     let rec flatten xss = match xss with | [] -> [] | xs :: rest -> app xs (flatten rest)
-    in flatten [[1, 2], [3, 4, 5], [], [6]]
+    in flatten [[1; 2]; [3; 4; 5]; []; [6]]
 // --- Output:
-[1, 2, 3, 4, 5, 6]
+[1; 2; 3; 4; 5; 6]

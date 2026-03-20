@@ -1,6 +1,6 @@
 // Test: append two lists
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = let rec app xs = fun ys -> match xs with | [] -> ys | x :: rest -> x :: app rest ys in app [1, 2] [3, 4]
+let result = let rec app xs = fun ys -> match xs with | [] -> ys | x :: rest -> x :: app rest ys in app [1; 2] [3; 4]
 // --- Output:
-[1, 2, 3, 4]
+[1; 2; 3; 4]

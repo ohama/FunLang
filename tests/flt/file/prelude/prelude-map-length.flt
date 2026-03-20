@@ -4,4 +4,4 @@
 let words = map to_string [1..5]
 let result = (words, length words)
 // --- Output:
-(["1", "2", "3", "4", "5"], 5)
+(["1"; "2"; "3"; "4"; "5"], 5)

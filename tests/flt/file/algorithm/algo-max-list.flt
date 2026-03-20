@@ -3,6 +3,6 @@
 // --- Input:
 let result =
     let rec maxList xs = match xs with | x :: [] -> x | x :: rest -> let m = maxList rest in if x > m then x else m
-    in maxList [3, 7, 2, 9, 1, 8, 4]
+    in maxList [3; 7; 2; 9; 1; 8; 4]
 // --- Output:
 9

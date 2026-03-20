@@ -1,6 +1,6 @@
 // Test: fold (left) function over a list
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | x :: rest -> fold f (f acc x) rest in fold (fun acc -> fun x -> acc + x) 0 [1, 2, 3]
+let result = let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | x :: rest -> fold f (f acc x) rest in fold (fun acc -> fun x -> acc + x) 0 [1; 2; 3]
 // --- Output:
 6

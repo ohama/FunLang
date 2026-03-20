@@ -1,6 +1,6 @@
 // Test: Prelude reverse function
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = reverse [] [1, 2, 3, 4, 5]
+let result = reverse [] [1; 2; 3; 4; 5]
 // --- Output:
-[5, 4, 3, 2, 1]
+[5; 4; 3; 2; 1]

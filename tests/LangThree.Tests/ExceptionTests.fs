@@ -161,12 +161,12 @@ let exceptionTests = testList "Exceptions" [
         }
 
         test "when guard with list pattern positive head" {
-            let result = evalModule "let check lst =\n    match lst with\n    | x :: _ when x > 0 -> 1\n    | _ -> 0\nlet result = check [5, 3]\n"
+            let result = evalModule "let check lst =\n    match lst with\n    | x :: _ when x > 0 -> 1\n    | _ -> 0\nlet result = check [5; 3]\n"
             Expect.equal result (Ast.IntValue 1) "positive head matched"
         }
 
         test "when guard with list pattern negative head" {
-            let result = evalModule "let check lst =\n    match lst with\n    | x :: _ when x > 0 -> 1\n    | _ -> 0\nlet result = check [0 - 1, 3]\n"
+            let result = evalModule "let check lst =\n    match lst with\n    | x :: _ when x > 0 -> 1\n    | _ -> 0\nlet result = check [0 - 1; 3]\n"
             Expect.equal result (Ast.IntValue 0) "negative head falls through"
         }
     ]

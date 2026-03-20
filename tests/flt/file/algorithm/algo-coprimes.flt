@@ -11,4 +11,4 @@ let rec filter pred = fun xs ->
 let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
 let result = coprimes 12
 // --- Output:
-[1, 5, 7, 11]
+[1; 5; 7; 11]

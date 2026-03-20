@@ -20,8 +20,8 @@ let sorted =
         | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
     in
     let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
-    in msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+    in msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 // --- Output:
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]

@@ -8,8 +8,8 @@ let sorted =
         | h :: t -> if x <= h then x :: h :: t else h :: insert x t
     in
     let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
-    in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+    in sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 // --- Output:
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]

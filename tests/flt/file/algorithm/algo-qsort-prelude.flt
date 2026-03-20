@@ -6,6 +6,6 @@ let rec qsort xs =
     | [] -> []
     | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
 
-let result = qsort [5, 3, 8, 1, 9, 2, 7]
+let result = qsort [5; 3; 8; 1; 9; 2; 7]
 // --- Output:
-[1, 2, 3, 5, 7, 8, 9]
+[1; 2; 3; 5; 7; 8; 9]

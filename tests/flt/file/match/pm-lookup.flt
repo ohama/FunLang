@@ -7,7 +7,7 @@ let result =
         | [] -> None
         | (k, v) :: rest -> if k = key then Some v else lookup key rest
     in
-    let env = [(1, "one"), (2, "two"), (3, "three")]
+    let env = [(1, "one"); (2, "two"); (3, "three")]
     in
     let r1 = lookup 2 env
     in

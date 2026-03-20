@@ -5,4 +5,4 @@ let isEven x = x - (x / 2) * 2 = 0
 let odds = filter (fun x -> not (isEven x)) [1..10]
 let result = odds
 // --- Output:
-[1, 3, 5, 7, 9]
+[1; 3; 5; 7; 9]

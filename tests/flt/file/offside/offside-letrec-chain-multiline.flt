@@ -10,8 +10,8 @@ let sorted =
         match xs with
         | [] -> []
         | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
-    qsort [5, 3, 8, 1, 9, 2, 7]
+    qsort [5; 3; 8; 1; 9; 2; 7]
 
 let result = sorted
 // --- Output:
-[1, 2, 3, 5, 7, 8, 9]
+[1; 2; 3; 5; 7; 8; 9]

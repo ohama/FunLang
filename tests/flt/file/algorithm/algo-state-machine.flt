@@ -12,6 +12,6 @@ and stateB xs =
     | 1 :: rest -> stateA rest
     | _ :: rest -> stateB rest
 
-let result = stateA [1, 0, 1, 0]
+let result = stateA [1; 0; 1; 0]
 // --- Output:
 "ended in B"

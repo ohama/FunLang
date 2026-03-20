@@ -6,6 +6,6 @@ let f = fun xs ->
     | [] -> 0
     | h :: _ -> h
 
-let result = f [42, 99]
+let result = f [42; 99]
 // --- Output:
 42

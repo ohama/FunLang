@@ -1,10 +1,10 @@
 // Test: Prelude any and all predicates
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let r1 = any (fun x -> x > 5) [1, 2, 3, 4, 5, 6]
-let r2 = any (fun x -> x > 10) [1, 2, 3]
-let r3 = all (fun x -> x > 0) [1, 2, 3]
-let r4 = all (fun x -> x > 2) [1, 2, 3]
+let r1 = any (fun x -> x > 5) [1; 2; 3; 4; 5; 6]
+let r2 = any (fun x -> x > 10) [1; 2; 3]
+let r3 = all (fun x -> x > 0) [1; 2; 3]
+let r4 = all (fun x -> x > 2) [1; 2; 3]
 let result = (r1, r2, r3, r4)
 // --- Output:
 (true, false, true, false)

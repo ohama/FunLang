@@ -17,8 +17,8 @@ let sorted =
         | h :: t -> h :: app t ys
     in
     let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> app (inorder l) (v :: inorder r)
-    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+    in inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
 let result = sorted
 // --- Output:
-[1, 2, 3, 5, 7, 8, 9]
+[1; 2; 3; 5; 7; 8; 9]

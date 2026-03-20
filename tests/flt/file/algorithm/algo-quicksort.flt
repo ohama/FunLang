@@ -13,8 +13,8 @@ let sorted =
         | h :: t -> h :: app t ys
     in
     let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in app (qsort lo) (pivot :: qsort hi)
-    in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+    in qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 // --- Output:
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]

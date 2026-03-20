@@ -3,6 +3,6 @@
 // --- Input:
 let result =
     let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest
-    in sumFirst [(1, "a"), (2, "b"), (3, "c")]
+    in sumFirst [(1, "a"); (2, "b"); (3, "c")]
 // --- Output:
 6

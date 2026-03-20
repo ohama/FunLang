@@ -10,8 +10,8 @@ let describe xs =
 
 let r1 = describe []
 let r2 = describe [42]
-let r3 = describe [1, 2]
-let r4 = describe [10, 20, 30, 40]
+let r3 = describe [1; 2]
+let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 // --- Output:
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"

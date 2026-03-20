@@ -6,6 +6,6 @@ let rec map f = fun xs ->
     | [] -> []
     | h :: t -> f h :: map f t
 
-let result = map (fun x -> x * 2) [1, 2, 3]
+let result = map (fun x -> x * 2) [1; 2; 3]
 // --- Output:
-[2, 4, 6]
+[2; 4; 6]

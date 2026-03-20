@@ -49,12 +49,12 @@ let matchCompileTests = testList "Match Compilation (Decision Tree)" [
 
     testList "List Patterns" [
         test "empty vs cons" {
-            let result = evalModule "let result =\n    match [5, 6, 7] with\n    | [] -> 0\n    | h :: _ -> h\n"
-            Expect.equal result (Ast.IntValue 5) "head of [5,6,7] should be 5"
+            let result = evalModule "let result =\n    match [5; 6; 7] with\n    | [] -> 0\n    | h :: _ -> h\n"
+            Expect.equal result (Ast.IntValue 5) "head of [5;6;7] should be 5"
         }
 
         test "nested cons pattern" {
-            let result = evalModule "let result =\n    match [10, 20, 30] with\n    | [] -> 0\n    | _ :: [] -> 1\n    | a :: b :: _ -> a + b\n"
+            let result = evalModule "let result =\n    match [10; 20; 30] with\n    | [] -> 0\n    | _ :: [] -> 1\n    | a :: b :: _ -> a + b\n"
             Expect.equal result (Ast.IntValue 30) "10 + 20 = 30"
         }
     ]

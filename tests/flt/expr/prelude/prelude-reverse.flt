@@ -1,6 +1,6 @@
 // Test: reverse a list
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let result = let rec rev acc = fun xs -> match xs with | [] -> acc | x :: rest -> rev (x :: acc) rest in rev [] [1, 2, 3]
+let result = let rec rev acc = fun xs -> match xs with | [] -> acc | x :: rest -> rev (x :: acc) rest in rev [] [1; 2; 3]
 // --- Output:
-[3, 2, 1]
+[3; 2; 1]

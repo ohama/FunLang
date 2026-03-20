@@ -2,6 +2,6 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let (++) xs ys = append xs ys
-let result = [1, 2] ++ [3, 4]
+let result = [1; 2] ++ [3; 4]
 // --- Output:
-[1, 2, 3, 4]
+[1; 2; 3; 4]

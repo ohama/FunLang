@@ -14,6 +14,6 @@ let rec qsort xs =
     | [] -> []
     | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in append (qsort lo) (pivot :: qsort hi)
 
-let result = qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 // --- Output:
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]
