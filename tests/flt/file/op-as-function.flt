@@ -1,0 +1,7 @@
+// Test: use operator as a function value passed to fold
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let (++) xs ys = append xs ys
+let result = fold (++) [] [[1, 2], [3], [4, 5]]
+// --- Output:
+[1, 2, 3, 4, 5]

@@ -1,0 +1,11 @@
+// Test: operator precedence follows first-character rules
+// ++ starts with + so it's INFIXOP2 (additive level, same as +)
+// *. starts with * so it's INFIXOP3 (multiplicative level, same as *)
+// *. binds tighter than ++
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let (++) a b = a + b
+let ( *. ) a b = a * b
+let result = 1 ++ 2 *. 3
+// --- Output:
+7

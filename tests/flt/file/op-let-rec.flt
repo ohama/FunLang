@@ -1,0 +1,7 @@
+// Test: recursive operator defined with let rec
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec ( ** ) base exp = if exp = 0 then 1 else base * (base ** (exp - 1))
+let result = 2 ** 10
+// --- Output:
+1024

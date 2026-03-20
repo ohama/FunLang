@@ -1,0 +1,13 @@
+// Test: existing operators still work correctly with custom operators defined
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let (++) xs ys = append xs ys
+let double x = x * 2
+let a = 1 + 2 * 3
+let b = [1] ++ [2]
+let c = 10 |> double
+let d = 1 :: 2 :: []
+let e = 3 > 2 && 1 < 5
+let result = (a, b, c, d, e)
+// --- Output:
+(7, [1, 2], 20, [1, 2], true)
