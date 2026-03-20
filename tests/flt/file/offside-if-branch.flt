@@ -1,0 +1,11 @@
+// Test: let inside if branch
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    if true then
+        let x = 10
+        let y = 20
+        x + y
+    else 0
+// --- Output:
+30

@@ -1,0 +1,10 @@
+// Test: let chain with pipe operations
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let xs = [1..10]
+    let evens = filter (fun x -> x % 2 = 0) xs
+    let doubled = map (fun x -> x * 2) evens
+    fold (fun a -> fun x -> a + x) 0 doubled
+// --- Output:
+60

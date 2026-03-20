@@ -1,0 +1,11 @@
+// Test: let chain with records
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Point = { x: int; y: int }
+
+let result =
+    let p = { x = 3; y = 4 }
+    let dist = p.x * p.x + p.y * p.y
+    dist
+// --- Output:
+25

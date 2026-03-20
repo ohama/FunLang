@@ -1,0 +1,12 @@
+// Test: module with multiple lets NOT affected by offside
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Math =
+    let pi = 3
+    let double x = x * 2
+    let square x = x * x
+
+open Math
+let result = square (double pi)
+// --- Output:
+36

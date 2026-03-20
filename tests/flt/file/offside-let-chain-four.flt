@@ -1,0 +1,11 @@
+// Test: four let bindings in chain
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a = 1
+    let b = 2
+    let c = 3
+    let d = 4
+    a + b + c + d
+// --- Output:
+10

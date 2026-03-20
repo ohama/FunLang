@@ -1,0 +1,9 @@
+// Test: mixed explicit and implicit in
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a = 1
+    let b = let c = 2 in c + 1
+    a + b
+// --- Output:
+4

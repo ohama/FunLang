@@ -1,0 +1,12 @@
+// Test: deeply nested let blocks (3 levels)
+// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a =
+        let b =
+            let c = 42
+            c + 1
+        b + 1
+    a + 1
+// --- Output:
+45
