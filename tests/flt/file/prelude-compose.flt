@@ -1,0 +1,9 @@
+// Test: Prelude compose function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let double x = x * 2
+let inc x = x + 1
+let doubleInc = compose inc double
+let result = doubleInc 5
+// --- Output:
+11

@@ -1,0 +1,6 @@
+// Test: Prelude functions in pipeline
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = [1..10] |> filter (fun x -> x - (x / 2) * 2 = 1) |> map (fun x -> x * x)
+// --- Output:
+[1, 9, 25, 49, 81]

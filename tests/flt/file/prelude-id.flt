@@ -1,0 +1,9 @@
+// Test: Prelude id function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = id 42
+let r2 = id "hello"
+let r3 = id true
+let result = (r1, r2, r3)
+// --- Output:
+(42, "hello", true)

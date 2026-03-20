@@ -1,0 +1,6 @@
+// Test: Prelude fold function (sum)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = fold (fun acc -> fun x -> acc + x) 0 [1..10]
+// --- Output:
+55

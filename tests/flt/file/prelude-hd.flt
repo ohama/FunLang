@@ -1,0 +1,6 @@
+// Test: Prelude hd function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = hd [10, 20, 30]
+// --- Output:
+10

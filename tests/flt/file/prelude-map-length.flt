@@ -1,0 +1,7 @@
+// Test: Prelude map then length
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let words = map to_string [1..5]
+let result = (words, length words)
+// --- Output:
+(["1", "2", "3", "4", "5"], 5)

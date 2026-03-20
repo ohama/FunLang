@@ -1,0 +1,9 @@
+// Test: Prelude const function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let always42 = const 42
+let r1 = always42 "ignored"
+let r2 = always42 99
+let result = (r1, r2)
+// --- Output:
+(42, 42)
