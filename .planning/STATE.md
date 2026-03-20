@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-03-20)
 
 Milestone: v1.7 F#-Style List Syntax
 Phase: 24 — List Separator Semicolon — Complete
-Plan: 01 of 01
+Plan: 03 of 03
 Status: Phase complete
-Last activity: 2026-03-20 — Completed 24-01-PLAN.md
+Last activity: 2026-03-20 — Completed 24-03-PLAN.md
 
 Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓ + v1.6 (1p, 1pl) ✓ + v1.7 (1p, 1pl) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 46
+- Total plans completed: 48
 - Average duration: 4.6 min
-- Total execution time: ~3.80 hours
+- Total execution time: ~3.87 hours
 
 **By Phase:**
 
@@ -48,11 +48,11 @@ Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 
 | 21 | 1 | 6 min | 6.0 min |
 | 22 | 1 | 5 min | 5.0 min |
 | 23 | 1 | 26 min | 26.0 min |
-| 24 | 1 | 2 min | 2.0 min |
+| 24 | 3 | ~6 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 21-01 (6min), 22-01 (5min), 23-01 (26min), 24-01 (2min)
-- Trend: 24-01 was the fastest single-plan execution (3 files, purely mechanical separator change).
+- Last 5 plans: 22-01 (5min), 23-01 (26min), 24-01 (2min), 24-03 (2min)
+- Trend: v1.7 milestone complete — parser, tests, and tutorial all updated to semicolon list syntax.
 
 *Updated after each plan completion*
 
@@ -356,7 +356,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 24-01-PLAN.md (list separator changed to semicolon)
+Stopped at: Completed 24-03-PLAN.md (tutorial files updated to semicolon list syntax)
 Resume file: None
 
 ---
