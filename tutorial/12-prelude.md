@@ -268,6 +268,78 @@ $ langthree pipeline.l3
 [4, 16, 36, 64, 100]
 ```
 
+## Prelude 연산자
+
+Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다.
+
+### `++` — 리스트 연결
+
+`append`의 중위 연산자 버전입니다:
+
+```
+funlang> [1, 2] ++ [3, 4, 5]
+[1, 2, 3, 4, 5]
+```
+
+`(++)`를 함수로 사용할 수도 있습니다:
+
+```
+funlang> fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
+```
+
+`++`는 INFIXOP2 (+ 와 같은 우선순위, 좌결합)입니다.
+
+### `<|>` — Option 대안
+
+첫 번째 `Some` 값을 반환하거나, 모두 `None`이면 `None`을 반환합니다:
+
+```
+funlang> Some 1 <|> Some 2
+Some 1
+
+funlang> None <|> Some 42
+Some 42
+
+funlang> None <|> None
+None
+```
+
+연쇄하여 fallback 패턴을 구현할 수 있습니다:
+
+```
+$ cat fallback.l3
+let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
+let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
+
+$ langthree fallback.l3
+Some 42
+```
+
+`<|>`는 INFIXOP0 (비교 연산자 수준, 좌결합)입니다.
+
+### `^^` — 문자열 연결
+
+`string_concat`의 중위 연산자 버전입니다:
+
+```
+funlang> "hello" ^^ " " ^^ "world"
+"hello world"
+```
+
+`+` 연산자는 정수 덧셈이므로, 문자열 연결에는 `^^`를 사용합니다:
+
+```
+$ cat string_build.l3
+let formatPair key = fun value -> key ^^ "=" ^^ value
+let result = formatPair "name" "Alice"
+
+$ langthree string_build.l3
+"name=Alice"
+```
+
+`^^`는 INFIXOP1 (@ 와 같은 우선순위, 우결합)입니다.
+
 ## 런타임 내장 함수
 
 Prelude 함수와는 별도로, LangThree에는 내장 환경(`initialBuiltinEnv`)에서
@@ -302,6 +374,7 @@ funlang> to_string 42
 | 분류 | 출처 | 예제 |
 |----------|--------|---------|
 | Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `map`, `filter`, `fold`, `id`, `compose` 등 |
+| Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
 | 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf` 등 |
 
 두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.

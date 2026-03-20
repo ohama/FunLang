@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-68d1ab1f.js";
+            window.path_to_searchindex_js = "searchindex-28ab9312.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-762d52a6.js"></script>
+        <script src="toc-af8dc7fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -266,6 +266,17 @@ funlang&gt; length [1, 2, 3, 4]
 
 funlang&gt; append [1, 2] [3, 4]
 [1, 2, 3, 4]
+</code></pre>
+<p><code>++</code> 연산자는 <code>append</code>의 별칭입니다. 더 자연스러운 중위 표기를 제공합니다:</p>
+<pre><code>funlang&gt; [1, 2] ++ [3, 4]
+[1, 2, 3, 4]
+
+funlang&gt; [1..3] ++ [10..12]
+[1, 2, 3, 10, 11, 12]
+</code></pre>
+<p><code>(++)</code>를 고차 함수로도 사용할 수 있습니다:</p>
+<pre><code>funlang&gt; fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
 </code></pre>
 <h3 id="직접-재귀-함수-작성하기"><a class="header" href="#직접-재귀-함수-작성하기">직접 재귀 함수 작성하기</a></h3>
 <p>Prelude에 없는 동작이 필요하면 <code>let rec</code>으로 직접 재귀 함수를 작성할 수 있습니다.

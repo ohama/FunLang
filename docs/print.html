@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-68d1ab1f.js";
+            window.path_to_searchindex_js = "searchindex-28ab9312.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-762d52a6.js"></script>
+        <script src="toc-af8dc7fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -613,6 +613,17 @@ funlang&gt; length [1, 2, 3, 4]
 
 funlang&gt; append [1, 2] [3, 4]
 [1, 2, 3, 4]
+</code></pre>
+<p><code>++</code> 연산자는 <code>append</code>의 별칭입니다. 더 자연스러운 중위 표기를 제공합니다:</p>
+<pre><code>funlang&gt; [1, 2] ++ [3, 4]
+[1, 2, 3, 4]
+
+funlang&gt; [1..3] ++ [10..12]
+[1, 2, 3, 10, 11, 12]
+</code></pre>
+<p><code>(++)</code>를 고차 함수로도 사용할 수 있습니다:</p>
+<pre><code>funlang&gt; fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
 </code></pre>
 <h3 id="직접-재귀-함수-작성하기"><a class="header" href="#직접-재귀-함수-작성하기">직접 재귀 함수 작성하기</a></h3>
 <p>Prelude에 없는 동작이 필요하면 <code>let rec</code>으로 직접 재귀 함수를 작성할 수 있습니다.
@@ -2049,6 +2060,42 @@ let result = format_num 99
 $ langthree formatter.l3
 "value=99"
 </code></pre>
+<h2 id="prelude-연산자와-파이프라인"><a class="header" href="#prelude-연산자와-파이프라인">Prelude 연산자와 파이프라인</a></h2>
+<p>Prelude가 제공하는 연산자를 파이프라인과 결합하면 더 간결한 코드를 작성할 수 있습니다.</p>
+<p><strong><code>++</code> (리스트 연결):</strong></p>
+<pre><code>$ cat pipeline_ops.l3
+let result = [1..3] ++ [10..13] ++ [20..22]
+
+$ langthree pipeline_ops.l3
+[1, 2, 3, 10, 11, 12, 13, 20, 21, 22]
+</code></pre>
+<p><strong><code>^^</code> (문자열 연결):</strong></p>
+<p><code>string_concat</code> 대신 <code>^^</code> 연산자를 사용하면 더 읽기 쉽습니다:</p>
+<pre><code>$ cat string_ops.l3
+let greet name = "Hello, " ^^ name ^^ "!"
+let result = greet "Alice"
+
+$ langthree string_ops.l3
+"Hello, Alice!"
+</code></pre>
+<p><strong><code>&lt;|&gt;</code> (Option 대안):</strong></p>
+<pre><code>$ cat option_ops.l3
+let tryParse s = match s with | "42" -&gt; Some 42 | _ -&gt; None
+let result = tryParse "abc" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
+
+$ langthree option_ops.l3
+Some 42
+</code></pre>
+<p><strong>혼합 파이프라인:</strong></p>
+<p>여러 연산자를 파이프 |&gt;와 함께 사용할 수 있습니다:</p>
+<pre><code>$ cat mixed_pipeline.l3
+let formatList xs = "[" ^^ fold (fun acc -&gt; fun x -&gt; if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
+
+let result = [1..5] |&gt; filter (fun x -&gt; x &gt; 2) |&gt; formatList
+
+$ langthree mixed_pipeline.l3
+"[3, 4, 5]"
+</code></pre>
 <h2 id="우선순위"><a class="header" href="#우선순위">우선순위</a></h2>
 <p>파이프는 모든 연산자 중 가장 낮은 우선순위를 가지므로, <code>x + 1 |&gt; f</code>와 같은 식에서는
 <code>x + 1</code>의 결과가 <code>f</code>로 전달됩니다. 합성 연산자는 파이프보다 높지만 산술 연산자보다
@@ -2457,6 +2504,15 @@ $ langthree quicksort.l3
 head를 사용합니다. <code>filter</code>로 피벗보다 작은 원소(<code>lo</code>)와 크거나 같은
 원소(<code>hi</code>)를 분리한 후, 정렬된 결과를 <code>append (qsort lo) (pivot :: qsort hi)</code>로
 조합합니다.</p>
+<p>Prelude <code>++</code> 연산자를 사용하면 <code>append</code>를 재정의할 필요가 없어 더 간결합니다:</p>
+<pre><code>$ cat qsort_prelude.l3
+let rec qsort xs = match xs with | [] -&gt; [] | p :: rest -&gt; qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
+
+let result = qsort [5, 3, 8, 1, 9, 2, 7]
+
+$ langthree qsort_prelude.l3
+[1, 2, 3, 5, 7, 8, 9]
+</code></pre>
 <h3 id="병합-정렬"><a class="header" href="#병합-정렬">병합 정렬</a></h3>
 <p>리스트를 반으로 나누고, 각 반쪽을 정렬한 후 병합합니다. 여러 헬퍼 함수가
 필요한 알고리즘에서 모듈 레벨 선언의 장점이 특히 드러납니다:</p>
@@ -2780,6 +2836,17 @@ $ langthree option_use.l3
 <li>파싱이 성공하거나 실패하거나 (이유 불필요)</li>
 <li>null 대체 (nullable 값)</li>
 </ul>
+<p><code>&lt;|&gt;</code> 연산자를 사용하면 fallback 체인을 더 간결하게 작성할 수 있습니다:</p>
+<pre><code>$ cat fallback.l3
+let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
+let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
+
+let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
+
+$ langthree fallback.l3
+Some 5
+</code></pre>
+<p><code>&lt;|&gt;</code>는 첫 번째 <code>Some</code> 값을 반환하고, 모두 <code>None</code>이면 마지막 값을 반환합니다.</p>
 <h3 id="result--실패-이유가-중요할-때"><a class="header" href="#result--실패-이유가-중요할-때">Result — 실패 이유가 중요할 때</a></h3>
 <p>에러 메시지나 에러 코드를 보존해야 할 때 <code>Result</code>를 사용합니다:</p>
 <pre><code>$ cat result_use.l3
@@ -2858,6 +2925,110 @@ isError       : Result&lt;'a, 'e&gt; -&gt; bool
 <li><strong>기본값은 Option 또는 Result</strong>를 사용하세요</li>
 <li><strong>Exception은 마지막 수단</strong>으로만 사용하세요</li>
 <li>타입이 실패 가능성을 말해주게 하세요 — 호출자가 놓치지 않도록</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="16장-사용자-정의-연산자-user-defined-operators"><a class="header" href="#16장-사용자-정의-연산자-user-defined-operators">16장: 사용자 정의 연산자 (User-Defined Operators)</a></h1>
+<p>LangThree는 기호 문자로 구성된 사용자 정의 중위 연산자를 지원합니다.
+이를 통해 DSL(도메인 특화 언어)을 만들거나, 반복적인 함수 호출을
+간결한 표현으로 대체할 수 있습니다.</p>
+<h2 id="연산자-정의하기"><a class="header" href="#연산자-정의하기">연산자 정의하기</a></h2>
+<p><code>let (op) a b = body</code> 구문으로 사용자 정의 중위 연산자를 선언합니다:</p>
+<pre><code>$ cat op_basic.l3
+let (++) xs ys = append xs ys
+let result = [1, 2] ++ [3, 4]
+
+$ langthree op_basic.l3
+[1, 2, 3, 4]
+</code></pre>
+<p>연산자 이름은 기호 문자(<code>! $ % &amp; * + - . / &lt; = &gt; ? @ ^ | ~</code>)의 조합입니다.
+최소 2문자 이상이어야 합니다 (단일 문자 <code>+</code>, <code>*</code> 등은 내장 연산자).</p>
+<p><code>let rec</code>으로 재귀 연산자도 정의할 수 있습니다.</p>
+<h2 id="우선순위-규칙"><a class="header" href="#우선순위-규칙">우선순위 규칙</a></h2>
+<p>연산자의 우선순위는 <strong>첫 번째 문자</strong>로 결정됩니다 (F#/OCaml 규칙):</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>레벨</th><th>첫 문자</th><th>결합성</th><th>예제</th></tr>
+</thead>
+<tbody>
+<tr><td>INFIXOP0 (낮음)</td><td><code>= &lt; &gt; | &amp; $ !</code></td><td>좌결합</td><td><code>&lt;|&gt;</code>, <code>===</code>, <code>!=</code></td></tr>
+<tr><td>INFIXOP1</td><td><code>@ ^</code></td><td>우결합</td><td><code>^^</code>, <code>@&gt;</code></td></tr>
+<tr><td>INFIXOP2</td><td><code>+ -</code></td><td>좌결합</td><td><code>++</code>, <code>+.</code></td></tr>
+<tr><td>INFIXOP3</td><td><code>* / %</code></td><td>좌결합</td><td><code>*/</code>, <code>%%</code></td></tr>
+<tr><td>INFIXOP4 (높음)</td><td><code>**</code></td><td>우결합</td><td><code>**</code>, <code>***</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>같은 레벨의 연산자는 같은 우선순위를 가집니다.
+예: <code>++</code> (INFIXOP2)는 <code>+</code>와 같은 우선순위, <code>&lt;|&gt;</code> (INFIXOP0)는 비교 연산자와 같은 우선순위.</p>
+<h2 id="연산자를-함수로-사용하기"><a class="header" href="#연산자를-함수로-사용하기">연산자를 함수로 사용하기</a></h2>
+<p>괄호로 감싸면 연산자를 일반 함수처럼 사용할 수 있습니다:</p>
+<pre><code>$ cat op_as_func.l3
+let (++) xs ys = append xs ys
+let result = fold (++) [] [[1, 2], [3], [4, 5]]
+
+$ langthree op_as_func.l3
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>(++)</code>는 <code>fun xs -&gt; fun ys -&gt; append xs ys</code>와 동일합니다.</p>
+<h2 id="prelude-연산자"><a class="header" href="#prelude-연산자">Prelude 연산자</a></h2>
+<p>Prelude는 세 가지 연산자를 기본 제공합니다:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>연산자</th><th>타입</th><th>설명</th><th>예제</th></tr>
+</thead>
+<tbody>
+<tr><td><code>++</code></td><td><code>'a list -&gt; 'a list -&gt; 'a list</code></td><td>리스트 연결</td><td><code>[1,2] ++ [3,4]</code> → <code>[1,2,3,4]</code></td></tr>
+<tr><td><code>&lt;|&gt;</code></td><td><code>Option&lt;'a&gt; -&gt; Option&lt;'a&gt; -&gt; Option&lt;'a&gt;</code></td><td>Option 대안</td><td><code>None &lt;|&gt; Some 42</code> → <code>Some 42</code></td></tr>
+<tr><td><code>^^</code></td><td><code>string -&gt; string -&gt; string</code></td><td>문자열 연결</td><td><code>"a" ^^ "b"</code> → <code>"ab"</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="실용-예제"><a class="header" href="#실용-예제">실용 예제</a></h2>
+<h3 id="리스트-정렬-quicksort-with-"><a class="header" href="#리스트-정렬-quicksort-with-">리스트 정렬 (quicksort with ++)</a></h3>
+<pre><code>$ cat qsort_op.l3
+let rec qsort xs = match xs with | [] -&gt; [] | p :: rest -&gt; qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
+
+let result = qsort [5, 3, 8, 1, 9, 2, 7]
+
+$ langthree qsort_op.l3
+[1, 2, 3, 5, 7, 8, 9]
+</code></pre>
+<h3 id="문자열-포매팅"><a class="header" href="#문자열-포매팅">문자열 포매팅</a></h3>
+<pre><code>$ cat format_op.l3
+let formatList xs = "[" ^^ fold (fun acc -&gt; fun x -&gt; if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
+
+let result = [1..5] |&gt; filter (fun x -&gt; x &gt; 2) |&gt; formatList
+
+$ langthree format_op.l3
+"[3, 4, 5]"
+</code></pre>
+<h3 id="option-fallback-체인"><a class="header" href="#option-fallback-체인">Option fallback 체인</a></h3>
+<pre><code>$ cat fallback_op.l3
+let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+
+let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
+
+$ langthree fallback_op.l3
+Some 42
+</code></pre>
+<h3 id="나만의-연산자-정의"><a class="header" href="#나만의-연산자-정의">나만의 연산자 정의</a></h3>
+<pre><code>$ cat custom_op.l3
+let (=?) a b = if a = b then "equal" else "not equal"
+
+let r1 = 1 =? 1
+let r2 = 1 =? 2
+let result = r1 ^^ ", " ^^ r2
+
+$ langthree custom_op.l3
+"equal, not equal"
+</code></pre>
+<h2 id="주의-사항"><a class="header" href="#주의-사항">주의 사항</a></h2>
+<ul>
+<li><code>(*</code>는 블록 코멘트 시작이므로, <code>*</code>로 시작하는 연산자를 함수로 사용할 때는 공백이 필요합니다: <code>( ** )</code> (not <code>(**)</code>).</li>
+<li>단일 문자 연산자 (<code>+</code>, <code>*</code>, <code>=</code> 등)는 재정의할 수 없습니다. 이들은 내장 연산자입니다.</li>
+<li>연산자 이름은 2문자 이상이어야 합니다.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="12장-prelude-and-standard-library"><a class="header" href="#12장-prelude-and-standard-library">12장: Prelude and Standard Library</a></h1>
@@ -3052,6 +3223,52 @@ let result =
 $ langthree pipeline.l3
 [4, 16, 36, 64, 100]
 </code></pre>
+<h2 id="prelude-연산자-1"><a class="header" href="#prelude-연산자-1">Prelude 연산자</a></h2>
+<p>Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다.</p>
+<h3 id="--리스트-연결"><a class="header" href="#--리스트-연결"><code>++</code> — 리스트 연결</a></h3>
+<p><code>append</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; [1, 2] ++ [3, 4, 5]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>(++)</code>를 함수로 사용할 수도 있습니다:</p>
+<pre><code>funlang&gt; fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>++</code>는 INFIXOP2 (+ 와 같은 우선순위, 좌결합)입니다.</p>
+<h3 id="--option-대안"><a class="header" href="#--option-대안"><code>&lt;|&gt;</code> — Option 대안</a></h3>
+<p>첫 번째 <code>Some</code> 값을 반환하거나, 모두 <code>None</code>이면 <code>None</code>을 반환합니다:</p>
+<pre><code>funlang&gt; Some 1 &lt;|&gt; Some 2
+Some 1
+
+funlang&gt; None &lt;|&gt; Some 42
+Some 42
+
+funlang&gt; None &lt;|&gt; None
+None
+</code></pre>
+<p>연쇄하여 fallback 패턴을 구현할 수 있습니다:</p>
+<pre><code>$ cat fallback.l3
+let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
+
+$ langthree fallback.l3
+Some 42
+</code></pre>
+<p><code>&lt;|&gt;</code>는 INFIXOP0 (비교 연산자 수준, 좌결합)입니다.</p>
+<h3 id="--문자열-연결"><a class="header" href="#--문자열-연결"><code>^^</code> — 문자열 연결</a></h3>
+<p><code>string_concat</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; "hello" ^^ " " ^^ "world"
+"hello world"
+</code></pre>
+<p><code>+</code> 연산자는 정수 덧셈이므로, 문자열 연결에는 <code>^^</code>를 사용합니다:</p>
+<pre><code>$ cat string_build.l3
+let formatPair key = fun value -&gt; key ^^ "=" ^^ value
+let result = formatPair "name" "Alice"
+
+$ langthree string_build.l3
+"name=Alice"
+</code></pre>
+<p><code>^^</code>는 INFIXOP1 (@ 와 같은 우선순위, 우결합)입니다.</p>
 <h2 id="런타임-내장-함수"><a class="header" href="#런타임-내장-함수">런타임 내장 함수</a></h2>
 <p>Prelude 함수와는 별도로, LangThree에는 내장 환경(<code>initialBuiltinEnv</code>)에서
 제공되는 런타임 내장 함수가 있습니다:</p>
@@ -3089,6 +3306,7 @@ funlang&gt; to_string 42
 </thead>
 <tbody>
 <tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code> 등</td></tr>
+<tr><td>Prelude 연산자</td><td><code>Prelude/*.fun</code> 파일</td><td><code>++</code> (리스트 연결), <code>&lt;|&gt;</code> (Option 대안), <code>^^</code> (문자열 연결)</td></tr>
 <tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code> 등</td></tr>
 </tbody>
 </table>

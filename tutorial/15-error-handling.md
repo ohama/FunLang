@@ -187,6 +187,21 @@ $ langthree option_use.l3
 - 파싱이 성공하거나 실패하거나 (이유 불필요)
 - null 대체 (nullable 값)
 
+`<|>` 연산자를 사용하면 fallback 체인을 더 간결하게 작성할 수 있습니다:
+
+```
+$ cat fallback.l3
+let safeHead xs = match xs with | [] -> None | h :: _ -> Some h
+let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
+
+let result = safeDivide 10 0 <|> safeDivide 10 2 <|> Some 0
+
+$ langthree fallback.l3
+Some 5
+```
+
+`<|>`는 첫 번째 `Some` 값을 반환하고, 모두 `None`이면 마지막 값을 반환합니다.
+
 ### Result — 실패 이유가 중요할 때
 
 에러 메시지나 에러 코드를 보존해야 할 때 `Result`를 사용합니다:

@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-68d1ab1f.js";
+            window.path_to_searchindex_js = "searchindex-28ab9312.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-762d52a6.js"></script>
+        <script src="toc-af8dc7fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -324,6 +324,17 @@ $ langthree option_use.l3
 <li>파싱이 성공하거나 실패하거나 (이유 불필요)</li>
 <li>null 대체 (nullable 값)</li>
 </ul>
+<p><code>&lt;|&gt;</code> 연산자를 사용하면 fallback 체인을 더 간결하게 작성할 수 있습니다:</p>
+<pre><code>$ cat fallback.l3
+let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
+let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
+
+let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
+
+$ langthree fallback.l3
+Some 5
+</code></pre>
+<p><code>&lt;|&gt;</code>는 첫 번째 <code>Some</code> 값을 반환하고, 모두 <code>None</code>이면 마지막 값을 반환합니다.</p>
 <h3 id="result--실패-이유가-중요할-때"><a class="header" href="#result--실패-이유가-중요할-때">Result — 실패 이유가 중요할 때</a></h3>
 <p>에러 메시지나 에러 코드를 보존해야 할 때 <code>Result</code>를 사용합니다:</p>
 <pre><code>$ cat result_use.l3
@@ -412,7 +423,7 @@ isError       : Result&lt;'a, 'e&gt; -&gt; bool
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="12-prelude.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="16-user-defined-operators.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -426,7 +437,7 @@ isError       : Result&lt;'a, 'e&gt; -&gt; bool
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="12-prelude.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="16-user-defined-operators.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

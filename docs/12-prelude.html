@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-68d1ab1f.js";
+            window.path_to_searchindex_js = "searchindex-28ab9312.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-762d52a6.js"></script>
+        <script src="toc-af8dc7fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -366,6 +366,52 @@ let result =
 $ langthree pipeline.l3
 [4, 16, 36, 64, 100]
 </code></pre>
+<h2 id="prelude-연산자"><a class="header" href="#prelude-연산자">Prelude 연산자</a></h2>
+<p>Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다.</p>
+<h3 id="--리스트-연결"><a class="header" href="#--리스트-연결"><code>++</code> — 리스트 연결</a></h3>
+<p><code>append</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; [1, 2] ++ [3, 4, 5]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>(++)</code>를 함수로 사용할 수도 있습니다:</p>
+<pre><code>funlang&gt; fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>++</code>는 INFIXOP2 (+ 와 같은 우선순위, 좌결합)입니다.</p>
+<h3 id="--option-대안"><a class="header" href="#--option-대안"><code>&lt;|&gt;</code> — Option 대안</a></h3>
+<p>첫 번째 <code>Some</code> 값을 반환하거나, 모두 <code>None</code>이면 <code>None</code>을 반환합니다:</p>
+<pre><code>funlang&gt; Some 1 &lt;|&gt; Some 2
+Some 1
+
+funlang&gt; None &lt;|&gt; Some 42
+Some 42
+
+funlang&gt; None &lt;|&gt; None
+None
+</code></pre>
+<p>연쇄하여 fallback 패턴을 구현할 수 있습니다:</p>
+<pre><code>$ cat fallback.l3
+let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
+
+$ langthree fallback.l3
+Some 42
+</code></pre>
+<p><code>&lt;|&gt;</code>는 INFIXOP0 (비교 연산자 수준, 좌결합)입니다.</p>
+<h3 id="--문자열-연결"><a class="header" href="#--문자열-연결"><code>^^</code> — 문자열 연결</a></h3>
+<p><code>string_concat</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; "hello" ^^ " " ^^ "world"
+"hello world"
+</code></pre>
+<p><code>+</code> 연산자는 정수 덧셈이므로, 문자열 연결에는 <code>^^</code>를 사용합니다:</p>
+<pre><code>$ cat string_build.l3
+let formatPair key = fun value -&gt; key ^^ "=" ^^ value
+let result = formatPair "name" "Alice"
+
+$ langthree string_build.l3
+"name=Alice"
+</code></pre>
+<p><code>^^</code>는 INFIXOP1 (@ 와 같은 우선순위, 우결합)입니다.</p>
 <h2 id="런타임-내장-함수"><a class="header" href="#런타임-내장-함수">런타임 내장 함수</a></h2>
 <p>Prelude 함수와는 별도로, LangThree에는 내장 환경(<code>initialBuiltinEnv</code>)에서
 제공되는 런타임 내장 함수가 있습니다:</p>
@@ -403,6 +449,7 @@ funlang&gt; to_string 42
 </thead>
 <tbody>
 <tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code> 등</td></tr>
+<tr><td>Prelude 연산자</td><td><code>Prelude/*.fun</code> 파일</td><td><code>++</code> (리스트 연결), <code>&lt;|&gt;</code> (Option 대안), <code>^^</code> (문자열 연결)</td></tr>
 <tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code> 등</td></tr>
 </tbody>
 </table>
@@ -421,7 +468,7 @@ funlang&gt; to_string 42
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="15-error-handling.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="16-user-defined-operators.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -435,7 +482,7 @@ funlang&gt; to_string 42
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="15-error-handling.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="16-user-defined-operators.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
