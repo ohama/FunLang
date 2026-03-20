@@ -52,15 +52,15 @@ Plans:
 
 ---
 
-### Phase 22: Negative Patterns & Tuple Lambda
+### Phase 22: Negative Patterns & Tuple Lambda (COMPLETE)
 
 **Goal:** 음수 패턴 매칭과 튜플 파라미터 람다 추가
 **Depends on:** Phase 19
 **Requirements:** PAR-01, PAR-02
-**Plans:** 0 plans
+**Status:** COMPLETE — Parser-only changes, 608 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 22 to break down)
+- [x] 22-01: Negative patterns + tuple lambda (parser rules, 4 tests)
 
 **Success Criteria:**
 1. `match x with | -1 -> "neg one" | 0 -> "zero" | _ -> "other"` — 음수 패턴 동작
