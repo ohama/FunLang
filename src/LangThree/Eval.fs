@@ -101,6 +101,16 @@ let rec applyPrintfnArgs (fmt: string) (remaining: string list) (collected: Valu
         BuiltinValue (fun argVal ->
             applyPrintfnArgs fmt rest (argVal :: collected))
 
+/// Build a curried BuiltinValue chain for sprintf (returns StringValue instead of writing).
+let rec applySprintfArgs (fmt: string) (remaining: string list) (collected: Value list) : Value =
+    match remaining with
+    | [] ->
+        let result = substitutePrintfArgs fmt (List.rev collected)
+        StringValue result
+    | _ :: rest ->
+        BuiltinValue (fun argVal ->
+            applySprintfArgs fmt rest (argVal :: collected))
+
 /// Format a value for user-friendly output
 let rec formatValue (v: Value) : string =
     match v with
@@ -230,6 +240,14 @@ let initialBuiltinEnv : Env =
                 let specifiers = parsePrintfSpecifiers fmt
                 applyPrintfnArgs fmt specifiers []
             | _ -> failwith "printfn: first argument must be a format string")
+
+        // sprintf : string -> ...  (like printf but returns StringValue)
+        "sprintf", BuiltinValue (fun fmtVal ->
+            match fmtVal with
+            | StringValue fmt ->
+                let specifiers = parsePrintfSpecifiers fmt
+                applySprintfArgs fmt specifiers []
+            | _ -> failwith "sprintf: first argument must be a format string")
     ]
 
 /// Module value environment for runtime qualified access

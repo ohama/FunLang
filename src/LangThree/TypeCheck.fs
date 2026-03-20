@@ -48,6 +48,9 @@ let initialTypeEnv: TypeEnv =
 
         // printfn : string -> 'a  (like printf but appends newline)
         "printfn", Scheme([0], TArrow(TString, TVar 0))
+
+        // sprintf : string -> 'a  (like printf but returns string; runtime enforces arity)
+        "sprintf", Scheme([0], TArrow(TString, TVar 0))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
