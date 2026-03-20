@@ -25,6 +25,7 @@
 # 심화
 
 - [Algorithms and Data Structures](14-algorithms.md)
+- [Error Handling Strategies](15-error-handling.md)
 
 # 참조
 
