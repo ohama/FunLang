@@ -1,4 +1,4 @@
-# 제9장: 예외 (Exceptions)
+# 11장: 예외 (Exceptions)
 
 ## 예외 선언
 

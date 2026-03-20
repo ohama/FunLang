@@ -1,4 +1,4 @@
-# 제5장: 대수적 데이터 타입 (Algebraic Data Types)
+# 5장: 대수적 데이터 타입 (Algebraic Data Types)
 
 ## 단순 열거형
 

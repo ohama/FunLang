@@ -1,4 +1,4 @@
-# 제8장: 모듈과 네임스페이스 (Modules and Namespaces)
+# 10장: 모듈과 네임스페이스 (Modules and Namespaces)
 
 ## 모듈 선언
 

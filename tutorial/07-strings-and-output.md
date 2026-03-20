@@ -1,4 +1,4 @@
-# 11장: Strings and Output
+# 7장: 문자열과 출력 (Strings and Output)
 
 ## 문자열 리터럴
 

@@ -1,4 +1,4 @@
-# 제7장: GADT (일반화된 대수적 데이터 타입, Generalized Algebraic Data Types)
+# 14장: GADT (일반화된 대수적 데이터 타입)
 
 ## GADT란 무엇인가?
 

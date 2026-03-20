@@ -1,4 +1,4 @@
-# 10장: Pipes and Composition
+# 8장: 파이프와 합성 (Pipes and Composition)
 
 ## 파이프 연산자
 

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Error Handling Strategies - LangThree Tutorial</title>
+        <title>Prelude 표준 라이브러리 - LangThree Tutorial</title>
 
 
         <!-- Custom HTML head -->
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c76bd3b5.js";
+            window.path_to_searchindex_js = "searchindex-5d617152.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-af8dc7fd.js"></script>
+        <script src="toc-f1b237e8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -174,268 +174,329 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="15장-에러-처리-전략-error-handling-strategies"><a class="header" href="#15장-에러-처리-전략-error-handling-strategies">15장: 에러 처리 전략 (Error Handling Strategies)</a></h1>
-<p>LangThree는 에러를 처리하는 세 가지 방법을 제공합니다:
-<strong>Exception</strong>, <strong>Option</strong>, <strong>Result</strong>. 이 장에서는 세 가지를 비교하고,
-언제 어떤 것을 사용해야 하는지 설명합니다.</p>
-<h2 id="세-가지-접근법-비교"><a class="header" href="#세-가지-접근법-비교">세 가지 접근법 비교</a></h2>
-<p>같은 문제를 세 가지 방식으로 풀어보겠습니다: 리스트에서 조건을 만족하는
-첫 번째 원소를 찾는 함수입니다.</p>
-<h3 id="exception-방식"><a class="header" href="#exception-방식">Exception 방식</a></h3>
-<pre><code>$ cat find_exc.l3
-exception NotFound
-
-// 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
-let rec find pred = fun xs -&gt;
-    match xs with
-    | [] -&gt; raise NotFound
-    | h :: t -&gt; if pred h then h else find pred t
-
-let result = try find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] with | NotFound -&gt; 0 - 1
-
-$ langthree find_exc.l3
-4
-</code></pre>
-<h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
-<pre><code>$ cat find_opt.l3
-// 조건을 만족하는 첫 번째 원소를 Option으로 반환
-let rec find pred = fun xs -&gt;
-    match xs with
-    | [] -&gt; None
-    | h :: t -&gt; if pred h then Some h else find pred t
-
-let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
-
-$ langthree find_opt.l3
-4
-</code></pre>
-<h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
-<pre><code>$ cat find_res.l3
-// 조건을 만족하는 첫 번째 원소를 Result로 반환
-let rec find pred = fun xs -&gt;
-    match xs with
-    | [] -&gt; Error "not found"
-    | h :: t -&gt; if pred h then Ok h else find pred t
-
-let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
-
-$ langthree find_res.l3
-4
-</code></pre>
-<p>세 가지 모두 같은 결과를 반환합니다. 그러나 <strong>코드의 의미와 안전성</strong>에서 큰 차이가 있습니다.</p>
-<h2 id="왜-optionresult를-권장하는가"><a class="header" href="#왜-optionresult를-권장하는가">왜 Option/Result를 권장하는가</a></h2>
-<h3 id="1-타입-시스템이-실패를-표현한다"><a class="header" href="#1-타입-시스템이-실패를-표현한다">1. 타입 시스템이 실패를 표현한다</a></h3>
-<p>Exception은 타입 시그니처에 나타나지 않습니다:</p>
-<pre><code>// Exception: 타입만 보면 실패 가능성을 알 수 없음
-// findIdx : ('a -&gt; bool) -&gt; 'a list -&gt; int -&gt; int
-//                                            ^^^
-//   실패 시 예외를 던지지만, 타입에는 int만 보임!
-
-// Option: 타입이 실패 가능성을 명시
-// findIdx : ('a -&gt; bool) -&gt; 'a list -&gt; int -&gt; Option&lt;int&gt;
-//                                             ^^^^^^^^^^^
-//   None이 올 수 있다는 것을 호출자가 알 수 있음
-
-// Result: 타입이 실패 이유까지 명시
-// findIdx : ('a -&gt; bool) -&gt; 'a list -&gt; int -&gt; Result&lt;int, string&gt;
-//                                             ^^^^^^^^^^^^^^^^^^^^
-//   에러 메시지가 포함될 수 있음을 호출자가 알 수 있음
-</code></pre>
-<p>Option이나 Result를 사용하면, <strong>호출자가 반드시 실패 경우를 처리해야 합니다</strong>.
-패턴 매칭에서 <code>None</code>이나 <code>Error</code>를 처리하지 않으면 소진 경고가 나옵니다.</p>
-<p>Exception은 호출자가 <code>try-with</code>를 잊으면 프로그램이 크래시합니다.</p>
-<h3 id="2-합성composition이-자연스럽다"><a class="header" href="#2-합성composition이-자연스럽다">2. 합성(composition)이 자연스럽다</a></h3>
-<p>Exception은 합성이 어렵습니다. 여러 실패 가능한 연산을 순서대로 실행하려면
-중첩된 <code>try-with</code>가 필요합니다:</p>
-<pre><code>$ cat chain_exc.l3
-exception ParseError of string
-exception DivError of string
-
-let parseInt s = match s with | "42" -&gt; 42 | "0" -&gt; 0 | _ -&gt; raise (ParseError ("invalid: " + s))
-let safeDivide a = fun b -&gt; if b = 0 then raise (DivError "div/0") else a / b
-
-let compute input = try
-    let n = parseInt input
-    in try
-        safeDivide 100 n
-    with
-    | DivError msg -&gt; 0 - 1
-with
-| ParseError msg -&gt; 0 - 2
-
-let r1 = compute "42"
-let r2 = compute "0"
-let r3 = compute "abc"
-let result = (r1, r2, r3)
-
-$ langthree chain_exc.l3
-(2, -1, -2)
-</code></pre>
-<p>Result를 사용하면 <strong>파이프라인으로 합성</strong>할 수 있습니다:</p>
-<pre><code>$ cat chain_res.l3
-let parseInt s = match s with | "42" -&gt; Ok 42 | "0" -&gt; Ok 0 | _ -&gt; Error ("invalid: " + s)
-let safeDivide a = fun b -&gt; if b = 0 then Error "div/0" else Ok (a / b)
-
-let compute input = parseInt input |&gt; resultBind (safeDivide 100) |&gt; resultMap (fun x -&gt; x + 1)
-
-let r1 = compute "42"
-let r2 = compute "0"
-let r3 = compute "abc"
-let result = (r1, r2, r3)
-
-$ langthree chain_res.l3
-(Ok 3, Error "div/0", Error "invalid: abc")
-</code></pre>
-<p><code>resultBind</code>와 <code>resultMap</code>으로 에러가 자동 전파됩니다:</p>
+                        <h1 id="9장-prelude-표준-라이브러리-prelude-and-standard-library"><a class="header" href="#9장-prelude-표준-라이브러리-prelude-and-standard-library">9장: Prelude 표준 라이브러리 (Prelude and Standard Library)</a></h1>
+<p>LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은
+명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다.</p>
+<h2 id="prelude의-동작-방식"><a class="header" href="#prelude의-동작-방식">Prelude의 동작 방식</a></h2>
+<p>Prelude는 LangThree 바이너리와 같은 위치의 <code>Prelude/</code> 디렉토리에 있는 <code>.fun</code> 파일로
+구성됩니다. 시작 시 이 파일들은 알파벳순으로 정렬된 후, 각각 모듈로 파싱되고 타입 검사를
+거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.</p>
+<p>현재 Prelude에는 다음 파일들이 포함되어 있습니다:</p>
 <ul>
-<li><code>parseInt "abc"</code> → <code>Error "invalid: abc"</code> → <code>resultBind</code>가 <code>safeDivide</code>를 건너뛰고 에러 전파</li>
-<li>에러가 발생한 정확한 지점의 메시지가 보존됩니다</li>
+<li><code>Prelude/Core.fun</code> – 핵심 고차 함수 (<code>id</code>, <code>const</code>, <code>compose</code>)</li>
+<li><code>Prelude/List.fun</code> – 리스트 처리 함수 (<code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code>, <code>hd</code>, <code>tl</code>)</li>
+<li><code>Prelude/Option.fun</code> – Option 타입 정의</li>
 </ul>
-<h3 id="3-예외는-제어-흐름을-깨뜨린다"><a class="header" href="#3-예외는-제어-흐름을-깨뜨린다">3. 예외는 제어 흐름을 깨뜨린다</a></h3>
-<p>Exception은 <strong>비지역적(non-local) 제어 흐름</strong>입니다. <code>raise</code>는 현재 함수를
-즉시 벗어나 가장 가까운 <code>try-with</code>까지 스택을 풀어올립니다. 이로 인해:</p>
-<ul>
-<li>어디서 예외가 발생했는지 추적이 어렵습니다</li>
-<li>중간 정리(cleanup) 코드가 실행되지 않을 수 있습니다</li>
-<li>꼬리 호출 최적화(TCO)가 <code>try</code> 본문에서 동작하지 않습니다</li>
-</ul>
-<p>Option/Result는 <strong>일반적인 값</strong>입니다. 함수가 <code>None</code>이나 <code>Error</code>를 반환하면,
-호출자는 평범한 패턴 매칭으로 처리합니다. 제어 흐름이 예측 가능합니다.</p>
-<h3 id="4-tco와-함께-사용할-수-있다"><a class="header" href="#4-tco와-함께-사용할-수-있다">4. TCO와 함께 사용할 수 있다</a></h3>
-<p><code>try</code> 본문은 꼬리 위치가 아닙니다 (예외 핸들러가 스택 프레임을 필요로 하기 때문).
-따라서 <code>try</code> 안에서 깊은 재귀를 하면 스택 오버플로우가 발생할 수 있습니다.</p>
-<p>Option/Result를 사용하면 재귀 함수가 <code>try</code> 없이 동작하므로 TCO가 적용됩니다:</p>
-<pre><code>$ cat tco_result.l3
-let rec searchList pred = fun xs -&gt; fun i -&gt;
-    match xs with
-    | [] -&gt; Error "not found"
-    | h :: t -&gt; if pred h then Ok i else searchList pred t (i + 1)
-
-let result = searchList (fun x -&gt; x = 999999) [1..1000000] 0
-
-$ langthree tco_result.l3
-Ok 999998
+<p><strong>Prelude/Option.fun:</strong></p>
+<pre><code>type Option 'a = None | Some of 'a
 </code></pre>
-<p>100만 개의 리스트를 검색해도 스택 오버플로우 없이 동작합니다.</p>
-<h2 id="option-vs-result-언제-어떤-것을-쓰는가"><a class="header" href="#option-vs-result-언제-어떤-것을-쓰는가">Option vs Result: 언제 어떤 것을 쓰는가</a></h2>
-<h3 id="option--실패-이유가-중요하지-않을-때"><a class="header" href="#option--실패-이유가-중요하지-않을-때">Option — 실패 이유가 중요하지 않을 때</a></h3>
-<p>“값이 있거나 없거나“만 구분하면 될 때 <code>Option</code>을 사용합니다:</p>
-<pre><code>$ cat option_use.l3
-let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
-let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
+<p>이 파일은 <code>Option</code> 타입과 <code>None</code>, <code>Some</code> 생성자를 정의하며, <code>open</code> 지시어 없이
+어디서든 사용 가능합니다.</p>
+<h2 id="option-타입-사용하기"><a class="header" href="#option-타입-사용하기">Option 타입 사용하기</a></h2>
+<h3 id="option-값-생성"><a class="header" href="#option-값-생성">Option 값 생성</a></h3>
+<p><code>Some</code>과 <code>None</code> 생성자는 REPL과 파일 모드 모두에서 동작합니다:</p>
+<pre><code>funlang&gt; Some 42
+Some 42
 
-let result = Some [10, 20, 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
+funlang&gt; Some "hello"
+Some "hello"
 
-$ langthree option_use.l3
+funlang&gt; None
+None
+</code></pre>
+<p>추론된 타입을 확인합니다:</p>
+<pre><code>$ cat check_option.l3
+let x = Some 42
+
+$ langthree --emit-type check_option.l3
+x : Option&lt;int&gt;
+</code></pre>
+<h3 id="option에-대한-패턴-매칭"><a class="header" href="#option에-대한-패턴-매칭">Option에 대한 패턴 매칭</a></h3>
+<p>Prelude 타입에 대한 패턴 매칭은 파일 모드에서 동작합니다:</p>
+<pre><code>$ cat option_match.l3
+let x = Some 42
+let result =
+    match x with
+    | Some v -&gt; v
+    | None -&gt; 0
+
+$ langthree option_match.l3
+42
+</code></pre>
+<p>기본값으로 추출하기:</p>
+<pre><code>$ cat option_default.l3
+let getOrDefault default opt =
+    match opt with
+    | Some x -&gt; x
+    | None -&gt; default
+let result = getOrDefault 0 None
+
+$ langthree option_default.l3
+0
+</code></pre>
+<h3 id="일반적인-option-패턴"><a class="header" href="#일반적인-option-패턴">일반적인 Option 패턴</a></h3>
+<p><strong>Option에 대한 맵핑</strong> – <code>Some</code> 내부의 값에 함수를 적용합니다:</p>
+<pre><code>$ cat option_map.l3
+let optionMap f opt =
+    match opt with
+    | Some x -&gt; Some (f x)
+    | None -&gt; None
+let double x = x * 2
+let result =
+    match optionMap double (Some 5) with
+    | Some v -&gt; v
+    | None -&gt; 0
+
+$ langthree option_map.l3
 10
 </code></pre>
-<p>적합한 경우:</p>
-<ul>
-<li>리스트에서 원소 찾기 (<code>find</code>)</li>
-<li>맵에서 키 검색</li>
-<li>파싱이 성공하거나 실패하거나 (이유 불필요)</li>
-<li>null 대체 (nullable 값)</li>
-</ul>
-<p><code>&lt;|&gt;</code> 연산자를 사용하면 fallback 체인을 더 간결하게 작성할 수 있습니다:</p>
-<pre><code>$ cat fallback.l3
-let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
-let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
+<p><strong>바인딩 (flatMap)</strong> – 실패할 수 있는 연산을 체이닝합니다:</p>
+<pre><code>$ cat option_bind.l3
+let optionBind f opt =
+    match opt with
+    | Some x -&gt; f x
+    | None -&gt; None
+let safeDivide x =
+    if x = 0 then None else Some (100 / x)
+let result =
+    match optionBind safeDivide (Some 5) with
+    | Some v -&gt; v
+    | None -&gt; 0
 
-let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
+$ langthree option_bind.l3
+20
+</code></pre>
+<p><strong>파이프와 함께 Option 사용하기:</strong></p>
+<pre><code>$ cat option_pipe.l3
+let optionMap f opt =
+    match opt with
+    | Some x -&gt; Some (f x)
+    | None -&gt; None
+let double x = x * 2
+let result =
+    match (Some 5 |&gt; optionMap double) with
+    | Some v -&gt; v
+    | None -&gt; 0
+
+$ langthree option_pipe.l3
+10
+</code></pre>
+<h2 id="prelude-확장하기"><a class="header" href="#prelude-확장하기">Prelude 확장하기</a></h2>
+<p><code>Prelude/</code> 디렉토리에 새 <code>.fun</code> 파일을 생성하여 자신만의 타입을 Prelude에 추가할 수
+있습니다. 파일은 알파벳순으로 정렬되므로, 파일 이름이 로드 순서에 영향을 줍니다.</p>
+<p>예를 들어, <code>Prelude/Result.fun</code>을 생성하면:</p>
+<pre><code>type Result 'a 'b = Ok of 'a | Error of 'b
+</code></pre>
+<p>이 파일을 추가한 후, <code>Ok</code>과 <code>Error</code> 생성자가 모든 코드에서 사용 가능해집니다:</p>
+<pre><code>$ cat result_demo.l3
+let safeDivide x y =
+    if y = 0 then Error "division by zero"
+    else Ok (x / y)
+let result =
+    match safeDivide 10 3 with
+    | Ok v -&gt; v
+    | Error _ -&gt; 0
+
+$ langthree result_demo.l3
+3
+</code></pre>
+<p>Prelude 타입은 REPL과 파일 모드 모두에서 동작합니다. Prelude 파일의 생성자는
+<code>open</code> 없이 사용 가능합니다.</p>
+<h2 id="prelude-리스트-함수"><a class="header" href="#prelude-리스트-함수">Prelude 리스트 함수</a></h2>
+<p><code>Prelude/List.fun</code>은 리스트를 다루는 8개의 표준 함수를 제공합니다. 이 함수들은
+import 없이 REPL과 파일 모드 모두에서 바로 사용할 수 있는 실제 함수입니다.</p>
+<h3 id="리스트-변환-map-filter"><a class="header" href="#리스트-변환-map-filter">리스트 변환: map, filter</a></h3>
+<p><code>map</code>은 리스트의 각 요소에 함수를 적용합니다:</p>
+<pre><code>funlang&gt; map (fun x -&gt; x * 2) [1..5]
+[2, 4, 6, 8, 10]
+</code></pre>
+<p><code>filter</code>는 조건을 만족하는 요소만 남깁니다:</p>
+<pre><code>funlang&gt; filter (fun x -&gt; x &gt; 3) [1..6]
+[4, 5, 6]
+</code></pre>
+<h3 id="리스트-축약-fold"><a class="header" href="#리스트-축약-fold">리스트 축약: fold</a></h3>
+<p><code>fold</code>는 리스트를 하나의 값으로 축약합니다:</p>
+<pre><code>funlang&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..10]
+55
+</code></pre>
+<h3 id="리스트-정보-length-hd-tl"><a class="header" href="#리스트-정보-length-hd-tl">리스트 정보: length, hd, tl</a></h3>
+<pre><code>funlang&gt; length [1, 2, 3]
+3
+
+funlang&gt; hd [10, 20]
+10
+
+funlang&gt; tl [10, 20]
+[20]
+</code></pre>
+<h3 id="리스트-조작-reverse-append"><a class="header" href="#리스트-조작-reverse-append">리스트 조작: reverse, append</a></h3>
+<pre><code>funlang&gt; reverse [] [1, 2, 3]
+[3, 2, 1]
+
+funlang&gt; append [1, 2] [3, 4]
+[1, 2, 3, 4]
+</code></pre>
+<h2 id="prelude-핵심-함수"><a class="header" href="#prelude-핵심-함수">Prelude 핵심 함수</a></h2>
+<p><code>Prelude/Core.fun</code>은 범용 고차 함수 3개를 제공합니다. 마찬가지로 import 없이
+어디서든 사용할 수 있습니다.</p>
+<h3 id="id--항등-함수"><a class="header" href="#id--항등-함수">id – 항등 함수</a></h3>
+<p>입력값을 그대로 반환합니다:</p>
+<pre><code>funlang&gt; id 42
+42
+</code></pre>
+<h3 id="const--상수-함수"><a class="header" href="#const--상수-함수">const – 상수 함수</a></h3>
+<p>첫 번째 인자를 반환하고 두 번째 인자를 무시합니다:</p>
+<pre><code>funlang&gt; const 42 "ignored"
+42
+</code></pre>
+<h3 id="compose--함수-합성"><a class="header" href="#compose--함수-합성">compose – 함수 합성</a></h3>
+<p>두 함수를 합성합니다. <code>compose f g x</code>는 <code>f (g x)</code>와 같습니다:</p>
+<pre><code>funlang&gt; compose inc double 5
+11
+</code></pre>
+<h3 id="유틸리티-함수"><a class="header" href="#유틸리티-함수">유틸리티 함수</a></h3>
+<pre><code>funlang&gt; not true
+false
+
+funlang&gt; (min 3 5, max 3 5)
+(3, 5)
+
+funlang&gt; abs (0 - 42)
+42
+
+funlang&gt; (fst (1, 2), snd (1, 2))
+(1, 2)
+
+funlang&gt; ignore 42
+()
+</code></pre>
+<h2 id="파이프라인과-함께-사용하기"><a class="header" href="#파이프라인과-함께-사용하기">파이프라인과 함께 사용하기</a></h2>
+<p>Prelude 함수들은 파이프 연산자 <code>|&gt;</code>와 결합하면 강력한 데이터 처리 파이프라인을
+구성할 수 있습니다:</p>
+<pre><code>$ cat pipeline.l3
+let result =
+    [1..10]
+    |&gt; filter (fun x -&gt; x % 2 = 0)
+    |&gt; map (fun x -&gt; x * x)
+
+$ langthree pipeline.l3
+[4, 16, 36, 64, 100]
+</code></pre>
+<h2 id="prelude-연산자"><a class="header" href="#prelude-연산자">Prelude 연산자</a></h2>
+<p>Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다.</p>
+<h3 id="--리스트-연결"><a class="header" href="#--리스트-연결"><code>++</code> — 리스트 연결</a></h3>
+<p><code>append</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; [1, 2] ++ [3, 4, 5]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>(++)</code>를 함수로 사용할 수도 있습니다:</p>
+<pre><code>funlang&gt; fold (++) [] [[1, 2], [3], [4, 5]]
+[1, 2, 3, 4, 5]
+</code></pre>
+<p><code>++</code>는 INFIXOP2 (+ 와 같은 우선순위, 좌결합)입니다.</p>
+<h3 id="--option-대안"><a class="header" href="#--option-대안"><code>&lt;|&gt;</code> — Option 대안</a></h3>
+<p>첫 번째 <code>Some</code> 값을 반환하거나, 모두 <code>None</code>이면 <code>None</code>을 반환합니다:</p>
+<pre><code>funlang&gt; Some 1 &lt;|&gt; Some 2
+Some 1
+
+funlang&gt; None &lt;|&gt; Some 42
+Some 42
+
+funlang&gt; None &lt;|&gt; None
+None
+</code></pre>
+<p>연쇄하여 fallback 패턴을 구현할 수 있습니다:</p>
+<pre><code>$ cat fallback.l3
+let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
 $ langthree fallback.l3
-Some 5
+Some 42
 </code></pre>
-<p><code>&lt;|&gt;</code>는 첫 번째 <code>Some</code> 값을 반환하고, 모두 <code>None</code>이면 마지막 값을 반환합니다.</p>
-<h3 id="result--실패-이유가-중요할-때"><a class="header" href="#result--실패-이유가-중요할-때">Result — 실패 이유가 중요할 때</a></h3>
-<p>에러 메시지나 에러 코드를 보존해야 할 때 <code>Result</code>를 사용합니다:</p>
-<pre><code>$ cat result_use.l3
-let validateAge age = if age &lt; 0 then Error "age cannot be negative" else if age &gt; 150 then Error "age too large" else Ok age
-let validateName name = if string_length name = 0 then Error "name cannot be empty" else Ok name
-
-let validate name = fun age -&gt; validateName name |&gt; resultBind (fun _ -&gt; validateAge age |&gt; resultMap (fun a -&gt; name + " (" + to_string a + ")"))
-
-let r1 = validate "Alice" 30
-let r2 = validate "" 25
-let r3 = validate "Bob" (0 - 5)
-let result = (r1, r2, r3)
-
-$ langthree result_use.l3
-(Ok "Alice (30)", Error "name cannot be empty", Error "age cannot be negative")
+<p><code>&lt;|&gt;</code>는 INFIXOP0 (비교 연산자 수준, 좌결합)입니다.</p>
+<h3 id="--문자열-연결"><a class="header" href="#--문자열-연결"><code>^^</code> — 문자열 연결</a></h3>
+<p><code>string_concat</code>의 중위 연산자 버전입니다:</p>
+<pre><code>funlang&gt; "hello" ^^ " " ^^ "world"
+"hello world"
 </code></pre>
-<p>적합한 경우:</p>
-<ul>
-<li>사용자 입력 검증</li>
-<li>파일/네트워크 작업 (에러 메시지 필요)</li>
-<li>여러 단계의 처리 파이프라인</li>
-<li>API 응답 (에러 코드 + 메시지)</li>
-</ul>
-<h3 id="exception--정말-예외적인-상황에만"><a class="header" href="#exception--정말-예외적인-상황에만">Exception — 정말 예외적인 상황에만</a></h3>
-<p>Exception은 <strong>프로그래밍 오류나 복구 불가능한 상황</strong>에 사용합니다:</p>
-<pre><code>$ cat exception_use.l3
-exception InternalError of string
+<p><code>+</code> 연산자는 정수 덧셈이므로, 문자열 연결에는 <code>^^</code>를 사용합니다:</p>
+<pre><code>$ cat string_build.l3
+let formatPair key = fun value -&gt; key ^^ "=" ^^ value
+let result = formatPair "name" "Alice"
 
-let rec processAll xs = match xs with | [] -&gt; 0 | h :: t -&gt; if h &lt; 0 then raise (InternalError "unexpected negative value") else h + processAll t
-
-let result = processAll [1, 2, 3, 4, 5]
-
-$ langthree exception_use.l3
-15
+$ langthree string_build.l3
+"name=Alice"
 </code></pre>
-<p>적합한 경우:</p>
-<ul>
-<li>프로그래밍 오류 (불변 조건 위반)</li>
-<li>복구 불가능한 시스템 오류</li>
-<li>방어적 프로그래밍 (도달할 수 없는 코드에 대한 안전장치)</li>
-</ul>
-<h2 id="prelude-함수-요약"><a class="header" href="#prelude-함수-요약">Prelude 함수 요약</a></h2>
-<pre><code>-- Option 함수
-optionMap    : ('a -&gt; 'b) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
-optionBind   : ('a -&gt; Option&lt;'b&gt;) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
-optionDefault: 'a -&gt; Option&lt;'a&gt; -&gt; 'a
-isSome       : Option&lt;'a&gt; -&gt; bool
-isNone       : Option&lt;'a&gt; -&gt; bool
-
--- Result 함수
-resultMap     : ('a -&gt; 'b) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
-resultBind    : ('a -&gt; Result&lt;'b, 'e&gt;) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
-resultMapError: ('e -&gt; 'f) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'a, 'f&gt;
-resultDefault : 'a -&gt; Result&lt;'a, 'e&gt; -&gt; 'a
-isOk          : Result&lt;'a, 'e&gt; -&gt; bool
-isError       : Result&lt;'a, 'e&gt; -&gt; bool
-</code></pre>
-<h2 id="권장-가이드라인"><a class="header" href="#권장-가이드라인">권장 가이드라인</a></h2>
+<p><code>^^</code>는 INFIXOP1 (@ 와 같은 우선순위, 우결합)입니다.</p>
+<h2 id="런타임-내장-함수"><a class="header" href="#런타임-내장-함수">런타임 내장 함수</a></h2>
+<p>Prelude 함수와는 별도로, LangThree에는 내장 환경(<code>initialBuiltinEnv</code>)에서
+제공되는 런타임 내장 함수가 있습니다:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>상황</th><th>권장 방식</th><th>이유</th></tr>
+<tr><th>함수</th><th>타입</th><th>설명</th></tr>
 </thead>
 <tbody>
-<tr><td>값이 있을 수도 없을 수도 있는 경우</td><td><strong>Option</strong></td><td>간단, 가벼움</td></tr>
-<tr><td>실패 이유를 알아야 하는 경우</td><td><strong>Result</strong></td><td>에러 메시지 보존</td></tr>
-<tr><td>여러 연산을 순서대로 합성</td><td><strong>Result + <code>|&gt;</code></strong></td><td>파이프라인 합성</td></tr>
-<tr><td>프로그래밍 오류/불변 조건 위반</td><td><strong>Exception</strong></td><td>즉시 중단, 디버깅</td></tr>
-<tr><td>깊은 재귀 내부 에러 처리</td><td><strong>Option/Result</strong></td><td>TCO 호환</td></tr>
-<tr><td>최상위 레벨 에러 복구</td><td><strong>Exception + try-with</strong></td><td>프로그램 크래시 방지</td></tr>
+<tr><td><code>string_length</code></td><td><code>string -&gt; int</code></td><td>문자열의 길이</td></tr>
+<tr><td><code>string_concat</code></td><td><code>string -&gt; string -&gt; string</code></td><td>두 문자열을 연결</td></tr>
+<tr><td><code>string_sub</code></td><td><code>string -&gt; int -&gt; int -&gt; string</code></td><td>부분 문자열 (시작, 길이)</td></tr>
+<tr><td><code>string_contains</code></td><td><code>string -&gt; string -&gt; bool</code></td><td>부분 문자열 포함 여부</td></tr>
+<tr><td><code>to_string</code></td><td><code>'a -&gt; string</code></td><td>모든 타입을 문자열로 변환 (문자열은 그대로)</td></tr>
+<tr><td><code>string_to_int</code></td><td><code>string -&gt; int</code></td><td>문자열을 정수로 파싱</td></tr>
+<tr><td><code>print</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 없이 출력</td></tr>
+<tr><td><code>println</code></td><td><code>string -&gt; unit</code></td><td>줄바꿈 포함 출력</td></tr>
+<tr><td><code>printf</code></td><td><code>string -&gt; ...</code></td><td>형식화 출력</td></tr>
+<tr><td><code>sprintf</code></td><td><code>string -&gt; ...</code></td><td>형식화 문자열 반환</td></tr>
+<tr><td><code>printfn</code></td><td><code>string -&gt; ...</code></td><td>형식화 출력 + 줄바꿈</td></tr>
 </tbody>
 </table>
 </div>
-<p><strong>일반 원칙:</strong></p>
+<p>이들은 REPL과 파일 모드 모두에서 동작합니다:</p>
+<pre><code>funlang&gt; string_length "hello"
+5
+
+funlang&gt; to_string 42
+"42"
+
+funlang&gt; to_string (Some [1, 2, 3])
+"Some [1, 2, 3]"
+</code></pre>
+<p><code>to_string</code>은 모든 타입을 지원합니다 — ADT, 리스트, 튜플, 레코드 등.
+문자열은 따옴표 없이 그대로 반환됩니다 (F# <code>string</code> 함수와 동일).</p>
+<p>자세한 내용은 <a href="07-strings-and-output.html">7장: 문자열과 출력</a>을 참조하세요.</p>
+<h2 id="prelude-vs-내장-함수-요약"><a class="header" href="#prelude-vs-내장-함수-요약">Prelude vs 내장 함수 요약</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>분류</th><th>출처</th><th>예제</th></tr>
+</thead>
+<tbody>
+<tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code>, <code>not</code>, <code>min</code>, <code>max</code>, <code>abs</code>, <code>fst</code>, <code>snd</code>, <code>ignore</code> 등</td></tr>
+<tr><td>Prelude 연산자</td><td><code>Prelude/*.fun</code> 파일</td><td><code>++</code> (리스트 연결), <code>&lt;|&gt;</code> (Option 대안), <code>^^</code> (문자열 연결)</td></tr>
+<tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code>, <code>sprintf</code>, <code>printfn</code> 등</td></tr>
+<tr><td>산술 연산자</td><td>내장</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (모듈로)</td></tr>
+</tbody>
+</table>
+</div>
+<p>두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.</p>
+<h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <ul>
-<li><strong>기본값은 Option 또는 Result</strong>를 사용하세요</li>
-<li><strong>Exception은 마지막 수단</strong>으로만 사용하세요</li>
-<li>타입이 실패 가능성을 말해주게 하세요 — 호출자가 놓치지 않도록</li>
+<li><strong>Prelude 파일</strong>은 <code>Prelude/</code> 디렉토리에서 알파벳순으로 로드되는 <code>.fun</code> 파일입니다</li>
+<li><strong>Prelude 생성자</strong> (<code>None</code>, <code>Some</code>)와 <strong>Prelude 함수</strong> (<code>map</code>, <code>filter</code> 등)는 <code>open</code> 없이 사용 가능합니다</li>
+<li><strong>Prelude 함수</strong>는 모두 실제 런타임 함수로, 호출하면 정상적으로 결과를 반환합니다</li>
+<li><strong>런타임 내장 함수</strong> (<code>print</code>, <code>string_length</code> 등)는 어디서든 동작합니다</li>
+<li><strong>패턴 매칭</strong>은 파일 모드에서 Prelude 타입에 대해 동작합니다</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="14-algorithms.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="08-pipes-and-composition.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="16-user-defined-operators.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="10-modules.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -445,11 +506,11 @@ isError       : Result&lt;'a, 'e&gt; -&gt; bool
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="14-algorithms.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="08-pipes-and-composition.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="16-user-defined-operators.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="10-modules.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

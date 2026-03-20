@@ -1,4 +1,4 @@
-# 15장: 에러 처리 전략 (Error Handling Strategies)
+# 12장: 에러 처리 전략 (Error Handling Strategies)
 
 LangThree는 에러를 처리하는 세 가지 방법을 제공합니다:
 **Exception**, **Option**, **Result**. 이 장에서는 세 가지를 비교하고,

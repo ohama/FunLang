@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Modules and Namespaces - LangThree Tutorial</title>
+        <title>문자열과 출력 - LangThree Tutorial</title>
 
 
         <!-- Custom HTML head -->
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c76bd3b5.js";
+            window.path_to_searchindex_js = "searchindex-5d617152.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-af8dc7fd.js"></script>
+        <script src="toc-f1b237e8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -174,151 +174,223 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="제8장-모듈과-네임스페이스-modules-and-namespaces"><a class="header" href="#제8장-모듈과-네임스페이스-modules-and-namespaces">제8장: 모듈과 네임스페이스 (Modules and Namespaces)</a></h1>
-<h2 id="모듈-선언"><a class="header" href="#모듈-선언">모듈 선언</a></h2>
-<p><code>module M =</code> 뒤에 들여쓰기된 본문으로 모듈을 정의합니다:</p>
-<pre><code>$ cat config.l3
-module Config =
-    let width = 800
-    let height = 600
-    let title = "My App"
-let result = Config.title + " (" + to_string Config.width + "x" + to_string Config.height + ")"
+                        <h1 id="7장-문자열과-출력-strings-and-output"><a class="header" href="#7장-문자열과-출력-strings-and-output">7장: 문자열과 출력 (Strings and Output)</a></h1>
+<h2 id="문자열-리터럴"><a class="header" href="#문자열-리터럴">문자열 리터럴</a></h2>
+<p>문자열 리터럴은 큰따옴표와 표준 이스케이프 시퀀스를 사용합니다:</p>
+<pre><code>funlang&gt; "hello world"
+"hello world"
 
-$ langthree config.l3
-"My App (800x600)"
+funlang&gt; "tab\there"
+"tab	here"
 </code></pre>
-<p>들여쓰기가 모듈 본문의 범위를 결정합니다 – <code>end</code> 키워드가 필요하지 않습니다.</p>
-<h2 id="한정된-접근"><a class="header" href="#한정된-접근">한정된 접근</a></h2>
-<p>점 표기법(dot notation)으로 모듈 멤버에 접근합니다:</p>
-<pre><code>$ cat qualified.l3
-module Math =
-    let double x = x * 2
-    let triple x = x * 3
-let result = Math.double 5 + Math.triple 3
-
-$ langthree qualified.l3
-19
+<h2 id="문자열-연결"><a class="header" href="#문자열-연결">문자열 연결</a></h2>
+<p><code>+</code> 연산자로 문자열을 연결합니다:</p>
+<pre><code>funlang&gt; "hello" + " " + "world"
+"hello world"
 </code></pre>
-<h2 id="open-지시문"><a class="header" href="#open-지시문">open 지시문</a></h2>
-<p><code>open</code>으로 모듈의 모든 멤버를 현재 스코프에 가져옵니다:</p>
-<pre><code>$ cat open_mod.l3
-module M =
-    let x = 10
-    let y = 20
-open M
-let result = x + y
+<h2 id="내장-문자열-함수"><a class="header" href="#내장-문자열-함수">내장 문자열 함수</a></h2>
+<h3 id="string_length"><a class="header" href="#string_length">string_length</a></h3>
+<p>문자 수를 반환합니다:</p>
+<pre><code>funlang&gt; string_length "hello"
+5
 
-$ langthree open_mod.l3
-30
+funlang&gt; string_length ""
+0
 </code></pre>
-<p><code>open M</code> 이후에는 <code>M.</code> 접두사 없이 <code>x</code>와 <code>y</code>를 직접 사용할 수 있습니다.</p>
-<h2 id="중첩-모듈"><a class="header" href="#중첩-모듈">중첩 모듈</a></h2>
-<p>모듈은 중첩될 수 있습니다. 각 수준은 더 깊은 들여쓰기를 사용합니다:</p>
-<pre><code>$ cat nested.l3
-module Outer =
-    module Inner =
-        let value = 42
-let result = Outer.Inner.value
-
-$ langthree nested.l3
-42
+<h3 id="string_concat"><a class="header" href="#string_concat">string_concat</a></h3>
+<p>커링된 연결 함수 – 두 개의 문자열을 받습니다:</p>
+<pre><code>funlang&gt; string_concat "hello" " world"
+"hello world"
 </code></pre>
-<p>연쇄된 한정 접근은 어떤 깊이에서든 동작합니다.</p>
-<h2 id="여러-모듈"><a class="header" href="#여러-모듈">여러 모듈</a></h2>
-<p>하나의 파일에 여러 모듈 선언을 포함할 수 있습니다. 모듈은
-위에서 아래로 해석됩니다 – 나중의 모듈이 이전 모듈을 참조할 수 있습니다:</p>
-<pre><code>$ cat multi_mod.l3
-module A =
-    let x = 10
-module B =
-    let y = 20
-let result = A.x + B.y
+<p>커링되어 있으므로 부분 적용이 가능합니다:</p>
+<pre><code>$ cat prefix.l3
+let add_prefix = string_concat "prefix:"
+let result = add_prefix "value"
 
-$ langthree multi_mod.l3
-30
+$ langthree prefix.l3
+"prefix:value"
 </code></pre>
-<h2 id="타입-선언을-포함하는-모듈"><a class="header" href="#타입-선언을-포함하는-모듈">타입 선언을 포함하는 모듈</a></h2>
-<p>모듈은 ADT 정의를 포함할 수 있습니다. 생성자를 스코프에 가져오려면
-<code>open</code>을 사용하거나, 인자 없는(nullary) 생성자에 대해 한정된 접근을 사용합니다:</p>
-<pre><code>$ cat mod_type.l3
-module Colors =
-    type Color = Red | Green | Blue
-open Colors
-let result =
-    match Green with
-    | Red -&gt; "red"
-    | Green -&gt; "green"
-    | Blue -&gt; "blue"
-
-$ langthree mod_type.l3
-"green"
+<h3 id="string_sub"><a class="header" href="#string_sub">string_sub</a></h3>
+<p>시작 인덱스와 길이로 부분 문자열을 추출합니다:</p>
+<pre><code>funlang&gt; string_sub "hello" 1 3
+"ell"
 </code></pre>
-<p>한정된 생성자 접근은 인자 없는 생성자와 데이터를 가진 생성자 모두에서 동작합니다:</p>
-<pre><code>$ cat mod_ctor.l3
-module M =
-    type Opt = MNone | MSome of int
-let result = M.MSome 42
+<p><code>string_sub s start len</code>은 인덱스 <code>start</code>부터 <code>len</code>개의 문자를 반환합니다.
+인덱스는 0부터 시작합니다.</p>
+<h3 id="string_contains"><a class="header" href="#string_contains">string_contains</a></h3>
+<p>문자열이 부분 문자열을 포함하는지 확인합니다:</p>
+<pre><code>funlang&gt; string_contains "hello world" "world"
+true
 
-$ langthree mod_ctor.l3
-MSome 42
+funlang&gt; string_contains "hello" "xyz"
+false
 </code></pre>
-<h2 id="패턴-매칭을-사용하는-모듈-함수"><a class="header" href="#패턴-매칭을-사용하는-모듈-함수">패턴 매칭을 사용하는 모듈 함수</a></h2>
-<p>모듈 함수와 ADT를 결합할 수 있습니다:</p>
-<pre><code>$ cat mod_fn.l3
-module M =
-    type Opt = MNone | MSome of int
-    let unwrap x =
-        match x with
-        | MSome v -&gt; v
-        | MNone -&gt; 0
-let result = M.unwrap (M.MSome 42)
+<h3 id="to_string"><a class="header" href="#to_string">to_string</a></h3>
+<p>모든 타입의 값을 문자열 표현으로 변환합니다:</p>
+<pre><code>funlang&gt; to_string 42
+"42"
 
-$ langthree mod_fn.l3
-42
+funlang&gt; to_string true
+"true"
+
+funlang&gt; to_string "already a string"
+"already a string"
 </code></pre>
-<h2 id="네임스페이스-선언"><a class="header" href="#네임스페이스-선언">네임스페이스 선언</a></h2>
-<p><code>namespace</code> 선언은 파일의 전체 내용을 감쌉니다:</p>
-<pre><code>$ cat ns.l3
-namespace App
-let x = 42
-let result = x + 1
+<p>ADT, 리스트, 튜플, 레코드 등 모든 복합 타입도 지원합니다:</p>
+<pre><code>funlang&gt; to_string (Some 42)
+"Some 42"
 
-$ langthree ns.l3
-43
+funlang&gt; to_string [1, 2, 3]
+"[1, 2, 3]"
+
+funlang&gt; to_string (1, true)
+"(1, true)"
 </code></pre>
-<p><code>module</code>과 달리 namespace는 중첩된 스코프를 생성하지 않습니다 – 선언은
-최상위 수준에 위치합니다.</p>
-<h2 id="실용-예제-계층화된-설정"><a class="header" href="#실용-예제-계층화된-설정">실용 예제: 계층화된 설정</a></h2>
-<p>관련된 값을 정리하는 여러 모듈:</p>
-<pre><code>$ cat layers.l3
-module DB =
-    let host = "localhost"
-    let port = 5432
-module App =
-    let name = "MyService"
-    let version = 1
-let result = App.name + " v" + to_string App.version + " -&gt; " + DB.host + ":" + to_string DB.port
+<p><strong>참고:</strong> 문자열은 그대로 반환됩니다 (따옴표 없음, F# <code>string</code> 함수와 동일).
+복합 타입 내부의 문자열에는 따옴표가 포함됩니다: <code>to_string (Some "hi")</code> → <code>Some "hi"</code>.</p>
+<h3 id="string_to_int"><a class="header" href="#string_to_int">string_to_int</a></h3>
+<p>문자열을 정수로 파싱합니다:</p>
+<pre><code>funlang&gt; string_to_int "123"
+123
+</code></pre>
+<h2 id="출력-함수"><a class="header" href="#출력-함수">출력 함수</a></h2>
+<h3 id="print"><a class="header" href="#print">print</a></h3>
+<p>줄바꿈 없이 문자열을 출력하고, unit을 반환합니다:</p>
+<pre><code>funlang&gt; print "hello"
+hello()
+</code></pre>
+<p>대화형 세션에서는 부수 효과 텍스트가 <code>()</code> 결과 바로 앞에 나타납니다.</p>
+<h3 id="println"><a class="header" href="#println">println</a></h3>
+<p>줄바꿈을 포함하여 문자열을 출력하고, unit을 반환합니다:</p>
+<pre><code>funlang&gt; println "hello"
+hello
+()
+</code></pre>
+<h3 id="printf"><a class="header" href="#printf">printf</a></h3>
+<p>지정자를 사용한 형식화 출력:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>지정자</th><th>타입</th><th>예제</th></tr>
+</thead>
+<tbody>
+<tr><td><code>%d</code></td><td>int</td><td><code>printf "%d" 42</code></td></tr>
+<tr><td><code>%s</code></td><td>string</td><td><code>printf "%s" "hi"</code></td></tr>
+<tr><td><code>%b</code></td><td>bool</td><td><code>printf "%b" true</code></td></tr>
+<tr><td><code>%%</code></td><td>리터럴 <code>%</code></td><td><code>printf "100%%"</code></td></tr>
+</tbody>
+</table>
+</div>
+<p><code>printf</code>는 커링되어 있으며, 각 지정자가 하나의 인자를 소비합니다:</p>
+<pre><code>$ cat printf_demo.l3
+let _ = printf "%s is %d years old\n" "Alice" 30
+let result = 0
 
-$ langthree layers.l3
-"MyService v1 -&gt; localhost:5432"
+$ langthree printf_demo.l3
+Alice is 30 years old
+0
+</code></pre>
+<p>복수 지정자:</p>
+<pre><code>$ cat printf_multi.l3
+let _ = printf "name=%s, active=%b\n" "Bob" true
+let result = 0
+
+$ langthree printf_multi.l3
+name=Bob, active=true
+0
+</code></pre>
+<h3 id="printfn"><a class="header" href="#printfn">printfn</a></h3>
+<p><code>printf</code>와 동일하지만 자동으로 줄바꿈을 추가합니다:</p>
+<pre><code>$ cat printfn_demo.l3
+let _ = printfn "name=%s, age=%d" "Alice" 30
+let result = 0
+
+$ langthree printfn_demo.l3
+name=Alice, age=30
+0
+</code></pre>
+<p><code>printf "...\n"</code>을 쓸 필요 없이 <code>printfn "..."</code>을 사용하세요.</p>
+<h3 id="sprintf"><a class="header" href="#sprintf">sprintf</a></h3>
+<p>형식화된 문자열을 <strong>반환</strong>합니다 (출력하지 않음):</p>
+<pre><code>funlang&gt; sprintf "%d + %d = %d" 1 2 3
+"1 + 2 = 3"
+
+funlang&gt; sprintf "name=%s" "Alice"
+"name=Alice"
+</code></pre>
+<p><code>^^</code>와 <code>to_string</code> 대신 <code>sprintf</code>를 사용하면 더 간결합니다:</p>
+<pre><code>$ cat sprintf_vs.l3
+// 이전: 수동 연결
+let old = "result=" ^^ to_string 42
+
+// 이후: sprintf
+let new_ = sprintf "result=%d" 42
+
+let result = (old, new_)
+
+$ langthree sprintf_vs.l3
+("result=42", "result=42")
+</code></pre>
+<h2 id="부수-효과-순서-지정"><a class="header" href="#부수-효과-순서-지정">부수 효과 순서 지정</a></h2>
+<p>unit을 반환하는 연산을 순서대로 실행하려면 <code>let _ =</code>를 사용합니다:</p>
+<pre><code>$ cat sequence.l3
+let _ = println "first"
+let _ = println "second"
+let _ = println "third"
+let result = "done"
+
+$ langthree sequence.l3
+first
+second
+third
+"done"
+</code></pre>
+<p>각 <code>let _ =</code>는 unit 결과를 바인딩하고 버림으로써, 부수 효과가 순서대로
+실행되도록 보장합니다.</p>
+<h2 id="문자열-함수와-파이프"><a class="header" href="#문자열-함수와-파이프">문자열 함수와 파이프</a></h2>
+<p>문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:</p>
+<pre><code>funlang&gt; "hello" |&gt; string_length
+5
+</code></pre>
+<p>문자열 변환으로 파이프라인을 구성합니다:</p>
+<pre><code>$ cat string_pipe.l3
+let result = 42 |&gt; to_string |&gt; string_concat "answer: "
+
+$ langthree string_pipe.l3
+"answer: 42"
+</code></pre>
+<h2 id="실용-예제-형식화된-보고서"><a class="header" href="#실용-예제-형식화된-보고서">실용 예제: 형식화된 보고서</a></h2>
+<p>구조화된 출력을 위한 문자열 연산 조합:</p>
+<pre><code>$ cat report.l3
+let format_line label value =
+    label + ": " + to_string value
+let _ = println (format_line "width" 800)
+let _ = println (format_line "height" 600)
+let result = "report complete"
+
+$ langthree report.l3
+width: 800
+height: 600
+"report complete"
 </code></pre>
 <h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <ul>
-<li><strong>들여쓰기 기반:</strong> 모듈 본문은 들여쓰기로 구분되며, <code>end</code>나 <code>}</code>가 아님</li>
-<li><strong>위에서 아래 순서:</strong> 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)</li>
-<li><strong><code>module M =</code></strong> 은 중첩 모듈에 <code>=</code>을 사용; 최상위 <code>namespace</code>는 <code>=</code>이 없음</li>
-<li><strong>한정된 접근</strong>은 값, 함수, 생성자에 대해 동작함</li>
+<li><strong><code>string_sub</code>는 시작+길이를 사용합니다</strong> (시작+끝이 아님): <code>string_sub "hello" 1 3</code> = <code>"ell"</code></li>
+<li><strong><code>string_concat</code>는 커링되어 있습니다:</strong> <code>string_concat "prefix"</code>는 함수를 반환합니다</li>
+<li>**<code>to_string</code>**은 모든 타입을 받습니다 — 문자열은 그대로, 복합 타입은 구조적 표현</li>
+<li>**<code>printf</code>**는 커링되어 있습니다: 각 <code>%</code> 지정자가 하나의 추가 인자를 소비합니다</li>
+<li><strong>순서 지정:</strong> 모듈 수준에서 부수 효과를 체이닝하려면 <code>let _ =</code>를 사용하세요</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="07-gadt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="06-records.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="09-exceptions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="08-pipes-and-composition.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -328,11 +400,11 @@ $ langthree layers.l3
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="07-gadt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="06-records.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="09-exceptions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="08-pipes-and-composition.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

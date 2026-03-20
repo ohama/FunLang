@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Exceptions - LangThree Tutorial</title>
+        <title>모듈과 네임스페이스 - LangThree Tutorial</title>
 
 
         <!-- Custom HTML head -->
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c76bd3b5.js";
+            window.path_to_searchindex_js = "searchindex-5d617152.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-af8dc7fd.js"></script>
+        <script src="toc-f1b237e8.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -174,166 +174,151 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="제9장-예외-exceptions"><a class="header" href="#제9장-예외-exceptions">제9장: 예외 (Exceptions)</a></h1>
-<h2 id="예외-선언"><a class="header" href="#예외-선언">예외 선언</a></h2>
-<p><code>exception</code>으로 예외 타입을 선언합니다:</p>
-<pre><code>$ cat exc_basic.l3
-exception NotFound
-let result = try
-    raise NotFound
-with
-| NotFound -&gt; 42
-| _ -&gt; 0
+                        <h1 id="10장-모듈과-네임스페이스-modules-and-namespaces"><a class="header" href="#10장-모듈과-네임스페이스-modules-and-namespaces">10장: 모듈과 네임스페이스 (Modules and Namespaces)</a></h1>
+<h2 id="모듈-선언"><a class="header" href="#모듈-선언">모듈 선언</a></h2>
+<p><code>module M =</code> 뒤에 들여쓰기된 본문으로 모듈을 정의합니다:</p>
+<pre><code>$ cat config.l3
+module Config =
+    let width = 800
+    let height = 600
+    let title = "My App"
+let result = Config.title + " (" + to_string Config.width + "x" + to_string Config.height + ")"
 
-$ langthree exc_basic.l3
+$ langthree config.l3
+"My App (800x600)"
+</code></pre>
+<p>들여쓰기가 모듈 본문의 범위를 결정합니다 – <code>end</code> 키워드가 필요하지 않습니다.</p>
+<h2 id="한정된-접근"><a class="header" href="#한정된-접근">한정된 접근</a></h2>
+<p>점 표기법(dot notation)으로 모듈 멤버에 접근합니다:</p>
+<pre><code>$ cat qualified.l3
+module Math =
+    let double x = x * 2
+    let triple x = x * 3
+let result = Math.double 5 + Math.triple 3
+
+$ langthree qualified.l3
+19
+</code></pre>
+<h2 id="open-지시문"><a class="header" href="#open-지시문">open 지시문</a></h2>
+<p><code>open</code>으로 모듈의 모든 멤버를 현재 스코프에 가져옵니다:</p>
+<pre><code>$ cat open_mod.l3
+module M =
+    let x = 10
+    let y = 20
+open M
+let result = x + y
+
+$ langthree open_mod.l3
+30
+</code></pre>
+<p><code>open M</code> 이후에는 <code>M.</code> 접두사 없이 <code>x</code>와 <code>y</code>를 직접 사용할 수 있습니다.</p>
+<h2 id="중첩-모듈"><a class="header" href="#중첩-모듈">중첩 모듈</a></h2>
+<p>모듈은 중첩될 수 있습니다. 각 수준은 더 깊은 들여쓰기를 사용합니다:</p>
+<pre><code>$ cat nested.l3
+module Outer =
+    module Inner =
+        let value = 42
+let result = Outer.Inner.value
+
+$ langthree nested.l3
 42
 </code></pre>
-<h2 id="데이터를-가진-예외"><a class="header" href="#데이터를-가진-예외">데이터를 가진 예외</a></h2>
-<p>생성자는 <code>of</code>를 사용하여 값을 포함할 수 있습니다:</p>
-<pre><code>$ cat exc_data.l3
-exception InvalidArg of string
-let result = try
-    raise (InvalidArg "bad input")
-with
-| InvalidArg msg -&gt; "error: " + msg
-| _ -&gt; "unknown"
+<p>연쇄된 한정 접근은 어떤 깊이에서든 동작합니다.</p>
+<h2 id="여러-모듈"><a class="header" href="#여러-모듈">여러 모듈</a></h2>
+<p>하나의 파일에 여러 모듈 선언을 포함할 수 있습니다. 모듈은
+위에서 아래로 해석됩니다 – 나중의 모듈이 이전 모듈을 참조할 수 있습니다:</p>
+<pre><code>$ cat multi_mod.l3
+module A =
+    let x = 10
+module B =
+    let y = 20
+let result = A.x + B.y
 
-$ langthree exc_data.l3
-"error: bad input"
+$ langthree multi_mod.l3
+30
 </code></pre>
-<p>참고: <code>raise</code>는 원자(atom)를 받으므로, 생성자 적용에는 괄호가 필요합니다:
-<code>raise (InvalidArg "bad input")</code>, <code>raise InvalidArg "bad input"</code>이 아닙니다.</p>
-<h2 id="여러-핸들러"><a class="header" href="#여러-핸들러">여러 핸들러</a></h2>
-<p>동일한 <code>try-with</code>에서 여러 예외 타입을 매치할 수 있습니다:</p>
-<pre><code>$ cat exc_multi.l3
-exception NotFound
-exception Timeout of int
-let result = try
-    raise (Timeout 30)
-with
-| NotFound -&gt; "not found"
-| Timeout secs -&gt; "timeout after " + to_string secs + "s"
-| _ -&gt; "unknown"
+<h2 id="타입-선언을-포함하는-모듈"><a class="header" href="#타입-선언을-포함하는-모듈">타입 선언을 포함하는 모듈</a></h2>
+<p>모듈은 ADT 정의를 포함할 수 있습니다. 생성자를 스코프에 가져오려면
+<code>open</code>을 사용하거나, 인자 없는(nullary) 생성자에 대해 한정된 접근을 사용합니다:</p>
+<pre><code>$ cat mod_type.l3
+module Colors =
+    type Color = Red | Green | Blue
+open Colors
+let result =
+    match Green with
+    | Red -&gt; "red"
+    | Green -&gt; "green"
+    | Blue -&gt; "blue"
 
-$ langthree exc_multi.l3
-"timeout after 30s"
+$ langthree mod_type.l3
+"green"
 </code></pre>
-<h2 id="when-가드"><a class="header" href="#when-가드">when 가드</a></h2>
-<p><code>when</code>으로 예외 핸들러에 조건을 추가할 수 있습니다:</p>
-<pre><code>$ cat exc_guard.l3
-exception Error of int
-let result = try
-    raise (Error 42)
-with
-| Error x when x &gt; 100 -&gt; "big error"
-| Error x -&gt; "error: " + to_string x
-| _ -&gt; "unknown"
+<p>한정된 생성자 접근은 인자 없는 생성자와 데이터를 가진 생성자 모두에서 동작합니다:</p>
+<pre><code>$ cat mod_ctor.l3
+module M =
+    type Opt = MNone | MSome of int
+let result = M.MSome 42
 
-$ langthree exc_guard.l3
-"error: 42"
+$ langthree mod_ctor.l3
+MSome 42
 </code></pre>
-<p>가드는 패턴이 매치된 후에 평가됩니다. 가드가 실패하면
-다음 핸들러로 매칭이 계속됩니다.</p>
-<h2 id="중첩된-try-with"><a class="header" href="#중첩된-try-with">중첩된 try-with</a></h2>
-<p>처리되지 않은 예외는 외부 핸들러로 전파됩니다:</p>
-<pre><code>$ cat exc_nested.l3
-exception Inner
-exception Outer
-let result = try
-    try
-        raise Inner
-    with
-    | Outer -&gt; "wrong"
-    | _ -&gt; "inner caught"
-with
-| Inner -&gt; "outer caught"
-| _ -&gt; "fallback"
+<h2 id="패턴-매칭을-사용하는-모듈-함수"><a class="header" href="#패턴-매칭을-사용하는-모듈-함수">패턴 매칭을 사용하는 모듈 함수</a></h2>
+<p>모듈 함수와 ADT를 결합할 수 있습니다:</p>
+<pre><code>$ cat mod_fn.l3
+module M =
+    type Opt = MNone | MSome of int
+    let unwrap x =
+        match x with
+        | MSome v -&gt; v
+        | MNone -&gt; 0
+let result = M.unwrap (M.MSome 42)
 
-$ langthree exc_nested.l3
-"inner caught"
-</code></pre>
-<p>내부 핸들러가 매치되지 않으면 예외가 외부로 전파됩니다.
-내부의 <code>raise</code>를 <code>raise Outer</code>로 변경하면 내부 핸들러의
-catch-all이 대신 매치됩니다.</p>
-<h2 id="예외-재발생"><a class="header" href="#예외-재발생">예외 재발생</a></h2>
-<p>어떤 핸들러도 매치되지 않으면 예외는 자동으로 재발생(re-raise)됩니다:</p>
-<pre><code>$ cat exc_reraise.l3
-exception First
-exception Second
-let result = try
-    try
-        raise First
-    with
-    | Second -&gt; "wrong"
-    | _ -&gt; "inner fallback"
-with
-| First -&gt; "outer caught first"
-| _ -&gt; "outer fallback"
-
-$ langthree exc_reraise.l3
-"inner fallback"
-</code></pre>
-<h2 id="비완전-핸들러-경고-w0003"><a class="header" href="#비완전-핸들러-경고-w0003">비완전 핸들러 경고 (W0003)</a></h2>
-<p>예외는 개방 타입(open type)이므로 (새로운 예외를 어디서든 선언할 수 있음),
-핸들러에 catch-all이 없으면 컴파일러가 경고합니다:</p>
-<pre><code>$ cat exc_warn.l3
-exception NotFound
-let result = try
-    raise NotFound
-with
-| NotFound -&gt; 42
-
-$ langthree exc_warn.l3
-Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
- --&gt; :0:0-1:0
-   = hint: Add a catch-all handler or handle all possible exceptions
+$ langthree mod_fn.l3
 42
 </code></pre>
-<p>경고를 없애려면 <code>| _ -&gt; ...</code>를 추가하세요:</p>
-<pre><code>$ cat exc_nowarn.l3
-exception NotFound
-let result = try
-    raise NotFound
-with
-| NotFound -&gt; 42
-| _ -&gt; 0
+<h2 id="네임스페이스-선언"><a class="header" href="#네임스페이스-선언">네임스페이스 선언</a></h2>
+<p><code>namespace</code> 선언은 파일의 전체 내용을 감쌉니다:</p>
+<pre><code>$ cat ns.l3
+namespace App
+let x = 42
+let result = x + 1
 
-$ langthree exc_nowarn.l3
-42
+$ langthree ns.l3
+43
 </code></pre>
-<h2 id="실용-예제-안전한-나눗셈"><a class="header" href="#실용-예제-안전한-나눗셈">실용 예제: 안전한 나눗셈</a></h2>
-<p>예외와 함수를 결합한 예제:</p>
-<pre><code>$ cat safe_div.l3
-exception DivByZero
-let safe_div a b =
-    if b = 0 then raise DivByZero
-    else a / b
-let result = try
-    safe_div 10 0
-with
-| DivByZero -&gt; -1
-| _ -&gt; -2
+<p><code>module</code>과 달리 namespace는 중첩된 스코프를 생성하지 않습니다 – 선언은
+최상위 수준에 위치합니다.</p>
+<h2 id="실용-예제-계층화된-설정"><a class="header" href="#실용-예제-계층화된-설정">실용 예제: 계층화된 설정</a></h2>
+<p>관련된 값을 정리하는 여러 모듈:</p>
+<pre><code>$ cat layers.l3
+module DB =
+    let host = "localhost"
+    let port = 5432
+module App =
+    let name = "MyService"
+    let version = 1
+let result = App.name + " v" + to_string App.version + " -&gt; " + DB.host + ":" + to_string DB.port
 
-$ langthree safe_div.l3
--1
+$ langthree layers.l3
+"MyService v1 -&gt; localhost:5432"
 </code></pre>
-<h2 id="구문-참고-사항"><a class="header" href="#구문-참고-사항">구문 참고 사항</a></h2>
+<h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <ul>
-<li><strong><code>raise</code>는 원자를 받음:</strong> 데이터를 가진 생성자에는 괄호를 사용: <code>raise (Error msg)</code></li>
-<li><strong><code>try</code> 들여쓰기:</strong> <code>with</code> 핸들러의 파이프는 <code>match</code> 파이프와 같은 방식으로 정렬</li>
-<li><strong>개방 타입:</strong> 예외 타입은 완전한 매칭이 불가능 (따라서 W0003 경고 발생)</li>
-<li><strong>catch-all:</strong> 모든 예외를 포괄하려면 마지막 핸들러로 <code>| _ -&gt; ...</code>를 추가</li>
+<li><strong>들여쓰기 기반:</strong> 모듈 본문은 들여쓰기로 구분되며, <code>end</code>나 <code>}</code>가 아님</li>
+<li><strong>위에서 아래 순서:</strong> 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)</li>
+<li><strong><code>module M =</code></strong> 은 중첩 모듈에 <code>=</code>을 사용; 최상위 <code>namespace</code>는 <code>=</code>이 없음</li>
+<li><strong>한정된 접근</strong>은 값, 함수, 생성자에 대해 동작함</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="08-modules.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="09-prelude.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="10-pipes-and-composition.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="11-exceptions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -343,11 +328,11 @@ $ langthree safe_div.l3
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="08-modules.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="09-prelude.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="10-pipes-and-composition.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="11-exceptions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

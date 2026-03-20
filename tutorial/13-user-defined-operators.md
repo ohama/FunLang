@@ -1,4 +1,4 @@
-# 16장: 사용자 정의 연산자 (User-Defined Operators)
+# 13장: 사용자 정의 연산자 (User-Defined Operators)
 
 LangThree는 기호 문자로 구성된 사용자 정의 중위 연산자를 지원합니다.
 이를 통해 DSL(도메인 특화 언어)을 만들거나, 반복적인 함수 호출을

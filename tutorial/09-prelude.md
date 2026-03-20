@@ -1,4 +1,4 @@
-# 12장: Prelude and Standard Library
+# 9장: Prelude 표준 라이브러리 (Prelude and Standard Library)
 
 LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은
 명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다.
@@ -394,7 +394,7 @@ funlang> to_string (Some [1, 2, 3])
 `to_string`은 모든 타입을 지원합니다 — ADT, 리스트, 튜플, 레코드 등.
 문자열은 따옴표 없이 그대로 반환됩니다 (F# `string` 함수와 동일).
 
-자세한 내용은 [Chapter 11: Strings and Output](11-strings-and-output.md)을 참조하세요.
+자세한 내용은 [7장: 문자열과 출력](07-strings-and-output.md)을 참조하세요.
 
 ## Prelude vs 내장 함수 요약
 

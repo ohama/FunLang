@@ -1,4 +1,4 @@
-# 13장: CLI Reference
+# 16장: CLI 참조 (CLI Reference)
 
 이 장에서는 LangThree의 모든 커맨드라인 모드와 옵션을 다룹니다.
 
