@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.5 User-Defined Operators — Complete
+**Current focus:** Phase 21 — sprintf, printfn, modulo
 
 ## Current Position
 
-Milestone: v1.5 User-Defined Operators
-Phase: 19 of 19 (user-defined-operators)
+Milestone: v1.5 User-Defined Operators & Utilities
+Phase: 21 (sprintf-printfn-modulo)
 Plan: 01 of 01
-Status: v1.5 milestone complete
-Last activity: 2026-03-20 — Completed 19-01-PLAN.md
+Status: Phase 21 complete
+Last activity: 2026-03-20 — Completed 21-01-PLAN.md
 
-Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓ + v1.5 (1 phase, 1 plan) ✓ + Phase 21 (1 plan) ✓
 
 ## Performance Metrics
 
@@ -45,10 +45,11 @@ Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (
 | 14 | 2 | 9 min | 4.5 min |
 
 | 19 | 1 | 9 min | 9.0 min |
+| 21 | 1 | 6 min | 6.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 14-01 (5min), 14-02 (4min), 18-01 (5min), 18-02 (5min), 19-01 (9min)
-- Trend: v1.5 milestone complete. User-defined operators with OCaml INFIXOP0-4 approach.
+- Last 5 plans: 14-02 (4min), 18-01 (5min), 18-02 (5min), 19-01 (9min), 21-01 (6min)
+- Trend: sprintf/printfn/modulo added. Reusing printf infrastructure kept it fast.
 
 *Updated after each plan completion*
 
@@ -330,7 +331,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 19-01-PLAN.md (User-Defined Operators) — v1.5 milestone complete
+Stopped at: Completed 21-01-PLAN.md (sprintf, printfn, modulo)
 Resume file: None
 
 ---
