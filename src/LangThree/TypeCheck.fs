@@ -45,6 +45,9 @@ let initialTypeEnv: TypeEnv =
 
         // printf : string -> 'a  (permissively polymorphic — runtime enforces arity from format string)
         "printf", Scheme([0], TArrow(TString, TVar 0))
+
+        // printfn : string -> 'a  (like printf but appends newline)
+        "printfn", Scheme([0], TArrow(TString, TVar 0))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

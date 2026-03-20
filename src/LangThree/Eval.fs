@@ -88,6 +88,19 @@ let rec applyPrintfArgs (fmt: string) (remaining: string list) (collected: Value
         BuiltinValue (fun argVal ->
             applyPrintfArgs fmt rest (argVal :: collected))
 
+/// Build a curried BuiltinValue chain for printfn (like applyPrintfArgs but appends newline).
+let rec applyPrintfnArgs (fmt: string) (remaining: string list) (collected: Value list) : Value =
+    match remaining with
+    | [] ->
+        let result = substitutePrintfArgs fmt (List.rev collected)
+        stdout.Write(result)
+        stdout.Write("\n")
+        stdout.Flush()
+        TupleValue []
+    | _ :: rest ->
+        BuiltinValue (fun argVal ->
+            applyPrintfnArgs fmt rest (argVal :: collected))
+
 /// Format a value for user-friendly output
 let rec formatValue (v: Value) : string =
     match v with
@@ -209,6 +222,14 @@ let initialBuiltinEnv : Env =
                 let specifiers = parsePrintfSpecifiers fmt
                 applyPrintfArgs fmt specifiers []
             | _ -> failwith "printf: first argument must be a format string")
+
+        // printfn : string -> ...  (like printf but appends newline)
+        "printfn", BuiltinValue (fun fmtVal ->
+            match fmtVal with
+            | StringValue fmt ->
+                let specifiers = parsePrintfSpecifiers fmt
+                applyPrintfnArgs fmt specifiers []
+            | _ -> failwith "printfn: first argument must be a format string")
     ]
 
 /// Module value environment for runtime qualified access
