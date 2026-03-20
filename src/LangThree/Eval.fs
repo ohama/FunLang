@@ -88,6 +88,34 @@ let rec applyPrintfArgs (fmt: string) (remaining: string list) (collected: Value
         BuiltinValue (fun argVal ->
             applyPrintfArgs fmt rest (argVal :: collected))
 
+/// Format a value for user-friendly output
+let rec formatValue (v: Value) : string =
+    match v with
+    | IntValue n -> string n
+    | BoolValue b -> if b then "true" else "false"
+    | FunctionValue _ -> "<function>"
+    | StringValue s -> sprintf "\"%s\"" s
+    | TupleValue values ->
+        let formattedElements = List.map formatValue values
+        sprintf "(%s)" (String.concat ", " formattedElements)
+    | ListValue values ->
+        let formattedElements = List.map formatValue values
+        sprintf "[%s]" (String.concat ", " formattedElements)
+    | DataValue (name, None) -> name
+    | DataValue (name, Some v) ->
+        let argStr = formatValue v
+        let needsParens = match v with DataValue (_, Some _) | TupleValue _ -> true | _ -> false
+        if needsParens then sprintf "%s (%s)" name argStr
+        else sprintf "%s %s" name argStr
+    | RecordValue (_typeName, fields) ->
+        let fieldStrs =
+            fields
+            |> Map.toList
+            |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
+        sprintf "{ %s }" (String.concat "; " fieldStrs)
+    | BuiltinValue _ -> "<builtin>"
+    | TailCall _ -> "<tailcall>"
+
 /// Initial built-in environment: all 6 string functions as BuiltinValue.
 /// Merged into the evaluation environment at startup (Program.fs, Repl.fs).
 /// Curried multi-arg builtins use nested BuiltinValue wrappers.
@@ -139,13 +167,8 @@ let initialBuiltinEnv : Env =
                     | _ -> failwith "string_contains: second argument must be string")
             | _ -> failwith "string_contains: first argument must be string")
 
-        // to_string : 'a -> string  (polymorphic; runtime rejects unsupported types)
-        "to_string", BuiltinValue (fun v ->
-            match v with
-            | IntValue n -> StringValue (string n)
-            | BoolValue b -> StringValue (if b then "true" else "false")
-            | StringValue s -> StringValue s
-            | _ -> failwith "to_string: unsupported type (expected int, bool, or string)")
+        // to_string : 'a -> string  (polymorphic; uses formatValue for all types)
+        "to_string", BuiltinValue (fun v -> StringValue (formatValue v))
 
         // string_to_int : string -> int
         "string_to_int", BuiltinValue (fun v ->
@@ -193,35 +216,6 @@ type ModuleValueEnv = {
 
 /// Empty module value environment
 let emptyModuleValueEnv: Map<string, ModuleValueEnv> = Map.empty
-
-/// Format a value for user-friendly output
-let rec formatValue (v: Value) : string =
-    match v with
-    | IntValue n -> string n
-    | BoolValue b -> if b then "true" else "false"
-    | FunctionValue _ -> "<function>"
-    | StringValue s -> sprintf "\"%s\"" s
-    | TupleValue values ->
-        let formattedElements = List.map formatValue values
-        sprintf "(%s)" (String.concat ", " formattedElements)
-    | ListValue values ->
-        let formattedElements = List.map formatValue values
-        sprintf "[%s]" (String.concat ", " formattedElements)
-    | DataValue (name, None) -> name
-    | DataValue (name, Some v) ->
-        let argStr = formatValue v
-        // Wrap compound values in parens for clarity
-        let needsParens = match v with DataValue (_, Some _) | TupleValue _ -> true | _ -> false
-        if needsParens then sprintf "%s (%s)" name argStr
-        else sprintf "%s %s" name argStr
-    | RecordValue (_typeName, fields) ->
-        let fieldStrs =
-            fields
-            |> Map.toList
-            |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
-        sprintf "{ %s }" (String.concat "; " fieldStrs)
-    | BuiltinValue _ -> "<builtin>"
-    | TailCall _ -> "<tailcall>"
 
 /// Structural equality for Value (needed since BuiltinValue contains a function type
 /// which prevents F# from auto-deriving equality on the Value DU)
