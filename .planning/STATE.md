@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.6 F#-Style Offside Rule — Defining requirements
+**Current focus:** v1.6 F#-Style Offside Rule — Complete
 
 ## Current Position
 
 Milestone: v1.6 F#-Style Offside Rule
-Phase: 23 — Not started
-Plan: Not started
-Status: Defining requirements
-Last activity: 2026-03-20 — v1.6 milestone started
+Phase: 23 — Complete
+Plan: 01 of 01
+Status: Phase complete
+Last activity: 2026-03-20 — Completed 23-01-PLAN.md
 
-Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓
+Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓ + v1.6 (1p, 1pl) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44
-- Average duration: 4.5 min
-- Total execution time: ~3.35 hours
+- Total plans completed: 45
+- Average duration: 4.7 min
+- Total execution time: ~3.78 hours
 
 **By Phase:**
 
@@ -47,10 +47,11 @@ Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 
 | 19 | 1 | 9 min | 9.0 min |
 | 21 | 1 | 6 min | 6.0 min |
 | 22 | 1 | 5 min | 5.0 min |
+| 23 | 1 | 26 min | 26.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 18-01 (5min), 18-02 (5min), 19-01 (9min), 21-01 (6min), 22-01 (5min)
-- Trend: Parser-only changes (negative patterns, tuple lambda) completed quickly with zero conflicts.
+- Last 5 plans: 19-01 (9min), 21-01 (6min), 22-01 (5min), 23-01 (26min)
+- Trend: 23-01 was the most complex single-plan execution (IndentFilter refactoring + grammar + 3 bug fixes).
 
 *Updated after each plan completion*
 
@@ -304,6 +305,15 @@ Recent decisions affecting current work:
 - Tuple lambda: FUN TuplePattern ARROW Expr desugars to Lambda("__tuple_arg", LetPat(TuplePat(...), Var("__tuple_arg"), body))
 - Zero LALR(1) conflicts: PatternList requires COMMA, disambiguates from COLON in annotated lambda
 
+**From 23-01 (F#-Style Offside Rule):**
+- InLetDecl(blockLet, offsideCol) replaces LetSeqDepth counter; pushed on LET in expression context, popped when col <= offsideCol
+- InExprBlock pushed on INDENT after EQUALS/ARROW/IN; InModule pushed on INDENT after MODULE
+- isExprContext checks context stack head for InExprBlock/InLetDecl/InMatch/InTry (not InModule/TopLevel)
+- Explicit IN takes priority over implicit IN via nextIsExplicitIn guard in both same-level and DEDENT paths
+- INDENT Expr DEDENT grammar rule enables indented expression blocks (match clause bodies, general)
+- Stale InMatch/InTry from single-line matches handled by explicit IN handler skipping past same-column contexts
+- 41 new shift/reduce conflicts from INDENT Expr DEDENT (332 total); all correctly resolved by shift preference
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -320,7 +330,7 @@ None yet.
 - Spaces-only enforcement critical for correctness
 
 **From 01-04:**
-- **Nested indentation-based let:** Current implementation requires explicit `in` keywords for nested let bindings inside indented blocks. Full indentation-based `let` sequences not yet supported. Workaround: use explicit `in` keywords
+- **Nested indentation-based let:** RESOLVED in 23-01. F#-style offside rule now supports implicit IN for nested let bindings.
 
 **Phase 4 (GADT) -- COMPLETE:**
 - All challenges resolved; 132 tests pass
@@ -337,9 +347,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 22-01-PLAN.md (negative patterns, tuple lambda)
+Stopped at: Completed 23-01-PLAN.md (F#-style offside rule for implicit IN)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-18 (v1.2 milestone complete, archived)*
+*Last updated: 2026-03-20 (v1.6 milestone complete)*
