@@ -27,4 +27,21 @@ Plans:
 - offside column 도달 시: `IN` 토큰 삽입 (ODECLEND 역할)
 - 모듈 컨텍스트에서는 blockLet=false → `IN` 삽입하지 않음
 
+### Phase 24: List Separator Semicolon
+
+**Goal:** 리스트 구분자를 콤마(`,`)에서 세미콜론(`;`)으로 변경. `[1, 2, 3]` → `[1; 2; 3]`. tests/, tutorial/ 전체 수정 포함.
+**Depends on:** Phase 23
+**Plans:** 3 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Core language changes (Parser.fsy SemiExprList rule, Format.fs List AST output, Eval.fs ListValue output)
+- [ ] 24-02-PLAN.md — Update 97 affected test files with semicolon list syntax (automated Python script + test runner)
+- [ ] 24-03-PLAN.md — Update 12 affected tutorial markdown files with semicolon list syntax
+
+**Details:**
+- Parser: new `SemiExprList` rule for `[e1; e2; e3]` syntax; `ExprList` (COMMA-separated) kept for tuples only
+- Format.fs: `formatAst` for `Ast.List` uses `"; "` separator (Tuple stays `", "`)
+- Eval.fs: `formatValue` for `ListValue` uses `"; "` separator (TupleValue stays `", "`)
+- Tests (Plan 02) and tutorial (Plan 03) run in parallel after Plan 01
+
 ---
