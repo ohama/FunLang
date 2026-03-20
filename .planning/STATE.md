@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.4 Language Completion - Phase 18
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v1.4
-Phase: 18 of ? (list-ranges-mutual-recursion)
-Plan: 02 of 02
-Status: Phase 18 complete
-Last activity: 2026-03-19 — Completed 18-02-PLAN.md (Mutual Recursive Functions)
+Milestone: v1.5 (not started)
+Phase: Not started
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-03-20 — v1.4 milestone complete
 
-Progress: v1.0 (7 phases, 32 plans) + v1.2 (5 phases, 12 plans) + v1.3 (2 phases, 4 plans) + v1.4 (1 phase, 2 plans in progress)
+Progress: v1.0 (7 phases, 32 plans) ✓ + v1.2 (5 phases, 12 plans) ✓ + v1.3 (2 phases, 4 plans) ✓ + v1.4 (4 phases, 6 plans) ✓
 
 ## Performance Metrics
 

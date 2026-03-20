@@ -1,5 +1,30 @@
 # Project Milestones: LangThree
 
+## v1.4 Language Completion (Shipped: 2026-03-20)
+
+**Delivered:** TCO, or-패턴/문자열 패턴, 타입 별칭, 리스트 범위, 상호 재귀 함수로 언어 완성도 달성
+
+**Phases completed:** 15-18 (6 plans total)
+
+**Key accomplishments:**
+- Trampoline TCO — `loop 1000000` stack overflow 없이 동작
+- Or-patterns `| 1 | 2 | 3 ->` + 문자열 패턴 `| "hello" ->`
+- 타입 별칭 `type Name = string`
+- 리스트 범위 `[1..5]`, `[1..2..10]`
+- 모듈 레벨 `let rec f = ... and g = ...` 상호 재귀
+
+**Stats:**
+- 23 source files, 9,805 lines of F#
+- 533 tests (196 F# + 337 fslit), all passing
+- 4 phases, 6 plans
+- 1 day (2026-03-19 → 2026-03-20)
+
+**Git range:** `feat(15-01)` → `docs(18)`
+
+**What's next:** v1.5 (user-defined operators, type classes)
+
+---
+
 ## v1.3 Tutorial Documentation (Shipped: 2026-03-19)
 
 **Delivered:** 함수형 프로그래밍 경험자를 위한 포괄적 LangThree 튜토리얼 13개 챕터, 224개 CLI-verified 예제
