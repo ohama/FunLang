@@ -1,0 +1,9 @@
+// Test: Prelude <|> operator for Option alternative
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = None <|> Some 42
+let r2 = Some 1 <|> Some 99
+let r3 = None <|> None <|> Some 7
+let result = (r1, r2, r3)
+// --- Output:
+(Some 42, Some 1, Some 7)

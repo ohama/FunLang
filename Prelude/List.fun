@@ -27,3 +27,5 @@ let rec all pred = fun xs -> match xs with | [] -> true | h :: t -> if pred h th
 let rec flatten xss = match xss with | [] -> [] | xs :: rest -> append xs (flatten rest)
 
 let rec nth n = fun xs -> match xs with | h :: t -> if n = 0 then h else nth (n - 1) t
+
+let (++) xs ys = append xs ys

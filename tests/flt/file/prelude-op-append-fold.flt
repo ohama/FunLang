@@ -1,0 +1,6 @@
+// Test: Prelude ++ operator as function in fold
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = fold (++) [] [[1, 2], [3], [4, 5]]
+// --- Output:
+[1, 2, 3, 4, 5]
