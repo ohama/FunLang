@@ -1,6 +1,6 @@
 # Roadmap: LangThree v1.5
 
-## Current Milestone: v1.5 User-Defined Operators
+## Current Milestone: v1.5 User-Defined Operators & Utilities
 
 ### Phase 19: User-Defined Operators (COMPLETE)
 
@@ -12,13 +12,59 @@
 Plans:
 - [x] 19-01: User-Defined Operators (INFIXOP0-4, operator definition, 6 tests)
 
+---
+
+### Phase 20: Prelude Utility Functions
+
+**Goal:** 기본 유틸리티 함수 (not, min, max, abs, fst, snd, ignore) 를 Prelude에 추가
+**Depends on:** Phase 19
+**Requirements:** UTIL-01, UTIL-02, UTIL-03, UTIL-04, UTIL-05, UTIL-06, UTIL-07
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 20 to break down)
+
 **Success Criteria:**
-1. `let (++) a b = append a b` — 사용자 연산자 정의 동작
-2. `[1, 2] ++ [3, 4]` — 중위 표기로 사용
-3. `(++)` — 연산자를 함수로 사용 가능
-4. 우선순위: `a ++ b ** c`에서 `**`가 더 높은 우선순위
-5. 기존 연산자 (`|>`, `>>`, `+`, `-` 등) 영향 없음
-6. Prelude에서 연산자 정의 가능
-7. 기존 테스트 전부 통과
+1. `not true` → `false`
+2. `min 3 5` → `3`, `max 3 5` → `5`
+3. `abs (0 - 5)` → `5`
+4. `fst (1, 2)` → `1`, `snd (1, 2)` → `2`
+5. `ignore (print "hi")` → `()`
+6. 기존 테스트 전부 통과
+
+---
+
+### Phase 21: sprintf, printfn, Modulo Operator
+
+**Goal:** sprintf (문자열 반환 포맷), printfn (줄바꿈 포함 printf), % 모듈로 연산자 추가
+**Depends on:** Phase 19
+**Requirements:** FMT-01, FMT-02, FMT-03
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
+
+**Success Criteria:**
+1. `sprintf "%d + %d = %d" 1 2 3` → `"1 + 2 = 3"` (문자열 반환, 출력 안 함)
+2. `printfn "hello %d" 42` → stdout에 "hello 42\n" 출력
+3. `10 % 3` → `1` (모듈로 연산)
+4. 기존 테스트 전부 통과
+
+---
+
+### Phase 22: Negative Patterns & Tuple Lambda
+
+**Goal:** 음수 패턴 매칭과 튜플 파라미터 람다 추가
+**Depends on:** Phase 19
+**Requirements:** PAR-01, PAR-02
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 22 to break down)
+
+**Success Criteria:**
+1. `match x with | -1 -> "neg one" | 0 -> "zero" | _ -> "other"` — 음수 패턴 동작
+2. `(fun (x, y) -> x + y) (1, 2)` → `3` — 튜플 파라미터 람다
+3. 기존 테스트 전부 통과
 
 ---
