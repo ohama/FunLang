@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5d617152.js";
+            window.path_to_searchindex_js = "searchindex-3f39717a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -175,8 +175,10 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="11장-예외-exceptions"><a class="header" href="#11장-예외-exceptions">11장: 예외 (Exceptions)</a></h1>
+<p>오류 처리는 모든 언어에서 쉽지 않은 문제입니다. 함수형 언어들은 보통 두 가지 접근을 씁니다. 하나는 <code>Option</code>이나 <code>Result</code> 같은 타입으로 오류를 값으로 표현하는 방법이고, 다른 하나는 예외(exception)를 발생시켜 호출 스택을 타고 올라가는 방법입니다. LangThree는 둘 다 지원하며, 이 장에서는 예외 메커니즘을 다룹니다.</p>
+<p>예외는 “예상치 못한 상황“을 처리할 때 강력합니다. 깊이 중첩된 함수 안에서 발생한 오류를 모든 계층에서 하나씩 전달하지 않고, 한 번에 적절한 핸들러까지 올려보낼 수 있습니다. 다만, 예외를 남용하면 제어 흐름을 추적하기 어려워지므로, 정말 예외적인 상황에만 쓰는 것이 좋습니다.</p>
 <h2 id="예외-선언"><a class="header" href="#예외-선언">예외 선언</a></h2>
-<p><code>exception</code>으로 예외 타입을 선언합니다:</p>
+<p><code>exception</code>으로 예외 타입을 선언합니다. LangThree의 예외는 ADT의 생성자와 비슷하게 생겼습니다. 이름을 선언하고, <code>raise</code>로 발생시키고, <code>try-with</code>로 잡습니다:</p>
 <pre><code>$ cat exc_basic.l3
 exception NotFound
 let result = try
@@ -188,8 +190,10 @@ with
 $ langthree exc_basic.l3
 42
 </code></pre>
+<p>OCaml이나 F#의 예외 구문과 거의 동일합니다. <code>try-with</code> 블록 안에서 예외가 발생하면 <code>with</code> 아래의 패턴들과 순서대로 매칭합니다. 매칭된 핸들러의 결과가 전체 <code>try-with</code> 식의 결과가 됩니다.</p>
+<p>한 가지 중요한 점: LangThree에서 <code>try-with</code>는 식(expression)입니다. 값을 반환하므로 <code>let result =</code> 등에 바인딩할 수 있습니다. Java처럼 “제어 흐름을 위한 문장“이 아니라 F#처럼 “값을 생산하는 식“입니다.</p>
 <h2 id="데이터를-가진-예외"><a class="header" href="#데이터를-가진-예외">데이터를 가진 예외</a></h2>
-<p>생성자는 <code>of</code>를 사용하여 값을 포함할 수 있습니다:</p>
+<p>예외가 단순히 “무언가 잘못됐다“는 신호를 보내는 것을 넘어, 왜 잘못됐는지에 대한 정보를 담을 수 있습니다. <code>of</code>를 사용하면 예외에 데이터를 실을 수 있습니다:</p>
 <pre><code>$ cat exc_data.l3
 exception InvalidArg of string
 let result = try
@@ -201,10 +205,10 @@ with
 $ langthree exc_data.l3
 "error: bad input"
 </code></pre>
-<p>참고: <code>raise</code>는 원자(atom)를 받으므로, 생성자 적용에는 괄호가 필요합니다:
-<code>raise (InvalidArg "bad input")</code>, <code>raise InvalidArg "bad input"</code>이 아닙니다.</p>
+<p>핸들러에서 <code>InvalidArg msg</code>처럼 패턴 매칭으로 데이터를 꺼낼 수 있습니다. 오류 메시지, 오류 코드, 또는 어떤 타입이든 담을 수 있어서 오류의 맥락을 풍부하게 전달할 수 있습니다.</p>
+<p>참고: <code>raise</code>는 원자(atom)를 받으므로, 생성자 적용에는 괄호가 필요합니다: <code>raise (InvalidArg "bad input")</code>, <code>raise InvalidArg "bad input"</code>이 아닙니다. 이 점을 빠뜨리면 파서가 <code>raise</code>에 <code>InvalidArg</code>만 넘기고 <code>"bad input"</code>을 별개의 식으로 해석합니다. 컴파일 오류가 발생하니 금방 알아챌 수 있지만, 알아두면 헷갈리지 않습니다.</p>
 <h2 id="여러-핸들러"><a class="header" href="#여러-핸들러">여러 핸들러</a></h2>
-<p>동일한 <code>try-with</code>에서 여러 예외 타입을 매치할 수 있습니다:</p>
+<p>실제 코드에서는 여러 종류의 예외가 발생할 수 있습니다. 동일한 <code>try-with</code>에서 여러 예외 타입을 처리할 수 있고, 각 예외에 맞는 다른 응답을 제공할 수 있습니다:</p>
 <pre><code>$ cat exc_multi.l3
 exception NotFound
 exception Timeout of int
@@ -218,8 +222,9 @@ with
 $ langthree exc_multi.l3
 "timeout after 30s"
 </code></pre>
+<p>핸들러는 위에서 아래로 순서대로 시도됩니다. <code>match</code> 표현식과 동일한 규칙입니다. 첫 번째로 매칭되는 핸들러가 실행되므로, 더 구체적인 핸들러를 앞에, <code>| _ -&gt;</code> 같은 포괄적인 핸들러를 뒤에 배치해야 합니다. 순서를 반대로 하면 구체적인 핸들러가 영원히 도달하지 못할 수 있습니다.</p>
 <h2 id="when-가드"><a class="header" href="#when-가드">when 가드</a></h2>
-<p><code>when</code>으로 예외 핸들러에 조건을 추가할 수 있습니다:</p>
+<p>때로는 같은 예외 타입이지만 데이터에 따라 다르게 처리해야 할 때가 있습니다. <code>when</code> 가드를 사용하면 패턴 매칭 후 추가 조건을 검사할 수 있습니다:</p>
 <pre><code>$ cat exc_guard.l3
 exception Error of int
 let result = try
@@ -232,10 +237,10 @@ with
 $ langthree exc_guard.l3
 "error: 42"
 </code></pre>
-<p>가드는 패턴이 매치된 후에 평가됩니다. 가드가 실패하면
-다음 핸들러로 매칭이 계속됩니다.</p>
+<p>가드는 패턴이 매치된 후에 평가됩니다. 가드가 실패하면 다음 핸들러로 매칭이 계속됩니다.</p>
+<p>42는 100보다 크지 않으므로 첫 번째 핸들러의 <code>when x &gt; 100</code> 가드가 실패하고, 두 번째 핸들러 <code>Error x</code>로 넘어갑니다. 이 패턴은 “같은 예외지만 심각도에 따라 다르게 처리“하는 경우에 특히 유용합니다. HTTP 상태 코드처럼 숫자로 오류 코드를 넘길 때 범위별로 처리하는 코드를 <code>when</code> 가드로 깔끔하게 표현할 수 있습니다.</p>
 <h2 id="중첩된-try-with"><a class="header" href="#중첩된-try-with">중첩된 try-with</a></h2>
-<p>처리되지 않은 예외는 외부 핸들러로 전파됩니다:</p>
+<p>예외는 발생한 위치에서 가장 가까운 핸들러로 이동합니다. 중첩된 <code>try-with</code>가 있으면 안쪽부터 먼저 시도합니다. 처리되지 않은 예외는 외부 핸들러로 전파됩니다:</p>
 <pre><code>$ cat exc_nested.l3
 exception Inner
 exception Outer
@@ -252,11 +257,11 @@ with
 $ langthree exc_nested.l3
 "inner caught"
 </code></pre>
-<p>내부 핸들러가 매치되지 않으면 예외가 외부로 전파됩니다.
-내부의 <code>raise</code>를 <code>raise Outer</code>로 변경하면 내부 핸들러의
-catch-all이 대신 매치됩니다.</p>
+<p>내부 핸들러가 매치되지 않으면 예외가 외부로 전파됩니다. 내부의 <code>raise</code>를 <code>raise Outer</code>로 변경하면 내부 핸들러의 catch-all이 대신 매치됩니다.</p>
+<p>이 예제에서 <code>Inner</code> 예외가 발생했을 때, 안쪽 <code>try-with</code>의 핸들러를 먼저 봅니다. <code>Outer</code>는 매칭 실패, <code>_ -&gt; "inner caught"</code>는 모든 예외를 잡으므로 여기서 처리됩니다. 만약 안쪽에 <code>| _ -&gt; ...</code>가 없었다면 <code>Inner</code>는 바깥쪽 <code>try-with</code>까지 전파되어 <code>| Inner -&gt; "outer caught"</code>에 잡혔을 것입니다.</p>
+<p>이런 전파 메커니즘 덕분에, 저수준 함수는 예외를 발생시키고 고수준 코드에서 한 번에 처리하는 구조를 만들 수 있습니다. 모든 중간 계층에서 오류를 전달하는 boilerplate가 필요 없습니다.</p>
 <h2 id="예외-재발생"><a class="header" href="#예외-재발생">예외 재발생</a></h2>
-<p>어떤 핸들러도 매치되지 않으면 예외는 자동으로 재발생(re-raise)됩니다:</p>
+<p>어떤 핸들러도 매치되지 않으면 예외는 자동으로 재발생(re-raise)됩니다. 이것은 예외의 자동 전파 메커니즘입니다:</p>
 <pre><code>$ cat exc_reraise.l3
 exception First
 exception Second
@@ -273,9 +278,10 @@ with
 $ langthree exc_reraise.l3
 "inner fallback"
 </code></pre>
+<p><code>First</code>가 발생했을 때 안쪽 <code>try-with</code>를 보면, <code>Second</code>는 매칭 실패하지만 <code>| _ -&gt;</code> 가 모든 것을 잡으므로 <code>"inner fallback"</code>이 반환됩니다. 만약 안쪽 <code>| _ -&gt;</code>가 없었다면 <code>First</code>는 바깥쪽으로 전파되어 <code>"outer caught first"</code>가 되었을 것입니다.</p>
+<p>중요한 점은, 핸들러가 하나도 매칭되지 않을 때 예외가 자동으로 재발생된다는 것입니다. 명시적으로 <code>re-raise</code>를 호출할 필요가 없습니다. 이 동작을 잘 이해하면 “이 레이어에서 처리할 예외“와 “상위 레이어로 올려보낼 예외“를 선택적으로 처리하는 구조를 설계할 수 있습니다.</p>
 <h2 id="비완전-핸들러-경고-w0003"><a class="header" href="#비완전-핸들러-경고-w0003">비완전 핸들러 경고 (W0003)</a></h2>
-<p>예외는 개방 타입(open type)이므로 (새로운 예외를 어디서든 선언할 수 있음),
-핸들러에 catch-all이 없으면 컴파일러가 경고합니다:</p>
+<p>예외는 개방 타입(open type)입니다. 새로운 예외를 어디서든 선언할 수 있기 때문에, 컴파일러는 현재 핸들러가 모든 가능한 예외를 커버하는지 정적으로 알 수 없습니다. 따라서 catch-all이 없는 핸들러에 대해 경고합니다:</p>
 <pre><code>$ cat exc_warn.l3
 exception NotFound
 let result = try
@@ -289,6 +295,7 @@ Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions ar
    = hint: Add a catch-all handler or handle all possible exceptions
 42
 </code></pre>
+<p>이 경고는 무시해도 코드가 동작하지만, 프로덕션 코드에서는 없애는 게 좋습니다. 미처 생각하지 못한 예외가 발생했을 때 프로그램이 조용히 죽는 것보다, catch-all에서 명시적으로 처리하는 것이 훨씬 안전합니다.</p>
 <p>경고를 없애려면 <code>| _ -&gt; ...</code>를 추가하세요:</p>
 <pre><code>$ cat exc_nowarn.l3
 exception NotFound
@@ -301,8 +308,9 @@ with
 $ langthree exc_nowarn.l3
 42
 </code></pre>
+<p>ADT의 패턴 매칭이 “닫힌 타입“에 대해 완전성을 보장할 수 있는 것과 달리, 예외는 “열린 타입“이라 항상 미지의 예외가 올 수 있습니다. <code>| _ -&gt; 0</code>처럼 기본값을 제공하거나, <code>| _ -&gt; raise e</code>처럼 잡은 예외를 다시 던지는 방법도 있습니다. 어떻게 처리할지는 상황에 따라 다르지만, 경고 자체를 무시하는 것은 피하세요.</p>
 <h2 id="실용-예제-안전한-나눗셈"><a class="header" href="#실용-예제-안전한-나눗셈">실용 예제: 안전한 나눗셈</a></h2>
-<p>예외와 함수를 결합한 예제:</p>
+<p>예외를 실제 코드에 적용하는 전형적인 사례입니다. 0으로 나누는 것은 수학적으로 정의되지 않으므로 예외로 처리합니다:</p>
 <pre><code>$ cat safe_div.l3
 exception DivByZero
 let safe_div a b =
@@ -317,6 +325,8 @@ with
 $ langthree safe_div.l3
 -1
 </code></pre>
+<p><code>safe_div</code> 함수 자체는 예외 처리를 하지 않고 발생시키기만 합니다. 어떻게 처리할지는 호출하는 쪽의 맥락에 따라 다를 수 있기 때문입니다. 어떤 곳에서는 -1을 반환하고, 다른 곳에서는 0을 반환하거나, 또 다른 곳에서는 오류 메시지를 출력할 수 있습니다. 이렇게 발생과 처리를 분리하면 <code>safe_div</code>는 재사용 가능한 순수한 함수가 됩니다.</p>
+<p>비교해보면, <code>Option</code>을 쓰는 방식 (<code>if b = 0 then None else Some (a / b)</code>)은 오류를 값으로 표현해 타입에 드러냅니다. 호출하는 쪽이 <code>None</code>을 처리해야 한다는 것이 타입 시스템에 강제됩니다. 어느 방식을 택하느냐는 함수가 실패할 가능성이 얼마나 일상적인가에 달려있습니다. 빈번히 실패할 수 있는 연산이라면 <code>Option</code>이나 <code>Result</code>가 더 적합하고, 정말 예외적인 상황이라면 예외가 더 자연스럽습니다.</p>
 <h2 id="구문-참고-사항"><a class="header" href="#구문-참고-사항">구문 참고 사항</a></h2>
 <ul>
 <li><strong><code>raise</code>는 원자를 받음:</strong> 데이터를 가진 생성자에는 괄호를 사용: <code>raise (Error msg)</code></li>

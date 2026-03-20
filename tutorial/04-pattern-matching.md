@@ -1,9 +1,10 @@
 # 4장: 패턴 매칭 (Pattern Matching)
 
-패턴 매칭(pattern matching)은 LangThree의 핵심 제어 흐름 메커니즘입니다.
-구조 분해(destructuring), 조건부 디스패치(conditional dispatch), 변수 바인딩(variable binding)을
-하나의 구문으로 결합합니다.
-컴파일러는 완전성(exhaustiveness)을 검사하고 패턴을 효율적인 결정 트리(decision tree)로 컴파일합니다.
+C나 Java의 `switch`문을 써본 적이 있다면, 패턴 매칭은 그것의 대폭 강화된 버전이라고 생각할 수 있습니다. 하지만 실제로 써보면 차원이 다릅니다. `switch`는 값을 비교하는 것이 전부지만, 패턴 매칭은 데이터의 구조를 분해하면서 동시에 변수를 바인딩하고, 조건에 따라 분기합니다. 이 세 가지가 하나의 구문에서 일어납니다.
+
+패턴 매칭이 함수형 프로그래밍의 핵심이라고 불리는 데는 이유가 있습니다. ADT(5장)를 정의하면 자연스럽게 패턴 매칭으로 처리하게 되고, 리스트를 순회할 때도, 에러를 처리할 때도, 복잡한 데이터를 파싱할 때도 패턴 매칭이 등장합니다. LangThree에서 가장 많이 쓰게 될 기능이니 이 장을 천천히 읽어보세요.
+
+LangThree의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.
 
 ## 기본 Match 구문
 
@@ -74,7 +75,7 @@ $ langthree daytype.l3
 
 ### 문자열 패턴 (String Patterns)
 
-v1.4부터 문자열 리터럴도 패턴으로 사용할 수 있습니다:
+문자열 리터럴도 패턴으로 사용할 수 있습니다:
 
 ```
 $ cat string_match.l3
@@ -178,10 +179,10 @@ $ langthree classify_pair.l3
 빈 리스트, cons, 또는 특정 길이에 대해 매칭합니다:
 
 ```
-funlang> match [1, 2, 3] with | [] -> "empty" | x :: _ -> to_string x
+funlang> match [1; 2; 3] with | [] -> "empty" | x :: _ -> to_string x
 "1"
 
-funlang> match [1, 2, 3] with | a :: b :: _ -> a + b | _ -> 0
+funlang> match [1; 2; 3] with | a :: b :: _ -> a + b | _ -> 0
 3
 ```
 
@@ -198,8 +199,8 @@ let describe xs =
 
 let r1 = describe []
 let r2 = describe [42]
-let r3 = describe [1, 2]
-let r4 = describe [10, 20, 30, 40]
+let r3 = describe [1; 2]
+let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
 $ langthree list_describe.l3
@@ -289,7 +290,7 @@ $ langthree deep_option.l3
 **튜플의 리스트:**
 
 ```
-funlang> let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest in sumFirst [(1, "a"), (2, "b"), (3, "c")]
+funlang> let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest in sumFirst [(1, "a"); (2, "b"); (3, "c")]
 6
 ```
 
@@ -299,7 +300,7 @@ funlang> let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + s
 $ cat nested_complex.l3
 type Opt 'a = None | Some of 'a
 let result =
-    match Some [1, 2, 3] with
+    match Some [1; 2; 3] with
     | Some (x :: _) -> x
     | Some [] -> 0
     | None -> 0
@@ -622,22 +623,22 @@ LangThree는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
 **리스트 합계:**
 
 ```
-funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1, 2, 3, 4, 5]
+funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1; 2; 3; 4; 5]
 15
 ```
 
 **요소 개수 세기:**
 
 ```
-funlang> let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [10, 20, 30]
+funlang> let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [10; 20; 30]
 3
 ```
 
 **조건 함수로 필터링 (클로저 캡처):**
 
 ```
-funlang> let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t in filter (fun x -> x > 3) [1, 2, 3, 4, 5, 6]
-[4, 5, 6]
+funlang> let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t in filter (fun x -> x > 3) [1; 2; 3; 4; 5; 6]
+[4; 5; 6]
 ```
 
 **조건이 참인 동안 가져오기(take while):**
@@ -649,10 +650,10 @@ let result =
         match xs with
         | [] -> []
         | h :: t -> if pred h then h :: takeWhile pred t else []
-    in takeWhile (fun x -> x < 5) [1, 2, 3, 4, 5, 6, 7]
+    in takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
 
 $ langthree take_while.l3
-[1, 2, 3, 4]
+[1; 2; 3; 4]
 ```
 
 ### ADT 표현식 평가기 (ADT Expression Evaluator)
@@ -685,7 +686,7 @@ let result =
         | [] -> None
         | (k, v) :: rest -> if k = key then Some v else lookup key rest
     in
-    let env = [(1, "one"), (2, "two"), (3, "three")]
+    let env = [(1, "one"); (2, "two"); (3, "three")]
     in
     let r1 = lookup 2 env
     in
@@ -734,12 +735,12 @@ let sorted =
         | h :: t -> if x <= h then x :: h :: t else h :: insert x t
     in
     let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
-    in sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+    in sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 
 $ langthree isort.l3
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
 ## 요약

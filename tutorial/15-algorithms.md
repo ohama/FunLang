@@ -1,43 +1,19 @@
 # 15장: 알고리즘과 자료구조 (Algorithms and Data Structures)
 
-LangThree v1.4에서 알고리즘을 구현하는 방법을 살펴봅니다. 이번 버전은
-재귀 함수 작성 방식에 근본적인 변화를 가져왔습니다.
+이 장은 앞서 배운 모든 것을 실전에 적용하는 종합 실습입니다. 패턴 매칭, ADT, 재귀, 고차 함수, 모듈 — 지금까지 개별적으로 익혔던 도구들이 여기서 하나로 합쳐집니다.
 
-## v1.4의 변화: 모듈 레벨 `let rec`
+함수형 프로그래밍으로 알고리즘을 구현하면 명령형 스타일과는 사뭇 다른 코드가 나옵니다. for 루프와 인덱스 변수 대신 재귀와 패턴 매칭이, 배열의 in-place 수정 대신 새로운 리스트의 생성이 중심이 됩니다. 처음에는 비효율적으로 보일 수 있지만, 코드의 정확성을 추론하기가 훨씬 쉽다는 장점이 있습니다. 각 함수가 입력을 받아 출력을 반환할 뿐 아무것도 변경하지 않으니까요.
 
-v1.3까지 LangThree의 모든 재귀 함수는 표현식 내부에 갇혀 있었습니다.
-정렬 알고리즘 하나를 작성하려면 `let sorted = let rec insert ... in let rec sort ... in sort [...]`
-같은 거대한 단일 표현식이 필요했습니다. 헬퍼 함수가 늘어날수록 들여쓰기와
-`in` 체인이 깊어져 가독성이 떨어졌습니다.
+먼저 LangThree에서 알고리즘을 작성할 때 알아두면 좋은 핵심 기능들을 정리합니다.
 
-v1.4에서는 **모듈 레벨 `let rec`** 이 도입되었습니다. 이제 각 재귀 함수를
-독립된 최상위 선언으로 작성할 수 있습니다:
+## 핵심 기능 정리
 
-```
-(* v1.3 스타일 -- 모든 것이 하나의 표현식 안에 *)
-let sorted =
-    let rec insert x = fun xs -> ...
-    in
-    let rec sort xs = ...
-    in sort [5, 3, 1]
+LangThree에서 알고리즘을 구현할 때 자주 사용하는 기능들입니다:
 
-(* v1.4 스타일 -- 각 함수가 독립된 선언 *)
-let rec insert x = fun xs -> ...
-let rec sort xs = ...
-let result = sort [5, 3, 1]
-```
-
-이 변화가 가져오는 이점은 명확합니다:
-
-- **가독성**: 각 함수가 독립된 선언이므로 한눈에 파악할 수 있습니다.
-- **재사용성**: 모듈 레벨 함수는 파일 내 어디서든 호출할 수 있습니다.
-- **유지보수**: 함수를 추가하거나 수정할 때 `in` 체인을 조정할 필요가 없습니다.
-
-v1.4에서 추가된 다른 기능들도 알고리즘 작성을 크게 개선합니다:
-
-- **리스트 범위**: `[1..100]`으로 연속 정수 리스트를 간편하게 생성
-- **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수 정의
-- **Or 패턴**: 패턴 매칭에서 여러 패턴을 하나로 묶기
+- **모듈 레벨 `let rec`**: 재귀 함수를 최상위 선언으로 작성합니다. 표현식 내부의 `let rec ... in` 체인 대신, 각 함수를 독립된 선언으로 분리하면 가독성과 재사용성이 크게 향상됩니다.
+- **리스트 범위**: `[1..100]`으로 연속 정수 리스트를 간편하게 생성합니다.
+- **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수를 정의합니다.
+- **Or 패턴**: 패턴 매칭에서 여러 패턴을 하나로 묶을 수 있습니다.
 
 모듈 레벨 `let rec`의 제약 사항을 기억하세요:
 
@@ -45,7 +21,7 @@ v1.4에서 추가된 다른 기능들도 알고리즘 작성을 크게 개선합
 - 두 번째 매개변수부터는 클로저로 전달합니다: `let rec f x = fun y -> body`
 - `match` 표현식은 한 줄에 작성해야 합니다
 
-이제 이 새로운 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.
+이제 이 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.
 
 ## 표준 리스트 함수
 
@@ -54,7 +30,7 @@ v1.4에서 추가된 다른 기능들도 알고리즘 작성을 크게 개선합
 > 실제 프로그램에서는 Prelude 함수를 바로 사용할 수 있습니다.
 
 함수형 프로그래밍에서 `map`, `filter`, `fold`는 가장 기본적인 도구입니다.
-v1.4에서는 이들을 모듈 레벨에 선언하여 프로그램 전체에서 재사용할 수 있습니다.
+모듈 레벨에 선언하면 프로그램 전체에서 재사용할 수 있습니다.
 
 ### Map
 
@@ -67,10 +43,10 @@ let rec map f = fun xs ->
     | [] -> []
     | h :: t -> f h :: map f t
 
-let result = map (fun x -> x * x) [1, 2, 3, 4, 5]
+let result = map (fun x -> x * x) [1; 2; 3; 4; 5]
 
 $ langthree map.l3
-[1, 4, 9, 16, 25]
+[1; 4; 9; 16; 25]
 ```
 
 `map`은 두 개의 매개변수를 받습니다. 첫 번째 `f`가 `let rec` 매개변수이고,
@@ -88,14 +64,13 @@ let rec filter pred = fun xs ->
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
 
-let result = filter (fun x -> x % 2 = 0) [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+let result = filter (fun x -> x % 2 = 0) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 
 $ langthree filter.l3
-[2, 4, 6, 8, 10]
+[2; 4; 6; 8; 10]
 ```
 
-`x % 2 = 0`은 `%` (모듈로) 연산자로 짝수를 판별합니다. v1.5에서 `%` 연산자가
-도입되어, 이전의 `x - (x / 2) * 2` 패턴 대신 간결하게 나머지를 구할 수 있습니다.
+`x % 2 = 0`은 `%` (모듈로) 연산자로 짝수를 판별합니다.
 
 ### Fold (왼쪽 폴드)
 
@@ -109,7 +84,7 @@ let rec fold f = fun acc -> fun xs ->
     | [] -> acc
     | h :: t -> fold f (f acc h) t
 
-let result = fold (fun acc -> fun x -> acc + x * x) 0 [1, 2, 3, 4, 5]
+let result = fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
 
 $ langthree fold.l3
 55
@@ -130,7 +105,7 @@ let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (f
 let result = sieve [2..50]
 
 $ langthree sieve_prelude.l3
-[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+[2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
 `filter`는 Prelude에서 제공되므로 재정의할 필요 없이, `sieve` 함수만 작성하면
@@ -152,9 +127,8 @@ $ langthree factorial.l3
 3628800
 ```
 
-`fact 10`은 10 * 9 * 8 * ... * 1 = 3,628,800을 계산합니다. v1.3에서는
-`let result = let rec fact n = ... in fact 10`이라는 한 덩어리로 작성해야 했지만,
-이제 함수 정의와 호출이 분리되어 훨씬 읽기 좋습니다.
+`fact 10`은 10 * 9 * 8 * ... * 1 = 3,628,800을 계산합니다.
+함수 정의와 호출이 분리되어 읽기 좋습니다.
 
 ### 피보나치 수열
 
@@ -171,11 +145,10 @@ let rec map f = fun xs ->
 let result = map fib [0..15]
 
 $ langthree fibonacci.l3
-[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]
+[0; 1; 1; 2; 3; 5; 8; 13; 21; 34; 55; 89; 144; 233; 377; 610]
 ```
 
-`[0..15]`는 v1.4의 리스트 범위 기능으로, 0부터 15까지 16개의 정수 리스트를
-자동으로 생성합니다. 이전에는 이런 리스트를 수동으로 나열해야 했습니다.
+`[0..15]`는 0부터 15까지 16개의 정수 리스트를 생성합니다.
 `map fib [0..15]`는 각 인덱스에 대한 피보나치 값을 계산합니다.
 
 ### GCD와 LCM
@@ -199,8 +172,7 @@ $ langthree gcd_lcm.l3
 `gcd 48 36`의 축약: gcd 48 36 -> gcd 36 12 -> gcd 12 0 -> 12.
 `lcm 12 18`은 12 / gcd(12,18) * 18 = 12 / 6 * 18 = 36입니다.
 
-`a % b`는 나머지(모듈로) 연산자입니다. v1.5에서 `%` 연산자가 도입되어
-이전의 `a - (a / b) * b` 패턴 대신 간결하게 나머지를 구할 수 있습니다.
+`a % b`는 나머지(모듈로) 연산자입니다.
 `lcm`은 재귀가 아니므로 `let rec` 없이 일반 `let`으로 정의합니다.
 
 ### 서로소 (Coprimes)
@@ -220,7 +192,7 @@ let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
 let result = coprimes 12
 
 $ langthree coprimes.l3
-[1, 5, 7, 11]
+[1; 5; 7; 11]
 ```
 
 `[1..12]` 중에서 12와 GCD가 1인 수만 남깁니다. 이것이 오일러 토션트 함수
@@ -243,7 +215,7 @@ let isPrime n = if n < 2 then false else checkPrime n 2
 let result = filter (fun n -> isPrime n) [2..50]
 
 $ langthree is_prime.l3
-[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+[2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
 `checkPrime n d`는 2부터 sqrt(n)까지 나눠보며 소수를 판별합니다.
@@ -270,8 +242,7 @@ $ langthree power.l3
 ## 정렬 알고리즘
 
 정렬은 알고리즘을 비교하기 좋은 주제입니다. 모듈 레벨 `let rec` 덕분에
-각 헬퍼 함수가 독립 선언이 되어, v1.3의 깊은 `let rec ... in` 체인보다
-구조가 훨씬 명확해졌습니다.
+각 헬퍼 함수가 독립 선언이 되어 구조가 명확합니다.
 
 ### 삽입 정렬
 
@@ -286,10 +257,10 @@ let rec insert x = fun xs ->
 
 let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
 
-let result = sort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 $ langthree insertion_sort.l3
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
 `insert`와 `sort`가 각각 독립된 최상위 함수입니다. `insert`는 정렬된 리스트에서
@@ -314,10 +285,10 @@ let rec append xs = fun ys ->
 
 let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in append (qsort lo) (pivot :: qsort hi)
 
-let result = qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 $ langthree quicksort.l3
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
 `filter`, `append`, `qsort` 세 함수가 각각 독립 선언입니다. 피벗은 리스트의
@@ -331,10 +302,10 @@ Prelude `++` 연산자를 사용하면 `append`를 재정의할 필요가 없어
 $ cat qsort_prelude.l3
 let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
 
-let result = qsort [5, 3, 8, 1, 9, 2, 7]
+let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
 $ langthree qsort_prelude.l3
-[1, 2, 3, 5, 7, 8, 9]
+[1; 2; 3; 5; 7; 8; 9]
 ```
 
 ### 병합 정렬
@@ -357,15 +328,13 @@ let rec merge xs = fun ys ->
 // 리스트를 반으로 나눠 각각 정렬 후 병합 (O(n log n))
 let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
 
-let result = msort [5, 3, 8, 1, 9, 2, 7, 4, 6]
+let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 $ langthree merge_sort.l3
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
+[1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
-다섯 개의 함수가 각각 한 줄의 최상위 선언입니다. v1.3에서는 이 모든 함수가
-`let sorted = let rec length ... in let rec take ... in let rec drop ... in let rec merge ... in let rec msort ... in msort [...]`
-라는 하나의 거대한 표현식이었습니다. 이제 각 함수를 독립적으로 읽고 이해할 수 있습니다.
+다섯 개의 함수가 각각 독립된 최상위 선언입니다. 각 함수를 독립적으로 읽고 이해할 수 있습니다.
 
 `take`과 `drop`이 리스트를 중간점에서 분할하고, `merge`가 두 정렬된 리스트의
 head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.
@@ -393,10 +362,10 @@ let rec append xs = fun ys ->
     | h :: t -> h :: append t ys
 let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorder l) (v :: inorder r)
 
-let result = inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
+let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
 $ langthree tree_sort.l3
-[1, 2, 3, 5, 7, 8, 9]
+[1; 2; 3; 5; 7; 8; 9]
 ```
 
 `Tree` 타입은 두 생성자를 가진 대수적 데이터 타입입니다: `Leaf`(빈 노드)와
@@ -438,10 +407,9 @@ mul (Succ (Succ Zero)) b = add b (add b Zero).
 3 * 4 = 12를 `toInt`로 검증합니다. 모듈 레벨 선언 덕분에 `toInt`, `add`, `mul`이
 각각 독립된 함수로 깔끔하게 정의됩니다.
 
-## 새로운 알고리즘
+## 응용 알고리즘
 
-v1.4의 새 기능들 -- 리스트 범위, 상호 재귀, or 패턴 -- 을 활용하는
-알고리즘입니다. 이전 버전에서는 구현하기 어렵거나 불가능했던 것들입니다.
+리스트 범위, 상호 재귀, or 패턴 등을 활용하는 알고리즘입니다.
 
 ### 에라토스테네스의 체
 
@@ -459,7 +427,7 @@ let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (f
 let result = sieve [2..50]
 
 $ langthree sieve.l3
-[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+[2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
 `[2..50]`이 2부터 50까지의 리스트를 생성합니다. `sieve`는 리스트의 첫 원소 `p`를
@@ -518,7 +486,7 @@ let fizzbuzz n =
 let result = map fizzbuzz [1..20]
 
 $ langthree fizzbuzz.l3
-["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz", "16", "17", "Fizz", "19", "Buzz"]
+["1"; "2"; "Fizz"; "4"; "Buzz"; "Fizz"; "7"; "8"; "Fizz"; "Buzz"; "11"; "Fizz"; "13"; "14"; "FizzBuzz"; "16"; "17"; "Fizz"; "19"; "Buzz"]
 ```
 
 `fizzbuzz`는 `%` 연산자로 3과 5의 나머지를 구하고 튜플로 만들어 패턴 매칭합니다.
@@ -528,7 +496,7 @@ $ langthree fizzbuzz.l3
 
 ### 상태 머신 (상호 재귀)
 
-v1.4의 `let rec ... and ...` 구문은 서로를 호출하는 함수를 정의할 수 있게 합니다.
+`let rec ... and ...` 구문은 서로를 호출하는 함수를 정의할 수 있게 합니다.
 상태 머신은 상호 재귀의 대표적인 활용 사례입니다:
 
 ```
@@ -536,8 +504,8 @@ $ cat state_machine.l3
 let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
 and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
 
-let r1 = stateA [1, 0, 1, 0]
-let r2 = stateA [1, 0, 0]
+let r1 = stateA [1; 0; 1; 0]
+let r2 = stateA [1; 0; 0]
 let result = (r1, r2)
 
 $ langthree state_machine.l3
@@ -550,15 +518,13 @@ $ langthree state_machine.l3
 - **상태 B**: 입력이 1이면 상태 A로 전이, 그 외에는 B에 머무름
 
 `let rec stateA ... and stateB ...`로 두 함수가 서로를 호출할 수 있습니다.
-이전 버전에서는 상호 재귀를 직접 표현할 수 없었기 때문에, 이런 패턴을
-구현하려면 우회적인 방법이 필요했습니다.
 
-첫 번째 입력 `[1, 0, 1, 0]`은 A -> A -> B -> A -> B 경로를 따라 상태 B에서
-끝납니다. 두 번째 `[1, 0, 0]`은 A -> A -> B -> B로 역시 상태 B에서 끝납니다.
+첫 번째 입력 `[1; 0; 1; 0]`은 A -> A -> B -> A -> B 경로를 따라 상태 B에서
+끝납니다. 두 번째 `[1; 0; 0]`은 A -> A -> B -> B로 역시 상태 B에서 끝납니다.
 
 ## 요약
 
-| 패턴 | v1.4 문법 |
+| 패턴 | 문법 |
 |---|---|
 | 모듈 레벨 재귀 | `let rec f x = body` |
 | 다중 매개변수 재귀 | `let rec f x = fun y -> body` |
@@ -566,14 +532,13 @@ $ langthree state_machine.l3
 | 상호 재귀 | `let rec f x = ... and g y = ...` |
 | ADT + 재귀 | `type T = ... let rec f t = match t with ...` |
 
-v1.4에서 달라진 핵심 사항:
+이 장에서 사용한 핵심 기능:
 
 - **모듈 레벨 `let rec`**: 재귀 함수를 최상위 선언으로 작성합니다.
   각 함수가 독립적이어서 읽기 쉽고 재사용하기 좋습니다.
-  `let rec ... in let rec ... in` 체인이 사라졌습니다.
 - **리스트 범위**: `[1..n]`으로 연속 정수 리스트를 생성합니다.
-  에라토스테네스의 체, 소수 필터링, FizzBuzz 등에서 수동 리스트 나열을 대체합니다.
+  에라토스테네스의 체, 소수 필터링, FizzBuzz 등에서 활용됩니다.
 - **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수를 정의합니다.
-  상태 머신, 홀수/짝수 판별기 등 새로운 알고리즘 패턴이 가능해졌습니다.
+  상태 머신, 홀수/짝수 판별기 등에서 활용됩니다.
 - **대수적 데이터 타입**은 재귀 함수와 자연스럽게 결합되어 트리, 수식 언어,
   사용자 정의 수 타입에 활용됩니다.

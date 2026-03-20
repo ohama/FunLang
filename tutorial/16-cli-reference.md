@@ -25,8 +25,8 @@ $ langthree --expr '"hello"'
 $ langthree --expr 'true'
 true
 
-$ langthree --expr '[1, 2, 3]'
-[1, 2, 3]
+$ langthree --expr '[1; 2; 3]'
+[1; 2; 3]
 
 $ langthree --expr '(1, "hello", true)'
 (1, "hello", true)

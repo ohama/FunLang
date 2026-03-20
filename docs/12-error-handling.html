@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5d617152.js";
+            window.path_to_searchindex_js = "searchindex-3f39717a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -175,9 +175,9 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="12장-에러-처리-전략-error-handling-strategies"><a class="header" href="#12장-에러-처리-전략-error-handling-strategies">12장: 에러 처리 전략 (Error Handling Strategies)</a></h1>
-<p>LangThree는 에러를 처리하는 세 가지 방법을 제공합니다:
-<strong>Exception</strong>, <strong>Option</strong>, <strong>Result</strong>. 이 장에서는 세 가지를 비교하고,
-언제 어떤 것을 사용해야 하는지 설명합니다.</p>
+<p>프로그램에서 실패는 피할 수 없습니다. 파일이 없을 수 있고, 네트워크가 끊길 수 있고, 사용자가 잘못된 입력을 줄 수 있습니다. 문제는 “실패가 발생하는가?“가 아니라 “실패를 어떻게 표현하고 처리하는가?“입니다.</p>
+<p>11장에서 예외(Exception)를 배웠습니다. 예외는 강력하지만, 함수의 시그니처만 봐서는 그 함수가 실패할 수 있는지 알 수 없다는 근본적인 한계가 있습니다. LangThree는 예외 외에도 <code>Option</code>과 <code>Result</code>라는 두 가지 타입 기반 접근법을 제공합니다. 이 세 가지 중 어떤 것을 선택하느냐에 따라 코드의 안전성, 합성 가능성, 가독성이 크게 달라집니다.</p>
+<p>이 장은 같은 문제를 세 가지 방식으로 풀어보고, 각각의 장단점을 비교한 뒤, 실전에서의 선택 기준을 제시합니다. 함수형 프로그래밍 커뮤니티에서 왜 “예외보다 타입을 써라“라고 말하는지, 그 이유를 직접 확인하게 됩니다.</p>
 <h2 id="세-가지-접근법-비교"><a class="header" href="#세-가지-접근법-비교">세 가지 접근법 비교</a></h2>
 <p>같은 문제를 세 가지 방식으로 풀어보겠습니다: 리스트에서 조건을 만족하는
 첫 번째 원소를 찾는 함수입니다.</p>
@@ -191,7 +191,7 @@ let rec find pred = fun xs -&gt;
     | [] -&gt; raise NotFound
     | h :: t -&gt; if pred h then h else find pred t
 
-let result = try find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5] with | NotFound -&gt; 0 - 1
+let result = try find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5] with | NotFound -&gt; 0 - 1
 
 $ langthree find_exc.l3
 4
@@ -204,7 +204,7 @@ let rec find pred = fun xs -&gt;
     | [] -&gt; None
     | h :: t -&gt; if pred h then Some h else find pred t
 
-let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
+let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
 $ langthree find_opt.l3
 4
@@ -217,7 +217,7 @@ let rec find pred = fun xs -&gt;
     | [] -&gt; Error "not found"
     | h :: t -&gt; if pred h then Ok h else find pred t
 
-let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1, 2, 3, 4, 5])
+let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
 $ langthree find_res.l3
 4
@@ -324,7 +324,7 @@ Ok 999998
 let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
 let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
-let result = Some [10, 20, 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
+let result = Some [10; 20; 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
 
 $ langthree option_use.l3
 10
@@ -377,7 +377,7 @@ exception InternalError of string
 
 let rec processAll xs = match xs with | [] -&gt; 0 | h :: t -&gt; if h &lt; 0 then raise (InternalError "unexpected negative value") else h + processAll t
 
-let result = processAll [1, 2, 3, 4, 5]
+let result = processAll [1; 2; 3; 4; 5]
 
 $ langthree exception_use.l3
 15
