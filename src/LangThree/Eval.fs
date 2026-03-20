@@ -123,7 +123,7 @@ let rec formatValue (v: Value) : string =
         sprintf "(%s)" (String.concat ", " formattedElements)
     | ListValue values ->
         let formattedElements = List.map formatValue values
-        sprintf "[%s]" (String.concat ", " formattedElements)
+        sprintf "[%s]" (String.concat "; " formattedElements)
     | DataValue (name, None) -> name
     | DataValue (name, Some v) ->
         let argStr = formatValue v

@@ -149,7 +149,7 @@ let rec formatAst (expr: Ast.Expr) : string =
         sprintf "LetPat (%s, %s, %s)" (formatPattern pat) (formatAst value) (formatAst body)
     | Ast.EmptyList _ -> "EmptyList"
     | Ast.List (exprs, _) ->
-        let formatted = exprs |> List.map formatAst |> String.concat ", "
+        let formatted = exprs |> List.map formatAst |> String.concat "; "
         sprintf "List [%s]" formatted
     | Ast.Cons (h, t, _) -> sprintf "Cons (%s, %s)" (formatAst h) (formatAst t)
     | Ast.Match (scrut, clauses, _) ->
