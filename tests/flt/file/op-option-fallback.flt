@@ -1,0 +1,8 @@
+// Test: <|> operator for Option fallback chain
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
+
+let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
+// --- Output:
+Some 42

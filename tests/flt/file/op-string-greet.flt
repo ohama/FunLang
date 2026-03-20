@@ -1,0 +1,7 @@
+// Test: ^^ operator for string building
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let greet name = "Hello, " ^^ name ^^ "!"
+let result = greet "Alice"
+// --- Output:
+"Hello, Alice!"

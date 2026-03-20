@@ -1,0 +1,6 @@
+// Test: ^^ with map and fold for string join
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = map to_string [1..5] |> fold (fun acc -> fun s -> if acc = "" then s else acc ^^ ", " ^^ s) ""
+// --- Output:
+"1, 2, 3, 4, 5"

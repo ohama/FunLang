@@ -1,0 +1,8 @@
+// Test: mixed Prelude operators in pipeline
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
+
+let result = [1..5] |> filter (fun x -> x > 2) |> formatList
+// --- Output:
+"[3, 4, 5]"

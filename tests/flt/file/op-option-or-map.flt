@@ -1,0 +1,7 @@
+// Test: <|> combined with optionMap in pipeline
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let safeHead xs = match xs with | [] -> None | h :: _ -> Some h
+let result = (safeHead [] <|> Some 0) |> optionMap (fun x -> x + 1)
+// --- Output:
+Some 1
