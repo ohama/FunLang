@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v1.6 F#-Style Offside Rule — Complete
+**Current focus:** v1.7 F#-Style List Syntax — Complete
 
 ## Current Position
 
-Milestone: v1.6 F#-Style Offside Rule
-Phase: 23 — Complete
+Milestone: v1.7 F#-Style List Syntax
+Phase: 24 — List Separator Semicolon — Complete
 Plan: 01 of 01
 Status: Phase complete
-Last activity: 2026-03-20 — Completed 23-01-PLAN.md
+Last activity: 2026-03-20 — Completed 24-01-PLAN.md
 
-Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓ + v1.6 (1p, 1pl) ✓
+Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 (4p, 6pl) ✓ + v1.5 (4p, 4pl) ✓ + v1.6 (1p, 1pl) ✓ + v1.7 (1p, 1pl) ✓
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 45
-- Average duration: 4.7 min
-- Total execution time: ~3.78 hours
+- Total plans completed: 46
+- Average duration: 4.6 min
+- Total execution time: ~3.80 hours
 
 **By Phase:**
 
@@ -48,10 +48,11 @@ Progress: v1.0 (7p, 32pl) ✓ + v1.2 (5p, 12pl) ✓ + v1.3 (2p, 4pl) ✓ + v1.4 
 | 21 | 1 | 6 min | 6.0 min |
 | 22 | 1 | 5 min | 5.0 min |
 | 23 | 1 | 26 min | 26.0 min |
+| 24 | 1 | 2 min | 2.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 19-01 (9min), 21-01 (6min), 22-01 (5min), 23-01 (26min)
-- Trend: 23-01 was the most complex single-plan execution (IndentFilter refactoring + grammar + 3 bug fixes).
+- Last 5 plans: 21-01 (6min), 22-01 (5min), 23-01 (26min), 24-01 (2min)
+- Trend: 24-01 was the fastest single-plan execution (3 files, purely mechanical separator change).
 
 *Updated after each plan completion*
 
@@ -314,10 +315,18 @@ Recent decisions affecting current work:
 - Stale InMatch/InTry from single-line matches handled by explicit IN handler skipping past same-column contexts
 - 41 new shift/reduce conflicts from INDENT Expr DEDENT (332 total); all correctly resolved by shift preference
 
+**From 24-01 (List Separator Semicolon):**
+- SemiExprList is a dedicated grammar rule separate from ExprList; lists use SEMICOLON, tuples keep COMMA
+- SEMICOLON token was already declared and lexed from record syntax (Phase 3); no lexer changes needed
+- Only ListValue case changed in Eval.fs formatValue; TupleValue stays with comma
+- Only Ast.List case changed in Format.fs formatAst; Tuple/TuplePat/TETuple/TEData stay with comma
+- Existing .lt/.flt test files using comma list syntax need updating (follow-on work)
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
 - Phase 8 added: Full Coverage fslit Testing (--emit-ast, --emit-type, 100% grammar coverage)
+- Phase 24 added: List Separator Semicolon ([1, 2, 3] → [1; 2; 3], tests/tutorial 수정 포함)
 
 ### Pending Todos
 
@@ -347,9 +356,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 23-01-PLAN.md (F#-style offside rule for implicit IN)
+Stopped at: Completed 24-01-PLAN.md (list separator changed to semicolon)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-20 (v1.6 milestone complete)*
+*Last updated: 2026-03-20 (v1.7 milestone complete)*
