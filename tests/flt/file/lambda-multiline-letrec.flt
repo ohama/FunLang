@@ -1,0 +1,11 @@
+// Test: module-level let rec with multiline fun -> body
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec map f = fun xs ->
+    match xs with
+    | [] -> []
+    | h :: t -> f h :: map f t
+
+let result = map (fun x -> x * 2) [1, 2, 3]
+// --- Output:
+[2, 4, 6]

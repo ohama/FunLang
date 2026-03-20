@@ -1,0 +1,11 @@
+// Test: multiline lambda body after fun ->
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let f = fun xs ->
+    match xs with
+    | [] -> 0
+    | h :: _ -> h
+
+let result = f [42, 99]
+// --- Output:
+42

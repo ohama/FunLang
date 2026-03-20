@@ -112,21 +112,29 @@ Expr:
     // Phase 5: Function definitions
     | LET REC IDENT IDENT EQUALS Expr IN Expr  { LetRec($3, $4, $6, $8, ruleSpan parseState 1 8) }
     | FUN IDENT ARROW Expr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
+    | FUN IDENT ARROW INDENT Expr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
     // v6.0: Annotated lambda - fun (x: T) -> e
     // Single parameter
     | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW Expr
         { LambdaAnnot($3, $5, $8, ruleSpan parseState 1 8) }
+    | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW INDENT Expr DEDENT
+        { LambdaAnnot($3, $5, $9, ruleSpan parseState 1 10) }
     // Phase 10 (Unit): fun () -> body (unit parameter)
     | FUN LPAREN RPAREN ARROW Expr
         { LambdaAnnot("__unit", TETuple [], $5, ruleSpan parseState 1 5) }
+    | FUN LPAREN RPAREN ARROW INDENT Expr DEDENT
+        { LambdaAnnot("__unit", TETuple [], $6, ruleSpan parseState 1 7) }
     // v6.0: Curried annotated lambda - fun (x: T) (y: U) -> e
     // Multiple parameters via AnnotParamList
     | FUN AnnotParamList ARROW Expr
         { desugarAnnotParams $2 $4 (ruleSpan parseState 1 4) }
+    | FUN AnnotParamList ARROW INDENT Expr DEDENT
+        { desugarAnnotParams $2 $5 (ruleSpan parseState 1 6) }
     // Phase 22: Tuple parameter lambda - fun (x, y) -> body
-    // Desugars to Lambda("__tuple_arg", LetPat(TuplePat(...), Var("__tuple_arg"), body))
     | FUN TuplePattern ARROW Expr
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $4, ruleSpan parseState 1 4), ruleSpan parseState 1 4) }
+    | FUN TuplePattern ARROW INDENT Expr DEDENT
+        { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $5, ruleSpan parseState 1 6), ruleSpan parseState 1 6) }
     // Logical operators (precedence from %left declarations)
     | Expr OR Expr                   { Or($1, $3, ruleSpan parseState 1 3) }
     | Expr AND Expr                  { And($1, $3, ruleSpan parseState 1 3) }
