@@ -38,18 +38,18 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| CTX-01 | 23 | Pending |
-| CTX-02 | 23 | Pending |
-| CTX-03 | 23 | Pending |
-| TOK-01 | 23 | Pending |
-| TOK-02 | 23 | Pending |
-| TOK-03 | 23 | Pending |
-| COV-01 | 23 | Pending |
-| COV-02 | 23 | Pending |
-| COV-03 | 23 | Pending |
-| COV-04 | 23 | Pending |
-| COV-05 | 23 | Pending |
-| COV-06 | 23 | Pending |
+| CTX-01 | 23 | Complete |
+| CTX-02 | 23 | Complete |
+| CTX-03 | 23 | Complete |
+| TOK-01 | 23 | Complete |
+| TOK-02 | 23 | Complete |
+| TOK-03 | 23 | Complete |
+| COV-01 | 23 | Complete |
+| COV-02 | 23 | Complete |
+| COV-03 | 23 | Complete |
+| COV-04 | 23 | Complete |
+| COV-05 | 23 | Complete |
+| COV-06 | 23 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 12 total

@@ -2,15 +2,15 @@
 
 ## Current Milestone: v1.6 F#-Style Offside Rule
 
-### Phase 23: IndentFilter Offside Rule Refactoring
+### Phase 23: IndentFilter Offside Rule Refactoring (COMPLETE)
 
 **Goal:** F# LexFilter 방식의 CtxtLetDecl + offside column 기반 implicit `in` 구현
 **Depends on:** v1.5 (complete)
 **Requirements:** CTX-01~03, TOK-01~03, COV-01~06
-**Plans:** 0 plans
+**Status:** COMPLETE — CtxtLetDecl + InExprBlock + InModule contexts, 619 tests passing
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 23 to break down)
+- [x] 23-01: F#-Style Offside Rule (context stack, offside IN, 5 tests)
 
 **Success Criteria:**
 1. `let x = 1 / let y = 2 / x + y` — 단순 let 체인 (in 없이)
