@@ -23,7 +23,7 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token <int> NUMBER
 %token <string> IDENT
 %token <string> STRING
-%token PLUS MINUS STAR SLASH
+%token PLUS MINUS STAR SLASH PERCENT
 %token LPAREN RPAREN
 %token LET IN EQUALS
 %token TRUE FALSE IF THEN ELSE
@@ -166,6 +166,7 @@ Expr:
 Term:
     | Term STAR Factor   { Multiply($1, $3, ruleSpan parseState 1 3) }
     | Term SLASH Factor  { Divide($1, $3, ruleSpan parseState 1 3) }
+    | Term PERCENT Factor { Modulo($1, $3, ruleSpan parseState 1 3) }
     // Phase 19: INFIXOP3 (multiplicative level, same as * /)
     | Term INFIXOP3 Factor
         { let span = ruleSpan parseState 1 3

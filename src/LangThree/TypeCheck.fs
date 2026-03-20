@@ -180,7 +180,7 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectMatches body
     | App(f, arg, _) -> collectMatches f @ collectMatches arg
     | If(cond, thenE, elseE, _) -> collectMatches cond @ collectMatches thenE @ collectMatches elseE
-    | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _) ->
+    | Add(a, b, _) | Subtract(a, b, _) | Multiply(a, b, _) | Divide(a, b, _) | Modulo(a, b, _) ->
         collectMatches a @ collectMatches b
     | Equal(a, b, _) | NotEqual(a, b, _) | LessThan(a, b, _) | GreaterThan(a, b, _)
     | LessEqual(a, b, _) | GreaterEqual(a, b, _) | And(a, b, _) | Or(a, b, _) ->
@@ -452,6 +452,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | Subtract(a, b, s) -> Subtract(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Multiply(a, b, s) -> Multiply(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Divide(a, b, s) -> Divide(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
+    | Modulo(a, b, s) -> Modulo(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Equal(a, b, s) -> Equal(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | NotEqual(a, b, s) -> NotEqual(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | LessThan(a, b, s) -> LessThan(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)

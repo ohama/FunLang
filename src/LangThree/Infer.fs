@@ -176,7 +176,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
 
     // === Arithmetic operators (INFER-05) ===
     // All arithmetic: int -> int -> int
-    | Add (e1, e2, _) | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) ->
+    | Add (e1, e2, _) | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) | Modulo (e1, e2, _) ->
         inferBinaryOpWithContext ctx env e1 e2 TInt TInt TInt
 
     // Unary minus: int -> int

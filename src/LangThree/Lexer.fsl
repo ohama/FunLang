@@ -136,6 +136,8 @@ rule tokenize = parse
     // Phase 18 (Ranges): DOTDOT must come before DOT (longest match)
     | ".."          { DOTDOT }
     | '.'           { DOT }
+    // Phase 21: Modulo operator
+    | '%'           { PERCENT }
     // Phase 19 (User-Defined Operators): Catch-all for 2+ char operator sequences
     // Must come AFTER all specific operator rules. Longest-match + first-match ensures
     // existing operators (|>, >>, <<, &&, ||, <=, >=, <>, ->, <-, ..) match first.

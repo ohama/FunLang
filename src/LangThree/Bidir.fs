@@ -208,7 +208,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Trace = []
             })
 
-    | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) ->
+    | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) | Modulo (e1, e2, _) ->
         let s = inferBinaryOp ctorEnv recEnv ctx env e1 e2 TInt TInt
         (s, TInt)
 

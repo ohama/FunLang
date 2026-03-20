@@ -431,6 +431,11 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | IntValue l, IntValue r -> IntValue (l / r)
         | _ -> failwith "Type error: / requires integer operands"
 
+    | Modulo (left, right, _) ->
+        match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
+        | IntValue l, IntValue r -> IntValue (l % r)
+        | _ -> failwith "Type error: % requires integer operands"
+
     | Negate (e, _) ->
         match eval recEnv moduleEnv env false e with
         | IntValue n -> IntValue (-n)

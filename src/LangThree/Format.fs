@@ -12,6 +12,7 @@ let formatToken (token: Parser.token) : string =
     | Parser.MINUS -> "MINUS"
     | Parser.STAR -> "STAR"
     | Parser.SLASH -> "SLASH"
+    | Parser.PERCENT -> "PERCENT"
     | Parser.LPAREN -> "LPAREN"
     | Parser.RPAREN -> "RPAREN"
     | Parser.LET -> "LET"
@@ -121,6 +122,7 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.Subtract (l, r, _) -> sprintf "Subtract (%s, %s)" (formatAst l) (formatAst r)
     | Ast.Multiply (l, r, _) -> sprintf "Multiply (%s, %s)" (formatAst l) (formatAst r)
     | Ast.Divide (l, r, _) -> sprintf "Divide (%s, %s)" (formatAst l) (formatAst r)
+    | Ast.Modulo (l, r, _) -> sprintf "Modulo (%s, %s)" (formatAst l) (formatAst r)
     | Ast.Negate (e, _) -> sprintf "Negate (%s)" (formatAst e)
     | Ast.LessThan (l, r, _) -> sprintf "LessThan (%s, %s)" (formatAst l) (formatAst r)
     | Ast.GreaterThan (l, r, _) -> sprintf "GreaterThan (%s, %s)" (formatAst l) (formatAst r)
