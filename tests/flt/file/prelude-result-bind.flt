@@ -1,0 +1,7 @@
+// Test: Prelude resultBind for chaining operations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let safeDivide a = fun b -> if b = 0 then Error "div/0" else Ok (a / b)
+let result = Ok 10 |> resultBind (safeDivide 100) |> resultMap (fun x -> x + 1)
+// --- Output:
+Ok 11

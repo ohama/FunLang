@@ -1,0 +1,7 @@
+// Test: Prelude flip function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let sub a = fun b -> a - b
+let result = (sub 10 3, flip sub 10 3)
+// --- Output:
+(7, -7)

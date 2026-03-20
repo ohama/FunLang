@@ -1,0 +1,8 @@
+// Test: Prelude optionMap function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = optionMap (fun x -> x * 2) (Some 21)
+let r2 = optionMap (fun x -> x * 2) None
+let result = (r1, r2)
+// --- Output:
+(Some 42, None)

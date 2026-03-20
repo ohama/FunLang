@@ -1,0 +1,7 @@
+// Test: Prelude optionBind for chaining
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let safeSqrt n = if n >= 0 then Some (n / 2) else None
+let result = Some 16 |> optionBind safeSqrt |> optionMap (fun x -> x + 1)
+// --- Output:
+Some 9

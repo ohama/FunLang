@@ -5,8 +5,8 @@ let myid x = x
 
 let myconst x y = x
 
-let apply f x = f x
+let myapply f x = f x
 // --- Output:
-apply : ('a -> 'b) -> 'a -> 'b
+myapply : ('a -> 'b) -> 'a -> 'b
 myconst : 'a -> 'b -> 'a
 myid : 'a -> 'a

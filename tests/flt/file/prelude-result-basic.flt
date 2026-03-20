@@ -1,0 +1,8 @@
+// Test: Prelude Result type basic usage
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = Ok 42
+let r2 = Error "oops"
+let result = (r1, r2)
+// --- Output:
+(Ok 42, Error "oops")

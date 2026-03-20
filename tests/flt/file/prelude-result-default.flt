@@ -1,0 +1,9 @@
+// Test: Prelude resultDefault and isOk/isError
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = resultDefault 0 (Ok 42)
+let r2 = resultDefault 0 (Error "x")
+let r3 = (isOk (Ok 1), isError (Error "x"))
+let result = (r1, r2, r3)
+// --- Output:
+(42, 0, (true, true))

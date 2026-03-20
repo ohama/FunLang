@@ -1,0 +1,8 @@
+// Test: Prelude resultMap function
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = resultMap (fun x -> x * 2) (Ok 21)
+let r2 = resultMap (fun x -> x * 2) (Error "fail")
+let result = (r1, r2)
+// --- Output:
+(Ok 42, Error "fail")

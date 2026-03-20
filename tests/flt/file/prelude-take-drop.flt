@@ -1,0 +1,8 @@
+// Test: Prelude take and drop functions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = take 3 [1..10]
+let r2 = drop 7 [1..10]
+let result = (r1, r2)
+// --- Output:
+([1, 2, 3], [8, 9, 10])

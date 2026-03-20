@@ -1,0 +1,8 @@
+// Test: Prelude resultMapError transforms error value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = resultMapError (fun e -> "wrapped: " + e) (Error "fail")
+let r2 = resultMapError (fun e -> "wrapped: " + e) (Ok 42)
+let result = (r1, r2)
+// --- Output:
+(Error "wrapped: fail", Ok 42)
