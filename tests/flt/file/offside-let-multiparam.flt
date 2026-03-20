@@ -1,0 +1,9 @@
+// Test: multi-param let with implicit in
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let double x = x * 2
+    let add x y = x + y
+    add (double 3) (double 4)
+// --- Output:
+14

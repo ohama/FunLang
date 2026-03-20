@@ -242,8 +242,10 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                      | Some Parser.IN -> false
                      | _ -> true) &&
                     (match newState.Context with
-                     | InMatch _ :: _ | InTry _ :: _ | InFunctionApp _ :: _ -> false
+                     | InFunctionApp _ :: _ -> false  // Don't insert IN in function app
                      | _ -> true)
+                    // Note: InMatch/InTry do NOT block offside rule anymore.
+                    // They only affect pipe alignment in processNewlineWithContext.
 
                 if isAtSameLevel then
                     // Check offside: pop InLetDecl contexts where col <= offsideCol, emit IN for each
