@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-407c0bff.js";
+            window.path_to_searchindex_js = "searchindex-dc005797.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -383,8 +383,8 @@ $ langthree multi2.l3
 7
 </code></pre>
 <h2 id="재귀-함수-recursive-functions"><a class="header" href="#재귀-함수-recursive-functions">재귀 함수 (Recursive Functions)</a></h2>
-<p>재귀에는 <code>let rec</code>를 사용합니다. 이는 표현식 레벨(<code>in</code>과 함께)에서만 작동하며,
-모듈 레벨에서는 사용할 수 <strong>없습니다</strong> – 알려진 제한 사항입니다.</p>
+<p>재귀에는 <code>let rec</code>를 사용합니다. 표현식 레벨(<code>in</code>과 함께)에서 사용할 수 있으며,
+v1.4부터는 모듈 레벨에서도 사용 가능합니다 (아래 “모듈 레벨 let rec” 참조).</p>
 <pre><code>funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5
 120
 </code></pre>
@@ -402,6 +402,76 @@ let result =
 $ langthree factorial.l3
 3628800
 </code></pre>
+<h2 id="모듈-레벨-let-rec"><a class="header" href="#모듈-레벨-let-rec">모듈 레벨 let rec</a></h2>
+<p>v1.4부터 <code>let rec</code>을 모듈 레벨(파일 최상위)에서도 사용할 수 있습니다.
+이전에는 <code>let rec ... in ...</code> 형태로만 가능했지만, 이제 <code>in</code> 없이 직접 선언할 수 있습니다:</p>
+<pre><code>$ cat fact_module.l3
+let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1)
+let result = fact 10
+
+$ langthree fact_module.l3
+3628800
+</code></pre>
+<p>이 형태는 파일 모드에서만 동작합니다. REPL에서는 여전히 <code>let rec ... in ...</code>을 사용하세요.</p>
+<h2 id="상호-재귀-mutual-recursion"><a class="header" href="#상호-재귀-mutual-recursion">상호 재귀 (Mutual Recursion)</a></h2>
+<p><code>and</code> 키워드로 서로를 호출하는 함수들을 동시에 선언할 수 있습니다:</p>
+<pre><code>$ cat even_odd.l3
+let rec even n = if n = 0 then true else odd (n - 1)
+and odd n = if n = 0 then false else even (n - 1)
+
+let result = (even 10, odd 7)
+
+$ langthree even_odd.l3
+(true, true)
+</code></pre>
+<p><code>even</code>과 <code>odd</code>는 서로를 호출합니다. <code>and</code>로 연결된 함수들은 동시에 환경에 등록되어
+서로의 존재를 알 수 있습니다.</p>
+<p>상호 재귀는 모듈 레벨에서만 동작합니다. 각 함수는 단일 파라미터를 받으며,
+다중 파라미터는 클로저로 처리합니다:</p>
+<pre><code>$ cat mutrec_multi.l3
+let rec isEven n = if n = 0 then true else isOdd (n - 1)
+and isOdd n = if n = 0 then false else isEven (n - 1)
+
+let r1 = isEven 100
+let r2 = isOdd 99
+let result = (r1, r2)
+
+$ langthree mutrec_multi.l3
+(true, true)
+</code></pre>
+<h2 id="꼬리-호출-최적화-tail-call-optimization"><a class="header" href="#꼬리-호출-최적화-tail-call-optimization">꼬리 호출 최적화 (Tail Call Optimization)</a></h2>
+<p>LangThree는 꼬리 위치(tail position)의 함수 호출을 자동으로 최적화합니다.
+이를 통해 깊은 재귀도 스택 오버플로우 없이 실행됩니다.</p>
+<p><strong>꼬리 호출이란?</strong> 함수의 마지막 동작이 다른 함수를 호출하는 것입니다:</p>
+<pre><code>$ cat tco_loop.l3
+let rec loop n = if n = 0 then 0 else loop (n - 1)
+let result = loop 1000000
+
+$ langthree tco_loop.l3
+0
+</code></pre>
+<p>100만 번의 재귀가 스택 오버플로우 없이 동작합니다.</p>
+<p><strong>누적 변수 패턴:</strong> 꼬리 재귀로 바꾸려면 결과를 누적 변수에 전달하세요:</p>
+<pre><code>-- 꼬리 재귀가 아닌 버전 (n * fact(n-1)에서 곱셈이 남음):
+funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 10
+3628800
+
+-- 꼬리 재귀 버전 (acc에 결과 누적):
+$ cat tco_fact.l3
+let rec factTail n = fun acc -&gt; if n &lt;= 1 then acc else factTail (n - 1) (acc * n)
+let result = factTail 10 1
+
+$ langthree tco_fact.l3
+3628800
+</code></pre>
+<p><strong>꼬리 위치 규칙:</strong></p>
+<ul>
+<li><code>if</code> 양쪽 브랜치: 꼬리 위치 ✓</li>
+<li><code>match</code> 절 본문: 꼬리 위치 ✓</li>
+<li><code>let ... in body</code>: body가 꼬리 위치 ✓</li>
+<li><code>try ... with</code>: try 본문은 꼬리 위치 ✗ (예외 핸들러 때문)</li>
+<li>산술 연산의 피연산자: 꼬리 위치 ✗ (연산이 남아있음)</li>
+</ul>
 <h2 id="고차-함수-higher-order-functions"><a class="header" href="#고차-함수-higher-order-functions">고차 함수 (Higher-Order Functions)</a></h2>
 <p>함수는 일급 값(first-class values)입니다. 함수를 인자로 전달할 수 있습니다:</p>
 <pre><code>$ cat hof.l3
@@ -467,6 +537,39 @@ funlang&gt; []
 funlang&gt; 1 :: 2 :: 3 :: []
 [1, 2, 3]
 </code></pre>
+<h2 id="리스트-범위-list-ranges"><a class="header" href="#리스트-범위-list-ranges">리스트 범위 (List Ranges)</a></h2>
+<p><code>[start..stop]</code> 구문으로 정수 리스트를 생성할 수 있습니다:</p>
+<pre><code>funlang&gt; [1..5]
+[1, 2, 3, 4, 5]
+
+funlang&gt; [1..10]
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+</code></pre>
+<p>스텝(증가값)을 지정할 수도 있습니다. <code>[start..step..stop]</code> 형태입니다:</p>
+<pre><code>funlang&gt; [1..2..10]
+[1, 3, 5, 7, 9]
+
+funlang&gt; [0..5..20]
+[0, 5, 10, 15, 20]
+</code></pre>
+<p><code>stop</code>이 <code>start</code>보다 작으면 빈 리스트를 반환합니다 (F# 동작과 동일):</p>
+<pre><code>funlang&gt; [5..1]
+[]
+</code></pre>
+<p>단일 원소 범위:</p>
+<pre><code>funlang&gt; [3..3]
+[3]
+</code></pre>
+<p>범위는 파이프 연산자와 함께 유용합니다:</p>
+<pre><code>$ cat range_sum.l3
+let result =
+    let rec fold f = fun acc -&gt; fun xs -&gt; match xs with | [] -&gt; acc | h :: t -&gt; fold f (f acc h) t
+    in fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..100]
+
+$ langthree range_sum.l3
+5050
+</code></pre>
+<p><strong>참고:</strong> 범위는 정수(<code>int</code>)만 지원합니다. 스텝이 0이면 런타임 에러가 발생합니다.</p>
 <h2 id="튜플-tuples"><a class="header" href="#튜플-tuples">튜플 (Tuples)</a></h2>
 <p>튜플은 고정 크기의 이질적(heterogeneous) 컬렉션입니다:</p>
 <pre><code>funlang&gt; (1, "hello")
@@ -570,7 +673,32 @@ let result = dayType 3
 $ langthree daytype.l3
 "Wednesday"
 </code></pre>
-<p><strong>참고:</strong> 문자열 상수 패턴은 지원되지 않습니다. 문자열 비교에는 <code>if ... then ... else</code>를 사용하세요.</p>
+<h3 id="문자열-패턴-string-patterns"><a class="header" href="#문자열-패턴-string-patterns">문자열 패턴 (String Patterns)</a></h3>
+<p>v1.4부터 문자열 리터럴도 패턴으로 사용할 수 있습니다:</p>
+<pre><code>$ cat string_match.l3
+let greet name =
+    match name with
+    | "Alice" -&gt; "Hello, Alice!"
+    | "Bob" -&gt; "Hi, Bob!"
+    | _ -&gt; "Who are you, " + name + "?"
+let result = greet "Alice"
+
+$ langthree string_match.l3
+"Hello, Alice!"
+</code></pre>
+<p>커맨드 디스패치에 유용합니다:</p>
+<pre><code>$ cat cmd_dispatch.l3
+let classify cmd =
+    match cmd with
+    | "quit" | "exit" | "q" -&gt; "exit command"
+    | "help" | "?" -&gt; "help command"
+    | _ -&gt; "unknown: " + cmd
+let result = classify "quit"
+
+$ langthree cmd_dispatch.l3
+"exit command"
+</code></pre>
+<p>위 예제는 or-패턴과 문자열 패턴을 함께 사용합니다. or-패턴은 아래에서 설명합니다.</p>
 <h3 id="변수-및-와일드카드-패턴-variable-and-wildcard-patterns"><a class="header" href="#변수-및-와일드카드-패턴-variable-and-wildcard-patterns">변수 및 와일드카드 패턴 (Variable and Wildcard Patterns)</a></h3>
 <p>변수 패턴은 매칭된 값을 이름에 바인딩합니다. <code>_</code>는 값을 버리는 와일드카드(wildcard)입니다:</p>
 <pre><code>funlang&gt; match 42 with | x -&gt; x + 1
@@ -749,6 +877,72 @@ let result = greet { name = "Alice"; age = 30; active = true }
 $ langthree record_partial.l3
 "Alice is 30"
 </code></pre>
+<h2 id="or-패턴-or-patterns"><a class="header" href="#or-패턴-or-patterns">Or-패턴 (Or-Patterns)</a></h2>
+<p>여러 패턴이 같은 본문을 공유할 때 <code>|</code>로 결합합니다:</p>
+<pre><code>funlang&gt; match 2 with | 1 | 2 | 3 -&gt; "small" | _ -&gt; "big"
+"small"
+</code></pre>
+<p>각 대안은 같은 결과 표현식으로 이어집니다. 파일 모드에서:</p>
+<pre><code>$ cat or_pattern.l3
+let classify n =
+    match n with
+    | 0 -&gt; "zero"
+    | 1 | 2 | 3 -&gt; "small"
+    | 4 | 5 | 6 -&gt; "medium"
+    | _ -&gt; "large"
+let result = classify 5
+
+$ langthree or_pattern.l3
+"medium"
+</code></pre>
+<h3 id="생성자와-or-패턴"><a class="header" href="#생성자와-or-패턴">생성자와 Or-패턴</a></h3>
+<p>ADT 생성자에도 사용할 수 있습니다:</p>
+<pre><code>$ cat or_ctor.l3
+type Direction = North | South | East | West
+
+let isVertical d =
+    match d with
+    | North | South -&gt; true
+    | East | West -&gt; false
+let result = (isVertical North, isVertical East)
+
+$ langthree or_ctor.l3
+(true, false)
+</code></pre>
+<h3 id="문자열-or-패턴"><a class="header" href="#문자열-or-패턴">문자열 Or-패턴</a></h3>
+<p>문자열 패턴과 조합하면 강력한 디스패치가 가능합니다:</p>
+<pre><code>$ cat or_string.l3
+let respond input =
+    match input with
+    | "yes" | "y" | "ok" -&gt; true
+    | "no" | "n" -&gt; false
+    | _ -&gt; false
+let result = (respond "yes", respond "n", respond "maybe")
+
+$ langthree or_string.l3
+(true, false, false)
+</code></pre>
+<h3 id="소진-검사와-or-패턴"><a class="header" href="#소진-검사와-or-패턴">소진 검사와 Or-패턴</a></h3>
+<p>Or-패턴은 소진 검사(exhaustiveness)에 올바르게 통합됩니다.
+각 대안이 별도의 패턴으로 취급되어, or-패턴으로 모든 경우를 커버하면 경고가 나오지 않습니다:</p>
+<pre><code>$ cat or_exhaust.l3
+type Color = Red | Green | Blue
+
+let name c =
+    match c with
+    | Red -&gt; "red"
+    | Green | Blue -&gt; "cool"
+let result = name Red
+
+$ langthree or_exhaust.l3
+"red"
+</code></pre>
+<p>위 예제에서 <code>Green | Blue</code>가 나머지 모든 경우를 커버하므로 소진 경고가 없습니다.</p>
+<h3 id="제한-사항"><a class="header" href="#제한-사항">제한 사항</a></h3>
+<ul>
+<li>Or-패턴은 <strong>최상위 레벨에서만</strong> 지원됩니다. 중첩된 or-패턴 (<code>Some (1 | 2)</code>)은 아직 지원되지 않습니다.</li>
+<li>Or-패턴 내에서 변수 바인딩은 허용되지 않습니다. 상수와 생성자 패턴만 사용하세요.</li>
+</ul>
 <h2 id="when-가드-when-guards"><a class="header" href="#when-가드-when-guards">When 가드 (When Guards)</a></h2>
 <p><code>when</code>을 사용하여 패턴에 불리언 조건을 추가합니다. 가드는
 패턴이 매칭된 후에 평가됩니다. 가드가 실패하면 다음 절(clause)로
@@ -990,6 +1184,7 @@ $ langthree isort.l3
 </thead>
 <tbody>
 <tr><td>상수</td><td><code>0</code>, <code>true</code></td><td><code>| 0 -&gt; "zero"</code></td></tr>
+<tr><td>문자열</td><td><code>"hello"</code></td><td><code>| "hello" -&gt; "hi"</code></td></tr>
 <tr><td>변수</td><td><code>x</code></td><td><code>| x -&gt; x + 1</code></td></tr>
 <tr><td>와일드카드</td><td><code>_</code></td><td><code>| _ -&gt; "default"</code></td></tr>
 <tr><td>튜플</td><td><code>(a, b)</code></td><td><code>| (x, y) -&gt; x + y</code></td></tr>
@@ -998,6 +1193,7 @@ $ langthree isort.l3
 <tr><td>생성자</td><td><code>Some x</code></td><td><code>| Some v -&gt; v</code></td></tr>
 <tr><td>레코드</td><td><code>{ x = a }</code></td><td><code>| { x = a } -&gt; a</code></td></tr>
 <tr><td>중첩</td><td><code>Some (x :: _)</code></td><td><code>| Some (h :: _) -&gt; h</code></td></tr>
+<tr><td>Or-패턴</td><td><code>1 | 2 | 3</code></td><td><code>| 1 | 2 | 3 -&gt; "small"</code></td></tr>
 <tr><td>가드 포함</td><td><code>x when cond</code></td><td><code>| n when n &gt; 0 -&gt; "pos"</code></td></tr>
 </tbody>
 </table>
@@ -1142,6 +1338,51 @@ let result =
 $ langthree calc.l3
 14
 </code></pre>
+<h2 id="타입-별칭-type-aliases"><a class="header" href="#타입-별칭-type-aliases">타입 별칭 (Type Aliases)</a></h2>
+<p><code>type Name = ExistingType</code>으로 기존 타입에 별칭을 부여할 수 있습니다:</p>
+<pre><code>$ cat alias_basic.l3
+type Name = string
+type Age = int
+
+let greet name age = name + " is " + to_string age
+let result = greet "Alice" 30
+
+$ langthree alias_basic.l3
+"Alice is 30"
+</code></pre>
+<p>타입 별칭은 **투명(transparent)**합니다 — 별칭과 원본 타입은 완전히 동일합니다.
+<code>Name</code>은 <code>string</code>과 같은 타입이므로, <code>string</code> 함수를 그대로 사용할 수 있습니다.</p>
+<h3 id="복합-타입-별칭"><a class="header" href="#복합-타입-별칭">복합 타입 별칭</a></h3>
+<p>튜플, 함수, 리스트 타입에도 별칭을 붙일 수 있습니다:</p>
+<pre><code>$ cat alias_complex.l3
+type IntPair = int * int
+type Transform = int -&gt; int
+type IntList = int list
+
+let swap p =
+    match p with
+    | (a, b) -&gt; (b, a)
+
+let result = swap (1, 2)
+
+$ langthree alias_complex.l3
+(2, 1)
+</code></pre>
+<h3 id="타입-별칭-vs-adt"><a class="header" href="#타입-별칭-vs-adt">타입 별칭 vs ADT</a></h3>
+<p>타입 별칭은 새로운 타입을 만들지 않습니다. 단지 기존 타입의 다른 이름일 뿐입니다:</p>
+<ul>
+<li><code>type Name = string</code> — 별칭. <code>Name</code>은 <code>string</code>과 동일</li>
+<li><code>type Color = Red | Green | Blue</code> — ADT. <code>Color</code>는 새로운 타입</li>
+</ul>
+<p><code>--emit-type</code>에서 별칭은 원본 타입으로 표시됩니다:</p>
+<pre><code>$ cat alias_emit.l3
+type Name = string
+let x = "hello"
+
+$ langthree --emit-type alias_emit.l3
+x : string
+</code></pre>
+<p><code>Name</code>이 아닌 <code>string</code>으로 표시됩니다.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="제6장-레코드-records"><a class="header" href="#제6장-레코드-records">제6장: 레코드 (Records)</a></h1>
 <h2 id="레코드-타입-선언"><a class="header" href="#레코드-타입-선언">레코드 타입 선언</a></h2>
@@ -1260,7 +1501,7 @@ let result = acct.balance
 $ langthree account.l3
 120
 </code></pre>
-<h2 id="제한-사항"><a class="header" href="#제한-사항">제한 사항</a></h2>
+<h2 id="제한-사항-1"><a class="header" href="#제한-사항-1">제한 사항</a></h2>
 <ul>
 <li><strong>필드 단축 표기 불가:</strong> <code>{ px = px; py = py }</code>의 축약형으로 <code>{ px; py }</code>를 사용할 수 없습니다.</li>
 <li><strong>전역적으로 고유한 필드:</strong> 두 레코드 타입이 같은 필드 이름을 공유할 수 없습니다.

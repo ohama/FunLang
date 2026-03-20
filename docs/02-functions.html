@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-407c0bff.js";
+            window.path_to_searchindex_js = "searchindex-dc005797.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -223,8 +223,8 @@ $ langthree multi2.l3
 7
 </code></pre>
 <h2 id="재귀-함수-recursive-functions"><a class="header" href="#재귀-함수-recursive-functions">재귀 함수 (Recursive Functions)</a></h2>
-<p>재귀에는 <code>let rec</code>를 사용합니다. 이는 표현식 레벨(<code>in</code>과 함께)에서만 작동하며,
-모듈 레벨에서는 사용할 수 <strong>없습니다</strong> – 알려진 제한 사항입니다.</p>
+<p>재귀에는 <code>let rec</code>를 사용합니다. 표현식 레벨(<code>in</code>과 함께)에서 사용할 수 있으며,
+v1.4부터는 모듈 레벨에서도 사용 가능합니다 (아래 “모듈 레벨 let rec” 참조).</p>
 <pre><code>funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 5
 120
 </code></pre>
@@ -242,6 +242,76 @@ let result =
 $ langthree factorial.l3
 3628800
 </code></pre>
+<h2 id="모듈-레벨-let-rec"><a class="header" href="#모듈-레벨-let-rec">모듈 레벨 let rec</a></h2>
+<p>v1.4부터 <code>let rec</code>을 모듈 레벨(파일 최상위)에서도 사용할 수 있습니다.
+이전에는 <code>let rec ... in ...</code> 형태로만 가능했지만, 이제 <code>in</code> 없이 직접 선언할 수 있습니다:</p>
+<pre><code>$ cat fact_module.l3
+let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1)
+let result = fact 10
+
+$ langthree fact_module.l3
+3628800
+</code></pre>
+<p>이 형태는 파일 모드에서만 동작합니다. REPL에서는 여전히 <code>let rec ... in ...</code>을 사용하세요.</p>
+<h2 id="상호-재귀-mutual-recursion"><a class="header" href="#상호-재귀-mutual-recursion">상호 재귀 (Mutual Recursion)</a></h2>
+<p><code>and</code> 키워드로 서로를 호출하는 함수들을 동시에 선언할 수 있습니다:</p>
+<pre><code>$ cat even_odd.l3
+let rec even n = if n = 0 then true else odd (n - 1)
+and odd n = if n = 0 then false else even (n - 1)
+
+let result = (even 10, odd 7)
+
+$ langthree even_odd.l3
+(true, true)
+</code></pre>
+<p><code>even</code>과 <code>odd</code>는 서로를 호출합니다. <code>and</code>로 연결된 함수들은 동시에 환경에 등록되어
+서로의 존재를 알 수 있습니다.</p>
+<p>상호 재귀는 모듈 레벨에서만 동작합니다. 각 함수는 단일 파라미터를 받으며,
+다중 파라미터는 클로저로 처리합니다:</p>
+<pre><code>$ cat mutrec_multi.l3
+let rec isEven n = if n = 0 then true else isOdd (n - 1)
+and isOdd n = if n = 0 then false else isEven (n - 1)
+
+let r1 = isEven 100
+let r2 = isOdd 99
+let result = (r1, r2)
+
+$ langthree mutrec_multi.l3
+(true, true)
+</code></pre>
+<h2 id="꼬리-호출-최적화-tail-call-optimization"><a class="header" href="#꼬리-호출-최적화-tail-call-optimization">꼬리 호출 최적화 (Tail Call Optimization)</a></h2>
+<p>LangThree는 꼬리 위치(tail position)의 함수 호출을 자동으로 최적화합니다.
+이를 통해 깊은 재귀도 스택 오버플로우 없이 실행됩니다.</p>
+<p><strong>꼬리 호출이란?</strong> 함수의 마지막 동작이 다른 함수를 호출하는 것입니다:</p>
+<pre><code>$ cat tco_loop.l3
+let rec loop n = if n = 0 then 0 else loop (n - 1)
+let result = loop 1000000
+
+$ langthree tco_loop.l3
+0
+</code></pre>
+<p>100만 번의 재귀가 스택 오버플로우 없이 동작합니다.</p>
+<p><strong>누적 변수 패턴:</strong> 꼬리 재귀로 바꾸려면 결과를 누적 변수에 전달하세요:</p>
+<pre><code>-- 꼬리 재귀가 아닌 버전 (n * fact(n-1)에서 곱셈이 남음):
+funlang&gt; let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1) in fact 10
+3628800
+
+-- 꼬리 재귀 버전 (acc에 결과 누적):
+$ cat tco_fact.l3
+let rec factTail n = fun acc -&gt; if n &lt;= 1 then acc else factTail (n - 1) (acc * n)
+let result = factTail 10 1
+
+$ langthree tco_fact.l3
+3628800
+</code></pre>
+<p><strong>꼬리 위치 규칙:</strong></p>
+<ul>
+<li><code>if</code> 양쪽 브랜치: 꼬리 위치 ✓</li>
+<li><code>match</code> 절 본문: 꼬리 위치 ✓</li>
+<li><code>let ... in body</code>: body가 꼬리 위치 ✓</li>
+<li><code>try ... with</code>: try 본문은 꼬리 위치 ✗ (예외 핸들러 때문)</li>
+<li>산술 연산의 피연산자: 꼬리 위치 ✗ (연산이 남아있음)</li>
+</ul>
 <h2 id="고차-함수-higher-order-functions"><a class="header" href="#고차-함수-higher-order-functions">고차 함수 (Higher-Order Functions)</a></h2>
 <p>함수는 일급 값(first-class values)입니다. 함수를 인자로 전달할 수 있습니다:</p>
 <pre><code>$ cat hof.l3

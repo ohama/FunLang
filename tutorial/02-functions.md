@@ -74,8 +74,8 @@ $ langthree multi2.l3
 
 ## 재귀 함수 (Recursive Functions)
 
-재귀에는 `let rec`를 사용합니다. 이는 표현식 레벨(`in`과 함께)에서만 작동하며,
-모듈 레벨에서는 사용할 수 **없습니다** -- 알려진 제한 사항입니다.
+재귀에는 `let rec`를 사용합니다. 표현식 레벨(`in`과 함께)에서 사용할 수 있으며,
+v1.4부터는 모듈 레벨에서도 사용 가능합니다 (아래 "모듈 레벨 let rec" 참조).
 
 ```
 funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
@@ -101,6 +101,97 @@ let result =
 $ langthree factorial.l3
 3628800
 ```
+
+## 모듈 레벨 let rec
+
+v1.4부터 `let rec`을 모듈 레벨(파일 최상위)에서도 사용할 수 있습니다.
+이전에는 `let rec ... in ...` 형태로만 가능했지만, 이제 `in` 없이 직접 선언할 수 있습니다:
+
+```
+$ cat fact_module.l3
+let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
+let result = fact 10
+
+$ langthree fact_module.l3
+3628800
+```
+
+이 형태는 파일 모드에서만 동작합니다. REPL에서는 여전히 `let rec ... in ...`을 사용하세요.
+
+## 상호 재귀 (Mutual Recursion)
+
+`and` 키워드로 서로를 호출하는 함수들을 동시에 선언할 수 있습니다:
+
+```
+$ cat even_odd.l3
+let rec even n = if n = 0 then true else odd (n - 1)
+and odd n = if n = 0 then false else even (n - 1)
+
+let result = (even 10, odd 7)
+
+$ langthree even_odd.l3
+(true, true)
+```
+
+`even`과 `odd`는 서로를 호출합니다. `and`로 연결된 함수들은 동시에 환경에 등록되어
+서로의 존재를 알 수 있습니다.
+
+상호 재귀는 모듈 레벨에서만 동작합니다. 각 함수는 단일 파라미터를 받으며,
+다중 파라미터는 클로저로 처리합니다:
+
+```
+$ cat mutrec_multi.l3
+let rec isEven n = if n = 0 then true else isOdd (n - 1)
+and isOdd n = if n = 0 then false else isEven (n - 1)
+
+let r1 = isEven 100
+let r2 = isOdd 99
+let result = (r1, r2)
+
+$ langthree mutrec_multi.l3
+(true, true)
+```
+
+## 꼬리 호출 최적화 (Tail Call Optimization)
+
+LangThree는 꼬리 위치(tail position)의 함수 호출을 자동으로 최적화합니다.
+이를 통해 깊은 재귀도 스택 오버플로우 없이 실행됩니다.
+
+**꼬리 호출이란?** 함수의 마지막 동작이 다른 함수를 호출하는 것입니다:
+
+```
+$ cat tco_loop.l3
+let rec loop n = if n = 0 then 0 else loop (n - 1)
+let result = loop 1000000
+
+$ langthree tco_loop.l3
+0
+```
+
+100만 번의 재귀가 스택 오버플로우 없이 동작합니다.
+
+**누적 변수 패턴:** 꼬리 재귀로 바꾸려면 결과를 누적 변수에 전달하세요:
+
+```
+-- 꼬리 재귀가 아닌 버전 (n * fact(n-1)에서 곱셈이 남음):
+funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 10
+3628800
+
+-- 꼬리 재귀 버전 (acc에 결과 누적):
+$ cat tco_fact.l3
+let rec factTail n = fun acc -> if n <= 1 then acc else factTail (n - 1) (acc * n)
+let result = factTail 10 1
+
+$ langthree tco_fact.l3
+3628800
+```
+
+**꼬리 위치 규칙:**
+- `if` 양쪽 브랜치: 꼬리 위치 ✓
+- `match` 절 본문: 꼬리 위치 ✓
+- `let ... in body`: body가 꼬리 위치 ✓
+- `try ... with`: try 본문은 꼬리 위치 ✗ (예외 핸들러 때문)
+- 산술 연산의 피연산자: 꼬리 위치 ✗ (연산이 남아있음)
 
 ## 고차 함수 (Higher-Order Functions)
 

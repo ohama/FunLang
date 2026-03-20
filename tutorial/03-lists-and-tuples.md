@@ -22,6 +22,56 @@ funlang> 1 :: 2 :: 3 :: []
 [1, 2, 3]
 ```
 
+## 리스트 범위 (List Ranges)
+
+`[start..stop]` 구문으로 정수 리스트를 생성할 수 있습니다:
+
+```
+funlang> [1..5]
+[1, 2, 3, 4, 5]
+
+funlang> [1..10]
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+```
+
+스텝(증가값)을 지정할 수도 있습니다. `[start..step..stop]` 형태입니다:
+
+```
+funlang> [1..2..10]
+[1, 3, 5, 7, 9]
+
+funlang> [0..5..20]
+[0, 5, 10, 15, 20]
+```
+
+`stop`이 `start`보다 작으면 빈 리스트를 반환합니다 (F# 동작과 동일):
+
+```
+funlang> [5..1]
+[]
+```
+
+단일 원소 범위:
+
+```
+funlang> [3..3]
+[3]
+```
+
+범위는 파이프 연산자와 함께 유용합니다:
+
+```
+$ cat range_sum.l3
+let result =
+    let rec fold f = fun acc -> fun xs -> match xs with | [] -> acc | h :: t -> fold f (f acc h) t
+    in fold (fun acc -> fun x -> acc + x) 0 [1..100]
+
+$ langthree range_sum.l3
+5050
+```
+
+**참고:** 범위는 정수(`int`)만 지원합니다. 스텝이 0이면 런타임 에러가 발생합니다.
+
 ## 튜플 (Tuples)
 
 튜플은 고정 크기의 이질적(heterogeneous) 컬렉션입니다:

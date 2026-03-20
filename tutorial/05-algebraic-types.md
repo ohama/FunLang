@@ -181,3 +181,62 @@ let result =
 $ langthree calc.l3
 14
 ```
+
+## 타입 별칭 (Type Aliases)
+
+`type Name = ExistingType`으로 기존 타입에 별칭을 부여할 수 있습니다:
+
+```
+$ cat alias_basic.l3
+type Name = string
+type Age = int
+
+let greet name age = name + " is " + to_string age
+let result = greet "Alice" 30
+
+$ langthree alias_basic.l3
+"Alice is 30"
+```
+
+타입 별칭은 **투명(transparent)**합니다 — 별칭과 원본 타입은 완전히 동일합니다.
+`Name`은 `string`과 같은 타입이므로, `string` 함수를 그대로 사용할 수 있습니다.
+
+### 복합 타입 별칭
+
+튜플, 함수, 리스트 타입에도 별칭을 붙일 수 있습니다:
+
+```
+$ cat alias_complex.l3
+type IntPair = int * int
+type Transform = int -> int
+type IntList = int list
+
+let swap p =
+    match p with
+    | (a, b) -> (b, a)
+
+let result = swap (1, 2)
+
+$ langthree alias_complex.l3
+(2, 1)
+```
+
+### 타입 별칭 vs ADT
+
+타입 별칭은 새로운 타입을 만들지 않습니다. 단지 기존 타입의 다른 이름일 뿐입니다:
+
+- `type Name = string` — 별칭. `Name`은 `string`과 동일
+- `type Color = Red | Green | Blue` — ADT. `Color`는 새로운 타입
+
+`--emit-type`에서 별칭은 원본 타입으로 표시됩니다:
+
+```
+$ cat alias_emit.l3
+type Name = string
+let x = "hello"
+
+$ langthree --emit-type alias_emit.l3
+x : string
+```
+
+`Name`이 아닌 `string`으로 표시됩니다.

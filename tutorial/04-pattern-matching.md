@@ -65,7 +65,39 @@ $ langthree daytype.l3
 "Wednesday"
 ```
 
-**참고:** 문자열 상수 패턴은 지원되지 않습니다. 문자열 비교에는 `if ... then ... else`를 사용하세요.
+### 문자열 패턴 (String Patterns)
+
+v1.4부터 문자열 리터럴도 패턴으로 사용할 수 있습니다:
+
+```
+$ cat string_match.l3
+let greet name =
+    match name with
+    | "Alice" -> "Hello, Alice!"
+    | "Bob" -> "Hi, Bob!"
+    | _ -> "Who are you, " + name + "?"
+let result = greet "Alice"
+
+$ langthree string_match.l3
+"Hello, Alice!"
+```
+
+커맨드 디스패치에 유용합니다:
+
+```
+$ cat cmd_dispatch.l3
+let classify cmd =
+    match cmd with
+    | "quit" | "exit" | "q" -> "exit command"
+    | "help" | "?" -> "help command"
+    | _ -> "unknown: " + cmd
+let result = classify "quit"
+
+$ langthree cmd_dispatch.l3
+"exit command"
+```
+
+위 예제는 or-패턴과 문자열 패턴을 함께 사용합니다. or-패턴은 아래에서 설명합니다.
 
 ### 변수 및 와일드카드 패턴 (Variable and Wildcard Patterns)
 
@@ -300,6 +332,92 @@ let result = greet { name = "Alice"; age = 30; active = true }
 $ langthree record_partial.l3
 "Alice is 30"
 ```
+
+## Or-패턴 (Or-Patterns)
+
+여러 패턴이 같은 본문을 공유할 때 `|`로 결합합니다:
+
+```
+funlang> match 2 with | 1 | 2 | 3 -> "small" | _ -> "big"
+"small"
+```
+
+각 대안은 같은 결과 표현식으로 이어집니다. 파일 모드에서:
+
+```
+$ cat or_pattern.l3
+let classify n =
+    match n with
+    | 0 -> "zero"
+    | 1 | 2 | 3 -> "small"
+    | 4 | 5 | 6 -> "medium"
+    | _ -> "large"
+let result = classify 5
+
+$ langthree or_pattern.l3
+"medium"
+```
+
+### 생성자와 Or-패턴
+
+ADT 생성자에도 사용할 수 있습니다:
+
+```
+$ cat or_ctor.l3
+type Direction = North | South | East | West
+
+let isVertical d =
+    match d with
+    | North | South -> true
+    | East | West -> false
+let result = (isVertical North, isVertical East)
+
+$ langthree or_ctor.l3
+(true, false)
+```
+
+### 문자열 Or-패턴
+
+문자열 패턴과 조합하면 강력한 디스패치가 가능합니다:
+
+```
+$ cat or_string.l3
+let respond input =
+    match input with
+    | "yes" | "y" | "ok" -> true
+    | "no" | "n" -> false
+    | _ -> false
+let result = (respond "yes", respond "n", respond "maybe")
+
+$ langthree or_string.l3
+(true, false, false)
+```
+
+### 소진 검사와 Or-패턴
+
+Or-패턴은 소진 검사(exhaustiveness)에 올바르게 통합됩니다.
+각 대안이 별도의 패턴으로 취급되어, or-패턴으로 모든 경우를 커버하면 경고가 나오지 않습니다:
+
+```
+$ cat or_exhaust.l3
+type Color = Red | Green | Blue
+
+let name c =
+    match c with
+    | Red -> "red"
+    | Green | Blue -> "cool"
+let result = name Red
+
+$ langthree or_exhaust.l3
+"red"
+```
+
+위 예제에서 `Green | Blue`가 나머지 모든 경우를 커버하므로 소진 경고가 없습니다.
+
+### 제한 사항
+
+- Or-패턴은 **최상위 레벨에서만** 지원됩니다. 중첩된 or-패턴 (`Some (1 | 2)`)은 아직 지원되지 않습니다.
+- Or-패턴 내에서 변수 바인딩은 허용되지 않습니다. 상수와 생성자 패턴만 사용하세요.
 
 ## When 가드 (When Guards)
 
@@ -610,6 +728,7 @@ $ langthree isort.l3
 | 패턴 | 구문 | 예제 |
 |------|------|------|
 | 상수 | `0`, `true` | `\| 0 -> "zero"` |
+| 문자열 | `"hello"` | `\| "hello" -> "hi"` |
 | 변수 | `x` | `\| x -> x + 1` |
 | 와일드카드 | `_` | `\| _ -> "default"` |
 | 튜플 | `(a, b)` | `\| (x, y) -> x + y` |
@@ -618,4 +737,5 @@ $ langthree isort.l3
 | 생성자 | `Some x` | `\| Some v -> v` |
 | 레코드 | `{ x = a }` | `\| { x = a } -> a` |
 | 중첩 | `Some (x :: _)` | `\| Some (h :: _) -> h` |
+| Or-패턴 | `1 \| 2 \| 3` | `\| 1 \| 2 \| 3 -> "small"` |
 | 가드 포함 | `x when cond` | `\| n when n > 0 -> "pos"` |

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-407c0bff.js";
+            window.path_to_searchindex_js = "searchindex-dc005797.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -313,6 +313,51 @@ let result =
 $ langthree calc.l3
 14
 </code></pre>
+<h2 id="타입-별칭-type-aliases"><a class="header" href="#타입-별칭-type-aliases">타입 별칭 (Type Aliases)</a></h2>
+<p><code>type Name = ExistingType</code>으로 기존 타입에 별칭을 부여할 수 있습니다:</p>
+<pre><code>$ cat alias_basic.l3
+type Name = string
+type Age = int
+
+let greet name age = name + " is " + to_string age
+let result = greet "Alice" 30
+
+$ langthree alias_basic.l3
+"Alice is 30"
+</code></pre>
+<p>타입 별칭은 **투명(transparent)**합니다 — 별칭과 원본 타입은 완전히 동일합니다.
+<code>Name</code>은 <code>string</code>과 같은 타입이므로, <code>string</code> 함수를 그대로 사용할 수 있습니다.</p>
+<h3 id="복합-타입-별칭"><a class="header" href="#복합-타입-별칭">복합 타입 별칭</a></h3>
+<p>튜플, 함수, 리스트 타입에도 별칭을 붙일 수 있습니다:</p>
+<pre><code>$ cat alias_complex.l3
+type IntPair = int * int
+type Transform = int -&gt; int
+type IntList = int list
+
+let swap p =
+    match p with
+    | (a, b) -&gt; (b, a)
+
+let result = swap (1, 2)
+
+$ langthree alias_complex.l3
+(2, 1)
+</code></pre>
+<h3 id="타입-별칭-vs-adt"><a class="header" href="#타입-별칭-vs-adt">타입 별칭 vs ADT</a></h3>
+<p>타입 별칭은 새로운 타입을 만들지 않습니다. 단지 기존 타입의 다른 이름일 뿐입니다:</p>
+<ul>
+<li><code>type Name = string</code> — 별칭. <code>Name</code>은 <code>string</code>과 동일</li>
+<li><code>type Color = Red | Green | Blue</code> — ADT. <code>Color</code>는 새로운 타입</li>
+</ul>
+<p><code>--emit-type</code>에서 별칭은 원본 타입으로 표시됩니다:</p>
+<pre><code>$ cat alias_emit.l3
+type Name = string
+let x = "hello"
+
+$ langthree --emit-type alias_emit.l3
+x : string
+</code></pre>
+<p><code>Name</code>이 아닌 <code>string</code>으로 표시됩니다.</p>
 
                     </main>
 

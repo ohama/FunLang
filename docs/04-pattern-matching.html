@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-407c0bff.js";
+            window.path_to_searchindex_js = "searchindex-dc005797.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -223,7 +223,32 @@ let result = dayType 3
 $ langthree daytype.l3
 "Wednesday"
 </code></pre>
-<p><strong>참고:</strong> 문자열 상수 패턴은 지원되지 않습니다. 문자열 비교에는 <code>if ... then ... else</code>를 사용하세요.</p>
+<h3 id="문자열-패턴-string-patterns"><a class="header" href="#문자열-패턴-string-patterns">문자열 패턴 (String Patterns)</a></h3>
+<p>v1.4부터 문자열 리터럴도 패턴으로 사용할 수 있습니다:</p>
+<pre><code>$ cat string_match.l3
+let greet name =
+    match name with
+    | "Alice" -&gt; "Hello, Alice!"
+    | "Bob" -&gt; "Hi, Bob!"
+    | _ -&gt; "Who are you, " + name + "?"
+let result = greet "Alice"
+
+$ langthree string_match.l3
+"Hello, Alice!"
+</code></pre>
+<p>커맨드 디스패치에 유용합니다:</p>
+<pre><code>$ cat cmd_dispatch.l3
+let classify cmd =
+    match cmd with
+    | "quit" | "exit" | "q" -&gt; "exit command"
+    | "help" | "?" -&gt; "help command"
+    | _ -&gt; "unknown: " + cmd
+let result = classify "quit"
+
+$ langthree cmd_dispatch.l3
+"exit command"
+</code></pre>
+<p>위 예제는 or-패턴과 문자열 패턴을 함께 사용합니다. or-패턴은 아래에서 설명합니다.</p>
 <h3 id="변수-및-와일드카드-패턴-variable-and-wildcard-patterns"><a class="header" href="#변수-및-와일드카드-패턴-variable-and-wildcard-patterns">변수 및 와일드카드 패턴 (Variable and Wildcard Patterns)</a></h3>
 <p>변수 패턴은 매칭된 값을 이름에 바인딩합니다. <code>_</code>는 값을 버리는 와일드카드(wildcard)입니다:</p>
 <pre><code>funlang&gt; match 42 with | x -&gt; x + 1
@@ -402,6 +427,72 @@ let result = greet { name = "Alice"; age = 30; active = true }
 $ langthree record_partial.l3
 "Alice is 30"
 </code></pre>
+<h2 id="or-패턴-or-patterns"><a class="header" href="#or-패턴-or-patterns">Or-패턴 (Or-Patterns)</a></h2>
+<p>여러 패턴이 같은 본문을 공유할 때 <code>|</code>로 결합합니다:</p>
+<pre><code>funlang&gt; match 2 with | 1 | 2 | 3 -&gt; "small" | _ -&gt; "big"
+"small"
+</code></pre>
+<p>각 대안은 같은 결과 표현식으로 이어집니다. 파일 모드에서:</p>
+<pre><code>$ cat or_pattern.l3
+let classify n =
+    match n with
+    | 0 -&gt; "zero"
+    | 1 | 2 | 3 -&gt; "small"
+    | 4 | 5 | 6 -&gt; "medium"
+    | _ -&gt; "large"
+let result = classify 5
+
+$ langthree or_pattern.l3
+"medium"
+</code></pre>
+<h3 id="생성자와-or-패턴"><a class="header" href="#생성자와-or-패턴">생성자와 Or-패턴</a></h3>
+<p>ADT 생성자에도 사용할 수 있습니다:</p>
+<pre><code>$ cat or_ctor.l3
+type Direction = North | South | East | West
+
+let isVertical d =
+    match d with
+    | North | South -&gt; true
+    | East | West -&gt; false
+let result = (isVertical North, isVertical East)
+
+$ langthree or_ctor.l3
+(true, false)
+</code></pre>
+<h3 id="문자열-or-패턴"><a class="header" href="#문자열-or-패턴">문자열 Or-패턴</a></h3>
+<p>문자열 패턴과 조합하면 강력한 디스패치가 가능합니다:</p>
+<pre><code>$ cat or_string.l3
+let respond input =
+    match input with
+    | "yes" | "y" | "ok" -&gt; true
+    | "no" | "n" -&gt; false
+    | _ -&gt; false
+let result = (respond "yes", respond "n", respond "maybe")
+
+$ langthree or_string.l3
+(true, false, false)
+</code></pre>
+<h3 id="소진-검사와-or-패턴"><a class="header" href="#소진-검사와-or-패턴">소진 검사와 Or-패턴</a></h3>
+<p>Or-패턴은 소진 검사(exhaustiveness)에 올바르게 통합됩니다.
+각 대안이 별도의 패턴으로 취급되어, or-패턴으로 모든 경우를 커버하면 경고가 나오지 않습니다:</p>
+<pre><code>$ cat or_exhaust.l3
+type Color = Red | Green | Blue
+
+let name c =
+    match c with
+    | Red -&gt; "red"
+    | Green | Blue -&gt; "cool"
+let result = name Red
+
+$ langthree or_exhaust.l3
+"red"
+</code></pre>
+<p>위 예제에서 <code>Green | Blue</code>가 나머지 모든 경우를 커버하므로 소진 경고가 없습니다.</p>
+<h3 id="제한-사항"><a class="header" href="#제한-사항">제한 사항</a></h3>
+<ul>
+<li>Or-패턴은 <strong>최상위 레벨에서만</strong> 지원됩니다. 중첩된 or-패턴 (<code>Some (1 | 2)</code>)은 아직 지원되지 않습니다.</li>
+<li>Or-패턴 내에서 변수 바인딩은 허용되지 않습니다. 상수와 생성자 패턴만 사용하세요.</li>
+</ul>
 <h2 id="when-가드-when-guards"><a class="header" href="#when-가드-when-guards">When 가드 (When Guards)</a></h2>
 <p><code>when</code>을 사용하여 패턴에 불리언 조건을 추가합니다. 가드는
 패턴이 매칭된 후에 평가됩니다. 가드가 실패하면 다음 절(clause)로
@@ -643,6 +734,7 @@ $ langthree isort.l3
 </thead>
 <tbody>
 <tr><td>상수</td><td><code>0</code>, <code>true</code></td><td><code>| 0 -&gt; "zero"</code></td></tr>
+<tr><td>문자열</td><td><code>"hello"</code></td><td><code>| "hello" -&gt; "hi"</code></td></tr>
 <tr><td>변수</td><td><code>x</code></td><td><code>| x -&gt; x + 1</code></td></tr>
 <tr><td>와일드카드</td><td><code>_</code></td><td><code>| _ -&gt; "default"</code></td></tr>
 <tr><td>튜플</td><td><code>(a, b)</code></td><td><code>| (x, y) -&gt; x + y</code></td></tr>
@@ -651,6 +743,7 @@ $ langthree isort.l3
 <tr><td>생성자</td><td><code>Some x</code></td><td><code>| Some v -&gt; v</code></td></tr>
 <tr><td>레코드</td><td><code>{ x = a }</code></td><td><code>| { x = a } -&gt; a</code></td></tr>
 <tr><td>중첩</td><td><code>Some (x :: _)</code></td><td><code>| Some (h :: _) -&gt; h</code></td></tr>
+<tr><td>Or-패턴</td><td><code>1 | 2 | 3</code></td><td><code>| 1 | 2 | 3 -&gt; "small"</code></td></tr>
 <tr><td>가드 포함</td><td><code>x when cond</code></td><td><code>| n when n &gt; 0 -&gt; "pos"</code></td></tr>
 </tbody>
 </table>
