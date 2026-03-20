@@ -322,6 +322,12 @@ Recent decisions affecting current work:
 - Only Ast.List case changed in Format.fs formatAst; Tuple/TuplePat/TETuple/TEData stay with comma
 - Existing .lt/.flt test files using comma list syntax need updating (follow-on work)
 
+**From 24-02 (Test File Syntax Migration):**
+- Bracket-stack algorithm (not depth counters) correctly handles lists inside tuples: innermost context determines comma treatment
+- Release binary must be rebuilt with `dotnet publish -c Release` after parser changes; fslit tests invoke it directly
+- Emit test AST output uses commas for Tuple/TuplePat formatting — only `Ast.List` uses semicolons; do not transform emit test expected outputs
+- Prelude/*.fun files use [] and :: only; no list literals with commas to update
+
 ### Roadmap Evolution
 
 - Phase 7 added: Pattern Matching Compilation (decision tree per Jules Jacobs 2021 algorithm)
@@ -356,7 +362,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20
-Stopped at: Completed 24-03-PLAN.md (tutorial files updated to semicolon list syntax)
+Stopped at: Completed 24-02-PLAN.md (test files updated to semicolon list syntax; 439 fslit + 196 unit tests pass)
 Resume file: None
 
 ---
