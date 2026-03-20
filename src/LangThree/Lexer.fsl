@@ -7,6 +7,20 @@ open Parser  // Import token types from generated Parser module
 let lexeme (lexbuf: LexBuffer<_>) =
     LexBuffer<_>.LexemeString lexbuf
 
+/// Classify a multi-character operator token into precedence bucket
+/// Based on OCaml's INFIXOP0-4 approach: first character determines precedence
+let classifyOperator (op: string) =
+    let eff = op.TrimStart('.')
+    if eff.Length = 0 then INFIXOP3 op  // pure dots -> multiplicative level
+    elif eff.Length >= 2 && eff.[0] = '*' && eff.[1] = '*' then INFIXOP4 op
+    else
+        match eff.[0] with
+        | '=' | '<' | '>' | '|' | '&' | '$' | '!' -> INFIXOP0 op
+        | '@' | '^' -> INFIXOP1 op
+        | '+' | '-' -> INFIXOP2 op
+        | '*' | '/' | '%' -> INFIXOP3 op
+        | _ -> INFIXOP0 op  // fallback to comparison level
+
 /// Initialize position tracking for the lexbuf
 let setInitialPos (lexbuf: LexBuffer<_>) (filename: string) =
     lexbuf.EndPos <- {
@@ -26,6 +40,7 @@ let letter = ['a'-'z' 'A'-'Z']
 let ident_start = letter | '_'
 let ident_char = letter | digit | '_'
 let type_var = '\'' letter (letter | digit | '_')*
+let op_char = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '~']
 
 // Lexer rules
 rule tokenize = parse
@@ -121,6 +136,10 @@ rule tokenize = parse
     // Phase 18 (Ranges): DOTDOT must come before DOT (longest match)
     | ".."          { DOTDOT }
     | '.'           { DOT }
+    // Phase 19 (User-Defined Operators): Catch-all for 2+ char operator sequences
+    // Must come AFTER all specific operator rules. Longest-match + first-match ensures
+    // existing operators (|>, >>, <<, &&, ||, <=, >=, <>, ->, <-, ..) match first.
+    | op_char op_char+  { classifyOperator (lexeme lexbuf) }
     | eof           { EOF }                       // End of input
 
 // Block comment handler with nesting support

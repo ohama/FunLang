@@ -58,6 +58,8 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %token EXCEPTION RAISE TRY WHEN
 // Phase 9 (Pipe & Composition): Pipe and composition operator tokens
 %token PIPE_RIGHT COMPOSE_RIGHT COMPOSE_LEFT
+// Phase 19 (User-Defined Operators): INFIXOP tokens (payload is operator string)
+%token<string> INFIXOP0 INFIXOP1 INFIXOP2 INFIXOP3 INFIXOP4
 // Indentation tokens
 %token <int> NEWLINE   // NEWLINE with column position
 %token INDENT          // Indentation increase
@@ -72,7 +74,12 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
 %left OR
 %left AND
 %nonassoc EQUALS LT GT LE GE NE
+%left INFIXOP0              // Phase 19: comparison-level custom ops (starts with = < > | & $ !)
+%right INFIXOP1             // Phase 19: concatenation-level custom ops (starts with @ ^), right-assoc
 %right CONS    // Right-associative: 1 :: 2 :: [] = 1 :: (2 :: [])
+%left INFIXOP2              // Phase 19: additive-level custom ops (starts with + -)
+%left INFIXOP3              // Phase 19: multiplicative-level custom ops (starts with * / %)
+%right INFIXOP4             // Phase 19: exponentiation-level custom ops (starts with **)
 
 // Start symbols and their types
 %start start
@@ -132,6 +139,15 @@ Expr:
     | Expr NE Expr                   { NotEqual($1, $3, ruleSpan parseState 1 3) }
     // Phase 2 (v3.0): Cons operator (lower precedence than arithmetic)
     | Expr CONS Expr                 { Cons($1, $3, ruleSpan parseState 1 3) }
+    // Phase 19 (User-Defined Operators): INFIXOP0 (comparison level), INFIXOP1 (concat level)
+    | Expr INFIXOP0 Expr
+        { let span = ruleSpan parseState 1 3
+          let opSpan = symSpan parseState 2
+          App(App(Var($2, opSpan), $1, span), $3, span) }
+    | Expr INFIXOP1 Expr
+        { let span = ruleSpan parseState 1 3
+          let opSpan = symSpan parseState 2
+          App(App(Var($2, opSpan), $1, span), $3, span) }
     // Phase 6 (Exceptions): Try-with expression
     | TRY Expr WITH MatchClauses              { TryWith($2, $4, ruleSpan parseState 1 4) }
     | TRY INDENT Expr DEDENT WITH MatchClauses { TryWith($3, $6, ruleSpan parseState 1 6) }
@@ -140,11 +156,21 @@ Expr:
     // Arithmetic - uses Term/Factor for precedence
     | Expr PLUS Term                 { Add($1, $3, ruleSpan parseState 1 3) }
     | Expr MINUS Term                { Subtract($1, $3, ruleSpan parseState 1 3) }
+    // Phase 19: INFIXOP2 (additive level, same as +/-)
+    | Expr INFIXOP2 Term
+        { let span = ruleSpan parseState 1 3
+          let opSpan = symSpan parseState 2
+          App(App(Var($2, opSpan), $1, span), $3, span) }
     | Term                           { $1 }
 
 Term:
     | Term STAR Factor   { Multiply($1, $3, ruleSpan parseState 1 3) }
     | Term SLASH Factor  { Divide($1, $3, ruleSpan parseState 1 3) }
+    // Phase 19: INFIXOP3 (multiplicative level, same as * /)
+    | Term INFIXOP3 Factor
+        { let span = ruleSpan parseState 1 3
+          let opSpan = symSpan parseState 2
+          App(App(Var($2, opSpan), $1, span), $3, span) }
     | Factor             { $1 }
 
 // Factor: includes unary minus and function application
@@ -153,6 +179,11 @@ Factor:
     | MINUS Factor       { Negate($2, ruleSpan parseState 1 2) }
     // Phase 6 (Exceptions): Raise expression (uses Atom to avoid ambiguity)
     | RAISE Atom         { Raise($2, ruleSpan parseState 1 2) }
+    // Phase 19: INFIXOP4 (exponentiation level, right-assoc, above multiplication)
+    | Factor INFIXOP4 Factor
+        { let span = ruleSpan parseState 1 3
+          let opSpan = symSpan parseState 2
+          App(App(Var($2, opSpan), $1, span), $3, span) }
     | AppExpr            { $1 }
 
 // Phase 5: Function application (left-associative, highest precedence)
