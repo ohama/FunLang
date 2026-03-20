@@ -34,12 +34,12 @@ Plans:
 
 ---
 
-### Phase 21: sprintf, printfn, Modulo Operator
+### Phase 21: sprintf, printfn, Modulo Operator (COMPLETE)
 
 **Goal:** sprintf (문자열 반환 포맷), printfn (줄바꿈 포함 printf), % 모듈로 연산자 추가
 **Depends on:** Phase 19
 **Requirements:** FMT-01, FMT-02, FMT-03
-**Plans:** 0 plans
+**Status:** COMPLETE — Modulo AST + printfn/sprintf builtins, 604 tests passing
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 21 to break down)
