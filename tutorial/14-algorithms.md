@@ -49,6 +49,10 @@ v1.4에서 추가된 다른 기능들도 알고리즘 작성을 크게 개선합
 
 ## 표준 리스트 함수
 
+> **참고:** `map`, `filter`, `fold`, `length`, `reverse`, `append` 등은 이제 Prelude에서
+> 제공됩니다. 아래 예제에서는 구현 방법을 보여주기 위해 직접 정의하지만,
+> 실제 프로그램에서는 Prelude 함수를 바로 사용할 수 있습니다.
+
 함수형 프로그래밍에서 `map`, `filter`, `fold`는 가장 기본적인 도구입니다.
 v1.4에서는 이들을 모듈 레벨에 선언하여 프로그램 전체에서 재사용할 수 있습니다.
 
@@ -105,6 +109,23 @@ $ langthree fold.l3
 세 개의 매개변수가 중첩 클로저로 전달됩니다: `f`가 `let rec` 매개변수,
 `acc`가 첫 번째 `fun`, `xs`가 두 번째 `fun`입니다.
 계산 과정은 0 + 1 + 4 + 9 + 16 + 25 = 55입니다.
+
+### Prelude를 활용한 간결한 코드
+
+Prelude 함수를 사용하면 알고리즘을 더 간결하게 작성할 수 있습니다:
+
+```
+$ cat sieve_prelude.l3
+let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (fun n -> n - (n / p) * p <> 0) rest)
+
+let result = sieve [2..50]
+
+$ langthree sieve_prelude.l3
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+```
+
+`filter`는 Prelude에서 제공되므로 재정의할 필요 없이, `sieve` 함수만 작성하면
+에라토스테네스의 체를 구현할 수 있습니다.
 
 ## 수론
 

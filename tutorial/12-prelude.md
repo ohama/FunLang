@@ -1,15 +1,19 @@
 # 12장: Prelude and Standard Library
 
 LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은
-명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입 선언과 생성자를 제공합니다.
+명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다.
 
 ## Prelude의 동작 방식
 
 Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에 있는 `.fun` 파일로
 구성됩니다. 시작 시 이 파일들은 알파벳순으로 정렬된 후, 각각 모듈로 파싱되고 타입 검사를
-거쳐 평가됩니다. 이 파일들이 정의하는 타입과 생성자는 이후 모든 코드에서 사용 가능합니다.
+거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.
 
-현재 Prelude에는 하나의 파일이 포함되어 있습니다:
+현재 Prelude에는 다음 파일들이 포함되어 있습니다:
+
+- `Prelude/Core.fun` -- 핵심 고차 함수 (`id`, `const`, `compose`)
+- `Prelude/List.fun` -- 리스트 처리 함수 (`map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`)
+- `Prelude/Option.fun` -- Option 타입 정의
 
 **Prelude/Option.fun:**
 ```
@@ -163,65 +167,111 @@ $ langthree result_demo.l3
 Prelude 타입은 REPL과 파일 모드 모두에서 동작합니다. Prelude 파일의 생성자는
 `open` 없이 사용 가능합니다.
 
-## 타입 전용 내장 시그니처
+## Prelude 리스트 함수
 
-Prelude와는 별도로, LangThree에는 **타입 전용** 내장 이름 세트가 있습니다.
-이들은 타입 검사를 위한 타입 시그니처를 가지지만 **런타임 구현이 없습니다**.
-사용자 코드에서 표준 함수 타입을 참조할 수 있도록 존재합니다:
+`Prelude/List.fun`은 리스트를 다루는 8개의 표준 함수를 제공합니다. 이 함수들은
+import 없이 REPL과 파일 모드 모두에서 바로 사용할 수 있는 실제 함수입니다.
+
+### 리스트 변환: map, filter
+
+`map`은 리스트의 각 요소에 함수를 적용합니다:
 
 ```
-$ langthree --emit-type --expr 'map'
-('a -> 'b) -> 'a list -> 'b list
-
-$ langthree --emit-type --expr 'filter'
-('a -> bool) -> 'a list -> 'a list
-
-$ langthree --emit-type --expr 'id'
-'a -> 'a
+funlang> map (fun x -> x * 2) [1..5]
+[2, 4, 6, 8, 10]
 ```
 
-그러나 런타임에 이들을 호출하면 오류가 발생합니다:
+`filter`는 조건을 만족하는 요소만 남깁니다:
+
+```
+funlang> filter (fun x -> x > 3) [1..6]
+[4, 5, 6]
+```
+
+### 리스트 축약: fold
+
+`fold`는 리스트를 하나의 값으로 축약합니다:
+
+```
+funlang> fold (fun acc -> fun x -> acc + x) 0 [1..10]
+55
+```
+
+### 리스트 정보: length, hd, tl
+
+```
+funlang> length [1, 2, 3]
+3
+
+funlang> hd [10, 20]
+10
+
+funlang> tl [10, 20]
+[20]
+```
+
+### 리스트 조작: reverse, append
+
+```
+funlang> reverse [] [1, 2, 3]
+[3, 2, 1]
+
+funlang> append [1, 2] [3, 4]
+[1, 2, 3, 4]
+```
+
+## Prelude 핵심 함수
+
+`Prelude/Core.fun`은 범용 고차 함수 3개를 제공합니다. 마찬가지로 import 없이
+어디서든 사용할 수 있습니다.
+
+### id -- 항등 함수
+
+입력값을 그대로 반환합니다:
 
 ```
 funlang> id 42
-Error: Undefined variable: id
+42
 ```
 
-타입 전용 내장 함수의 전체 목록:
+### const -- 상수 함수
 
-| 이름 | 타입 시그니처 |
-|------|---------------|
-| `map` | `('a -> 'b) -> 'a list -> 'b list` |
-| `filter` | `('a -> bool) -> 'a list -> 'a list` |
-| `fold` | `('a -> 'b -> 'a) -> 'a -> 'b list -> 'a` |
-| `length` | `'a list -> int` |
-| `reverse` | `'a list -> 'a list` |
-| `append` | `'a list -> 'a list -> 'a list` |
-| `hd` | `'a list -> 'a` |
-| `tl` | `'a list -> 'a list` |
-| `id` | `'a -> 'a` |
-| `const` | `'a -> 'b -> 'a` |
-| `compose` | `('a -> 'b) -> ('c -> 'a) -> 'c -> 'b` |
-
-이 연산들을 사용하려면 `let rec ... in`으로 직접 정의하세요:
+첫 번째 인자를 반환하고 두 번째 인자를 무시합니다:
 
 ```
-$ cat my_map.l3
+funlang> const 42 "ignored"
+42
+```
+
+### compose -- 함수 합성
+
+두 함수를 합성합니다. `compose f g x`는 `f (g x)`와 같습니다:
+
+```
+funlang> compose inc double 5
+11
+```
+
+## 파이프라인과 함께 사용하기
+
+Prelude 함수들은 파이프 연산자 `|>`와 결합하면 강력한 데이터 처리 파이프라인을
+구성할 수 있습니다:
+
+```
+$ cat pipeline.l3
 let result =
-    let rec myMap f = fun xs -> match xs with | [] -> [] | x :: rest -> f x :: myMap f rest
-    in myMap (fun x -> x * 2) [1, 2, 3]
+    [1..10]
+    |> filter (fun x -> x % 2 = 0)
+    |> map (fun x -> x * x)
 
-$ langthree my_map.l3
-[2, 4, 6]
+$ langthree pipeline.l3
+[4, 16, 36, 64, 100]
 ```
-
-`let rec`은 단일 매개변수만 지원하므로, 두 번째 매개변수에는 중첩된 `fun`을 사용합니다
-(자세한 내용은 [Chapter 2](02-functions.md)를 참조하세요).
 
 ## 런타임 내장 함수
 
-별도의 내장 함수 세트는 런타임 구현을 **가지고 있습니다**. 이들은 Prelude 파일이 아닌
-내장 환경에서 제공됩니다:
+Prelude 함수와는 별도로, LangThree에는 내장 환경(`initialBuiltinEnv`)에서
+제공되는 런타임 내장 함수가 있습니다:
 
 | 함수 | 타입 | 설명 |
 |----------|------|-------------|
@@ -249,16 +299,17 @@ funlang> to_string 42
 
 ## Prelude vs 내장 함수 요약
 
-| 분류 | 출처 | 런타임 사용 가능? | 예제 |
-|----------|--------|----------------------|---------|
-| Prelude 타입 | `Prelude/*.fun` 파일 | 예 (타입 + 생성자) | `Option`, `None`, `Some` |
-| 타입 전용 내장 함수 | 타입 환경 | 아니오 (타입 검사만) | `map`, `id`, `compose` |
-| 런타임 내장 함수 | 내장 환경 | 예 (호출 가능) | `print`, `string_length` |
+| 분류 | 출처 | 예제 |
+|----------|--------|---------|
+| Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `map`, `filter`, `fold`, `id`, `compose` 등 |
+| 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf` 등 |
+
+두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.
 
 ## 참고 사항
 
 - **Prelude 파일**은 `Prelude/` 디렉토리에서 알파벳순으로 로드되는 `.fun` 파일입니다
-- **Prelude 생성자** (`None`, `Some`)는 `open` 없이 사용 가능합니다
-- **타입 전용 내장 함수** (`map`, `id` 등)는 타입 검사는 통과하지만 런타임에 실패합니다
+- **Prelude 생성자** (`None`, `Some`)와 **Prelude 함수** (`map`, `filter` 등)는 `open` 없이 사용 가능합니다
+- **Prelude 함수**는 모두 실제 런타임 함수로, 호출하면 정상적으로 결과를 반환합니다
 - **런타임 내장 함수** (`print`, `string_length` 등)는 어디서든 동작합니다
 - **패턴 매칭**은 파일 모드에서 Prelude 타입에 대해 동작합니다

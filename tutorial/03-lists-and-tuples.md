@@ -112,17 +112,35 @@ funlang> [(1, "a"), (2, "b")]
 [(1, "a"), (2, "b")]
 ```
 
-## 재귀적 리스트 함수
+## 리스트 함수
 
-`let rec`는 단일 매개변수만 지원하므로, 재귀적 리스트 함수는
-리스트를 유일한 인자로 받습니다. 추가 상태를 전달하려면 클로저(closure)를 사용하세요.
+### Prelude 함수 사용하기
 
-**길이 구하기:**
+`map`, `filter`, `fold`, `length`, `reverse`, `append` 등 자주 사용하는 리스트 함수는
+Prelude에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다:
 
 ```
-funlang> let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [1, 2, 3, 4]
+funlang> map (fun x -> x * 2) [1, 2, 3]
+[2, 4, 6]
+
+funlang> filter (fun x -> x > 2) [1, 2, 3, 4, 5]
+[3, 4, 5]
+
+funlang> fold (fun acc -> fun x -> acc + x) 0 [1..5]
+15
+
+funlang> length [1, 2, 3, 4]
 4
+
+funlang> append [1, 2] [3, 4]
+[1, 2, 3, 4]
 ```
+
+### 직접 재귀 함수 작성하기
+
+Prelude에 없는 동작이 필요하면 `let rec`으로 직접 재귀 함수를 작성할 수 있습니다.
+`let rec`는 단일 매개변수만 지원하므로, 추가 상태를 전달하려면
+클로저(closure)를 사용하세요.
 
 **합계:**
 
@@ -131,18 +149,11 @@ funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in
 15
 ```
 
-**Map** (각 요소에 함수 적용):
+**각 요소를 10배로:**
 
 ```
 funlang> let rec go xs = match xs with | [] -> [] | x :: rest -> x * 10 :: go rest in go [1, 2, 3]
 [10, 20, 30]
-```
-
-**Filter** (클로저에 조건 함수를 캡처):
-
-```
-funlang> let f = fun x -> x > 2 in let rec go xs = match xs with | [] -> [] | x :: rest -> if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]
-[3, 4, 5]
 ```
 
 ## 리스트 패턴 매칭 (Pattern Matching on Lists)

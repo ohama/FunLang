@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-63443381.js";
+            window.path_to_searchindex_js = "searchindex-a795c1d6.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -595,24 +595,36 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <pre><code>funlang&gt; [(1, "a"), (2, "b")]
 [(1, "a"), (2, "b")]
 </code></pre>
-<h2 id="재귀적-리스트-함수"><a class="header" href="#재귀적-리스트-함수">재귀적 리스트 함수</a></h2>
-<p><code>let rec</code>는 단일 매개변수만 지원하므로, 재귀적 리스트 함수는
-리스트를 유일한 인자로 받습니다. 추가 상태를 전달하려면 클로저(closure)를 사용하세요.</p>
-<p><strong>길이 구하기:</strong></p>
-<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]
+<h2 id="리스트-함수"><a class="header" href="#리스트-함수">리스트 함수</a></h2>
+<h3 id="prelude-함수-사용하기"><a class="header" href="#prelude-함수-사용하기">Prelude 함수 사용하기</a></h3>
+<p><code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code> 등 자주 사용하는 리스트 함수는
+Prelude에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다:</p>
+<pre><code>funlang&gt; map (fun x -&gt; x * 2) [1, 2, 3]
+[2, 4, 6]
+
+funlang&gt; filter (fun x -&gt; x &gt; 2) [1, 2, 3, 4, 5]
+[3, 4, 5]
+
+funlang&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..5]
+15
+
+funlang&gt; length [1, 2, 3, 4]
 4
+
+funlang&gt; append [1, 2] [3, 4]
+[1, 2, 3, 4]
 </code></pre>
+<h3 id="직접-재귀-함수-작성하기"><a class="header" href="#직접-재귀-함수-작성하기">직접 재귀 함수 작성하기</a></h3>
+<p>Prelude에 없는 동작이 필요하면 <code>let rec</code>으로 직접 재귀 함수를 작성할 수 있습니다.
+<code>let rec</code>는 단일 매개변수만 지원하므로, 추가 상태를 전달하려면
+클로저(closure)를 사용하세요.</p>
 <p><strong>합계:</strong></p>
 <pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
-<p><strong>Map</strong> (각 요소에 함수 적용):</p>
+<p><strong>각 요소를 10배로:</strong></p>
 <pre><code>funlang&gt; let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]
 [10, 20, 30]
-</code></pre>
-<p><strong>Filter</strong> (클로저에 조건 함수를 캡처):</p>
-<pre><code>funlang&gt; let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]
-[3, 4, 5]
 </code></pre>
 <h2 id="리스트-패턴-매칭-pattern-matching-on-lists"><a class="header" href="#리스트-패턴-매칭-pattern-matching-on-lists">리스트 패턴 매칭 (Pattern Matching on Lists)</a></h2>
 <p>4장 미리보기 – 리스트 패턴을 사용한 <code>match</code>:</p>
@@ -2264,6 +2276,11 @@ let result = sort [5, 3, 1]
 </ul>
 <p>이제 이 새로운 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.</p>
 <h2 id="표준-리스트-함수"><a class="header" href="#표준-리스트-함수">표준 리스트 함수</a></h2>
+<blockquote>
+<p><strong>참고:</strong> <code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code> 등은 이제 Prelude에서
+제공됩니다. 아래 예제에서는 구현 방법을 보여주기 위해 직접 정의하지만,
+실제 프로그램에서는 Prelude 함수를 바로 사용할 수 있습니다.</p>
+</blockquote>
 <p>함수형 프로그래밍에서 <code>map</code>, <code>filter</code>, <code>fold</code>는 가장 기본적인 도구입니다.
 v1.4에서는 이들을 모듈 레벨에 선언하여 프로그램 전체에서 재사용할 수 있습니다.</p>
 <h3 id="map"><a class="header" href="#map">Map</a></h3>
@@ -2305,6 +2322,18 @@ $ langthree fold.l3
 <p>세 개의 매개변수가 중첩 클로저로 전달됩니다: <code>f</code>가 <code>let rec</code> 매개변수,
 <code>acc</code>가 첫 번째 <code>fun</code>, <code>xs</code>가 두 번째 <code>fun</code>입니다.
 계산 과정은 0 + 1 + 4 + 9 + 16 + 25 = 55입니다.</p>
+<h3 id="prelude를-활용한-간결한-코드"><a class="header" href="#prelude를-활용한-간결한-코드">Prelude를 활용한 간결한 코드</a></h3>
+<p>Prelude 함수를 사용하면 알고리즘을 더 간결하게 작성할 수 있습니다:</p>
+<pre><code>$ cat sieve_prelude.l3
+let rec sieve xs = match xs with | [] -&gt; [] | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n - (n / p) * p &lt;&gt; 0) rest)
+
+let result = sieve [2..50]
+
+$ langthree sieve_prelude.l3
+[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+</code></pre>
+<p><code>filter</code>는 Prelude에서 제공되므로 재정의할 필요 없이, <code>sieve</code> 함수만 작성하면
+에라토스테네스의 체를 구현할 수 있습니다.</p>
 <h2 id="수론"><a class="header" href="#수론">수론</a></h2>
 <h3 id="팩토리얼"><a class="header" href="#팩토리얼">팩토리얼</a></h3>
 <p>가장 기본적인 재귀 알고리즘입니다. 모듈 레벨 <code>let rec</code>으로 깔끔하게 표현됩니다:</p>
@@ -2603,12 +2632,17 @@ $ langthree state_machine.l3
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="12장-prelude-and-standard-library"><a class="header" href="#12장-prelude-and-standard-library">12장: Prelude and Standard Library</a></h1>
 <p>LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은
-명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입 선언과 생성자를 제공합니다.</p>
+명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다.</p>
 <h2 id="prelude의-동작-방식"><a class="header" href="#prelude의-동작-방식">Prelude의 동작 방식</a></h2>
 <p>Prelude는 LangThree 바이너리와 같은 위치의 <code>Prelude/</code> 디렉토리에 있는 <code>.fun</code> 파일로
 구성됩니다. 시작 시 이 파일들은 알파벳순으로 정렬된 후, 각각 모듈로 파싱되고 타입 검사를
-거쳐 평가됩니다. 이 파일들이 정의하는 타입과 생성자는 이후 모든 코드에서 사용 가능합니다.</p>
-<p>현재 Prelude에는 하나의 파일이 포함되어 있습니다:</p>
+거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.</p>
+<p>현재 Prelude에는 다음 파일들이 포함되어 있습니다:</p>
+<ul>
+<li><code>Prelude/Core.fun</code> – 핵심 고차 함수 (<code>id</code>, <code>const</code>, <code>compose</code>)</li>
+<li><code>Prelude/List.fun</code> – 리스트 처리 함수 (<code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code>, <code>hd</code>, <code>tl</code>)</li>
+<li><code>Prelude/Option.fun</code> – Option 타입 정의</li>
+</ul>
 <p><strong>Prelude/Option.fun:</strong></p>
 <pre><code>type Option 'a = None | Some of 'a
 </code></pre>
@@ -2724,58 +2758,73 @@ $ langthree result_demo.l3
 </code></pre>
 <p>Prelude 타입은 REPL과 파일 모드 모두에서 동작합니다. Prelude 파일의 생성자는
 <code>open</code> 없이 사용 가능합니다.</p>
-<h2 id="타입-전용-내장-시그니처"><a class="header" href="#타입-전용-내장-시그니처">타입 전용 내장 시그니처</a></h2>
-<p>Prelude와는 별도로, LangThree에는 <strong>타입 전용</strong> 내장 이름 세트가 있습니다.
-이들은 타입 검사를 위한 타입 시그니처를 가지지만 <strong>런타임 구현이 없습니다</strong>.
-사용자 코드에서 표준 함수 타입을 참조할 수 있도록 존재합니다:</p>
-<pre><code>$ langthree --emit-type --expr 'map'
-('a -&gt; 'b) -&gt; 'a list -&gt; 'b list
-
-$ langthree --emit-type --expr 'filter'
-('a -&gt; bool) -&gt; 'a list -&gt; 'a list
-
-$ langthree --emit-type --expr 'id'
-'a -&gt; 'a
+<h2 id="prelude-리스트-함수"><a class="header" href="#prelude-리스트-함수">Prelude 리스트 함수</a></h2>
+<p><code>Prelude/List.fun</code>은 리스트를 다루는 8개의 표준 함수를 제공합니다. 이 함수들은
+import 없이 REPL과 파일 모드 모두에서 바로 사용할 수 있는 실제 함수입니다.</p>
+<h3 id="리스트-변환-map-filter"><a class="header" href="#리스트-변환-map-filter">리스트 변환: map, filter</a></h3>
+<p><code>map</code>은 리스트의 각 요소에 함수를 적용합니다:</p>
+<pre><code>funlang&gt; map (fun x -&gt; x * 2) [1..5]
+[2, 4, 6, 8, 10]
 </code></pre>
-<p>그러나 런타임에 이들을 호출하면 오류가 발생합니다:</p>
+<p><code>filter</code>는 조건을 만족하는 요소만 남깁니다:</p>
+<pre><code>funlang&gt; filter (fun x -&gt; x &gt; 3) [1..6]
+[4, 5, 6]
+</code></pre>
+<h3 id="리스트-축약-fold"><a class="header" href="#리스트-축약-fold">리스트 축약: fold</a></h3>
+<p><code>fold</code>는 리스트를 하나의 값으로 축약합니다:</p>
+<pre><code>funlang&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..10]
+55
+</code></pre>
+<h3 id="리스트-정보-length-hd-tl"><a class="header" href="#리스트-정보-length-hd-tl">리스트 정보: length, hd, tl</a></h3>
+<pre><code>funlang&gt; length [1, 2, 3]
+3
+
+funlang&gt; hd [10, 20]
+10
+
+funlang&gt; tl [10, 20]
+[20]
+</code></pre>
+<h3 id="리스트-조작-reverse-append"><a class="header" href="#리스트-조작-reverse-append">리스트 조작: reverse, append</a></h3>
+<pre><code>funlang&gt; reverse [] [1, 2, 3]
+[3, 2, 1]
+
+funlang&gt; append [1, 2] [3, 4]
+[1, 2, 3, 4]
+</code></pre>
+<h2 id="prelude-핵심-함수"><a class="header" href="#prelude-핵심-함수">Prelude 핵심 함수</a></h2>
+<p><code>Prelude/Core.fun</code>은 범용 고차 함수 3개를 제공합니다. 마찬가지로 import 없이
+어디서든 사용할 수 있습니다.</p>
+<h3 id="id--항등-함수"><a class="header" href="#id--항등-함수">id – 항등 함수</a></h3>
+<p>입력값을 그대로 반환합니다:</p>
 <pre><code>funlang&gt; id 42
-Error: Undefined variable: id
+42
 </code></pre>
-<p>타입 전용 내장 함수의 전체 목록:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>이름</th><th>타입 시그니처</th></tr>
-</thead>
-<tbody>
-<tr><td><code>map</code></td><td><code>('a -&gt; 'b) -&gt; 'a list -&gt; 'b list</code></td></tr>
-<tr><td><code>filter</code></td><td><code>('a -&gt; bool) -&gt; 'a list -&gt; 'a list</code></td></tr>
-<tr><td><code>fold</code></td><td><code>('a -&gt; 'b -&gt; 'a) -&gt; 'a -&gt; 'b list -&gt; 'a</code></td></tr>
-<tr><td><code>length</code></td><td><code>'a list -&gt; int</code></td></tr>
-<tr><td><code>reverse</code></td><td><code>'a list -&gt; 'a list</code></td></tr>
-<tr><td><code>append</code></td><td><code>'a list -&gt; 'a list -&gt; 'a list</code></td></tr>
-<tr><td><code>hd</code></td><td><code>'a list -&gt; 'a</code></td></tr>
-<tr><td><code>tl</code></td><td><code>'a list -&gt; 'a list</code></td></tr>
-<tr><td><code>id</code></td><td><code>'a -&gt; 'a</code></td></tr>
-<tr><td><code>const</code></td><td><code>'a -&gt; 'b -&gt; 'a</code></td></tr>
-<tr><td><code>compose</code></td><td><code>('a -&gt; 'b) -&gt; ('c -&gt; 'a) -&gt; 'c -&gt; 'b</code></td></tr>
-</tbody>
-</table>
-</div>
-<p>이 연산들을 사용하려면 <code>let rec ... in</code>으로 직접 정의하세요:</p>
-<pre><code>$ cat my_map.l3
+<h3 id="const--상수-함수"><a class="header" href="#const--상수-함수">const – 상수 함수</a></h3>
+<p>첫 번째 인자를 반환하고 두 번째 인자를 무시합니다:</p>
+<pre><code>funlang&gt; const 42 "ignored"
+42
+</code></pre>
+<h3 id="compose--함수-합성"><a class="header" href="#compose--함수-합성">compose – 함수 합성</a></h3>
+<p>두 함수를 합성합니다. <code>compose f g x</code>는 <code>f (g x)</code>와 같습니다:</p>
+<pre><code>funlang&gt; compose inc double 5
+11
+</code></pre>
+<h2 id="파이프라인과-함께-사용하기"><a class="header" href="#파이프라인과-함께-사용하기">파이프라인과 함께 사용하기</a></h2>
+<p>Prelude 함수들은 파이프 연산자 <code>|&gt;</code>와 결합하면 강력한 데이터 처리 파이프라인을
+구성할 수 있습니다:</p>
+<pre><code>$ cat pipeline.l3
 let result =
-    let rec myMap f = fun xs -&gt; match xs with | [] -&gt; [] | x :: rest -&gt; f x :: myMap f rest
-    in myMap (fun x -&gt; x * 2) [1, 2, 3]
+    [1..10]
+    |&gt; filter (fun x -&gt; x % 2 = 0)
+    |&gt; map (fun x -&gt; x * x)
 
-$ langthree my_map.l3
-[2, 4, 6]
+$ langthree pipeline.l3
+[4, 16, 36, 64, 100]
 </code></pre>
-<p><code>let rec</code>은 단일 매개변수만 지원하므로, 두 번째 매개변수에는 중첩된 <code>fun</code>을 사용합니다
-(자세한 내용은 <a href="#2장-함수-functions">Chapter 2</a>를 참조하세요).</p>
 <h2 id="런타임-내장-함수"><a class="header" href="#런타임-내장-함수">런타임 내장 함수</a></h2>
-<p>별도의 내장 함수 세트는 런타임 구현을 <strong>가지고 있습니다</strong>. 이들은 Prelude 파일이 아닌
-내장 환경에서 제공됩니다:</p>
+<p>Prelude 함수와는 별도로, LangThree에는 내장 환경(<code>initialBuiltinEnv</code>)에서
+제공되는 런타임 내장 함수가 있습니다:</p>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -2806,20 +2855,20 @@ funlang&gt; to_string 42
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>분류</th><th>출처</th><th>런타임 사용 가능?</th><th>예제</th></tr>
+<tr><th>분류</th><th>출처</th><th>예제</th></tr>
 </thead>
 <tbody>
-<tr><td>Prelude 타입</td><td><code>Prelude/*.fun</code> 파일</td><td>예 (타입 + 생성자)</td><td><code>Option</code>, <code>None</code>, <code>Some</code></td></tr>
-<tr><td>타입 전용 내장 함수</td><td>타입 환경</td><td>아니오 (타입 검사만)</td><td><code>map</code>, <code>id</code>, <code>compose</code></td></tr>
-<tr><td>런타임 내장 함수</td><td>내장 환경</td><td>예 (호출 가능)</td><td><code>print</code>, <code>string_length</code></td></tr>
+<tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>id</code>, <code>compose</code> 등</td></tr>
+<tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>print</code>, <code>println</code>, <code>printf</code> 등</td></tr>
 </tbody>
 </table>
 </div>
+<p>두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.</p>
 <h2 id="참고-사항-2"><a class="header" href="#참고-사항-2">참고 사항</a></h2>
 <ul>
 <li><strong>Prelude 파일</strong>은 <code>Prelude/</code> 디렉토리에서 알파벳순으로 로드되는 <code>.fun</code> 파일입니다</li>
-<li><strong>Prelude 생성자</strong> (<code>None</code>, <code>Some</code>)는 <code>open</code> 없이 사용 가능합니다</li>
-<li><strong>타입 전용 내장 함수</strong> (<code>map</code>, <code>id</code> 등)는 타입 검사는 통과하지만 런타임에 실패합니다</li>
+<li><strong>Prelude 생성자</strong> (<code>None</code>, <code>Some</code>)와 <strong>Prelude 함수</strong> (<code>map</code>, <code>filter</code> 등)는 <code>open</code> 없이 사용 가능합니다</li>
+<li><strong>Prelude 함수</strong>는 모두 실제 런타임 함수로, 호출하면 정상적으로 결과를 반환합니다</li>
 <li><strong>런타임 내장 함수</strong> (<code>print</code>, <code>string_length</code> 등)는 어디서든 동작합니다</li>
 <li><strong>패턴 매칭</strong>은 파일 모드에서 Prelude 타입에 대해 동작합니다</li>
 </ul>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-63443381.js";
+            window.path_to_searchindex_js = "searchindex-a795c1d6.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-917490ca.js"></script>
@@ -248,24 +248,36 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <pre><code>funlang&gt; [(1, "a"), (2, "b")]
 [(1, "a"), (2, "b")]
 </code></pre>
-<h2 id="재귀적-리스트-함수"><a class="header" href="#재귀적-리스트-함수">재귀적 리스트 함수</a></h2>
-<p><code>let rec</code>는 단일 매개변수만 지원하므로, 재귀적 리스트 함수는
-리스트를 유일한 인자로 받습니다. 추가 상태를 전달하려면 클로저(closure)를 사용하세요.</p>
-<p><strong>길이 구하기:</strong></p>
-<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [1, 2, 3, 4]
+<h2 id="리스트-함수"><a class="header" href="#리스트-함수">리스트 함수</a></h2>
+<h3 id="prelude-함수-사용하기"><a class="header" href="#prelude-함수-사용하기">Prelude 함수 사용하기</a></h3>
+<p><code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code> 등 자주 사용하는 리스트 함수는
+Prelude에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다:</p>
+<pre><code>funlang&gt; map (fun x -&gt; x * 2) [1, 2, 3]
+[2, 4, 6]
+
+funlang&gt; filter (fun x -&gt; x &gt; 2) [1, 2, 3, 4, 5]
+[3, 4, 5]
+
+funlang&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..5]
+15
+
+funlang&gt; length [1, 2, 3, 4]
 4
+
+funlang&gt; append [1, 2] [3, 4]
+[1, 2, 3, 4]
 </code></pre>
+<h3 id="직접-재귀-함수-작성하기"><a class="header" href="#직접-재귀-함수-작성하기">직접 재귀 함수 작성하기</a></h3>
+<p>Prelude에 없는 동작이 필요하면 <code>let rec</code>으로 직접 재귀 함수를 작성할 수 있습니다.
+<code>let rec</code>는 단일 매개변수만 지원하므로, 추가 상태를 전달하려면
+클로저(closure)를 사용하세요.</p>
 <p><strong>합계:</strong></p>
 <pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1, 2, 3, 4, 5]
 15
 </code></pre>
-<p><strong>Map</strong> (각 요소에 함수 적용):</p>
+<p><strong>각 요소를 10배로:</strong></p>
 <pre><code>funlang&gt; let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1, 2, 3]
 [10, 20, 30]
-</code></pre>
-<p><strong>Filter</strong> (클로저에 조건 함수를 캡처):</p>
-<pre><code>funlang&gt; let f = fun x -&gt; x &gt; 2 in let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; if f x then x :: go rest else go rest in go [1, 2, 3, 4, 5]
-[3, 4, 5]
 </code></pre>
 <h2 id="리스트-패턴-매칭-pattern-matching-on-lists"><a class="header" href="#리스트-패턴-매칭-pattern-matching-on-lists">리스트 패턴 매칭 (Pattern Matching on Lists)</a></h2>
 <p>4장 미리보기 – 리스트 패턴을 사용한 <code>match</code>:</p>
