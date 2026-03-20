@@ -13,38 +13,9 @@ open Exhaustive
 /// All Prelude functions have polymorphic types using type variables 0-9
 let initialTypeEnv: TypeEnv =
     Map.ofList [
-        // map: ('a -> 'b) -> 'a list -> 'b list
-        "map", Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList(TVar 0), TList(TVar 1))))
-
-        // filter: ('a -> bool) -> 'a list -> 'a list
-        "filter", Scheme([0], TArrow(TArrow(TVar 0, TBool), TArrow(TList(TVar 0), TList(TVar 0))))
-
-        // fold: ('b -> 'a -> 'b) -> 'b -> 'a list -> 'b
-        "fold", Scheme([0; 1], TArrow(TArrow(TVar 1, TArrow(TVar 0, TVar 1)), TArrow(TVar 1, TArrow(TList(TVar 0), TVar 1))))
-
-        // length: 'a list -> int
-        "length", Scheme([0], TArrow(TList(TVar 0), TInt))
-
-        // reverse: 'a list -> 'a list
-        "reverse", Scheme([0], TArrow(TList(TVar 0), TList(TVar 0)))
-
-        // append: 'a list -> 'a list -> 'a list
-        "append", Scheme([0], TArrow(TList(TVar 0), TArrow(TList(TVar 0), TList(TVar 0))))
-
-        // id: 'a -> 'a
-        "id", Scheme([0], TArrow(TVar 0, TVar 0))
-
-        // const: 'a -> 'b -> 'a
-        "const", Scheme([0; 1], TArrow(TVar 0, TArrow(TVar 1, TVar 0)))
-
-        // compose: ('b -> 'c) -> ('a -> 'b) -> 'a -> 'c
-        "compose", Scheme([0; 1; 2], TArrow(TArrow(TVar 1, TVar 2), TArrow(TArrow(TVar 0, TVar 1), TArrow(TVar 0, TVar 2))))
-
-        // hd: 'a list -> 'a
-        "hd", Scheme([0], TArrow(TList(TVar 0), TVar 0))
-
-        // tl: 'a list -> 'a list
-        "tl", Scheme([0], TArrow(TList(TVar 0), TList(TVar 0)))
+        // Prelude functions (map, filter, fold, length, reverse, append, hd, tl,
+        // id, const_, compose) are now defined in Prelude/*.fun files.
+        // They are type-checked and evaluated from those files at startup.
 
         // Phase 11: String built-in functions
         // string_length: string -> int
