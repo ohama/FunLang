@@ -123,6 +123,10 @@ Expr:
     // Multiple parameters via AnnotParamList
     | FUN AnnotParamList ARROW Expr
         { desugarAnnotParams $2 $4 (ruleSpan parseState 1 4) }
+    // Phase 22: Tuple parameter lambda - fun (x, y) -> body
+    // Desugars to Lambda("__tuple_arg", LetPat(TuplePat(...), Var("__tuple_arg"), body))
+    | FUN TuplePattern ARROW Expr
+        { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $4, ruleSpan parseState 1 4), ruleSpan parseState 1 4) }
     // Logical operators (precedence from %left declarations)
     | Expr OR Expr                   { Or($1, $3, ruleSpan parseState 1 3) }
     | Expr AND Expr                  { And($1, $3, ruleSpan parseState 1 3) }
