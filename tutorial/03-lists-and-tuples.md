@@ -156,7 +156,7 @@ funlang> [(1, "a"); (2, "b")]
 ### Prelude 함수 사용하기
 
 `map`, `filter`, `fold`, `length`, `reverse`, `append` 등 자주 사용하는 리스트 함수는
-Prelude에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다:
+Prelude 표준 라이브러리에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다. 각 함수의 상세한 설명과 Option/Result 타입은 [9장: Prelude 표준 라이브러리](09-prelude.md)에서 다룹니다. 여기서는 리스트 처리에 필요한 핵심만 소개합니다:
 
 ```
 funlang> map (fun x -> x * 2) [1; 2; 3]

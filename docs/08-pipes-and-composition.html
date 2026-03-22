@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3f39717a.js";
+            window.path_to_searchindex_js = "searchindex-282843e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -291,7 +291,7 @@ $ langthree formatter.l3
 </code></pre>
 <p><code>format_num</code>은 한 번 정의하면 어떤 숫자에든 쓸 수 있는 포매터입니다. 이런 작은 변환 함수들을 합성으로 쌓아가다 보면, 복잡한 데이터 처리 로직도 단순한 블록들의 조합으로 표현할 수 있게 됩니다.</p>
 <h2 id="prelude-연산자와-파이프라인"><a class="header" href="#prelude-연산자와-파이프라인">Prelude 연산자와 파이프라인</a></h2>
-<p>Prelude가 제공하는 연산자를 파이프라인과 결합하면 더 간결한 코드를 작성할 수 있습니다. 파이프가 단순히 함수 적용의 방향을 바꾸는 것이라면, Prelude 연산자들은 리스트, 문자열, Option 같은 일반적인 자료 구조에 특화된 조합 방식을 제공합니다.</p>
+<p>Prelude가 제공하는 연산자를 파이프라인과 결합하면 더 간결한 코드를 작성할 수 있습니다. Prelude의 전체 함수/연산자 목록은 <a href="09-prelude.html">9장: Prelude 표준 라이브러리</a>에서 다룹니다. 여기서는 파이프라인과의 조합에 집중합니다.</p>
 <p><strong><code>++</code> (리스트 연결):</strong></p>
 <pre><code>$ cat pipeline_ops.l3
 let result = [1..3] ++ [10..13] ++ [20..22]

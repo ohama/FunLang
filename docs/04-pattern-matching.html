@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3f39717a.js";
+            window.path_to_searchindex_js = "searchindex-282843e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -325,7 +325,7 @@ $ langthree list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 </code></pre>
 <h3 id="생성자-패턴-constructor-patterns"><a class="header" href="#생성자-패턴-constructor-patterns">생성자 패턴 (Constructor Patterns)</a></h3>
-<p>대수적 데이터 타입(algebraic data type)의 생성자를 매칭합니다:</p>
+<p>대수적 데이터 타입(ADT)의 생성자를 매칭합니다. ADT는 <a href="05-algebraic-types.html">5장: 대수적 데이터 타입</a>에서 자세히 다룹니다. 여기서는 패턴 매칭에서 생성자를 어떻게 사용하는지에 집중합니다:</p>
 <pre><code>$ cat shape.l3
 type Shape = Circle of int | Rect of int * int
 
@@ -371,7 +371,7 @@ $ langthree is_leaf.l3
 </code></pre>
 <h3 id="중첩-패턴-nested-patterns"><a class="header" href="#중첩-패턴-nested-patterns">중첩 패턴 (Nested Patterns)</a></h3>
 <p>패턴은 자유롭게 합성할 수 있습니다 – 생성자 안의 생성자, 튜플 안의 리스트 등:</p>
-<p><strong>Option 안의 Option:</strong></p>
+<p><strong>Option 안의 Option</strong> (<code>Option</code> 타입은 Prelude에서 제공되며, <a href="09-prelude.html">9장</a>에서 자세히 다룹니다. <code>Some</code>은 값이 있음, <code>None</code>은 없음을 나타냅니다):</p>
 <pre><code>$ cat deep_option.l3
 let deepGet opt =
     match opt with
@@ -406,7 +406,7 @@ $ langthree nested_complex.l3
 1
 </code></pre>
 <h3 id="레코드-패턴-record-patterns"><a class="header" href="#레코드-패턴-record-patterns">레코드 패턴 (Record Patterns)</a></h3>
-<p>match에서 레코드 필드를 구조 분해합니다:</p>
+<p>레코드는 이름 붙은 필드를 가진 데이터 구조로, <a href="06-records.html">6장: 레코드</a>에서 자세히 다룹니다. 여기서는 match에서 레코드 필드를 구조 분해하는 방법만 살펴봅니다:</p>
 <pre><code>$ cat record_match.l3
 type Point = { x: int; y: int }
 let p = { x = 1; y = 2 }

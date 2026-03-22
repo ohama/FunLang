@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3f39717a.js";
+            window.path_to_searchindex_js = "searchindex-282843e9.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -272,7 +272,7 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <p>리스트를 다루는 핵심 도구들입니다. Prelude에서 제공하는 함수들을 먼저 살펴보고, 필요할 때 직접 작성하는 방법도 알아봅니다.</p>
 <h3 id="prelude-함수-사용하기"><a class="header" href="#prelude-함수-사용하기">Prelude 함수 사용하기</a></h3>
 <p><code>map</code>, <code>filter</code>, <code>fold</code>, <code>length</code>, <code>reverse</code>, <code>append</code> 등 자주 사용하는 리스트 함수는
-Prelude에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다:</p>
+Prelude 표준 라이브러리에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다. 각 함수의 상세한 설명과 Option/Result 타입은 <a href="09-prelude.html">9장: Prelude 표준 라이브러리</a>에서 다룹니다. 여기서는 리스트 처리에 필요한 핵심만 소개합니다:</p>
 <pre><code>funlang&gt; map (fun x -&gt; x * 2) [1; 2; 3]
 [2; 4; 6]
 

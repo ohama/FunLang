@@ -209,7 +209,7 @@ $ langthree list_describe.l3
 
 ### 생성자 패턴 (Constructor Patterns)
 
-대수적 데이터 타입(algebraic data type)의 생성자를 매칭합니다:
+대수적 데이터 타입(ADT)의 생성자를 매칭합니다. ADT는 [5장: 대수적 데이터 타입](05-algebraic-types.md)에서 자세히 다룹니다. 여기서는 패턴 매칭에서 생성자를 어떻게 사용하는지에 집중합니다:
 
 ```
 $ cat shape.l3
@@ -266,7 +266,7 @@ $ langthree is_leaf.l3
 
 패턴은 자유롭게 합성할 수 있습니다 -- 생성자 안의 생성자, 튜플 안의 리스트 등:
 
-**Option 안의 Option:**
+**Option 안의 Option** (`Option` 타입은 Prelude에서 제공되며, [9장](09-prelude.md)에서 자세히 다룹니다. `Some`은 값이 있음, `None`은 없음을 나타냅니다):
 
 ```
 $ cat deep_option.l3
@@ -311,7 +311,7 @@ $ langthree nested_complex.l3
 
 ### 레코드 패턴 (Record Patterns)
 
-match에서 레코드 필드를 구조 분해합니다:
+레코드는 이름 붙은 필드를 가진 데이터 구조로, [6장: 레코드](06-records.md)에서 자세히 다룹니다. 여기서는 match에서 레코드 필드를 구조 분해하는 방법만 살펴봅니다:
 
 ```
 $ cat record_match.l3
