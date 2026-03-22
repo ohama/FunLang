@@ -1,5 +1,28 @@
 # Project Milestones: LangThree
 
+## v1.7 F#-Style Offside Rule & List Syntax (Shipped: 2026-03-22)
+
+**Delivered:** F# 스타일 offside rule로 implicit `in` 지원, 리스트 구분자를 세미콜론으로 변경 (`[1; 2; 3]`)
+
+**Phases completed:** 23-24 (4 plans total)
+
+**Key accomplishments:**
+- CtxtLetDecl + offside column 기반 implicit `in` 삽입 (LetSeqDepth counter 교체)
+- InExprBlock, InModule 컨텍스트로 expression/module 구분
+- 리스트 구분자 `,` → `;` (F# 관례 호환): `[1; 2; 3]`
+- SemiExprList 규칙 도입, 튜플은 COMMA 유지
+- 439 fslit + 196 F# tests, 16 tutorial chapters 전체 업데이트
+
+**Stats:**
+- 23 source files, 10,624 lines of F#
+- 635 tests (196 F# + 439 fslit), all passing
+- 2 phases, 4 plans
+- 2 days (2026-03-20 → 2026-03-22)
+
+**Git range:** `feat(23-01)` → `docs(24): complete`
+
+---
+
 ## v1.5 User-Defined Operators & Utilities (Shipped: 2026-03-20)
 
 **Delivered:** 사용자 정의 연산자 (INFIXOP0-4), Prelude 유틸리티, sprintf/printfn/%, 음수 패턴, 튜플 람다
