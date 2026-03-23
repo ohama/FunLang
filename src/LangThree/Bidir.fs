@@ -538,6 +538,15 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
     | Match (scrutinee, clauses, span) when isGadtMatch ctorEnv clauses ->
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
 
+        // Detect polymorphic mode: expected is still an unbound TVar after s1.
+        // In this mode each branch must refine the result type independently —
+        // we must NOT compose one branch's bodyS into the accumulator s, or the
+        // first branch's result type will "poison" the next branch.
+        let isPolyExpected =
+            match apply s1 expected with
+            | TVar _ -> true
+            | _ -> false
+
         let folder (s, idx) (pat, guard, body) =
             let clauseCtx = InMatchClause(idx, span) :: ctx
             match pat with
@@ -602,20 +611,41 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                     let branchEnv' = applyEnv sGuard branchEnv
 
                     // 6. Check branch body against refined expected type
-                    let refinedExpected = apply sGuard (apply (compose combinedLocalS s) expected)
-                    let bodyS = check ctorEnv recEnv clauseCtx branchEnv' body refinedExpected
+                    if isPolyExpected then
+                        // Polymorphic mode: each branch gets an independently refined expected.
+                        // Apply only combinedLocalS (the GADT constructor unification) to the
+                        // original expected TVar — NOT the accumulated s — so each branch starts
+                        // fresh. bodyS is branch-local and not composed into the cross-branch s.
+                        let localExpected = apply combinedLocalS expected
+                        let bodyS = check ctorEnv recEnv clauseCtx branchEnv' body localExpected
 
-                    // 7. Check existential escape: result type must not mention existential vars
-                    let resultTy = apply bodyS refinedExpected
-                    for ev in existentialFreshVars do
-                        if Set.contains ev (freeVars resultTy) then
-                            raise (TypeException {
-                                Kind = ExistentialEscape ev
-                                Span = span; Term = None
-                                ContextStack = clauseCtx; Trace = [] })
+                        // 7p. Existential escape check in polymorphic mode
+                        let resultTy = apply bodyS localExpected
+                        for ev in existentialFreshVars do
+                            if Set.contains ev (freeVars resultTy) then
+                                raise (TypeException {
+                                    Kind = ExistentialEscape ev
+                                    Span = span; Term = None
+                                    ContextStack = clauseCtx; Trace = [] })
 
-                    // 8. Local constraints stay local -- only body substitution propagates
-                    (compose bodyS s, idx + 1)
+                        // Do NOT compose bodyS into s — branch result stays independent
+                        (s, idx + 1)
+                    else
+                        // Concrete mode: existing behavior — accumulate substitution across branches
+                        let refinedExpected = apply sGuard (apply (compose combinedLocalS s) expected)
+                        let bodyS = check ctorEnv recEnv clauseCtx branchEnv' body refinedExpected
+
+                        // 7. Check existential escape: result type must not mention existential vars
+                        let resultTy = apply bodyS refinedExpected
+                        for ev in existentialFreshVars do
+                            if Set.contains ev (freeVars resultTy) then
+                                raise (TypeException {
+                                    Kind = ExistentialEscape ev
+                                    Span = span; Term = None
+                                    ContextStack = clauseCtx; Trace = [] })
+
+                        // 8. Local constraints stay local -- only body substitution propagates
+                        (compose bodyS s, idx + 1)
 
                 | _ ->
                     // Regular ADT constructor in a mixed GADT type
