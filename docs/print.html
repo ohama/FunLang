@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-773db435.js";
+            window.path_to_searchindex_js = "searchindex-b280989c.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -3531,7 +3531,7 @@ eval (Add x y)   = eval x + eval y
 </tbody>
 </table>
 </div>
-<p>Haskell의 <code>eval :: Expr a -&gt; a</code>는 “정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다“를 타입 하나로 표현합니다. LangThree에서는 <code>(match ... : int)</code>로 결과 타입을 하나로 고정해야 하므로, 이 수준의 다형적 반환은 지원하지 않습니다. 하지만 GADT의 핵심인 “컴파일 시점 타입 정제“와 “불가능한 분기 제거“는 동일하게 동작합니다.</p>
+<p>Haskell의 <code>eval :: Expr a -&gt; a</code>는 “정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다“를 타입 하나로 표현합니다. LangThree도 주석 없이 <code>let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b</code>처럼 쓰면 <code>eval : 'a Expr -&gt; 'a</code> 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 <code>(match ... : int)</code> 주석을 추가하면 됩니다.</p>
 <h3 id="ocaml--langthree의-직접적-영감"><a class="header" href="#ocaml--langthree의-직접적-영감">OCaml — LangThree의 직접적 영감</a></h3>
 <p>OCaml은 4.0부터 GADT를 지원합니다. LangThree의 GADT 구현은 OCaml의 접근법에서 직접적인 영감을 받았습니다:</p>
 <pre><code class="language-ocaml">type _ expr =

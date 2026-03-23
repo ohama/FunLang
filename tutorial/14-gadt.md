@@ -339,7 +339,7 @@ LangThree와 비교하면:
 | match 주석 | 대부분 불필요 (타입 추론) | 선택사항 (생략 시 다형적 반환) |
 | 다형적 반환 | `eval :: Expr a -> a` 가능 | `eval : 'a Expr -> 'a` 가능 |
 
-Haskell의 `eval :: Expr a -> a`는 "정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다"를 타입 하나로 표현합니다. LangThree에서는 `(match ... : int)`로 결과 타입을 하나로 고정해야 하므로, 이 수준의 다형적 반환은 지원하지 않습니다. 하지만 GADT의 핵심인 "컴파일 시점 타입 정제"와 "불가능한 분기 제거"는 동일하게 동작합니다.
+Haskell의 `eval :: Expr a -> a`는 "정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다"를 타입 하나로 표현합니다. LangThree도 주석 없이 `let eval e = match e with | IntLit n -> n | BoolLit b -> b`처럼 쓰면 `eval : 'a Expr -> 'a` 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 `(match ... : int)` 주석을 추가하면 됩니다.
 
 ### OCaml — LangThree의 직접적 영감
 
