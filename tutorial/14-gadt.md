@@ -133,7 +133,7 @@ IntLit 42
 
 GADT의 진짜 힘은 패턴 매칭에서 드러납니다. 생성자를 매치하는 순간, 컴파일러는 타입 매개변수가 무엇인지 정확히 알게 됩니다. 이것을 **타입 정제**라고 합니다.
 
-단계별로 살펴봅시다:
+먼저 `: int` 주석을 사용하여 모든 분기가 `int`를 반환하도록 강제하는 예부터 봅시다. (주석 없이 분기마다 다른 타입을 반환하는 다형적 버전은 "다형적 반환 타입" 절에서 다룹니다.)
 
 ```
 $ cat eval.l3
@@ -179,26 +179,16 @@ let r1 = eval (IntLit 42)    // r1 : int = 42
 let r2 = eval (BoolLit true) // r2 : bool = true
 ```
 
-**타입 변수 주석 `'a` (명시적 다형성)**
-`'a`를 주석으로 쓰면 "이 match는 다형적 결과를 반환한다"는 의도를 명시적으로 표현합니다:
-
-```
-let result = (match IntLit 42 with | IntLit n -> n | BoolLit b -> if b then 1 else 0 : 'a)
-// result : int = 42
-```
-
 **구체적 타입 주석 `: int` (단일 타입 강제)**
-구체적 타입을 지정하면 모든 분기가 그 타입을 반환해야 합니다. 재귀 평가기에서 유용합니다:
+구체적 타입을 지정하면 모든 분기가 그 타입을 반환해야 합니다. 재귀 평가기처럼 반환 타입을 하나로 고정하고 싶을 때 사용합니다:
 
 ```
 let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 : int)
 ```
 
-`:  int` 주석은 match의 끝에, 괄호 안에 위치합니다. 컴파일러는 `e`의 타입이 `'a Expr`이라는 것을 알지만, `'a`가 무엇인지는 모릅니다. 타입 주석 `: int`를 통해 "이 match의 결과가 `int`가 되어야 한다"고 알려주면, 컴파일러는 **검사 모드(check mode)**에 진입하여 각 분기를 분석할 때 GADT의 생성자 타입 정보를 활용할 수 있습니다.
+`: int` 주석은 match의 끝에, 괄호 안에 위치합니다. 이 주석이 있으면 컴파일러는 **검사 모드(check mode)**에 진입하여, 모든 분기가 `int`를 반환하는지 확인합니다. `BoolLit b` 분기에서 `b`는 `bool`이지만 `if b then 1 else 0`으로 `int`를 반환하므로 타입이 맞습니다.
 
-OCaml에서는 이것을 "locally abstract types"라는 메커니즘으로 처리하고, Haskell에서는 더 깊이 통합되어 있어서 명시적 주석이 불필요한 경우가 많습니다. LangThree는 주석 없이도 다형적 반환이 가능하며, 명시적 주석은 반환 타입을 하나로 고정하고 싶을 때 사용합니다.
-
-**참고:** 주석 없이도 동작하지만, 재귀 함수에서 반환 타입을 명시해야 할 때는 `(match e with | ... : ResultType)` 형태를 씁니다.
+주석 없이 쓰면 다형적 반환이 되고, 구체적 주석을 쓰면 단일 타입으로 강제됩니다. 대부분의 경우 주석 없이 쓰는 것이 더 유연합니다. 재귀 평가기(`let rec eval`)처럼 반환 타입이 반드시 하나여야 하는 경우에만 구체적 주석을 사용하세요.
 
 ## 재귀 GADT
 
@@ -239,15 +229,15 @@ type Expr 'a =
 
 let eval e = match e with | IntLit n -> n | BoolLit b -> b
 
-let r1 = eval (IntLit 42)
-let r2 = eval (BoolLit true)
+let _ = printf "%d\n" (eval (IntLit 42))
+let result = eval (BoolLit true)
 
 $ langthree poly-eval.l3
 42
 true
 ```
 
-`eval`의 타입은 `'a Expr -> 'a`입니다. `IntLit 42`를 넘기면 `int`를, `BoolLit true`를 넘기면 `bool`을 반환합니다. 단일 함수가 입력의 GADT 타입 매개변수에 따라 다른 반환 타입을 가집니다.
+`eval`의 타입은 `'a Expr -> 'a`입니다. `eval (IntLit 42)`는 `int`를 반환하므로 `printf "%d"`로 출력하고, `eval (BoolLit true)`는 `bool`을 반환합니다. **같은 함수가 입력의 GADT 타입 매개변수에 따라 다른 타입을 반환합니다.** 이것이 일반 ADT로는 불가능한, GADT만의 능력입니다.
 
 이것이 가능한 이유: 컴파일러는 `match e with | IntLit n -> n | BoolLit b -> b`를 볼 때, 각 분기에서 타입 정제를 통해 독립적으로 타입을 확인합니다. `IntLit` 분기에서는 `n : int`이므로 결과가 `int`, `BoolLit` 분기에서는 `b : bool`이므로 결과가 `bool`. 두 분기가 서로 다른 타입을 반환해도 되는 것은 GADT의 타입 정제 덕분입니다 — 일반 ADT나 non-GADT match에서는 모든 분기가 같은 타입을 반환해야 합니다.
 
