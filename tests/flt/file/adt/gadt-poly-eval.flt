@@ -1,0 +1,10 @@
+// Test: polymorphic GADT eval — no annotation required, synth delegates to check
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let eval e = match e with | IntLit n -> n
+
+let result = eval (IntLit 42)
+// --- Output:
+42
