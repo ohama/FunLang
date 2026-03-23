@@ -140,38 +140,35 @@ let gadtTests = testList "GADT" [
     ]
 
     // =====================================================
-    // GADT-04: Annotation-required error (E0401)
+    // GADT-04: Polymorphic GADT match (no annotation required)
     // =====================================================
 
-    testList "GADT-04: Annotation required" [
-        test "GADT match without annotation produces E0401" {
+    testList "GADT-04: Polymorphic GADT match" [
+        test "GADT match without annotation type-checks via fresh type variable" {
+            // v1.8: synth-mode GADT match delegates to check with a fresh TVar
+            // so no annotation is required for single-branch matches
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n\nlet eval e =\n    match e with\n    | IntLit n -> n\n"
             let result = parseAndTypeCheck input
             match result with
-            | Error diag ->
-                Expect.equal diag.Code (Some "E0401") "Should produce E0401 error"
-                Expect.stringContains diag.Message "annotation" "Error should mention annotation"
-            | Ok _ -> failtest "Expected E0401 error for unannotated GADT match"
+            | Ok _ -> ()
+            | Error diag -> failtest (sprintf "Expected type-check to succeed, got: %s" diag.Message)
         }
 
-        test "E0401 error message includes scrutinee type info" {
+        test "GADT match result type is inferred from single branch body" {
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n\nlet eval e =\n    match e with\n    | IntLit n -> n\n"
             let result = parseAndTypeCheck input
             match result with
-            | Error diag ->
-                Expect.stringContains diag.Message "GADT" "Error should mention GADT"
-            | Ok _ -> failtest "Expected E0401 error"
+            | Ok _ -> ()
+            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
         }
 
-        test "E0401 hint suggests annotation syntax" {
+        test "GADT match without annotation does not produce E0401" {
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n\nlet eval e =\n    match e with\n    | IntLit n -> n\n"
             let result = parseAndTypeCheck input
             match result with
             | Error diag ->
-                match diag.Hint with
-                | Some hint -> Expect.stringContains hint "annotation" "Hint should suggest annotation"
-                | None -> failtest "Expected hint in E0401 diagnostic"
-            | Ok _ -> failtest "Expected E0401 error"
+                Expect.notEqual diag.Code (Some "E0401") "Should not produce E0401 error"
+            | Ok _ -> ()
         }
     ]
 

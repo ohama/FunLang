@@ -271,17 +271,14 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     // === Match expression ===
     | Match (scrutinee, clauses, span) ->
-        // GADT matches require type annotation (must go through check mode)
+        // GADT matches: delegate to check mode with a fresh type variable.
+        // The check-mode handler (lines 540+) performs per-branch type refinement,
+        // which works correctly for any expected type including TVar.
         if isGadtMatch ctorEnv clauses then
-            let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
-            let scrutTyStr = formatType (apply s1 scrutTy)
-            raise (TypeException {
-                Kind = GadtAnnotationRequired scrutTyStr
-                Span = span
-                Term = Some expr
-                ContextStack = ctx
-                Trace = []
-            })
+            let freshTy = freshVar()
+            let s = check ctorEnv recEnv (InCheckMode (freshTy, "gadt-match", span) :: ctx) env expr freshTy
+            (s, apply s freshTy)
+        else
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
         let folder (s, idx) (pat, guard, expr) =
