@@ -34,6 +34,25 @@ let parseAndTypeCheck (input: string) =
     let m = parseModule input
     TypeCheck.typeCheckModule m
 
+// Helper to parse, type-check with full ctor env, and evaluate a module.
+// Returns the formatted value of the last let binding, or None if no let binding.
+let parseAndEval (input: string) : string option =
+    let m = parseModule input
+    match TypeCheck.typeCheckModuleWithPrelude Map.empty Map.empty Map.empty m with
+    | Error _ -> None
+    | Ok (_, _ctorEnv, recEnv, _modules, _typeEnv) ->
+        let decls =
+            match m with
+            | Ast.Module(ds, _) -> ds
+            | _ -> []
+        let finalEnv, _ = Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
+        match decls |> List.rev |> List.tryPick (function Ast.LetDecl(name, _, _) -> Some name | _ -> None) with
+        | Some lastName ->
+            match Map.tryFind lastName finalEnv with
+            | Some v -> Some (Eval.formatValue v)
+            | None -> None
+        | None -> None
+
 [<Tests>]
 let gadtTests = testList "GADT" [
 
@@ -169,6 +188,44 @@ let gadtTests = testList "GADT" [
             | Error diag ->
                 Expect.notEqual diag.Code (Some "E0401") "Should not produce E0401 error"
             | Ok _ -> ()
+        }
+    ]
+
+    // =====================================================
+    // GADT-05: Cross-type polymorphic return (eval : 'a Expr -> 'a)
+    // =====================================================
+
+    testList "GADT-05: Cross-type polymorphic return (eval : 'a Expr -> 'a)" [
+        test "cross-type eval type-checks without annotation" {
+            // Two branches with different return types: IntLit -> int, BoolLit -> bool
+            // No annotation required — polymorphic mode infers per-branch independently
+            let input =
+                "type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr\n" +
+                "let eval e = match e with | IntLit n -> n | BoolLit b -> b\n"
+            let result = parseAndTypeCheck input
+            match result with
+            | Ok _ -> ()
+            | Error diag -> failtest (sprintf "Expected type-check to succeed (no E0301), got: %s" diag.Message)
+        }
+
+        test "cross-type eval with IntLit returns int value 42" {
+            let input =
+                "type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr\n" +
+                "let eval e = match e with | IntLit n -> n | BoolLit b -> b\n" +
+                "let r1 = eval (IntLit 42)\n"
+            match parseAndEval input with
+            | Some s -> Expect.stringContains s "42" "eval (IntLit 42) should produce 42"
+            | None -> failtest "parseAndEval returned None"
+        }
+
+        test "cross-type eval with BoolLit returns bool value true" {
+            let input =
+                "type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr\n" +
+                "let eval e = match e with | IntLit n -> n | BoolLit b -> b\n" +
+                "let r2 = eval (BoolLit true)\n"
+            match parseAndEval input with
+            | Some s -> Expect.stringContains s "true" "eval (BoolLit true) should produce true"
+            | None -> failtest "parseAndEval returned None"
         }
     ]
 

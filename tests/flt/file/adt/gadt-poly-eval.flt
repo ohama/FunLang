@@ -1,10 +1,12 @@
-// Test: polymorphic GADT eval — no annotation required, synth delegates to check
+// Test: polymorphic GADT eval — cross-type return (eval : 'a Expr -> 'a)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
 
-let eval e = match e with | IntLit n -> n
+let eval e = match e with | IntLit n -> n | BoolLit b -> b
 
-let result = eval (IntLit 42)
+let _ = printf "%d\n" (eval (IntLit 42))
+let r2 = eval (BoolLit true)
 // --- Output:
 42
+true
