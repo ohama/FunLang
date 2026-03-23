@@ -1,5 +1,27 @@
 # Project Milestones: LangThree
 
+## v1.8 Polymorphic GADT (Shipped: 2026-03-23)
+
+**Delivered:** OCaml 스타일 다형적 GADT 반환 타입 — `eval : 'a Expr -> 'a` 패턴으로 분기별 다른 타입 반환
+
+**Phases completed:** 25 (5 plans: 3 initial + 2 gap closure)
+
+**Key accomplishments:**
+- synth 모드에서 GADT match를 fresh type variable로 check 위임 (E0401 제거)
+- isPolyExpected 플래그로 분기별 독립적 결과 타입 (int~bool 충돌 해결)
+- `eval (IntLit 42)` → `42` (int), `eval (BoolLit true)` → `true` (bool)
+- Tutorial Ch14에 다형적 반환 타입 섹션 + 5개 언어 비교 추가
+
+**Stats:**
+- 23 source files, 10,651 lines of F#
+- 641 tests (199 F# + 442 fslit), all passing
+- 1 phase, 5 plans
+- 1 day (2026-03-23)
+
+**Git range:** `feat(25-01)` → `docs(25-05)`
+
+---
+
 ## v1.7 F#-Style Offside Rule & List Syntax (Shipped: 2026-03-22)
 
 **Delivered:** F# 스타일 offside rule로 implicit `in` 지원, 리스트 구분자를 세미콜론으로 변경 (`[1; 2; 3]`)
