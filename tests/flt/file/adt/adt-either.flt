@@ -1,7 +1,9 @@
 // Test: ADT with two type parameters (Either type)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-type Either 'a 'b = Left of 'a | Right of 'b
+type Either 'a 'b =
+    | Left of 'a
+    | Right of 'b
 
 let getLeft e def = match e with
 | Left x -> x

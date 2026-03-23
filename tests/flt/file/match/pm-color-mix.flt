@@ -1,7 +1,10 @@
 // Test: pattern matching on tuple of ADTs (color mixing)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 
 let mix a b =
     match (a, b) with

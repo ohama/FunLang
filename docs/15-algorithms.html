@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b280989c.js";
+            window.path_to_searchindex_js = "searchindex-08242770.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -440,7 +440,9 @@ head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.</p>
 <p>대수적 데이터 타입으로 이진 트리를 정의하고, 삽입/구축/순회를 구현하여
 트리 기반 정렬을 만듭니다:</p>
 <pre><code>$ cat tree_sort.l3
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 // BST 삽입: 값을 비교하여 왼쪽 또는 오른쪽 하위 트리에 재귀 삽입
 let rec treeInsert x = fun t -&gt;
@@ -467,7 +469,9 @@ $ langthree tree_sort.l3
 <p>자연수를 대수적 타입으로 표현하고, 구조적 재귀로 덧셈과 곱셈을 정의합니다.
 수학의 기초를 코드로 직접 표현하는 예제입니다:</p>
 <pre><code>$ cat peano.l3
-type Nat = Zero | Succ of Nat
+type Nat =
+    | Zero
+    | Succ of Nat
 
 let rec toInt n = match n with | Zero -&gt; 0 | Succ p -&gt; 1 + toInt p
 let rec add a = fun b -&gt;

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b280989c.js";
+            window.path_to_searchindex_js = "searchindex-08242770.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -181,17 +181,24 @@
 <p>먼저 일반 ADT가 어디까지 할 수 있고, 어디서 한계에 부딪히는지 살펴봅시다.</p>
 <h3 id="adt-복습"><a class="header" href="#adt-복습">ADT 복습</a></h3>
 <p>5장에서 배운 ADT는 “이 값은 A이거나 B이거나 C다“라는 합 타입(sum type)을 정의합니다:</p>
-<pre><code>type Shape = Circle of int | Rect of int * int
+<pre><code>type Shape =
+    | Circle of int
+    | Rect of int * int
 </code></pre>
 <p><code>Circle 5</code>와 <code>Rect (3, 4)</code> 모두 <code>Shape</code> 타입입니다. 패턴 매칭으로 어떤 생성자인지 확인하고 내부 데이터를 꺼낼 수 있습니다. 이것만으로도 트리, 리스트, 옵션 같은 재귀적 데이터 구조를 표현하기에 충분합니다.</p>
 <p>매개변수화된 ADT도 가능합니다:</p>
-<pre><code>type Option 'a = None | Some of 'a
+<pre><code>type Option 'a =
+    | None
+    | Some of 'a
 </code></pre>
 <p>여기서 <code>'a</code>는 타입 매개변수입니다. <code>Some 42</code>는 <code>Option&lt;int&gt;</code>이고 <code>Some "hello"</code>는 <code>Option&lt;string&gt;</code>입니다. 하지만 핵심적인 제약이 있습니다: <strong><code>None</code>과 <code>Some</code> 모두 정확히 같은 <code>Option&lt;'a&gt;</code> 타입을 만들어냅니다.</strong> 생성자가 타입 매개변수 <code>'a</code>를 특정 타입으로 고정할 수 없습니다.</p>
 <h3 id="문제-상황-타입이-섞이는-표현식-언어"><a class="header" href="#문제-상황-타입이-섞이는-표현식-언어">문제 상황: 타입이 섞이는 표현식 언어</a></h3>
 <p>작은 수식 언어를 만든다고 생각해봅시다. 정수 리터럴과 불리언 리터럴, 그리고 덧셈을 지원하고 싶습니다.</p>
 <p>일반 ADT로 시도해봅니다:</p>
-<pre><code>type Expr = IntLit of int | BoolLit of bool | Add of Expr * Expr
+<pre><code>type Expr =
+    | IntLit of int
+    | BoolLit of bool
+    | Add of Expr * Expr
 </code></pre>
 <p>이 정의에는 치명적인 문제가 있습니다. <code>Add (IntLit 1, BoolLit true)</code>가 타입 오류 없이 만들어집니다. 정수와 불리언을 더하는 것은 의미가 없지만, 타입 시스템은 이를 막지 못합니다 — <code>IntLit 1</code>과 <code>BoolLit true</code> 모두 <code>Expr</code> 타입이니까요.</p>
 <p><code>eval</code> 함수도 문제입니다:</p>
@@ -202,7 +209,9 @@ let eval e = match e with
     | Add (a, b) -&gt; ???
 </code></pre>
 <p><code>IntLit n</code>에서는 <code>int</code>를, <code>BoolLit b</code>에서는 <code>bool</code>을 반환하고 싶지만, 함수의 반환 타입은 하나여야 합니다. 결국 별도의 <code>Value</code> 유니온을 만들어야 합니다:</p>
-<pre><code>type Value = IntVal of int | BoolVal of bool
+<pre><code>type Value =
+    | IntVal of int
+    | BoolVal of bool
 </code></pre>
 <p>그리고 <code>eval (IntLit 42)</code>는 <code>IntVal 42</code>를 반환합니다. 이걸 정수로 쓰려면 다시 패턴 매칭을 해야 합니다. 래핑하고 언래핑하는 보일러플레이트가 계속 쌓입니다.</p>
 <p><strong>핵심 문제를 정리하면:</strong></p>
@@ -215,13 +224,17 @@ let eval e = match e with
 <p>GADT는 이 세 가지 문제를 모두 해결합니다. 핵심 아이디어는 단순합니다: <strong>각 생성자가 타입 매개변수를 구체적인 타입으로 고정할 수 있다.</strong></p>
 <p>일반 ADT에서는 모든 생성자가 동일한 <code>'a</code>를 공유합니다:</p>
 <pre><code>// 일반 ADT — 모든 생성자가 Option&lt;'a&gt;를 만듦
-type Option 'a = None | Some of 'a
+type Option 'a =
+    | None
+    | Some of 'a
 // None  : Option&lt;'a&gt;     ('a가 뭔지 모름)
 // Some x : Option&lt;'a&gt;    ('a가 x의 타입)
 </code></pre>
 <p>GADT에서는 각 생성자가 <code>'a</code>를 특정 타입으로 고정합니다:</p>
 <pre><code>// GADT — 각 생성자가 다른 타입의 Expr을 만듦
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 // IntLit 42   : int Expr     ('a = int으로 고정)
 // BoolLit true : bool Expr   ('a = bool로 고정)
 </code></pre>
@@ -230,7 +243,9 @@ type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 <h2 id="gadt-생성자-구문"><a class="header" href="#gadt-생성자-구문">GADT 생성자 구문</a></h2>
 <p>각 생성자는 <code>:</code>와 <code>-&gt;</code>를 사용하여 인자 타입과 반환 타입을 선언합니다:</p>
 <pre><code>$ cat expr.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 let result = IntLit 42
 
 $ langthree expr.l3
@@ -256,7 +271,9 @@ IntLit 42
 <p>GADT의 진짜 힘은 패턴 매칭에서 드러납니다. 생성자를 매치하는 순간, 컴파일러는 타입 매개변수가 무엇인지 정확히 알게 됩니다. 이것을 <strong>타입 정제</strong>라고 합니다.</p>
 <p>단계별로 살펴봅시다:</p>
 <pre><code>$ cat eval.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 let eval e =
     (match e with
     | IntLit n -&gt; n
@@ -280,7 +297,9 @@ $ langthree eval.l3
 <p>GADT match에서 타입 주석은 <strong>선택사항</strong>입니다. 주석의 존재 여부와 종류에 따라 동작이 달라집니다:</p>
 <p><strong>주석 없음 (권장 — 다형적 반환)</strong>
 주석 없이 match를 쓰면 컴파일러가 결과 타입을 자동으로 추론합니다. 각 분기는 독립적으로 정제됩니다:</p>
-<pre><code>type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+<pre><code>type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 
 let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b
 
@@ -302,7 +321,10 @@ let r2 = eval (BoolLit true) // r2 : bool = true
 <h2 id="재귀-gadt"><a class="header" href="#재귀-gadt">재귀 GADT</a></h2>
 <p>실용적인 표현식 언어는 중첩이 가능해야 합니다. <code>1 + (2 + 3)</code> 같은 표현을 위해 재귀 생성자가 필요합니다:</p>
 <pre><code>$ cat calc.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr | Add : int Expr * int Expr -&gt; int Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
+    | Add : int Expr * int Expr -&gt; int Expr
 let result =
     // GADT 재귀 평가기: 각 생성자를 매칭하여 int로 변환
     let rec eval e = (match e with | IntLit n -&gt; n | BoolLit b -&gt; if b then 1 else 0 | Add (a, b) -&gt; eval a + eval b : int) in
@@ -321,7 +343,9 @@ $ langthree calc.l3
 <h2 id="다형적-반환-타입"><a class="header" href="#다형적-반환-타입">다형적 반환 타입</a></h2>
 <p>가장 강력한 GADT 패턴 중 하나는 함수의 반환 타입이 입력 GADT의 타입 매개변수와 일치하는 것입니다. OCaml에서 <code>eval : 'a expr -&gt; 'a</code>로 알려진 패턴입니다.</p>
 <pre><code>$ cat poly-eval.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 
 let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b
 
@@ -338,7 +362,9 @@ true
 <p>일반 ADT에서는 패턴 매칭이 모든 생성자를 다뤄야 합니다. <code>Shape = Circle | Rect</code>이면 <code>Circle</code>과 <code>Rect</code> 모두 분기가 있어야 합니다.</p>
 <p>GADT에서는 타입 정보를 기반으로 <strong>불가능한 생성자를 컴파일러가 자동으로 걸러냅니다:</strong></p>
 <pre><code>$ cat filter.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
 let eval_int e =
     (match e with
     | IntLit n -&gt; n
@@ -354,7 +380,10 @@ $ langthree filter.l3
 <h2 id="여러-타입-매개변수의-활용"><a class="header" href="#여러-타입-매개변수의-활용">여러 타입 매개변수의 활용</a></h2>
 <p>GADT는 하나의 타입으로 여러 종류의 값을 담으면서, 각 값의 구체적인 타입을 타입 시스템이 추적하게 합니다:</p>
 <pre><code>$ cat typed.l3
-type Val 'a = VInt : int -&gt; int Val | VBool : bool -&gt; bool Val | VStr : string -&gt; string Val
+type Val 'a =
+    | VInt : int -&gt; int Val
+    | VBool : bool -&gt; bool Val
+    | VStr : string -&gt; string Val
 let show_int v =
     (match v with
     | VInt n -&gt; to_string n
@@ -380,7 +409,11 @@ $ langthree typed.l3
 <h2 id="실용-예제-타입-안전한-평가기"><a class="header" href="#실용-예제-타입-안전한-평가기">실용 예제: 타입 안전한 평가기</a></h2>
 <p>지금까지 배운 모든 것을 결합합니다 — 정수 연산과 부정(negation)을 가진 표현식 언어:</p>
 <pre><code>$ cat typed_eval.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr | Add : int Expr * int Expr -&gt; int Expr | Neg : int Expr -&gt; int Expr
+type Expr 'a =
+    | IntLit : int -&gt; int Expr
+    | BoolLit : bool -&gt; bool Expr
+    | Add : int Expr * int Expr -&gt; int Expr
+    | Neg : int Expr -&gt; int Expr
 let result =
     // Neg 포함 GADT 평가기: Add(10, Neg(3)) = 10 + (-3) = 7
     let rec eval e = (match e with | IntLit n -&gt; n | BoolLit b -&gt; if b then 1 else 0 | Add (a, b) -&gt; eval a + eval b | Neg x -&gt; 0 - eval x : int) in

@@ -348,7 +348,9 @@ head를 비교하며 교차 배치합니다. O(n log n)이 보장됩니다.
 
 ```
 $ cat tree_sort.l3
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 // BST 삽입: 값을 비교하여 왼쪽 또는 오른쪽 하위 트리에 재귀 삽입
 let rec treeInsert x = fun t ->
@@ -380,7 +382,9 @@ $ langthree tree_sort.l3
 
 ```
 $ cat peano.l3
-type Nat = Zero | Succ of Nat
+type Nat =
+    | Zero
+    | Succ of Nat
 
 let rec toInt n = match n with | Zero -> 0 | Succ p -> 1 + toInt p
 let rec add a = fun b ->

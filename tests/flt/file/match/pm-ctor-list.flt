@@ -1,7 +1,9 @@
 // Test: constructor containing list, with nested destructuring
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-type Opt 'a = None | Some of 'a
+type Opt 'a =
+    | None
+    | Some of 'a
 let result =
     match Some [1; 2; 3] with
     | Some (x :: _) -> x

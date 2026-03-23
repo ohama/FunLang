@@ -69,7 +69,9 @@ let safeDivide a b =
     else Some (a / b)
 
 // ADT with pattern matching
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 // Records with mutable fields
 type Counter = { mutable count: int }
@@ -108,7 +110,9 @@ let answer =
     x + y
 
 // Polymorphic GADT return
-type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+type Expr 'a =
+    | IntLit : int -> int Expr
+    | BoolLit : bool -> bool Expr
 
 let eval e = match e with | IntLit n -> n | BoolLit b -> b
 let r1 = eval (IntLit 42)     // r1 : int = 42
@@ -131,7 +135,9 @@ let result = qsort [5; 3; 8; 1; 9; 2; 7]
 // => [1; 2; 3; 5; 7; 8; 9]
 
 // BST Tree Sort
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 let rec treeInsert x = fun t ->
     match t with

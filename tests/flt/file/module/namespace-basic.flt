@@ -3,7 +3,10 @@
 // --- Input:
 namespace MyApp
 
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 
 let x = Red
 // --- Stdout:

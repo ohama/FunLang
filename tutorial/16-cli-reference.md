@@ -255,7 +255,10 @@ match 표현식이 모든 생성자를 다루지 않을 때 발생합니다:
 
 ```
 $ cat incomplete.l3
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 let result =
     match Red with
     | Red -> 1
@@ -274,7 +277,10 @@ Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
 
 ```
 $ cat redundant.l3
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 let result =
     match Red with
     | Red -> 1

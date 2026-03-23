@@ -213,7 +213,9 @@ $ langthree list_describe.l3
 
 ```
 $ cat shape.l3
-type Shape = Circle of int | Rect of int * int
+type Shape =
+    | Circle of int
+    | Rect of int * int
 
 let area s =
     match s with
@@ -229,7 +231,12 @@ $ langthree shape.l3
 
 ```
 $ cat card.l3
-type Card = Ace | King | Queen | Jack | Num of int
+type Card =
+    | Ace
+    | King
+    | Queen
+    | Jack
+    | Num of int
 
 let value c =
     match c with
@@ -249,7 +256,9 @@ $ langthree card.l3
 
 ```
 $ cat is_leaf.l3
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 let isLeaf t =
     match t with
@@ -298,7 +307,9 @@ funlang> let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + s
 
 ```
 $ cat nested_complex.l3
-type Opt 'a = None | Some of 'a
+type Opt 'a =
+    | None
+    | Some of 'a
 let result =
     match Some [1; 2; 3] with
     | Some (x :: _) -> x
@@ -372,7 +383,11 @@ ADT 생성자에도 사용할 수 있습니다:
 
 ```
 $ cat or_ctor.l3
-type Direction = North | South | East | West
+type Direction =
+    | North
+    | South
+    | East
+    | West
 
 let isVertical d =
     match d with
@@ -408,7 +423,10 @@ Or-패턴은 소진 검사(exhaustiveness)에 올바르게 통합됩니다.
 
 ```
 $ cat or_exhaust.l3
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 
 let name c =
     match c with
@@ -471,7 +489,9 @@ $ langthree grade.l3
 
 ```
 $ cat shape_guard.l3
-type Shape = Circle of int | Rect of int * int
+type Shape =
+    | Circle of int
+    | Rect of int * int
 
 let isLarge s =
     match s with
@@ -533,7 +553,10 @@ $ langthree match_expr.l3
 
 ```
 $ cat exhaustive.l3
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 let result =
     match Red with
     | Red -> 1
@@ -572,7 +595,10 @@ Warning: warning[W0002]: Redundant pattern match clause. This pattern is never r
 
 ```
 $ cat color_mix.l3
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 
 let mix a b =
     match (a, b) with
@@ -662,7 +688,10 @@ $ langthree take_while.l3
 
 ```
 $ cat expr_eval.l3
-type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
+type Expr =
+    | Num of int
+    | Add of Expr * Expr
+    | Mul of Expr * Expr
 
 let result =
     let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
@@ -703,7 +732,9 @@ $ langthree lookup.l3
 
 ```
 $ cat tree_ops.l3
-type Tree = Leaf | Node of Tree * int * Tree
+type Tree =
+    | Leaf
+    | Node of Tree * int * Tree
 
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1

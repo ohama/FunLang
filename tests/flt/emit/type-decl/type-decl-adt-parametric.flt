@@ -1,7 +1,9 @@
 // Test: --emit-type for parametric ADT type inference
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
 // --- Input:
-type Option 'a = Some of 'a | None
+type Option 'a =
+    | Some of 'a
+    | None
 
 let x = Some 42
 

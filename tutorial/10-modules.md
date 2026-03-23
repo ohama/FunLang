@@ -105,7 +105,10 @@ $ langthree multi_mod.l3
 ```
 $ cat mod_type.l3
 module Colors =
-    type Color = Red | Green | Blue
+    type Color =
+        | Red
+        | Green
+        | Blue
 open Colors
 let result =
     match Green with
@@ -122,7 +125,9 @@ $ langthree mod_type.l3
 ```
 $ cat mod_ctor.l3
 module M =
-    type Opt = MNone | MSome of int
+    type Opt =
+        | MNone
+        | MSome of int
 let result = M.MSome 42
 
 $ langthree mod_ctor.l3
@@ -138,7 +143,9 @@ MSome 42
 ```
 $ cat mod_fn.l3
 module M =
-    type Opt = MNone | MSome of int
+    type Opt =
+        | MNone
+        | MSome of int
     let unwrap x =
         match x with
         | MSome v -> v

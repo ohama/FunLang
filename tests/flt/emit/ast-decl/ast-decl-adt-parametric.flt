@@ -1,6 +1,8 @@
 // Test: --emit-ast for parametric ADT type declaration
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
 // --- Input:
-type Option 'a = Some of 'a | None
+type Option 'a =
+    | Some of 'a
+    | None
 // --- Output:
 TypeDecl "Option ''a" [| Some of TEVar "'a" | None]

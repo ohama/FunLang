@@ -1,7 +1,9 @@
 // Test: constructor pattern matching with data (Shape area)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-type Shape = Circle of int | Rect of int * int
+type Shape =
+    | Circle of int
+    | Rect of int * int
 
 let area s =
     match s with

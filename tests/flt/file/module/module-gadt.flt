@@ -2,7 +2,9 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 module Typed =
-    type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+    type Expr 'a =
+        | IntLit : int -> int Expr
+        | BoolLit : bool -> bool Expr
 
 open Typed
 let result = IntLit 42

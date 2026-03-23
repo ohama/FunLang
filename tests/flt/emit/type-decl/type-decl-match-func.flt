@@ -1,7 +1,10 @@
 // Test: --emit-type for function using match on ADT
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-type %input
 // --- Input:
-type Color = Red | Green | Blue
+type Color =
+    | Red
+    | Green
+    | Blue
 
 let name c =
     match c with
