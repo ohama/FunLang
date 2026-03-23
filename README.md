@@ -2,7 +2,7 @@
 
 FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어.
 
-F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, 모듈, 예외 처리, 파이프/합성 연산자, 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자, Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
+F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, 모듈, 예외 처리, 파이프/합성 연산자, 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자, 다형적 GADT 반환 타입, Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
 
 ## Documentation
 
@@ -16,27 +16,28 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 
 ## Features
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **Indentation Syntax** | F# 스타일 들여쓰기 기반 파싱 (offside rule) | v1.0 ✓ |
-| **Algebraic Data Types** | Sum types, pattern matching, exhaustiveness checking | v1.0 ✓ |
-| **GADT** | Type refinement, bidirectional checking, existential types | v1.0 ✓ |
-| **Records** | Named fields, mutable fields, copy-and-update, pattern matching | v1.0 ✓ |
-| **Modules** | Namespace, open, qualified names, nested modules | v1.0 ✓ |
-| **Exceptions** | try...with, when guards, custom exception types | v1.0 ✓ |
-| **Pattern Compilation** | Decision tree compilation (Jules Jacobs algorithm) | v1.0 ✓ |
-| **Pipe & Composition** | `\|>`, `>>`, `<<` operators | v1.2 ✓ |
-| **Unit Type** | `()` literal, `unit` type, side-effect sequencing | v1.2 ✓ |
-| **String Operations** | string_length, string_concat, string_sub, to_string 등 | v1.2 ✓ |
-| **Printf Output** | print, println, printf with format specifiers | v1.2 ✓ |
-| **Prelude** | Prelude/*.fun directory loading, Option type | v1.2 ✓ |
-| **Tutorial** | 16 chapters with algorithms, 250+ CLI-verified examples | v1.3 ✓ |
-| **User-Defined Operators** | let (op), INFIXOP0-4, (op) function form | v1.5 ✓ |
-| **Prelude Utilities** | not, min, max, abs, fst, snd, ignore | v1.5 ✓ |
-| **sprintf/printfn** | sprintf format→string, printfn format+newline | v1.5 ✓ |
-| **Modulo Operator** | `%` integer modulo | v1.5 ✓ |
-| **Negative Patterns** | `\| -1 ->` match negative integers | v1.5 ✓ |
-| **Tuple Lambda** | `fun (x,y) -> x + y` destructure | v1.5 ✓ |
+| Feature | Description | Version |
+|---------|-------------|---------|
+| **Indentation Syntax** | F# 스타일 들여쓰기 기반 파싱 (offside rule, implicit `in`) | v1.0-v1.7 |
+| **Algebraic Data Types** | Sum types, pattern matching, exhaustiveness checking | v1.0 |
+| **GADT** | Type refinement, polymorphic return (`eval : 'a Expr -> 'a`) | v1.0+v1.8 |
+| **Records** | Named fields, mutable fields, copy-and-update, pattern matching | v1.0 |
+| **Modules** | Namespace, open, qualified names, nested modules | v1.0 |
+| **Exceptions** | try...with, when guards, custom exception types | v1.0 |
+| **Pattern Compilation** | Decision tree compilation (Jules Jacobs algorithm) | v1.0 |
+| **Pipe & Composition** | `\|>`, `>>`, `<<` operators | v1.2 |
+| **Unit Type** | `()` literal, `unit` type, side-effect sequencing | v1.2 |
+| **String Operations** | string_length, string_concat, string_sub, to_string 등 | v1.2 |
+| **Printf Output** | print, println, printf, printfn, sprintf | v1.2+v1.5 |
+| **Prelude** | Option, Result, List, Core, Operators (Prelude/*.fun) | v1.2 |
+| **Tail Call Optimization** | Trampoline-based TCO | v1.4 |
+| **Or-Patterns** | `\| 1 \| 2 \| 3 ->` in match | v1.4 |
+| **List Ranges** | `[1..10]`, `[0..2..20]` | v1.4 |
+| **Mutual Recursion** | `let rec f = ... and g = ...` | v1.4 |
+| **User-Defined Operators** | `let (op)`, INFIXOP0-4, `(op)` function form | v1.5 |
+| **Implicit `in`** | F#-style offside rule — `let x = 1 / let y = 2 / x + y` | v1.7 |
+| **Semicolon Lists** | F# convention: `[1; 2; 3]` (tuples keep commas) | v1.7 |
+| **Polymorphic GADT** | `eval : 'a Expr -> 'a` — per-branch independent type refinement | v1.8 |
 
 ## Quick Start
 
@@ -44,7 +45,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 # Build
 dotnet build src/LangThree/LangThree.fsproj -c Release
 
-# REPL (no arguments)
+# REPL
 src/LangThree/bin/Release/net10.0/LangThree
 
 # Expression mode
@@ -52,7 +53,7 @@ src/LangThree/bin/Release/net10.0/LangThree --expr '1 + 2 * 3'
 # => 7
 
 # File mode
-src/LangThree/bin/Release/net10.0/LangThree myfile.lt
+src/LangThree/bin/Release/net10.0/LangThree myfile.l3
 
 # Type inference
 src/LangThree/bin/Release/net10.0/LangThree --emit-type --expr 'fun x -> x + 1'
@@ -97,65 +98,76 @@ with
 // Printf
 let _ = printf "result=%d safe=%d\n" result safe
 
-// String operations
-let msg = "hello" |> string_length |> to_string
-
-// ADT equality
-let eq = Some 1 = Some 1
-
 // User-defined operator
-let result = [1, 2] ++ [3, 4]
+let result = [1; 2] ++ [3; 4]
 
-// sprintf
-let msg = sprintf "count=%d" (length [1..10])
+// Implicit in (offside rule)
+let answer =
+    let x = 10
+    let y = 20
+    x + y
 
-// Modulo
-let isEven x = x % 2 = 0
+// Polymorphic GADT return
+type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
+
+let eval e = match e with | IntLit n -> n | BoolLit b -> b
+let r1 = eval (IntLit 42)     // r1 : int = 42
+let r2 = eval (BoolLit true)  // r2 : bool = true
 ```
 
-## Algorithms (from Tutorial Ch.14)
+## Algorithms (from Tutorial Ch.15)
 
 ```fsharp
-// Quicksort
-let sorted =
-    let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t
-    in
-    let rec app xs = fun ys -> match xs with | [] -> ys | h :: t -> h :: app t ys
-    in
-    let rec qsort xs = match xs with | [] -> [] | pivot :: rest ->
-        let lo = filter (fun x -> x < pivot) rest in
-        let hi = filter (fun x -> x >= pivot) rest in
-        app (qsort lo) (pivot :: qsort hi)
-    in qsort [5, 3, 8, 1, 9, 2, 7, 4, 6]
-// => [1, 2, 3, 4, 5, 6, 7, 8, 9]
+// Quicksort with Prelude
+let rec qsort xs =
+    match xs with
+    | [] -> []
+    | p :: rest ->
+        qsort (filter (fun x -> x < p) rest)
+        ++ [p]
+        ++ qsort (filter (fun x -> x >= p) rest)
+
+let result = qsort [5; 3; 8; 1; 9; 2; 7]
+// => [1; 2; 3; 5; 7; 8; 9]
 
 // BST Tree Sort
 type Tree = Leaf | Node of Tree * int * Tree
 
-let sorted =
-    let rec treeInsert x = fun t -> match t with
-        | Leaf -> Node (Leaf, x, Leaf)
-        | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
-    in
-    let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
-    in
-    let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> app (inorder l) (v :: inorder r)
-    in inorder (buildTree [5, 3, 8, 1, 9, 2, 7])
-// => [1, 2, 3, 5, 7, 8, 9]
+let rec treeInsert x = fun t ->
+    match t with
+    | Leaf -> Node (Leaf, x, Leaf)
+    | Node (l, v, r) ->
+        if x <= v then Node (treeInsert x l, v, r)
+        else Node (l, v, treeInsert x r)
+
+let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
+let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorder l) (v :: inorder r)
+
+let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
+// => [1; 2; 3; 5; 7; 8; 9]
+
+// Mutual recursion (state machine)
+let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
+and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
 ```
 
 ## Project Structure
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (23 files, 10,304 LOC F#)
+├── src/LangThree/       # Interpreter source (23 files, 10,651 LOC F#)
 ├── tests/
-│   ├── LangThree.Tests/ # F# unit tests (196 tests)
-│   └── flt/             # fslit integration tests (412 tests)
+│   ├── LangThree.Tests/ # F# unit tests (199 tests)
+│   └── flt/             # fslit integration tests (442 tests)
+│       ├── expr/        # Expression-mode tests (16 subdirs)
+│       ├── file/        # File-mode tests (21 subdirs)
+│       ├── emit/        # AST/type emission tests
+│       └── error/       # Error case tests
 ├── tutorial/            # mdBook tutorial (16 chapters)
-├── Prelude/             # Standard library (4 files: Option, List, Util, Operators)
+├── Prelude/             # Standard library (Core, List, Option, Result)
+├── howto/               # Developer knowledge base (4 documents)
 ├── docs/                # Built tutorial site (GitHub Pages)
-└── plans/               # Design documents
+└── .planning/           # GSD project management
 ```
 
 ## Tech Stack
@@ -169,13 +181,13 @@ LangThree/
 ## Tests
 
 ```bash
-# F# unit tests (196)
+# F# unit tests (199)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (412)
+# fslit integration tests (442)
 /path/to/fslit tests/flt/
 
-# Total: 608 tests
+# Total: 641 tests
 ```
 
 ## Milestones
@@ -185,7 +197,12 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v1.0 | Core Language | 1-7 | 32 | 2026-03-10 |
 | v1.2 | Practical Language Features | 8-12 | 12 | 2026-03-18 |
 | v1.3 | Tutorial Documentation | 13-14 | 4 | 2026-03-19 |
-| v1.5 | Operators & Prelude | 15-16 | 8 | 2026-03-20 |
+| v1.4 | Language Completion | 15-18 | 6 | 2026-03-20 |
+| v1.5 | Operators & Utilities | 19-22 | 4 | 2026-03-20 |
+| v1.7 | Offside Rule & List Syntax | 23-24 | 4 | 2026-03-22 |
+| v1.8 | Polymorphic GADT | 25 | 5 | 2026-03-23 |
+
+**Total:** 25 phases, 68 plans across 8 milestones
 
 ## License
 
