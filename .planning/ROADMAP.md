@@ -8,12 +8,14 @@
 **Depends on:** v1.7 (complete)
 **Requirements:** TYP-01~04, COV-01~04
 
-**Plans:** 3 plans
+**Plans:** 5 plans
 
 Plans:
 - [ ] 25-01-PLAN.md — Bidir.fs synth-mode GADT match: E0401 제거, fresh type variable로 check 위임
 - [ ] 25-02-PLAN.md — 다형적 GADT 반환 테스트 3개 신규 추가 (gadt-poly-*.flt)
 - [ ] 25-03-PLAN.md — Tutorial Ch14 업데이트: 다형적 반환 타입 섹션 추가
+- [ ] 25-04-PLAN.md — [GAP] Bidir.fs check-mode per-branch independent result type + GADT-05 tests (COV-01, TYP-03)
+- [ ] 25-05-PLAN.md — [GAP] Tutorial 14-gadt.md accuracy fix: correct poly-eval examples to match working behavior (COV-04)
 
 **Success Criteria:**
 1. `(match e with | IntLit n -> n | BoolLit b -> b : 'a)` — 타입 변수 주석으로 분기별 다른 타입 반환
