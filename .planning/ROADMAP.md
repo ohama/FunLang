@@ -8,8 +8,12 @@
 **Depends on:** v1.7 (complete)
 **Requirements:** TYP-01~04, COV-01~04
 
+**Plans:** 3 plans
+
 Plans:
-- [ ] TBD (run /gsd:plan-phase 25 to break down)
+- [ ] 25-01-PLAN.md — Bidir.fs synth-mode GADT match: E0401 제거, fresh type variable로 check 위임
+- [ ] 25-02-PLAN.md — 다형적 GADT 반환 테스트 3개 신규 추가 (gadt-poly-*.flt)
+- [ ] 25-03-PLAN.md — Tutorial Ch14 업데이트: 다형적 반환 타입 섹션 추가
 
 **Success Criteria:**
 1. `(match e with | IntLit n -> n | BoolLit b -> b : 'a)` — 타입 변수 주석으로 분기별 다른 타입 반환
@@ -22,7 +26,7 @@ Plans:
 **Key Technical Approach:**
 - Bidir.fs synth의 GADT match 분기 (line 273-284): E0401 에러 대신 fresh type variable 생성 후 check로 위임
 - Bidir.fs check의 GADT match (line 540-621): `expected`가 타입 변수일 때 localS가 분기별로 정제 — 기존 로직 그대로 동작
-- Parser.fsy: 타입 주석 위치에 TEVar 허용
+- Parser.fsy: TypeExpr 규칙에 TYPE_VAR이 이미 있음 — 변경 불필요
 - 테스트 + 튜토리얼 업데이트
 
 ---
