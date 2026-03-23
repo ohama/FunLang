@@ -173,7 +173,10 @@ type Expr 'a =
     | IntLit : int -> int Expr
     | BoolLit : bool -> bool Expr
 
-let eval e = match e with | IntLit n -> n | BoolLit b -> b
+let eval e =
+    match e with
+    | IntLit n -> n
+    | BoolLit b -> b
 
 let r1 = eval (IntLit 42)    // r1 : int = 42
 let r2 = eval (BoolLit true) // r2 : bool = true
@@ -183,7 +186,11 @@ let r2 = eval (BoolLit true) // r2 : bool = true
 구체적 타입을 지정하면 모든 분기가 그 타입을 반환해야 합니다. 재귀 평가기처럼 반환 타입을 하나로 고정하고 싶을 때 사용합니다:
 
 ```
-let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 : int)
+let rec eval e =
+    (match e with
+    | IntLit n -> n
+    | BoolLit b -> if b then 1 else 0
+    : int)
 ```
 
 `: int` 주석은 match의 끝에, 괄호 안에 위치합니다. 이 주석이 있으면 컴파일러는 **검사 모드(check mode)**에 진입하여, 모든 분기가 `int`를 반환하는지 확인합니다. `BoolLit b` 분기에서 `b`는 `bool`이지만 `if b then 1 else 0`으로 `int`를 반환하므로 타입이 맞습니다.
@@ -201,9 +208,13 @@ type Expr 'a =
     | BoolLit : bool -> bool Expr
     | Add : int Expr * int Expr -> int Expr
 let result =
-    // GADT 재귀 평가기: 각 생성자를 매칭하여 int로 변환
-    let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b : int) in
-    eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
+    let rec eval e =
+        (match e with
+        | IntLit n -> n
+        | BoolLit b -> if b then 1 else 0
+        | Add (a, b) -> eval a + eval b
+        : int)
+    in eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
 $ langthree calc.l3
 42
@@ -227,7 +238,10 @@ type Expr 'a =
     | IntLit : int -> int Expr
     | BoolLit : bool -> bool Expr
 
-let eval e = match e with | IntLit n -> n | BoolLit b -> b
+let eval e =
+    match e with
+    | IntLit n -> n
+    | BoolLit b -> b
 
 let _ = printf "%d\n" (eval (IntLit 42))
 let result = eval (BoolLit true)
@@ -239,7 +253,7 @@ true
 
 `eval`의 타입은 `'a Expr -> 'a`입니다. `eval (IntLit 42)`는 `int`를 반환하므로 `printf "%d"`로 출력하고, `eval (BoolLit true)`는 `bool`을 반환합니다. **같은 함수가 입력의 GADT 타입 매개변수에 따라 다른 타입을 반환합니다.** 이것이 일반 ADT로는 불가능한, GADT만의 능력입니다.
 
-이것이 가능한 이유: 컴파일러는 `match e with | IntLit n -> n | BoolLit b -> b`를 볼 때, 각 분기에서 타입 정제를 통해 독립적으로 타입을 확인합니다. `IntLit` 분기에서는 `n : int`이므로 결과가 `int`, `BoolLit` 분기에서는 `b : bool`이므로 결과가 `bool`. 두 분기가 서로 다른 타입을 반환해도 되는 것은 GADT의 타입 정제 덕분입니다 — 일반 ADT나 non-GADT match에서는 모든 분기가 같은 타입을 반환해야 합니다.
+이것이 가능한 이유: 컴파일러는 `match e with` 각 분기에서 타입 정제를 통해 독립적으로 타입을 확인합니다. `IntLit` 분기에서는 `n : int`이므로 결과가 `int`, `BoolLit` 분기에서는 `b : bool`이므로 결과가 `bool`. 두 분기가 서로 다른 타입을 반환해도 되는 것은 GADT의 타입 정제 덕분입니다 — 일반 ADT나 non-GADT match에서는 모든 분기가 같은 타입을 반환해야 합니다.
 
 ## GADT 완전성 검사
 
@@ -313,8 +327,14 @@ type Expr 'a =
     | Neg : int Expr -> int Expr
 let result =
     // Neg 포함 GADT 평가기: Add(10, Neg(3)) = 10 + (-3) = 7
-    let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b | Neg x -> 0 - eval x : int) in
-    eval (Add (IntLit 10, Neg (IntLit 3)))
+    let rec eval e =
+        (match e with
+        | IntLit n -> n
+        | BoolLit b -> if b then 1 else 0
+        | Add (a, b) -> eval a + eval b
+        | Neg x -> 0 - eval x
+        : int)
+    in eval (Add (IntLit 10, Neg (IntLit 3)))
 
 $ langthree typed_eval.l3
 7
