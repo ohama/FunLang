@@ -31,19 +31,19 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TYP-01 | - | Pending |
-| TYP-02 | - | Pending |
-| TYP-03 | - | Pending |
-| TYP-04 | - | Pending |
-| COV-01 | - | Pending |
-| COV-02 | - | Pending |
-| COV-03 | - | Pending |
-| COV-04 | - | Pending |
+| TYP-01 | 25 | Pending |
+| TYP-02 | 25 | Pending |
+| TYP-03 | 25 | Pending |
+| TYP-04 | 25 | Pending |
+| COV-01 | 25 | Pending |
+| COV-02 | 25 | Pending |
+| COV-03 | 25 | Pending |
+| COV-04 | 25 | Pending |
 
 **Coverage:**
 - v1.8 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-23*
