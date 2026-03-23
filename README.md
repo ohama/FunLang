@@ -114,7 +114,11 @@ type Expr 'a =
     | IntLit : int -> int Expr
     | BoolLit : bool -> bool Expr
 
-let eval e = match e with | IntLit n -> n | BoolLit b -> b
+let eval e =
+    match e with
+    | IntLit n -> n
+    | BoolLit b -> b
+
 let r1 = eval (IntLit 42)     // r1 : int = 42
 let r2 = eval (BoolLit true)  // r2 : bool = true
 ```
@@ -171,7 +175,7 @@ LangThree/
 │       └── error/       # Error case tests
 ├── tutorial/            # mdBook tutorial (16 chapters)
 ├── Prelude/             # Standard library (Core, List, Option, Result)
-├── howto/               # Developer knowledge base (4 documents)
+├── howto/               # Developer knowledge base (5 documents)
 ├── docs/                # Built tutorial site (GitHub Pages)
 └── .planning/           # GSD project management
 ```
@@ -209,6 +213,14 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v1.8 | Polymorphic GADT | 25 | 5 | 2026-03-23 |
 
 **Total:** 25 phases, 68 plans across 8 milestones
+
+## Reference Documents
+
+| Document | Description |
+|----------|-------------|
+| [SPEC.md](SPEC.md) | Language specification — tokens, BNF grammar, operator precedence, type system |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Pipeline design — Lexer → IndentFilter → Parser → TypeCheck → Eval |
+| [TESTS.md](TESTS.md) | Test cases — tokenization, parsing, indentation edge cases, runtime |
 
 ## License
 
