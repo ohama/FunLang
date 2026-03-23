@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8434ca2c.js";
+            window.path_to_searchindex_js = "searchindex-773db435.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-f1b237e8.js"></script>
@@ -276,30 +276,29 @@ $ langthree eval.l3
 <li>각 분기는 독립적으로 타입이 정제됩니다 — <code>IntLit</code> 분기의 <code>'a = int</code>이 <code>BoolLit</code> 분기에 영향을 주지 않습니다</li>
 </ol>
 <p>일반 ADT였다면 컴파일러는 3번과 4번 단계에서 “그냥 <code>int</code>와 <code>bool</code>“밖에 모릅니다. 하지만 GADT에서는 “이 분기에서 <code>'a</code>가 <code>int</code>로 확정되었으므로, <code>n</code>이 <code>int</code>이고, 이 분기의 반환값도 <code>int</code>와 호환되어야 한다“는 추론까지 합니다.</p>
-<h3 id="왜-타입-주석이-필요한가"><a class="header" href="#왜-타입-주석이-필요한가">왜 타입 주석이 필요한가</a></h3>
-<p><code>: int</code> 주석은 match의 끝에, 괄호 안에 위치합니다:</p>
-<pre><code>(match e with
-| IntLit n -&gt; n
-| BoolLit b -&gt; if b then 1 else 0
-: int)
-</code></pre>
-<p>이 주석이 없으면 E0401 오류가 발생합니다:</p>
-<pre><code>$ cat no_anno.l3
-type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
-let eval e =
-    match e with
-    | IntLit n -&gt; n
-    | BoolLit b -&gt; if b then 1 else 0
-let result = eval (IntLit 42)
+<h3 id="타입-주석의-역할"><a class="header" href="#타입-주석의-역할">타입 주석의 역할</a></h3>
+<p>GADT match에서 타입 주석은 <strong>선택사항</strong>입니다. 주석의 존재 여부와 종류에 따라 동작이 달라집니다:</p>
+<p><strong>주석 없음 (권장 — 다형적 반환)</strong>
+주석 없이 match를 쓰면 컴파일러가 결과 타입을 자동으로 추론합니다. 각 분기는 독립적으로 정제됩니다:</p>
+<pre><code>type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
 
-$ langthree no_anno.l3
-error[E0401]: GADT match requires type annotation on scrutinee of type 'm
- --&gt; :0:0-1:0
-   = hint: Add a type annotation to the match scrutinee: match (expr : Type) with ...
+let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b
+
+let r1 = eval (IntLit 42)    // r1 : int = 42
+let r2 = eval (BoolLit true) // r2 : bool = true
 </code></pre>
-<p>왜 주석이 필수인지 이해하려면, 컴파일러의 입장에서 생각해봐야 합니다. 컴파일러는 <code>e</code>의 타입이 <code>'a Expr</code>이라는 것을 알지만, <code>'a</code>가 무엇인지는 모릅니다. 타입 주석 <code>: int</code>를 통해 “이 match의 결과가 <code>int</code>가 되어야 한다“고 알려주면, 컴파일러는 **검사 모드(check mode)**에 진입하여 각 분기를 분석할 때 GADT의 생성자 타입 정보를 활용할 수 있습니다.</p>
-<p>OCaml에서는 이것을 “locally abstract types“라는 메커니즘으로 처리하고, Haskell에서는 더 깊이 통합되어 있어서 명시적 주석이 불필요한 경우가 많습니다. LangThree는 명시적 주석을 요구하여, 코드를 읽는 사람이 “여기서 GADT 타입 정제가 일어나고 있다“는 것을 바로 알 수 있게 합니다.</p>
-<p><strong>규칙:</strong> GADT를 match할 때는 항상 <code>(match e with | ... : ResultType)</code> 형태로 씁니다.</p>
+<p><strong>타입 변수 주석 <code>'a</code> (명시적 다형성)</strong>
+<code>'a</code>를 주석으로 쓰면 “이 match는 다형적 결과를 반환한다“는 의도를 명시적으로 표현합니다:</p>
+<pre><code>let result = (match IntLit 42 with | IntLit n -&gt; n | BoolLit b -&gt; if b then 1 else 0 : 'a)
+// result : int = 42
+</code></pre>
+<p><strong>구체적 타입 주석 <code>: int</code> (단일 타입 강제)</strong>
+구체적 타입을 지정하면 모든 분기가 그 타입을 반환해야 합니다. 재귀 평가기에서 유용합니다:</p>
+<pre><code>let rec eval e = (match e with | IntLit n -&gt; n | BoolLit b -&gt; if b then 1 else 0 : int)
+</code></pre>
+<p><code>:  int</code> 주석은 match의 끝에, 괄호 안에 위치합니다. 컴파일러는 <code>e</code>의 타입이 <code>'a Expr</code>이라는 것을 알지만, <code>'a</code>가 무엇인지는 모릅니다. 타입 주석 <code>: int</code>를 통해 “이 match의 결과가 <code>int</code>가 되어야 한다“고 알려주면, 컴파일러는 **검사 모드(check mode)**에 진입하여 각 분기를 분석할 때 GADT의 생성자 타입 정보를 활용할 수 있습니다.</p>
+<p>OCaml에서는 이것을 “locally abstract types“라는 메커니즘으로 처리하고, Haskell에서는 더 깊이 통합되어 있어서 명시적 주석이 불필요한 경우가 많습니다. LangThree는 주석 없이도 다형적 반환이 가능하며, 명시적 주석은 반환 타입을 하나로 고정하고 싶을 때 사용합니다.</p>
+<p><strong>참고:</strong> 주석 없이도 동작하지만, 재귀 함수에서 반환 타입을 명시해야 할 때는 <code>(match e with | ... : ResultType)</code> 형태를 씁니다.</p>
 <h2 id="재귀-gadt"><a class="header" href="#재귀-gadt">재귀 GADT</a></h2>
 <p>실용적인 표현식 언어는 중첩이 가능해야 합니다. <code>1 + (2 + 3)</code> 같은 표현을 위해 재귀 생성자가 필요합니다:</p>
 <pre><code>$ cat calc.l3
@@ -319,6 +318,22 @@ $ langthree calc.l3
 </ul>
 <p>이것이 ADT와의 결정적 차이입니다. ADT에서 <code>Add of Expr * Expr</code>이라고 쓰면 <code>Add (IntLit 1, BoolLit true)</code>가 가능합니다. GADT에서 <code>Add : int Expr * int Expr -&gt; int Expr</code>이라고 쓰면 <code>Add (IntLit 1, BoolLit true)</code>는 타입 오류입니다 — <code>BoolLit true</code>는 <code>bool Expr</code>이지 <code>int Expr</code>이 아니니까요.</p>
 <p><strong>컴파일 시점에 잘못된 표현을 차단한다는 것은</strong>, 런타임에 “정수와 불리언을 더할 수 없습니다” 같은 에러를 처리하는 코드가 필요 없다는 뜻입니다. 파이썬 같은 동적 언어에서는 이런 검사를 직접 구현해야 했을 것입니다.</p>
+<h2 id="다형적-반환-타입"><a class="header" href="#다형적-반환-타입">다형적 반환 타입</a></h2>
+<p>가장 강력한 GADT 패턴 중 하나는 함수의 반환 타입이 입력 GADT의 타입 매개변수와 일치하는 것입니다. OCaml에서 <code>eval : 'a expr -&gt; 'a</code>로 알려진 패턴입니다.</p>
+<pre><code>$ cat poly-eval.l3
+type Expr 'a = IntLit : int -&gt; int Expr | BoolLit : bool -&gt; bool Expr
+
+let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b
+
+let r1 = eval (IntLit 42)
+let r2 = eval (BoolLit true)
+
+$ langthree poly-eval.l3
+42
+true
+</code></pre>
+<p><code>eval</code>의 타입은 <code>'a Expr -&gt; 'a</code>입니다. <code>IntLit 42</code>를 넘기면 <code>int</code>를, <code>BoolLit true</code>를 넘기면 <code>bool</code>을 반환합니다. 단일 함수가 입력의 GADT 타입 매개변수에 따라 다른 반환 타입을 가집니다.</p>
+<p>이것이 가능한 이유: 컴파일러는 <code>match e with | IntLit n -&gt; n | BoolLit b -&gt; b</code>를 볼 때, 각 분기에서 타입 정제를 통해 독립적으로 타입을 확인합니다. <code>IntLit</code> 분기에서는 <code>n : int</code>이므로 결과가 <code>int</code>, <code>BoolLit</code> 분기에서는 <code>b : bool</code>이므로 결과가 <code>bool</code>. 두 분기가 서로 다른 타입을 반환해도 되는 것은 GADT의 타입 정제 덕분입니다 — 일반 ADT나 non-GADT match에서는 모든 분기가 같은 타입을 반환해야 합니다.</p>
 <h2 id="gadt-완전성-검사"><a class="header" href="#gadt-완전성-검사">GADT 완전성 검사</a></h2>
 <p>일반 ADT에서는 패턴 매칭이 모든 생성자를 다뤄야 합니다. <code>Shape = Circle | Rect</code>이면 <code>Circle</code>과 <code>Rect</code> 모두 분기가 있어야 합니다.</p>
 <p>GADT에서는 타입 정보를 기반으로 <strong>불가능한 생성자를 컴파일러가 자동으로 걸러냅니다:</strong></p>
@@ -408,8 +423,8 @@ eval (Add x y)   = eval x + eval y
 <tbody>
 <tr><td>구문</td><td><code>IntLit :: Int -&gt; Expr Int</code></td><td><code>IntLit : int -&gt; int Expr</code></td></tr>
 <tr><td>타입 매개변수 위치</td><td>뒤 (<code>Expr Int</code>)</td><td>앞 (<code>int Expr</code>)</td></tr>
-<tr><td>match 주석</td><td>대부분 불필요 (타입 추론)</td><td>필수 (<code>(match ... : int)</code>)</td></tr>
-<tr><td>다중 타입 반환</td><td><code>eval :: Expr a -&gt; a</code> 가능</td><td><code>eval</code>이 하나의 구체적 타입 반환</td></tr>
+<tr><td>match 주석</td><td>대부분 불필요 (타입 추론)</td><td>선택사항 (생략 시 다형적 반환)</td></tr>
+<tr><td>다형적 반환</td><td><code>eval :: Expr a -&gt; a</code> 가능</td><td><code>eval : 'a Expr -&gt; 'a</code> 가능</td></tr>
 </tbody>
 </table>
 </div>
@@ -426,7 +441,7 @@ let eval : type a. a expr -&gt; a = function
   | BoolLit b -&gt; b
   | Add (x, y) -&gt; eval x + eval y
 </code></pre>
-<p>OCaml에서 <code>type a.</code>는 <strong>locally abstract type</strong> 선언입니다. 이것이 LangThree의 <code>(match ... : int)</code> 주석과 같은 역할을 합니다 — 컴파일러에게 “이 함수 안에서 GADT 타입 정제를 수행하라“고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. LangThree가 주석을 요구하는 것은 OCaml의 이 설계를 따른 것입니다.</p>
+<p>OCaml에서 <code>type a.</code>는 <strong>locally abstract type</strong> 선언입니다. 컴파일러에게 “이 함수 안에서 GADT 타입 정제를 수행하라“고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. LangThree는 주석 없이도 자동으로 다형적 타입 변수를 생성하여 타입 정제를 수행하는 방식으로, OCaml보다 한 걸음 더 나아갔습니다. 반환 타입을 하나로 고정하고 싶을 때는 여전히 <code>(match ... : int)</code> 주석을 사용할 수 있습니다.</p>
 <p>OCaml 구문에서 <code>type _ expr</code>의 <code>_</code>는 타입 매개변수를 익명으로 선언합니다. 각 생성자가 자신의 반환 타입에서 이 매개변수를 구체화합니다. LangThree에서는 <code>type Expr 'a</code>로 매개변수에 이름을 줍니다.</p>
 <h3 id="scala--sealed-trait으로-유사-구현"><a class="header" href="#scala--sealed-trait으로-유사-구현">Scala — sealed trait으로 유사 구현</a></h3>
 <p>Scala는 언어 자체에 GADT 키워드가 없지만, sealed trait과 제네릭으로 비슷한 패턴을 만들 수 있습니다:</p>
@@ -487,7 +502,7 @@ function eval(e: Expr): number | boolean {
 <tbody>
 <tr><td><strong>Haskell</strong></td><td>네이티브 (<code>GADTs</code> 확장)</td><td><code>data Expr a where IntLit :: Int -&gt; Expr Int</code></td><td>대부분 불필요</td><td><code>eval :: Expr a -&gt; a</code> 가능</td></tr>
 <tr><td><strong>OCaml</strong></td><td>네이티브 (4.0+)</td><td><code>type _ expr = IntLit : int -&gt; int expr</code></td><td><code>type a.</code> 필요</td><td>가능</td></tr>
-<tr><td><strong>LangThree</strong></td><td>네이티브</td><td><code>IntLit : int -&gt; int Expr</code></td><td><code>(match ... : int)</code> 필요</td><td>고정 반환 타입만</td></tr>
+<tr><td><strong>LangThree</strong></td><td>네이티브</td><td><code>IntLit : int -&gt; int Expr</code></td><td>선택사항 (생략 시 다형적)</td><td><code>eval : 'a Expr -&gt; 'a</code> 가능</td></tr>
 <tr><td><strong>Scala</strong></td><td>sealed trait으로 유사</td><td><code>case class IntLit(n: Int) extends Expr[Int]</code></td><td>불필요</td><td>가능</td></tr>
 <tr><td><strong>TypeScript</strong></td><td>판별 유니온 (제한적)</td><td><code>{ tag: "int"; value: number }</code></td><td>불필요</td><td>유니온 반환만</td></tr>
 <tr><td><strong>Rust</strong></td><td>미지원</td><td>—</td><td>—</td><td>—</td></tr>
@@ -522,7 +537,8 @@ function eval(e: Expr): number | boolean {
 <tr><td>타입 선언</td><td><code>type Expr 'a = ...</code></td></tr>
 <tr><td>생성자</td><td><code>IntLit : int -&gt; int Expr</code></td></tr>
 <tr><td>반환 타입</td><td><code>int Expr</code> (매개변수가 이름 앞에 위치)</td></tr>
-<tr><td>match 주석</td><td><code>(match e with | ... : int)</code></td></tr>
+<tr><td>match 주석</td><td><code>(match e with | ... : int)</code> — 선택사항, 반환 타입 고정 시 사용</td></tr>
+<tr><td>주석 없는 match</td><td>컴파일러가 자동으로 다형적 타입 변수 생성</td></tr>
 <tr><td>하나의 생성자라도 GADT이면</td><td>모든 생성자가 GADT로 취급됨</td></tr>
 </tbody>
 </table>
@@ -536,7 +552,7 @@ function eval(e: Expr): number | boolean {
 <tr><td><code>type T 'a = A of int</code></td><td><code>type T 'a = A : int -&gt; int T</code></td></tr>
 <tr><td>모든 생성자가 <code>T&lt;'a&gt;</code> 생성</td><td>각 생성자가 <code>T&lt;concrete&gt;</code> 생성</td></tr>
 <tr><td>match에서 값만 분해</td><td>match에서 값 분해 + 타입 정제</td></tr>
-<tr><td>타입 주석 불필요</td><td><code>(match ... : Type)</code> 필수</td></tr>
+<tr><td>타입 주석 불필요</td><td><code>(match ... : Type)</code> 선택사항</td></tr>
 <tr><td>모든 생성자 분기 필요</td><td>불가능한 생성자 자동 제외</td></tr>
 </tbody>
 </table>
