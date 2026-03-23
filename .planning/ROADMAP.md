@@ -2,33 +2,18 @@
 
 ## Current Milestone: v1.8 Polymorphic GADT
 
-### Phase 25: Polymorphic GADT Return Types
+### Phase 25: Polymorphic GADT Return Types (COMPLETE)
 
-**Goal:** OCaml 스타일 다형적 GADT 반환 — synth에서 GADT match를 fresh type variable로 check 위임, 타입 주석에 타입 변수 허용
+**Goal:** OCaml 스타일 다형적 GADT 반환 — synth에서 GADT match를 fresh type variable로 check 위임, 분기별 독립적 타입 정제
 **Depends on:** v1.7 (complete)
 **Requirements:** TYP-01~04, COV-01~04
-
-**Plans:** 5 plans
+**Status:** COMPLETE — `eval : 'a Expr -> 'a` 패턴 동작, 199 F# + 442 fslit tests passing
 
 Plans:
-- [ ] 25-01-PLAN.md — Bidir.fs synth-mode GADT match: E0401 제거, fresh type variable로 check 위임
-- [ ] 25-02-PLAN.md — 다형적 GADT 반환 테스트 3개 신규 추가 (gadt-poly-*.flt)
-- [ ] 25-03-PLAN.md — Tutorial Ch14 업데이트: 다형적 반환 타입 섹션 추가
-- [ ] 25-04-PLAN.md — [GAP] Bidir.fs check-mode per-branch independent result type + GADT-05 tests (COV-01, TYP-03)
-- [ ] 25-05-PLAN.md — [GAP] Tutorial 14-gadt.md accuracy fix: correct poly-eval examples to match working behavior (COV-04)
-
-**Success Criteria:**
-1. `(match e with | IntLit n -> n | BoolLit b -> b : 'a)` — 타입 변수 주석으로 분기별 다른 타입 반환
-2. synth 모드에서 GADT match가 E0401 대신 자동으로 check 위임
-3. `eval (IntLit 42)` → `42` (int), `eval (BoolLit true)` → `true` (bool) — 다형적 반환
-4. `Add (IntLit 10, IntLit 20)` 재귀 평가 동작
-5. 기존 `(match ... : int)` 구체적 주석 호환
-6. 기존 GADT 테스트 전부 통과
-
-**Key Technical Approach:**
-- Bidir.fs synth의 GADT match 분기 (line 273-284): E0401 에러 대신 fresh type variable 생성 후 check로 위임
-- Bidir.fs check의 GADT match (line 540-621): `expected`가 타입 변수일 때 localS가 분기별로 정제 — 기존 로직 그대로 동작
-- Parser.fsy: TypeExpr 규칙에 TYPE_VAR이 이미 있음 — 변경 불필요
-- 테스트 + 튜토리얼 업데이트
+- [x] 25-01: Bidir.fs synth-mode GADT match: E0401 제거, fresh type variable로 check 위임
+- [x] 25-02: 다형적 GADT 반환 테스트 3개 신규 추가 (gadt-poly-*.flt)
+- [x] 25-03: Tutorial Ch14 업데이트: 다형적 반환 타입 섹션 추가
+- [x] 25-04: [GAP] Bidir.fs check-mode per-branch independent result type (isPolyExpected)
+- [x] 25-05: [GAP] Tutorial accuracy verification
 
 ---

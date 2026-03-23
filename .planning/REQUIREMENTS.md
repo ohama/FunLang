@@ -31,14 +31,14 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TYP-01 | 25 | Pending |
-| TYP-02 | 25 | Pending |
-| TYP-03 | 25 | Pending |
-| TYP-04 | 25 | Pending |
-| COV-01 | 25 | Pending |
-| COV-02 | 25 | Pending |
-| COV-03 | 25 | Pending |
-| COV-04 | 25 | Pending |
+| TYP-01 | 25 | Complete |
+| TYP-02 | 25 | Complete |
+| TYP-03 | 25 | Complete |
+| TYP-04 | 25 | Complete |
+| COV-01 | 25 | Complete |
+| COV-02 | 25 | Complete |
+| COV-03 | 25 | Complete |
+| COV-04 | 25 | Complete |
 
 **Coverage:**
 - v1.8 requirements: 8 total
