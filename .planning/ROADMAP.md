@@ -86,10 +86,11 @@ Plans:
   2. `char_to_int 'A'` returns 65, `int_to_char 65` returns `'A'`
   3. String/char comparison operators work: `"abc" < "def"` returns true, `'A' < 'Z'` returns true
   4. Comparison operators work with `<=`, `>=`, `>` for both string and char types
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 29-01: TBD
+- [ ] 29-01-PLAN.md — char type infrastructure: AST, lexer, parser, type inference, builtins (TYPE-04, TYPE-05)
+- [ ] 29-02-PLAN.md — comparison operator widening for string and char (TYPE-06)
 
 ### Phase 30: Parser Improvements
 **Goal**: Common syntax patterns that currently fail now work naturally
@@ -149,7 +150,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 26. Quick Fixes | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
-| 29. Char Type | v2.0 | 0/TBD | Not started | - |
+| 29. Char Type | v2.0 | 0/2 | Not started | - |
 | 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
 | 31. Module System | v2.0 | 0/TBD | Not started | - |
 | 32. File I/O | v2.0 | 0/TBD | Not started | - |
