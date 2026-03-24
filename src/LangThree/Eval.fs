@@ -248,6 +248,12 @@ let initialBuiltinEnv : Env =
                 let specifiers = parsePrintfSpecifiers fmt
                 applySprintfArgs fmt specifiers []
             | _ -> failwith "sprintf: first argument must be a format string")
+
+        // failwith : string -> 'a  (raises LangThreeException so try-with can catch it)
+        "failwith", BuiltinValue (fun v ->
+            match v with
+            | StringValue msg -> raise (LangThreeException (StringValue msg))
+            | _ -> failwith "failwith: expected string argument")
     ]
 
 /// Module value environment for runtime qualified access

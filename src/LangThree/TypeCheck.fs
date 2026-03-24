@@ -51,6 +51,9 @@ let initialTypeEnv: TypeEnv =
 
         // sprintf : string -> 'a  (like printf but returns string; runtime enforces arity)
         "sprintf", Scheme([0], TArrow(TString, TVar 0))
+
+        // failwith : string -> 'a  (polymorphic return — unifies with any expected type, like raise)
+        "failwith", Scheme([0], TArrow(TString, TVar 0))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
