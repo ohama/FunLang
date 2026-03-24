@@ -57,10 +57,11 @@ Plans:
   1. A list literal spanning multiple lines parses correctly (e.g., `[1;\n  2;\n  3]`)
   2. A trailing semicolon in a list literal is accepted without error (`[1; 2; 3;]`)
   3. Pattern matching on list literal patterns works: `match xs with | [x] -> ...`, `| [x; y] -> ...`, `| [x; y; z] -> ...`
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 27-01: TBD
+- [ ] 27-01-PLAN.md — IndentFilter bracket depth tracking (SYN-02)
+- [ ] 27-02-PLAN.md — Trailing semicolons + list literal patterns in Parser.fsy (SYN-03, SYN-04)
 
 ### Phase 28: N-Tuples
 **Goal**: Users can work with tuples of any size, not just pairs
@@ -146,7 +147,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 26. Quick Fixes | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 27. List Syntax | v2.0 | 0/TBD | Not started | - |
+| 27. List Syntax | v2.0 | 0/2 | Not started | - |
 | 28. N-Tuples | v2.0 | 0/TBD | Not started | - |
 | 29. Char Type | v2.0 | 0/TBD | Not started | - |
 | 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
