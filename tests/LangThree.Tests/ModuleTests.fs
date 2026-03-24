@@ -186,3 +186,107 @@ let moduleTests = testList "Modules" [
         }
     ]
 ]
+
+// Helper to evaluate a .fun file by path (for file import tests).
+// Sets currentTypeCheckingFile and currentEvalFile so resolveImportPath works correctly.
+// Also triggers Prelude module initialization so the fileImportTypeChecker delegate is set.
+let evalFileModule (filePath: string) : Ast.Value =
+    // Access Prelude.emptyPrelude to trigger the Prelude module `do` block which
+    // registers the fileImportTypeChecker and fileImportEvaluator delegates.
+    let _initPrelude = Prelude.emptyPrelude
+    let absPath = System.IO.Path.GetFullPath filePath
+    let source = System.IO.File.ReadAllText absPath
+    let lexbuf = FSharp.Text.Lexing.LexBuffer<_>.FromString source
+    Lexer.setInitialPos lexbuf absPath
+    let filteredTokens =
+        let rec collect () =
+            let tok = Lexer.tokenize lexbuf
+            if tok = Parser.EOF then [Parser.EOF]
+            else tok :: collect ()
+        let rawTokens = collect ()
+        filter defaultConfig rawTokens |> Seq.toList
+    let mutable index = 0
+    let tokenizer (lb: FSharp.Text.Lexing.LexBuffer<_>) =
+        if index < filteredTokens.Length then
+            let tok = filteredTokens.[index]
+            index <- index + 1
+            tok
+        else Parser.EOF
+    let lexbuf2 = FSharp.Text.Lexing.LexBuffer<_>.FromString source
+    Lexer.setInitialPos lexbuf2 absPath
+    let m = Parser.parseModule tokenizer lexbuf2
+    // Set file path mutables so resolveImportPath works for relative file imports.
+    // Save and restore to be safe in parallel test environments.
+    let prevTCFile = TypeCheck.currentTypeCheckingFile
+    let prevEvalFile = Eval.currentEvalFile
+    TypeCheck.currentTypeCheckingFile <- absPath
+    try
+        match TypeCheck.typeCheckModule m with
+        | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+        | Ok (_warnings, recEnv, _modules, _typeEnv) ->
+            let decls =
+                match m with
+                | Ast.Module(d, _) | Ast.NamedModule(_, d, _) | Ast.NamespacedModule(_, d, _) -> d
+                | Ast.EmptyModule _ -> []
+            Eval.currentEvalFile <- absPath
+            let finalEnv, moduleEnv = Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
+            match decls |> List.rev |> List.tryPick (function Ast.LetDecl(_, body, _) -> Some body | _ -> None) with
+            | Some body -> Eval.eval recEnv moduleEnv finalEnv false body
+            | None -> Ast.TupleValue []
+    finally
+        TypeCheck.currentTypeCheckingFile <- prevTCFile
+        Eval.currentEvalFile <- prevEvalFile
+
+[<Tests>]
+let fileImportTests = testSequenced (testList "File Import Tests" [
+
+    // SC-1: Basic file import — imported bindings are accessible
+    test "SC-1: basic file import — imported bindings accessible" {
+        let tmpDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName())
+        System.IO.Directory.CreateDirectory(tmpDir) |> ignore
+        try
+            let libPath = System.IO.Path.Combine(tmpDir, "lib.fun")
+            let mainPath = System.IO.Path.Combine(tmpDir, "main.fun")
+            System.IO.File.WriteAllText(libPath, "let greeting = \"hello\"\nlet add x y = x + y\n")
+            System.IO.File.WriteAllText(mainPath, "open \"lib.fun\"\nlet result = add 3 4\n")
+            let result = evalFileModule mainPath
+            Expect.equal result (Ast.IntValue 7) "imported add function returns 7"
+        finally
+            System.IO.Directory.Delete(tmpDir, true)
+    }
+
+    // SC-1 variant: imported binding used in expression
+    test "SC-1 variant: imported binding used in expression" {
+        let tmpDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName())
+        System.IO.Directory.CreateDirectory(tmpDir) |> ignore
+        try
+            let utilsPath = System.IO.Path.Combine(tmpDir, "utils.fun")
+            let progPath = System.IO.Path.Combine(tmpDir, "prog.fun")
+            System.IO.File.WriteAllText(utilsPath, "let double x = x * 2\n")
+            System.IO.File.WriteAllText(progPath, "open \"utils.fun\"\nlet result = double 5\n")
+            let result = evalFileModule progPath
+            Expect.equal result (Ast.IntValue 10) "imported double function returns 10"
+        finally
+            System.IO.Directory.Delete(tmpDir, true)
+    }
+
+    // SC-2: Multiple module declarations in one file (indentation-based, no 'end' keyword)
+    test "SC-2: multiple module declarations coexist in one file" {
+        let result = evalModule "module A =\n    let x = 10\n\nmodule B =\n    let y = 20\n\nopen A\nopen B\nlet result = x + y\n"
+        Expect.equal result (Ast.IntValue 30) "bindings from A and B are accessible after open"
+    }
+
+    // SC-3: Qualified access to same type name in different modules (constructors differ)
+    test "SC-3: qualified access to same type name in different modules" {
+        let result = evalModule "module Lexer =\n    type Token = Ident of string | Num of int\n\nmodule Parser =\n    type Token = LParen | RParen | Atom of string\n\nlet t1 = Lexer.Ident \"hello\"\nlet t2 = Parser.LParen\nlet result = 1\n"
+        Expect.equal result (Ast.IntValue 1) "same type name in different modules does not conflict"
+    }
+
+    // SC-4 / MOD-05: Record types in sibling modules with shared field names
+    // Uses 'open M1' to bring M1.Tok into scope; the record literal {kind="id"; value=42}
+    // resolves to M1.Tok (exact field set match) rather than M2.Item ({kind, count}).
+    test "SC-4: record types in sibling modules with shared field names do not collide" {
+        let result = evalModule "module M1 =\n    type Tok = { kind: string; value: int }\n\nmodule M2 =\n    type Item = { kind: string; count: int }\n\nopen M1\nlet t = { kind = \"id\"; value = 42 }\nlet result = t.value\n"
+        Expect.equal result (Ast.IntValue 42) "sibling module record types with shared field names do not cause DuplicateFieldName"
+    }
+])
