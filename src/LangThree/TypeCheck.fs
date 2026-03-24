@@ -86,6 +86,27 @@ let initialTypeEnv: TypeEnv =
 
         // STD-09: write_lines : string -> string list -> unit
         "write_lines", Scheme([], TArrow(TString, TArrow(TList TString, TTuple [])))
+
+        // Phase 32: System builtins (STD-10 through STD-15)
+        // STD-10: get_args : unit -> string list
+        "get_args", Scheme([], TArrow(TTuple [], TList TString))
+
+        // STD-11: get_env : string -> string
+        "get_env", Scheme([], TArrow(TString, TString))
+
+        // STD-12: get_cwd : unit -> string
+        "get_cwd", Scheme([], TArrow(TTuple [], TString))
+
+        // STD-13: path_combine : string -> string -> string
+        "path_combine", Scheme([], TArrow(TString, TArrow(TString, TString)))
+
+        // STD-14: dir_files : string -> string list
+        "dir_files", Scheme([], TArrow(TString, TList TString))
+
+        // STD-15: eprint : string -> unit
+        "eprint",   Scheme([], TArrow(TString, TTuple []))
+        // STD-15: eprintln : string -> unit
+        "eprintln", Scheme([], TArrow(TString, TTuple []))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

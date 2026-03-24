@@ -140,6 +140,10 @@ let rec formatValue (v: Value) : string =
     | BuiltinValue _ -> "<builtin>"
     | TailCall _ -> "<tailcall>"
 
+/// Command-line arguments passed to the user script.
+/// Set by Program.fs after Argu parsing. Used by get_args builtin.
+let mutable scriptArgs : string list = []
+
 /// Initial built-in environment: all 6 string functions as BuiltinValue.
 /// Merged into the evaluation environment at startup (Program.fs, Repl.fs).
 /// Curried multi-arg builtins use nested BuiltinValue wrappers.
@@ -351,6 +355,68 @@ let initialBuiltinEnv : Env =
                         TupleValue []
                     | _ -> failwith "write_lines: second argument must be string list")
             | _ -> failwith "write_lines: first argument must be string")
+
+        // Phase 32: System builtins (STD-10 through STD-15)
+
+        // STD-10: get_args : unit -> string list
+        "get_args", BuiltinValue (fun v ->
+            match v with
+            | TupleValue [] -> ListValue (scriptArgs |> List.map StringValue)
+            | _ -> failwith "get_args: expected unit argument")
+
+        // STD-11: get_env : string -> string
+        "get_env", BuiltinValue (fun v ->
+            match v with
+            | StringValue varName ->
+                let value = System.Environment.GetEnvironmentVariable(varName)
+                if value = null then
+                    raise (LangThreeException (StringValue (sprintf "get_env: variable '%s' not set" varName)))
+                else StringValue value
+            | _ -> failwith "get_env: expected string argument")
+
+        // STD-12: get_cwd : unit -> string
+        "get_cwd", BuiltinValue (fun v ->
+            match v with
+            | TupleValue [] -> StringValue (System.IO.Directory.GetCurrentDirectory())
+            | _ -> failwith "get_cwd: expected unit argument")
+
+        // STD-13: path_combine : string -> string -> string
+        "path_combine", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue dir ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue file -> StringValue (System.IO.Path.Combine(dir, file))
+                    | _ -> failwith "path_combine: second argument must be string")
+            | _ -> failwith "path_combine: first argument must be string")
+
+        // STD-14: dir_files : string -> string list
+        "dir_files", BuiltinValue (fun v ->
+            match v with
+            | StringValue path ->
+                if not (System.IO.Directory.Exists path) then
+                    raise (LangThreeException (StringValue (sprintf "dir_files: directory not found: %s" path)))
+                let files = System.IO.Directory.GetFiles(path)
+                ListValue (files |> Array.toList |> List.map StringValue)
+            | _ -> failwith "dir_files: expected string argument")
+
+        // STD-15: eprint : string -> unit
+        "eprint", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                stderr.Write(s)
+                stderr.Flush()
+                TupleValue []
+            | _ -> failwith "eprint: expected string argument")
+
+        // STD-15: eprintln : string -> unit
+        "eprintln", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                stderr.WriteLine(s)
+                stderr.Flush()
+                TupleValue []
+            | _ -> failwith "eprintln: expected string argument")
     ]
 
 /// Module value environment for runtime qualified access
