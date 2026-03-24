@@ -524,3 +524,72 @@ let integrationTests = testList "Integration" [
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
     }
 ]
+
+// Helper to parse, type-check, and evaluate a module returning the last let binding value
+let evalModule (input: string) : Ast.Value =
+    let m = parseModule input
+    match TypeCheck.typeCheckModule m with
+    | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+    | Ok (_warnings, recEnv, _modules, _typeEnv) ->
+        let decls =
+            match m with
+            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls
+            | Ast.EmptyModule _ -> []
+        let finalEnv, moduleEnv =
+            Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
+        match decls |> List.rev |> List.tryPick (function Ast.LetDecl(_, body, _) -> Some body | _ -> None) with
+        | Some lastBody -> Eval.eval recEnv moduleEnv finalEnv false lastBody
+        | None -> failtest "No let binding found to evaluate"
+
+[<Tests>]
+let syn0106070810Tests = testList "SYN-01/06/07/08: Parser improvements" [
+
+    // SYN-01: Local let rec single-param inside function body
+    test "local let rec single-param works inside function body" {
+        let src = "let countdown =\n    let rec loop n =\n        if n <= 0 then 0\n        else loop (n - 1)\n    in loop 5\nlet result = countdown\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 0) "countdown should reach 0"
+    }
+
+    // SYN-01/SYN-06: Local let rec multi-param inside function body
+    test "local let rec multi-param works inside function body" {
+        let src = "let result =\n    let rec add a b =\n        if b = 0 then a\n        else add (a + 1) (b - 1)\n    in add 3 4\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 7) "add 3 4 should equal 7"
+    }
+
+    // SYN-01: Recursive call inside lambda body (trampoline regression)
+    test "local let rec actually recurses correctly inside lambda" {
+        let src = "let fact n =\n    let rec helper acc k =\n        if k <= 1 then acc\n        else helper (acc * k) (k - 1)\n    in helper 1 n\nlet result = fact 5\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 120) "fact 5 should equal 120"
+    }
+
+    // SYN-07: Unit param shorthand at module level
+    test "let f () = body works at module level" {
+        let src = "let greet () = 42\nlet result = greet ()\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 42) "greet () should return 42"
+    }
+
+    // SYN-07: Unit param shorthand in expression context
+    test "let f () = body works in expression context" {
+        let src = "let result =\n    let f () = 42\n    in f ()\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 42) "f () should return 42"
+    }
+
+    // SYN-08: Top-level let...in
+    test "top-level let x = e1 in e2 works as module declaration" {
+        let src = "let base = 10\nlet result = let x = base + 5 in x * 2\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 30) "let x = 15 in x * 2 should equal 30"
+    }
+
+    // SYN-06: 4-level let nesting parses and evaluates correctly
+    test "4 levels of let nesting parse and evaluate correctly" {
+        let src = "let result =\n    let a = 1 in\n    let b = a + 1 in\n    let c = b + 1 in\n    let d = c + 1 in\n    d\n"
+        let result = evalModule src
+        Expect.equal result (Ast.IntValue 4) "4-level nesting should produce 4"
+    }
+]
