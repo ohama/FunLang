@@ -29,7 +29,7 @@
 - [x] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring (shipped 2026-03-24)
 - [x] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators (shipped 2026-03-24)
 - [x] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in (shipped 2026-03-25)
-- [ ] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping
+- [x] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping (shipped 2026-03-25)
 - [ ] **Phase 32: File I/O & System Builtins** - read/write files, stdin, args, env, stderr, path utils
 
 ## Phase Details
@@ -120,8 +120,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 31-01-PLAN.md — FileImportDecl AST + Parser OPEN STRING + TypeCheck/Eval file loading (MOD-01)
-- [ ] 31-02-PLAN.md — Integration tests for all SC-1 through SC-4 + MOD-05 recEnv scoping fix
+- [x] 31-01-PLAN.md — FileImportDecl AST + Parser OPEN STRING + TypeCheck/Eval file loading (MOD-01)
+- [x] 31-02-PLAN.md — Integration tests for all SC-1 through SC-4 + MOD-05 recEnv scoping fix
 
 ### Phase 32: File I/O & System Builtins
 **Goal**: Programs read/write files, access stdin/args/env, and output to stderr — no shell hacks needed
@@ -154,5 +154,5 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 30. Parser Improvements | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
-| 31. Module System | v2.0 | 0/2 | Not started | - |
+| 31. Module System | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
 | 32. File I/O | v2.0 | 0/TBD | Not started | - |

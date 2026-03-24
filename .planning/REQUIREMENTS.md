@@ -8,11 +8,11 @@
 
 ### Module System
 
-- [ ] **MOD-01**: `open "path.fun"` 또는 동등한 import로 외부 .fun 파일 로딩
-- [ ] **MOD-02**: 연결된 파일에서 여러 module 선언 허용 (또는 무시 모드)
+- [x] **MOD-01**: `open "path.fun"` 또는 동등한 import로 외부 .fun 파일 로딩
+- [x] **MOD-02**: 연결된 파일에서 여러 module 선언 허용 (또는 무시 모드)
 - [ ] **MOD-03**: 빈 .fun 파일 실행 시 크래시 없이 unit 반환
 - [ ] **MOD-04**: Prelude를 LangThree 디렉토리 외부에서도 사용 가능 (경로 기반 로딩)
-- [ ] **MOD-05**: 모듈 스코프로 타입 이름 격리 (`Parser.Token` vs `Lexer.Token`)
+- [x] **MOD-05**: 모듈 스코프로 타입 이름 격리 (`Parser.Token` vs `Lexer.Token`)
 
 ### Type System
 
@@ -73,11 +73,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | Phase 31 | Pending |
-| MOD-02 | Phase 31 | Pending |
+| MOD-01 | Phase 31 | Complete |
+| MOD-02 | Phase 31 | Complete |
 | MOD-03 | Phase 26 | Complete |
 | MOD-04 | Phase 26 | Complete |
-| MOD-05 | Phase 31 | Pending |
+| MOD-05 | Phase 31 | Complete |
 | TYPE-01 | Phase 28 | Complete |
 | TYPE-02 | Phase 28 | Complete |
 | TYPE-03 | Phase 26 | Complete |
