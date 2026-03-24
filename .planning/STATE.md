@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 31 in progress
-Plan: 31-01 of ? (plan complete)
-Status: 31-01 complete — FileImportDecl, OPEN STRING grammar, TC/Eval file loading pipeline
-Last activity: 2026-03-25 — Completed 31-01-PLAN.md (open "path.fun" file import, MOD-01)
+Phase: 31 complete
+Plan: 31-02 of 2 (plan complete — phase complete)
+Status: 31-02 complete — fileImportTests, MOD-05 verified correct, all SC-1 through SC-4 passing
+Last activity: 2026-03-25 — Completed 31-02-PLAN.md (integration tests, MOD-05 investigation)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░] 5/7 phases (10 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░] 6/7 phases (12 plans)
 
 ## Performance Metrics
 
@@ -32,6 +32,7 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░]
 - v2.0 Phase 28: 1 phase, 1 plan, <1 hour
 - v2.0 Phase 29: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 30: 1 phase, 2 plans, ~10 min
+- v2.0 Phase 31: 1 phase, 2 plans, ~59 min (01: 42min, 02: 17min)
 - Trend: Stable, accelerating
 
 ## Accumulated Context
@@ -65,6 +66,9 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░]
 - [Phase 31-01]: span.FileName is empty string (lexbuf.StartPos not initialized by setInitialPos); use currentTypeCheckingFile/currentEvalFile mutables instead
 - [Phase 31-01]: fileLoadingStack HashSet in Prelude.fs for cycle detection (save/restore pattern); functional Set<string> would require threading through typeCheckModuleWithPrelude
 - [Phase 31-01]: Program.fs must set currentTypeCheckingFile/currentEvalFile before processing files for correct relative path resolution
+- [Phase 31-02]: MOD-05 recEnv scoping already correct — validateUniqueRecordFields only scans direct RecordTypeDecl (not inside ModuleDecl); sibling modules with shared field names coexist safely
+- [Phase 31-02]: Tests using shared mutable currentTypeCheckingFile/currentEvalFile must be wrapped in testSequenced to avoid parallel-execution race conditions
+- [Phase 31-02]: evalFileModule helper triggers Prelude init via Prelude.emptyPrelude access; otherwise fileImportTypeChecker delegate remains error stub
 
 ### Pending Todos
 
@@ -77,9 +81,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 31 plan 01 complete (MOD-01 file import implemented)
+Stopped at: Phase 31 plan 02 complete (all SC-1 through SC-4 integration tests passing; Phase 31 complete)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 31 plan 01 complete)*
+*Last updated: 2026-03-25 (Phase 31 plan 02 complete — Phase 31 module system complete)*
