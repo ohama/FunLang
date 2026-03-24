@@ -10,26 +10,26 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 29 in progress (1/? plans complete)
-Plan: 29-01 complete
-Status: Plan 29-01 executed — char type (TYPE-04/05/06) complete
-Last activity: 2026-03-24 — Phase 29, Plan 01 executed
+Phase: 29 complete, next: 30
+Plan: —
+Status: Phase 29 verified, ready to plan Phase 30
+Last activity: 2026-03-24 — Phase 29 executed and verified
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [███░░░░░░░] 3/7 phases (6 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░] 4/7 phases (7 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 73
+- Total plans completed: 75
 - Phase 26: 2 plans in ~6 min (parallel wave)
 - Phase 27: 2 plans in ~7 min (parallel wave)
 - Phase 28: 1 plan in ~11 min
+- Phase 29: 2 plans in ~20 min (29-02 folded into 29-01)
 
 **Recent Trend:**
-- v2.0 Phase 26: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 27: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 28: 1 phase, 1 plan, <1 hour
-- v2.0 Phase 29: in progress, plan 01 complete (~20 min)
+- v2.0 Phase 29: 1 phase, 2 plans, <1 hour
 - Trend: Stable
 
 ## Accumulated Context
@@ -65,9 +65,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Phase 29, Plan 01 complete
+Stopped at: Phase 29 complete, ready to plan Phase 30
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (Phase 29, Plan 01 complete)*
+*Last updated: 2026-03-24 (Phase 29 complete)*
