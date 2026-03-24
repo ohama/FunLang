@@ -201,6 +201,60 @@ let errorMessageTests = testList "IndentFilter.errorMessages" [
 ]
 
 [<Tests>]
+let elseIndentationTests = testList "IndentFilter.elseIndentation" [
+    test "else at same column as if does not emit INDENT before ELSE" {
+        // if x then
+        //   a
+        // else
+        //   b
+        let input = [
+            Parser.IF; Parser.IDENT "x"; Parser.THEN; Parser.NEWLINE 2;
+            Parser.IDENT "a"; Parser.NEWLINE 0;
+            Parser.ELSE; Parser.NEWLINE 2;
+            Parser.IDENT "b"; Parser.EOF
+        ]
+        let output = filter defaultConfig input |> Seq.toList
+        let elseIdx = output |> List.findIndex (fun t -> t = Parser.ELSE)
+        let tokenBeforeElse = output.[elseIdx - 1]
+        Expect.notEqual tokenBeforeElse Parser.INDENT "Token before ELSE should not be INDENT"
+    }
+
+    test "else at deeper column than if does not emit INDENT before ELSE" {
+        // if x then
+        //     a
+        //     else
+        //     b
+        let input = [
+            Parser.IF; Parser.IDENT "x"; Parser.THEN; Parser.NEWLINE 4;
+            Parser.IDENT "a"; Parser.NEWLINE 4;
+            Parser.ELSE; Parser.NEWLINE 4;
+            Parser.IDENT "b"; Parser.EOF
+        ]
+        let output = filter defaultConfig input |> Seq.toList
+        let elseIdx = output |> List.findIndex (fun t -> t = Parser.ELSE)
+        let tokenBeforeElse = output.[elseIdx - 1]
+        Expect.notEqual tokenBeforeElse Parser.INDENT "Token before ELSE should not be INDENT (SYN-05 fix)"
+    }
+
+    test "DEDENT is preserved before ELSE when THEN block was indented" {
+        // if x then
+        //     a
+        // else
+        //     b
+        let input = [
+            Parser.IF; Parser.IDENT "x"; Parser.THEN; Parser.NEWLINE 4;
+            Parser.IDENT "a"; Parser.NEWLINE 0;
+            Parser.ELSE; Parser.NEWLINE 4;
+            Parser.IDENT "b"; Parser.EOF
+        ]
+        let output = filter defaultConfig input |> Seq.toList
+        let elseIdx = output |> List.findIndex (fun t -> t = Parser.ELSE)
+        let beforeElse = output |> List.take elseIdx
+        Expect.isTrue (List.contains Parser.DEDENT beforeElse) "There should be at least one DEDENT before ELSE (to close the THEN block)"
+    }
+]
+
+[<Tests>]
 let indentWidthValidationTests = testList "IndentFilter.indentWidthValidation" [
     test "testStrictIndentWidthViolation - strict mode rejects non-multiples" {
         let strictConfig = { IndentWidth = 4; StrictWidth = true }
