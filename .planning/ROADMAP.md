@@ -43,10 +43,11 @@
   2. Running `dotnet run -- somefile.fun` from any directory loads Prelude functions (Option, list utilities, fst, snd, etc.)
   3. `failwith "error message"` raises an exception with the given message string
   4. `option` is accepted as a type name interchangeably with `Option` (e.g., `let x : option int = Some 42`)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 26-01: TBD
+- [ ] 26-01-PLAN.md — failwith builtin (STD-01) + option/result type alias (TYPE-03)
+- [ ] 26-02-PLAN.md — Prelude path resolution (MOD-04) + empty file guard (MOD-03)
 
 ### Phase 27: List Syntax Completion
 **Goal**: Lists work naturally with multi-line formatting and pattern matching
@@ -138,7 +139,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 26. Quick Fixes | v2.0 | 0/TBD | Not started | - |
+| 26. Quick Fixes | v2.0 | 0/2 | Not started | - |
 | 27. List Syntax | v2.0 | 0/TBD | Not started | - |
 | 28. N-Tuples | v2.0 | 0/TBD | Not started | - |
 | 29. Char Type | v2.0 | 0/TBD | Not started | - |
