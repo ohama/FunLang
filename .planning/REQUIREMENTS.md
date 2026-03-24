@@ -61,34 +61,34 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | — | Pending |
-| MOD-02 | — | Pending |
-| MOD-03 | — | Pending |
-| MOD-04 | — | Pending |
-| MOD-05 | — | Pending |
-| TYPE-01 | — | Pending |
-| TYPE-02 | — | Pending |
-| TYPE-03 | — | Pending |
-| TYPE-04 | — | Pending |
-| TYPE-05 | — | Pending |
-| TYPE-06 | — | Pending |
-| SYN-01 | — | Pending |
-| SYN-02 | — | Pending |
-| SYN-03 | — | Pending |
-| SYN-04 | — | Pending |
-| SYN-05 | — | Pending |
-| SYN-06 | — | Pending |
-| SYN-07 | — | Pending |
-| SYN-08 | — | Pending |
-| STD-01 | — | Pending |
-| STD-02 | — | Pending |
-| STD-03 | — | Pending |
+| MOD-01 | Phase 31 | Pending |
+| MOD-02 | Phase 31 | Pending |
+| MOD-03 | Phase 26 | Pending |
+| MOD-04 | Phase 26 | Pending |
+| MOD-05 | Phase 31 | Pending |
+| TYPE-01 | Phase 28 | Pending |
+| TYPE-02 | Phase 28 | Pending |
+| TYPE-03 | Phase 26 | Pending |
+| TYPE-04 | Phase 29 | Pending |
+| TYPE-05 | Phase 29 | Pending |
+| TYPE-06 | Phase 29 | Pending |
+| SYN-01 | Phase 30 | Pending |
+| SYN-02 | Phase 27 | Pending |
+| SYN-03 | Phase 27 | Pending |
+| SYN-04 | Phase 27 | Pending |
+| SYN-05 | Phase 30 | Pending |
+| SYN-06 | Phase 30 | Pending |
+| SYN-07 | Phase 30 | Pending |
+| SYN-08 | Phase 30 | Pending |
+| STD-01 | Phase 26 | Pending |
+| STD-02 | Phase 32 | Pending |
+| STD-03 | Phase 32 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 ⚠️
+- Mapped to phases: 22/22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Last updated: 2026-03-24 (roadmap phase mapping complete)*
