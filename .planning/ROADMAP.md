@@ -9,7 +9,7 @@
 - [x] **v1.5 User-Defined Operators** - Phases 19-22 (shipped 2026-03-20)
 - [x] **v1.7 Offside Rule & List Syntax** - Phases 23-24 (shipped 2026-03-22)
 - [x] **v1.8 Polymorphic GADT** - Phase 25 (shipped 2026-03-23)
-- [ ] **v2.0 Practical Language Completion** - Phases 26-32 (in progress)
+- [x] **v2.0 Practical Language Completion** - Phases 26-32 (shipped 2026-03-25)
 
 ## Phases
 
@@ -30,7 +30,7 @@
 - [x] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators (shipped 2026-03-24)
 - [x] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in (shipped 2026-03-25)
 - [x] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping (shipped 2026-03-25)
-- [ ] **Phase 32: File I/O & System Builtins** - read/write files, stdin, args, env, stderr, path utils
+- [x] **Phase 32: File I/O & System Builtins** - read/write files, stdin, args, env, stderr, path utils (shipped 2026-03-25)
 
 ## Phase Details
 
@@ -140,8 +140,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 32-01-PLAN.md — File I/O builtins: read_file, stdin_read_all, stdin_read_line, write_file, append_file, file_exists, read_lines, write_lines (STD-02 through STD-09)
-- [ ] 32-02-PLAN.md — System builtins: get_args, get_env, get_cwd, path_combine, dir_files, eprint, eprintln + scriptArgs wiring (STD-10 through STD-15)
+- [x] 32-01-PLAN.md — File I/O builtins: read_file, stdin_read_all, stdin_read_line, write_file, append_file, file_exists, read_lines, write_lines (STD-02 through STD-09)
+- [x] 32-02-PLAN.md — System builtins: get_args, get_env, get_cwd, path_combine, dir_files, eprint, eprintln + scriptArgs wiring (STD-10 through STD-15)
 
 ## Progress
 
@@ -156,4 +156,4 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 30. Parser Improvements | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
 | 31. Module System | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
-| 32. File I/O | v2.0 | 0/2 | Not started | - |
+| 32. File I/O | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |

@@ -36,21 +36,21 @@
 
 ### Standard Library
 
-- [ ] **STD-01**: `failwith "message"` 내장 함수
-- [ ] **STD-02**: File I/O — `read_file "path"` 함수
-- [ ] **STD-03**: Stdin reading — `stdin_read_all ()` 함수
-- [ ] **STD-04**: Stdin line reading — `stdin_read_line ()` 함수
-- [ ] **STD-05**: File writing — `write_file "path" "content"` 함수
-- [ ] **STD-06**: File appending — `append_file "path" "content"` 함수
-- [ ] **STD-07**: File existence check — `file_exists "path"` 함수
-- [ ] **STD-08**: File line reading — `read_lines "path"` → `string list`
-- [ ] **STD-09**: File line writing — `write_lines "path" lines` 함수
-- [ ] **STD-10**: Command-line args — `get_args ()` → `string list`
-- [ ] **STD-11**: Environment variables — `get_env "VAR"` → `string`
-- [ ] **STD-12**: Current directory — `get_cwd ()` → `string`
-- [ ] **STD-13**: Path combining — `path_combine "dir" "file"` → `string`
-- [ ] **STD-14**: Directory listing — `dir_files "path"` → `string list`
-- [ ] **STD-15**: Stderr output — `eprint` / `eprintln` 함수
+- [x] **STD-01**: `failwith "message"` 내장 함수
+- [x] **STD-02**: File I/O — `read_file "path"` 함수
+- [x] **STD-03**: Stdin reading — `stdin_read_all ()` 함수
+- [x] **STD-04**: Stdin line reading — `stdin_read_line ()` 함수
+- [x] **STD-05**: File writing — `write_file "path" "content"` 함수
+- [x] **STD-06**: File appending — `append_file "path" "content"` 함수
+- [x] **STD-07**: File existence check — `file_exists "path"` 함수
+- [x] **STD-08**: File line reading — `read_lines "path"` → `string list`
+- [x] **STD-09**: File line writing — `write_lines "path" lines` 함수
+- [x] **STD-10**: Command-line args — `get_args ()` → `string list`
+- [x] **STD-11**: Environment variables — `get_env "VAR"` → `string`
+- [x] **STD-12**: Current directory — `get_cwd ()` → `string`
+- [x] **STD-13**: Path combining — `path_combine "dir" "file"` → `string`
+- [x] **STD-14**: Directory listing — `dir_files "path"` → `string list`
+- [x] **STD-15**: Stderr output — `eprint` / `eprintln` 함수
 
 ## Future Requirements
 
@@ -93,20 +93,20 @@
 | SYN-07 | Phase 30 | Complete |
 | SYN-08 | Phase 30 | Complete |
 | STD-01 | Phase 26 | Complete |
-| STD-02 | Phase 32 | Pending |
-| STD-03 | Phase 32 | Pending |
-| STD-04 | Phase 32 | Pending |
-| STD-05 | Phase 32 | Pending |
-| STD-06 | Phase 32 | Pending |
-| STD-07 | Phase 32 | Pending |
-| STD-08 | Phase 32 | Pending |
-| STD-09 | Phase 32 | Pending |
-| STD-10 | Phase 32 | Pending |
-| STD-11 | Phase 32 | Pending |
-| STD-12 | Phase 32 | Pending |
-| STD-13 | Phase 32 | Pending |
-| STD-14 | Phase 32 | Pending |
-| STD-15 | Phase 32 | Pending |
+| STD-02 | Phase 32 | Complete |
+| STD-03 | Phase 32 | Complete |
+| STD-04 | Phase 32 | Complete |
+| STD-05 | Phase 32 | Complete |
+| STD-06 | Phase 32 | Complete |
+| STD-07 | Phase 32 | Complete |
+| STD-08 | Phase 32 | Complete |
+| STD-09 | Phase 32 | Complete |
+| STD-10 | Phase 32 | Complete |
+| STD-11 | Phase 32 | Complete |
+| STD-12 | Phase 32 | Complete |
+| STD-13 | Phase 32 | Complete |
+| STD-14 | Phase 32 | Complete |
+| STD-15 | Phase 32 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 34 total
