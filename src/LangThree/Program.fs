@@ -189,6 +189,13 @@ let main argv =
                     let absFilename = System.IO.Path.GetFullPath filename
                     TypeCheck.currentTypeCheckingFile <- absFilename
                     Eval.currentEvalFile <- absFilename
+                    // Populate scriptArgs: everything after the script filename in raw argv
+                    let rawArgv = System.Environment.GetCommandLineArgs()
+                    let idxInRaw = rawArgv |> Array.tryFindIndex (fun a -> a = absFilename || a = filename)
+                    Eval.scriptArgs <-
+                        match idxInRaw with
+                        | Some i -> rawArgv |> Array.skip (i + 1) |> Array.toList
+                        | None -> []
                     let m = parseModuleFromString input filename
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
                     | Error diag ->
