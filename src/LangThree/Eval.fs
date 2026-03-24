@@ -271,6 +271,86 @@ let initialBuiltinEnv : Env =
                 else
                     CharValue (char n)
             | _ -> failwith "int_to_char: expected int argument")
+
+        // Phase 32: File I/O builtins (STD-02 through STD-09)
+
+        // STD-02: read_file : string -> string
+        "read_file", BuiltinValue (fun v ->
+            match v with
+            | StringValue path ->
+                if not (System.IO.File.Exists path) then
+                    raise (LangThreeException (StringValue (sprintf "read_file: file not found: %s" path)))
+                StringValue (System.IO.File.ReadAllText path)
+            | _ -> failwith "read_file: expected string argument")
+
+        // STD-03: stdin_read_all : unit -> string
+        "stdin_read_all", BuiltinValue (fun v ->
+            match v with
+            | TupleValue [] -> StringValue (System.Console.In.ReadToEnd())
+            | _ -> failwith "stdin_read_all: expected unit argument")
+
+        // STD-04: stdin_read_line : unit -> string
+        "stdin_read_line", BuiltinValue (fun v ->
+            match v with
+            | TupleValue [] ->
+                let line = System.Console.In.ReadLine()
+                if line = null then StringValue "" else StringValue line
+            | _ -> failwith "stdin_read_line: expected unit argument")
+
+        // STD-05: write_file : string -> string -> unit
+        "write_file", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue path ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue content ->
+                        System.IO.File.WriteAllText(path, content)
+                        TupleValue []
+                    | _ -> failwith "write_file: second argument must be string")
+            | _ -> failwith "write_file: first argument must be string")
+
+        // STD-06: append_file : string -> string -> unit
+        "append_file", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue path ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue content ->
+                        System.IO.File.AppendAllText(path, content)
+                        TupleValue []
+                    | _ -> failwith "append_file: second argument must be string")
+            | _ -> failwith "append_file: first argument must be string")
+
+        // STD-07: file_exists : string -> bool
+        "file_exists", BuiltinValue (fun v ->
+            match v with
+            | StringValue path -> BoolValue (System.IO.File.Exists path)
+            | _ -> failwith "file_exists: expected string argument")
+
+        // STD-08: read_lines : string -> string list
+        "read_lines", BuiltinValue (fun v ->
+            match v with
+            | StringValue path ->
+                if not (System.IO.File.Exists path) then
+                    raise (LangThreeException (StringValue (sprintf "read_lines: file not found: %s" path)))
+                let lines = System.IO.File.ReadAllLines path
+                ListValue (lines |> Array.toList |> List.map StringValue)
+            | _ -> failwith "read_lines: expected string argument")
+
+        // STD-09: write_lines : string -> string list -> unit
+        "write_lines", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue path ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | ListValue lines ->
+                        let strings = lines |> List.map (function
+                            | StringValue s -> s
+                            | _ -> failwith "write_lines: list must contain strings")
+                        System.IO.File.WriteAllLines(path, strings)
+                        TupleValue []
+                    | _ -> failwith "write_lines: second argument must be string list")
+            | _ -> failwith "write_lines: first argument must be string")
     ]
 
 /// Module value environment for runtime qualified access
