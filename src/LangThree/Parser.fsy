@@ -505,6 +505,11 @@ Decls:
 // Top-level declarations must be at column 0
 // Each declaration can have indented body using INDENT/DEDENT
 Decl:
+    // Phase 28: Module-level tuple pattern binding
+    | LET TuplePattern EQUALS Expr
+        { LetPatDecl($2, $4, ruleSpan parseState 1 4) }
+    | LET TuplePattern EQUALS INDENT Expr DEDENT
+        { LetPatDecl($2, $5, ruleSpan parseState 1 6) }
     // Phase 10 (Unit): let _ = expr wildcard sequencing at module level
     | LET UNDERSCORE EQUALS Expr
         { LetDecl("_", $4, ruleSpan parseState 1 4) }
