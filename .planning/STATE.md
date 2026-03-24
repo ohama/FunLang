@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 30 complete, next: 31
-Plan: 30-02 of 2 (phase complete)
-Status: Phase 30 complete — SYN-05/01/06/07/08 all implemented
-Last activity: 2026-03-25 — Completed 30-02-PLAN.md (multi-param let rec, unit param, top-level let-in)
+Phase: 31 in progress
+Plan: 31-01 of ? (plan complete)
+Status: 31-01 complete — FileImportDecl, OPEN STRING grammar, TC/Eval file loading pipeline
+Last activity: 2026-03-25 — Completed 31-01-PLAN.md (open "path.fun" file import, MOD-01)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░] 5/7 phases (9 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░] 5/7 phases (10 plans)
 
 ## Performance Metrics
 
@@ -61,6 +61,10 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░]
 - [Phase 30-02]: Multi-param expr let rec replaces old IDENT IDENT rules entirely (not additive) to avoid LALR conflict
 - [Phase 30-02]: Unit param shorthand desugars to LambdaAnnot("__unit", TETuple []) matching existing fun () -> body pattern
 - [Phase 30-02]: Top-level let-in wraps as LetDecl("_", Let(...)) using "_" consistent with wildcard sequencing convention
+- [Phase 31-01]: Mutable delegate pattern (fileImportTypeChecker/fileImportEvaluator) used to bridge TypeCheck.fs → Prelude.fs compile-order constraint
+- [Phase 31-01]: span.FileName is empty string (lexbuf.StartPos not initialized by setInitialPos); use currentTypeCheckingFile/currentEvalFile mutables instead
+- [Phase 31-01]: fileLoadingStack HashSet in Prelude.fs for cycle detection (save/restore pattern); functional Set<string> would require threading through typeCheckModuleWithPrelude
+- [Phase 31-01]: Program.fs must set currentTypeCheckingFile/currentEvalFile before processing files for correct relative path resolution
 
 ### Pending Todos
 
@@ -73,9 +77,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 30 complete, ready to plan Phase 31
+Stopped at: Phase 31 plan 01 complete (MOD-01 file import implemented)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 30 complete)*
+*Last updated: 2026-03-25 (Phase 31 plan 01 complete)*
