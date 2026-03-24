@@ -191,8 +191,15 @@ let processNewlineWithContext (config: IndentConfig) (state: FilterState) (col: 
                 $"Try-with pipe at line {stateAfterIndent.LineNum}, column {col} must align with 'try' keyword at column {baseCol}"))
         (stateAfterIndent, [])
     | _ ->
-        // Not checking pipe alignment, return the indent tokens
-        (stateAfterIndent, indentTokens)
+        // Suppress INDENT when next token is ELSE
+        // (ELSE follows THEN directly — INDENT between them confuses the parser)
+        // DEDENTs are NOT suppressed — they close open blocks from the THEN branch.
+        let filteredTokens =
+            match nextToken with
+            | Some Parser.ELSE when List.contains Parser.INDENT indentTokens ->
+                indentTokens |> List.filter (fun t -> t <> Parser.INDENT)
+            | _ -> indentTokens
+        (stateAfterIndent, filteredTokens)
 
 /// Update context stack based on DEDENTs
 let updateContextOnDedent (state: FilterState) : FilterState =
