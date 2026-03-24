@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 Milestone: v2.0 Practical Language Completion
 Phase: 26 of 32 (Quick Fixes & Small Additions)
-Plan: 02 of ? in phase 26
+Plan: 01 of ? in phase 26 (just completed), 02 also complete
 Status: In progress
-Last activity: 2026-03-24 — Completed 26-02-PLAN.md
+Last activity: 2026-03-24 — Completed 26-01-PLAN.md
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [░░░░░░░░░░] in progress (26-02 done)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [░░░░░░░░░░] in progress (26-01, 26-02 done)
 
 ## Performance Metrics
 
@@ -39,6 +39,9 @@ Recent decisions affecting current work:
 
 - [v2.0]: Requirements derived from FunLexYacc real-world usage (24 constraints found)
 - [v2.0]: Module system (import/scoping) is heaviest work, placed late to allow simpler phases first
+- [26-01]: failwith return type is Scheme([0], TArrow(TString, TVar 0)) — polymorphic to unify with any branch type
+- [26-01]: failwith raises LangThreeException(StringValue msg), not System.Exception, for try-with compatibility
+- [26-01]: option/result normalization in TEData case of Elaborate.fs only (not TEName — TEName stays as fresh TVar)
 - [26-02]: findPreludeDir uses 3-stage search (CWD, assembly-relative, 6-level walk-up) for cross-directory invocation
 - [26-02]: Whitespace-only input guard placed before parse (not after) because parser errors on stray whitespace
 
@@ -53,9 +56,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Completed 26-02-PLAN.md (Prelude path fix + empty file guard)
+Stopped at: Completed 26-01-PLAN.md (failwith builtin + option/result alias)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (completed 26-02)*
+*Last updated: 2026-03-24 (completed 26-01)*
