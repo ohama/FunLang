@@ -102,10 +102,11 @@ Plans:
   3. `else` followed by expression keywords (`match`, `if`, `let`, `try`, `fun`) parses correctly — IndentFilter suppresses INDENT after ELSE
   4. Deeply nested function bodies (4+ levels of let/match/if) parse without errors
   5. Top-level `let x = ... in expr` works after module-level bindings in concatenated files
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 30-01: TBD
+- [ ] 30-01-PLAN.md — IndentFilter ELSE fix: suppress INDENT before ELSE token (SYN-05)
+- [ ] 30-02-PLAN.md — Parser grammar + Eval LetRec fix: multi-param let rec, unit param, top-level let-in (SYN-01, SYN-06, SYN-07, SYN-08)
 
 ### Phase 31: Module System
 **Goal**: Multiple .fun files compose without cat/sed hacks
@@ -151,6 +152,6 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
+| 30. Parser Improvements | v2.0 | 0/2 | Not started | - |
 | 31. Module System | v2.0 | 0/TBD | Not started | - |
 | 32. File I/O | v2.0 | 0/TBD | Not started | - |
