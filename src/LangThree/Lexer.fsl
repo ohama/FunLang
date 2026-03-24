@@ -78,6 +78,8 @@ rule tokenize = parse
     | "bool"        { TYPE_BOOL }
     | "string"      { TYPE_STRING }
     | "list"        { TYPE_LIST }
+    // Phase 29: char type keyword
+    | "char"        { TYPE_CHAR }
     // Phase 10 (Unit): Unit type keyword
     | "unit"        { TYPE_UNIT }
     // Phase 6 (Exceptions): Exception keywords
@@ -87,6 +89,12 @@ rule tokenize = parse
     | "when"        { WHEN }
     // Phase 1 (v3.0): Wildcard pattern (must come before identifier)
     | '_'           { UNDERSCORE }
+    // Phase 29: Char literals - MUST come before type_var rule (longest match wins: 'A' > 'a)
+    | '\'' '\\' 'n' '\''     { CHAR '\n' }
+    | '\'' '\\' 't' '\''     { CHAR '\t' }
+    | '\'' '\\' '\\' '\''    { CHAR '\\' }
+    | '\'' '\\' '\'' '\''    { CHAR '\'' }
+    | '\'' [^ '\'' '\\'] '\'' { CHAR ((lexeme lexbuf).[1]) }
     // v6.0: Type variables ('a, 'b, etc.)
     | type_var      { TYPE_VAR (lexeme lexbuf) }
     // Identifier: starts with letter or underscore (but _ alone is UNDERSCORE)

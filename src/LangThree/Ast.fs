@@ -61,6 +61,8 @@ type Expr =
     | If of Expr * Expr * Expr * span: Span  // if condition then expr1 else expr2
     // Phase 2 (v2.0): Strings
     | String of string * span: Span        // String literal
+    // Phase 29: Char literals
+    | Char of char * span: Span            // Char literal: 'A'
     // Phase 4: Comparison operators (return BoolValue)
     | Equal of Expr * Expr * span: Span       // =
     | NotEqual of Expr * Expr * span: Span    // <>
@@ -137,6 +139,7 @@ and Constant =
     | IntConst of int
     | BoolConst of bool
     | StringConst of string
+    | CharConst of char   // Phase 29: Char literal pattern
 
 /// Type expression AST for type annotations
 /// v6.0: Bidirectional type system
@@ -144,6 +147,7 @@ and TypeExpr =
     | TEInt                               // int
     | TEBool                              // bool
     | TEString                            // string
+    | TEChar                              // char (Phase 29)
     | TEList of TypeExpr                  // T list
     | TEArrow of TypeExpr * TypeExpr      // T1 -> T2 (right-associative)
     | TETuple of TypeExpr list            // T1 * T2 * ... (n >= 2)
@@ -181,6 +185,7 @@ and [<CustomEquality; CustomComparison>] Value =
     | BoolValue of bool
     | FunctionValue of param: string * body: Expr * closure: Env
     | StringValue of string   // v2.0: String values
+    | CharValue of char       // Phase 29: Char values
     | TupleValue of Value list  // v3.0: Tuple values
     | ListValue of Value list  // v3.0: List values
     | DataValue of constructor: string * value: Value option  // Phase 2 (ADT): ADT value
@@ -198,6 +203,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | IntValue n -> hash n
         | BoolValue b -> hash b
         | StringValue s -> hash s
+        | CharValue c -> hash c
         | FunctionValue(p, _, _) -> hash p
         | TupleValue vs -> hash vs
         | ListValue vs -> hash vs
@@ -220,6 +226,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | IntValue a, IntValue b -> a = b
         | BoolValue a, BoolValue b -> a = b
         | StringValue a, StringValue b -> a = b
+        | CharValue a, CharValue b -> a = b
         | TupleValue a, TupleValue b -> a = b
         | ListValue a, ListValue b -> a = b
         | DataValue(c1, v1), DataValue(c2, v2) -> c1 = c2 && v1 = v2
@@ -234,6 +241,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | IntValue a, IntValue b -> compare a b
         | BoolValue a, BoolValue b -> compare a b
         | StringValue a, StringValue b -> compare a b
+        | CharValue a, CharValue b -> compare a b
         | TailCall _, _ | _, TailCall _ -> 0
         | _ -> 0
 
@@ -255,7 +263,7 @@ let constructorSpanOf (cd: ConstructorDecl) : Span =
 /// Extract span from any Expr
 let spanOf (expr: Expr) : Span =
     match expr with
-    | Number(_, s) | Bool(_, s) | String(_, s) | Var(_, s) -> s
+    | Number(_, s) | Bool(_, s) | String(_, s) | Char(_, s) | Var(_, s) -> s
     | Add(_, _, s) | Subtract(_, _, s) | Multiply(_, _, s) | Divide(_, _, s) -> s
     | Negate(_, s) -> s
     | Let(_, _, _, s) | LetPat(_, _, _, s) | LetRec(_, _, _, _, s) -> s

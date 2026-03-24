@@ -46,7 +46,8 @@ let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
 %token MATCH WITH PIPE
 // v6.0: Type annotation tokens
 %token COLON
-%token TYPE_INT TYPE_BOOL TYPE_STRING TYPE_LIST
+%token TYPE_INT TYPE_BOOL TYPE_STRING TYPE_LIST TYPE_CHAR
+%token <char> CHAR
 // Phase 10 (Unit): Unit type keyword token
 %token TYPE_UNIT
 %token <string> TYPE_VAR
@@ -256,6 +257,8 @@ Atom:
     | TRUE               { Bool(true, symSpan parseState 1) }
     | FALSE              { Bool(false, symSpan parseState 1) }
     | STRING             { String($1, symSpan parseState 1) }
+    // Phase 29: Char literal
+    | CHAR               { Char($1, symSpan parseState 1) }
     | LPAREN Expr RPAREN { $2 }  // Preserve inner expr's span
     // v6.0: Annotated expression - (e : T)
     | LPAREN Expr COLON TypeExpr RPAREN  { Annot($2, $4, ruleSpan parseState 1 5) }
@@ -332,6 +335,8 @@ Pattern:
     | TRUE                        { ConstPat(BoolConst(true), symSpan parseState 1) }
     | FALSE                       { ConstPat(BoolConst(false), symSpan parseState 1) }
     | STRING                      { ConstPat(StringConst($1), symSpan parseState 1) }
+    // Phase 29: Char literal pattern
+    | CHAR                        { ConstPat(CharConst($1), symSpan parseState 1) }
     | LBRACKET RBRACKET           { EmptyListPat(ruleSpan parseState 1 2) }
     // SYN-04: List literal patterns [p1], [p1; p2], [p1; p2; p3] desugared to ConsPat chains
     | LBRACKET SemiPatList RBRACKET
@@ -396,6 +401,8 @@ AtomicType:
     | TYPE_INT                      { TEInt }
     | TYPE_BOOL                     { TEBool }
     | TYPE_STRING                   { TEString }
+    // Phase 29: char type
+    | TYPE_CHAR                     { TEChar }
     | TYPE_VAR                      { TEVar($1) }
     | IDENT                         { TEName($1) }  // Phase 2 (ADT-01): Named types (Tree, Option, etc.)
     | AtomicType TYPE_LIST          { TEList($1) }
@@ -607,6 +614,8 @@ AliasAtomicType:
     | TYPE_INT                      { TEInt }
     | TYPE_BOOL                     { TEBool }
     | TYPE_STRING                   { TEString }
+    // Phase 29: char type
+    | TYPE_CHAR                     { TEChar }
     | TYPE_VAR                      { TEVar($1) }
     | AliasAtomicType TYPE_LIST     { TEList($1) }
     | AliasAtomicType IDENT         { Ast.TEData($2, [$1]) }

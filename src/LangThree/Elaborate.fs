@@ -23,6 +23,7 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
     | TEInt -> (TInt, vars)
     | TEBool -> (TBool, vars)
     | TEString -> (TString, vars)
+    | TEChar -> (TChar, vars)
 
     | TEList t ->
         let (ty, vars') = elaborateWithVars vars t
@@ -87,6 +88,7 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
     | Ast.TEInt -> TInt
     | Ast.TEBool -> TBool
     | Ast.TEString -> TString
+    | Ast.TEChar -> TChar
     | Ast.TEList te -> TList (substTypeExprWithMap paramMap te)
     | Ast.TEArrow (t1, t2) -> TArrow (substTypeExprWithMap paramMap t1, substTypeExprWithMap paramMap t2)
     | Ast.TETuple ts -> TTuple (List.map (substTypeExprWithMap paramMap) ts)
@@ -98,7 +100,7 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
 let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
     match te with
     | Ast.TEVar v -> Set.singleton v
-    | Ast.TEInt | Ast.TEBool | Ast.TEString | Ast.TEName _ -> Set.empty
+    | Ast.TEInt | Ast.TEBool | Ast.TEString | Ast.TEChar | Ast.TEName _ -> Set.empty
     | Ast.TEList t -> collectTypeExprVars t
     | Ast.TEArrow(t1, t2) -> Set.union (collectTypeExprVars t1) (collectTypeExprVars t2)
     | Ast.TETuple ts -> ts |> List.map collectTypeExprVars |> Set.unionMany

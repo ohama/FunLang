@@ -6,6 +6,7 @@ type Type =
     | TInt                           // int
     | TBool                          // bool
     | TString                        // string
+    | TChar                          // char (Phase 29)
     | TVar of int                    // type variable 'a, 'b, ... (using int for simplicity)
     | TArrow of Type * Type          // function type 'a -> 'b
     | TTuple of Type list            // tuple type 'a * 'b
@@ -61,6 +62,7 @@ let rec formatType = function
     | TInt -> "int"
     | TBool -> "bool"
     | TString -> "string"
+    | TChar -> "char"
     | TVar n -> sprintf "'%c" (char (97 + n % 26))  // 'a, 'b, ...
     | TArrow (t1, t2) ->
         let left = match t1 with TArrow _ -> sprintf "(%s)" (formatType t1) | _ -> formatType t1
@@ -84,7 +86,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TTuple ts -> List.fold collectVars acc ts
         | TList t -> collectVars acc t
         | TData (_, args) -> List.fold collectVars acc args
-        | TInt | TBool | TString | TExn -> acc
+        | TInt | TBool | TString | TChar | TExn -> acc
 
     let vars = collectVars [] ty
     let varMap = vars |> List.mapi (fun i v -> (v, i)) |> Map.ofList
@@ -93,6 +95,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TInt -> "int"
         | TBool -> "bool"
         | TString -> "string"
+        | TChar -> "char"
         | TVar n ->
             match Map.tryFind n varMap with
             | Some idx -> sprintf "'%c" (char (97 + idx % 26))
@@ -132,6 +135,7 @@ let rec apply (s: Subst) = function
     | TInt -> TInt
     | TBool -> TBool
     | TString -> TString
+    | TChar -> TChar
     | TExn -> TExn
     | TVar n ->
         match Map.tryFind n s with
@@ -164,7 +168,7 @@ let applyEnv (s: Subst) (env: TypeEnv): TypeEnv =
 
 /// Collect free type variables in a type
 let rec freeVars = function
-    | TInt | TBool | TString | TExn -> Set.empty
+    | TInt | TBool | TString | TChar | TExn -> Set.empty
     | TVar n -> Set.singleton n
     | TArrow (t1, t2) -> Set.union (freeVars t1) (freeVars t2)
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany
