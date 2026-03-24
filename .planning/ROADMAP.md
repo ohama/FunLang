@@ -22,15 +22,15 @@
 
 ### v2.0 Practical Language Completion (In Progress)
 
-**Milestone Goal:** FunLexYacc 프로젝트에서 발견된 22개 제약사항 전면 해결. cat/sed 해킹, 접두사 규칙, 26개 등호 체인 등 workaround 제거.
+**Milestone Goal:** FunLexYacc 프로젝트에서 발견된 34개 제약사항 전면 해결. cat/sed 해킹, 접두사 규칙, 26개 등호 체인 등 workaround 제거.
 
 - [ ] **Phase 26: Quick Fixes & Small Additions** - Crash fix, Prelude path, failwith, option alias
 - [ ] **Phase 27: List Syntax Completion** - Multi-line lists, trailing semicolons, list patterns
 - [ ] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring
 - [ ] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators
-- [ ] **Phase 30: Parser Improvements** - Local let rec, unit args, else match, deep nesting, top-level let-in
+- [ ] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in
 - [ ] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping
-- [ ] **Phase 32: File I/O** - read_file, stdin reading
+- [ ] **Phase 32: File I/O & System Builtins** - read/write files, stdin, args, env, stderr, path utils
 
 ## Phase Details
 
@@ -97,7 +97,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `let rec helper x = ... in helper 0` works inside function bodies (local recursive functions)
   2. `f ()` passes unit as an argument; `fun () -> expr` accepts unit parameter
-  3. `if cond then x else match y with | ...` parses on a single line without errors
+  3. `else` followed by expression keywords (`match`, `if`, `let`, `try`, `fun`) parses correctly — IndentFilter suppresses INDENT after ELSE
   4. Deeply nested function bodies (4+ levels of let/match/if) parse without errors
   5. Top-level `let x = ... in expr` works after module-level bindings in concatenated files
 **Plans**: TBD
@@ -119,14 +119,20 @@ Plans:
 Plans:
 - [ ] 31-01: TBD
 
-### Phase 32: File I/O
-**Goal**: Programs can read files and stdin without shell embedding hacks
+### Phase 32: File I/O & System Builtins
+**Goal**: Programs read/write files, access stdin/args/env, and output to stderr — no shell hacks needed
 **Depends on**: Nothing (independent builtin work)
-**Requirements**: STD-02, STD-03
+**Requirements**: STD-02, STD-03, STD-04, STD-05, STD-06, STD-07, STD-08, STD-09, STD-10, STD-11, STD-12, STD-13, STD-14, STD-15
 **Success Criteria** (what must be TRUE):
-  1. `read_file "path.txt"` returns the file contents as a string
-  2. `stdin_read_all ()` (or equivalent) reads all of stdin and returns it as a string
-  3. Reading a nonexistent file raises an appropriate exception
+  1. `read_file "path.txt"` returns file contents as string; nonexistent file raises exception
+  2. `stdin_read_all ()` reads all stdin; `stdin_read_line ()` reads one line
+  3. `write_file "path" "content"` creates/overwrites file; `append_file "path" "content"` appends
+  4. `file_exists "path"` returns bool
+  5. `read_lines "path"` returns `string list`; `write_lines "path" lines` writes list
+  6. `get_args ()` returns command-line arguments as `string list`
+  7. `get_env "VAR"` returns environment variable value; `get_cwd ()` returns current directory
+  8. `path_combine "dir" "file"` returns combined path; `dir_files "path"` returns file list
+  9. `eprint` / `eprintln` output to stderr (not stdout)
 **Plans**: TBD
 
 Plans:

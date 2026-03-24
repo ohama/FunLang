@@ -2,7 +2,7 @@
 
 **Defined:** 2026-03-24
 **Core Value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Source:** FunLexYacc 프로젝트에서 발견된 24개 제약사항 (langthree-constraints.md)
+**Source:** FunLexYacc 프로젝트에서 발견된 제약사항 (langthree-constraints.md, updated 2026-03-24)
 
 ## v2.0 Requirements
 
@@ -29,7 +29,7 @@
 - [ ] **SYN-02**: 여러 줄에 걸친 리스트 리터럴 허용
 - [ ] **SYN-03**: 리스트 리터럴 끝 trailing semicolon 허용 (`[1; 2; ]`)
 - [ ] **SYN-04**: 리스트 리터럴 패턴 (`[x]`, `[x; y]`, `[x; y; z]`)
-- [ ] **SYN-05**: `else match` 같은 줄에서 동작
+- [ ] **SYN-05**: `else` 뒤 표현식 키워드 동작 (`else match`, `else if`, `else let`, `else try`, `else fun`)
 - [ ] **SYN-06**: 깊은 중첩 함수 본문 파싱 개선
 - [ ] **SYN-07**: `()` unit 리터럴을 함수 인자로 전달 가능 (`f ()`)
 - [ ] **SYN-08**: 모듈 코드 뒤 top-level `let ... in` 표현식 허용
@@ -38,7 +38,19 @@
 
 - [ ] **STD-01**: `failwith "message"` 내장 함수
 - [ ] **STD-02**: File I/O — `read_file "path"` 함수
-- [ ] **STD-03**: Stdin reading — `stdin_read_all ()` 또는 동등 함수
+- [ ] **STD-03**: Stdin reading — `stdin_read_all ()` 함수
+- [ ] **STD-04**: Stdin line reading — `stdin_read_line ()` 함수
+- [ ] **STD-05**: File writing — `write_file "path" "content"` 함수
+- [ ] **STD-06**: File appending — `append_file "path" "content"` 함수
+- [ ] **STD-07**: File existence check — `file_exists "path"` 함수
+- [ ] **STD-08**: File line reading — `read_lines "path"` → `string list`
+- [ ] **STD-09**: File line writing — `write_lines "path" lines` 함수
+- [ ] **STD-10**: Command-line args — `get_args ()` → `string list`
+- [ ] **STD-11**: Environment variables — `get_env "VAR"` → `string`
+- [ ] **STD-12**: Current directory — `get_cwd ()` → `string`
+- [ ] **STD-13**: Path combining — `path_combine "dir" "file"` → `string`
+- [ ] **STD-14**: Directory listing — `dir_files "path"` → `string list`
+- [ ] **STD-15**: Stderr output — `eprint` / `eprintln` 함수
 
 ## Future Requirements
 
@@ -83,12 +95,24 @@
 | STD-01 | Phase 26 | Pending |
 | STD-02 | Phase 32 | Pending |
 | STD-03 | Phase 32 | Pending |
+| STD-04 | Phase 32 | Pending |
+| STD-05 | Phase 32 | Pending |
+| STD-06 | Phase 32 | Pending |
+| STD-07 | Phase 32 | Pending |
+| STD-08 | Phase 32 | Pending |
+| STD-09 | Phase 32 | Pending |
+| STD-10 | Phase 32 | Pending |
+| STD-11 | Phase 32 | Pending |
+| STD-12 | Phase 32 | Pending |
+| STD-13 | Phase 32 | Pending |
+| STD-14 | Phase 32 | Pending |
+| STD-15 | Phase 32 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 22 total
-- Mapped to phases: 22/22
+- v2.0 requirements: 34 total
+- Mapped to phases: 34/34
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 (roadmap phase mapping complete)*
+*Last updated: 2026-03-24 (updated from new constraints doc — 12 new STD requirements, SYN-05 scope expanded)*
