@@ -1,5 +1,6 @@
 module TypeCheck
 
+open System.IO
 open Type
 open Unify
 open Infer
@@ -521,6 +522,38 @@ let mergeModuleExportsForTypeCheck
                 (e3, c3, r3)) (e', c', r')
         | None -> (e, c, r)) (env, ctorEnv, recEnv)
 
+/// Resolve an import path relative to the importing file's directory.
+/// Absolute paths are returned as-is. Relative paths are resolved relative to
+/// the importing file's directory, or CWD if the importing file is a synthetic name.
+let resolveImportPath (importPath: string) (importingFile: string) : string =
+    if Path.IsPathRooted importPath then
+        importPath
+    else
+        let baseDir =
+            if not (System.String.IsNullOrEmpty importingFile)
+               && importingFile <> "<unknown>"
+               && importingFile <> "<expr>"
+               && importingFile <> "test"
+               && File.Exists importingFile then
+                Path.GetDirectoryName(Path.GetFullPath importingFile)
+            else
+                Directory.GetCurrentDirectory()
+        Path.GetFullPath(Path.Combine(baseDir, importPath))
+
+/// Tracks the path of the file currently being type-checked.
+/// Set by the file loading pipeline before calling typeCheckModuleWithPrelude.
+/// Used by the FileImportDecl arm to resolve relative import paths.
+let mutable currentTypeCheckingFile : string = ""
+
+/// Mutable delegate for loading and type-checking a file import.
+/// Set by Prelude.fs (or Program.fs) after the parser and lexer are available.
+/// Signature: (resolvedPath, cEnv, rEnv, typeEnv) -> (typeEnv', cEnv', rEnv')
+/// Raises TypeException on error.
+let mutable fileImportTypeChecker :
+    (string -> ConstructorEnv -> RecordEnv -> TypeEnv -> TypeEnv * ConstructorEnv * RecordEnv) =
+    fun resolvedPath _ _ _ ->
+        failwithf "FileImport type checker not initialized. Cannot import '%s'." resolvedPath
+
 /// Type check declarations sequentially, building up environments and collecting warnings.
 /// Returns (typeEnv, ctorEnv, recEnv, modules, warnings)
 let rec typeCheckDecls
@@ -713,6 +746,13 @@ let rec typeCheckDecls
                     let exports = resolveModule mods path span
                     let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
                     (env', cEnv', rEnv', mods, warns)
+
+            | FileImportDecl(path, _span) ->
+                // Use currentTypeCheckingFile for path resolution since span.FileName
+                // may be empty (fsyacc positions use lexbuf.StartPos which isn't set)
+                let resolvedPath = resolveImportPath path currentTypeCheckingFile
+                let (env', cEnv', rEnv') = fileImportTypeChecker resolvedPath cEnv rEnv env
+                (env', cEnv', rEnv', mods, warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope

@@ -284,6 +284,20 @@ type ModuleValueEnv = {
 /// Empty module value environment
 let emptyModuleValueEnv: Map<string, ModuleValueEnv> = Map.empty
 
+/// Tracks the path of the file currently being evaluated.
+/// Set by the file loading pipeline before calling evalModuleDecls.
+/// Used by the FileImportDecl arm to resolve relative import paths.
+let mutable currentEvalFile : string = ""
+
+/// Mutable delegate for loading and evaluating a file import.
+/// Set by Prelude.fs after the parser and lexer are available.
+/// Signature: (resolvedPath, recEnv, modEnv, env) -> (env', modEnv')
+/// Raises on error.
+let mutable fileImportEvaluator :
+    (string -> RecordEnv -> Map<string, ModuleValueEnv> -> Env -> Env * Map<string, ModuleValueEnv>) =
+    fun resolvedPath _ _ _ ->
+        failwithf "FileImport evaluator not initialized. Cannot import '%s'." resolvedPath
+
 /// Structural equality for Value (needed since BuiltinValue contains a function type
 /// which prevents F# from auto-deriving equality on the Value DU)
 let rec valuesEqual (v1: Value) (v2: Value) : bool =
@@ -924,5 +938,10 @@ let rec evalModuleDecls
         | TypeAliasDecl _ ->
             // Type aliases are purely a type-level feature, no runtime behavior
             (env, modEnv)
+        | FileImportDecl(path, _span) ->
+            // Use currentEvalFile for path resolution (span.FileName may be empty due to
+            // fsyacc position tracking using lexbuf.StartPos which isn't updated in filtered-token mode)
+            let resolvedPath = TypeCheck.resolveImportPath path currentEvalFile
+            fileImportEvaluator resolvedPath recEnv modEnv env
         | _ -> (env, modEnv)  // RecordTypeDecl handled elsewhere
     ) (initialEnv, moduleEnv)

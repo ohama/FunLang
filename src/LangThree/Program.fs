@@ -102,6 +102,8 @@ let main argv =
             if File.Exists filename then
                 try
                     let input = File.ReadAllText filename
+                    // Set current file path for FileImportDecl relative path resolution
+                    TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
                     | Ok (warnings, _ctorEnv, _recEnv, _modules, typeEnv) ->
@@ -183,6 +185,10 @@ let main argv =
                         printfn "()"
                         0
                     else
+                    // Set current file path for FileImportDecl relative path resolution
+                    let absFilename = System.IO.Path.GetFullPath filename
+                    TypeCheck.currentTypeCheckingFile <- absFilename
+                    Eval.currentEvalFile <- absFilename
                     let m = parseModuleFromString input filename
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
                     | Error diag ->

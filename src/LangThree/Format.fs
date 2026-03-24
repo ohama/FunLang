@@ -300,6 +300,8 @@ let rec formatDecl (decl: Ast.Decl) : string =
     | Ast.LetPatDecl(pat, body, _) ->
         sprintf "LetPatDecl (%s, %s)" (formatPattern pat) (formatAst body)
 
+    | Ast.FileImportDecl(path, _) ->
+        sprintf "FileImportDecl \"%s\"" path
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =
