@@ -39,6 +39,9 @@ let formatToken (token: Parser.token) : string =
     | Parser.ARROW -> "ARROW"
     // Phase 2 (v2.0): String token
     | Parser.STRING s -> sprintf "STRING(%s)" s
+    // Phase 29: Char token
+    | Parser.CHAR c -> sprintf "CHAR('%c')" c
+    | Parser.TYPE_CHAR -> "TYPE_CHAR"
     // Phase 1 (v3.0): Tuple tokens
     | Parser.COMMA -> "COMMA"
     | Parser.UNDERSCORE -> "UNDERSCORE"
@@ -117,6 +120,7 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.Number (n, _) -> sprintf "Number %d" n
     | Ast.Bool (b, _) -> sprintf "Bool %b" b
     | Ast.String (s, _) -> sprintf "String \"%s\"" s
+    | Ast.Char (c, _) -> sprintf "Char '%c'" c
     | Ast.Var (name, _) -> sprintf "Var \"%s\"" name
     | Ast.Add (l, r, _) -> sprintf "Add (%s, %s)" (formatAst l) (formatAst r)
     | Ast.Subtract (l, r, _) -> sprintf "Subtract (%s, %s)" (formatAst l) (formatAst r)
@@ -198,6 +202,7 @@ and formatTypeExpr (te: Ast.TypeExpr) : string =
     | Ast.TEInt -> "TEInt"
     | Ast.TEBool -> "TEBool"
     | Ast.TEString -> "TEString"
+    | Ast.TEChar -> "TEChar"
     | Ast.TEList t -> sprintf "TEList (%s)" (formatTypeExpr t)
     | Ast.TEArrow (t1, t2) -> sprintf "TEArrow (%s, %s)" (formatTypeExpr t1) (formatTypeExpr t2)
     | Ast.TETuple ts ->
@@ -222,6 +227,7 @@ and formatPattern (pat: Ast.Pattern) : string =
         | Ast.IntConst n -> sprintf "ConstPat (IntConst %d)" n
         | Ast.BoolConst b -> sprintf "ConstPat (BoolConst %b)" b
         | Ast.StringConst s -> sprintf "ConstPat (StringConst \"%s\")" s
+        | Ast.CharConst c -> sprintf "ConstPat (CharConst '%c')" c
     | Ast.EmptyListPat _ -> "EmptyListPat"
     | Ast.ConsPat (h, t, _) -> sprintf "ConsPat (%s, %s)" (formatPattern h) (formatPattern t)
     | Ast.ConstructorPat (name, argOpt, _) ->

@@ -54,6 +54,12 @@ let initialTypeEnv: TypeEnv =
 
         // failwith : string -> 'a  (polymorphic return — unifies with any expected type, like raise)
         "failwith", Scheme([0], TArrow(TString, TVar 0))
+
+        // Phase 29: char conversion builtins
+        // char_to_int : char -> int
+        "char_to_int", Scheme([], TArrow(TChar, TInt))
+        // int_to_char : int -> char
+        "int_to_char", Scheme([], TArrow(TInt, TChar))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
@@ -210,7 +216,7 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
         collectMatches a @ collectMatches b
     | Range(start, stop, stepOpt, _) ->
         collectMatches start @ collectMatches stop @ (stepOpt |> Option.map collectMatches |> Option.defaultValue [])
-    | Number _ | Bool _ | String _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
+    | Number _ | Bool _ | String _ | Char _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body
 let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list =

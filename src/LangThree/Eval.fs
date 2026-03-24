@@ -118,6 +118,7 @@ let rec formatValue (v: Value) : string =
     | BoolValue b -> if b then "true" else "false"
     | FunctionValue _ -> "<function>"
     | StringValue s -> sprintf "\"%s\"" s
+    | CharValue c -> sprintf "'%c'" c
     | TupleValue values ->
         let formattedElements = List.map formatValue values
         sprintf "(%s)" (String.concat ", " formattedElements)
@@ -254,6 +255,22 @@ let initialBuiltinEnv : Env =
             match v with
             | StringValue msg -> raise (LangThreeException (StringValue msg))
             | _ -> failwith "failwith: expected string argument")
+
+        // Phase 29: char_to_int : char -> int
+        "char_to_int", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> IntValue (int c)
+            | _ -> failwith "char_to_int: expected char argument")
+
+        // Phase 29: int_to_char : int -> char
+        "int_to_char", BuiltinValue (fun v ->
+            match v with
+            | IntValue n ->
+                if n < 0 || n > 127 then
+                    failwithf "int_to_char: value %d out of ASCII range (0-127)" n
+                else
+                    CharValue (char n)
+            | _ -> failwith "int_to_char: expected int argument")
     ]
 
 /// Module value environment for runtime qualified access
@@ -274,6 +291,7 @@ let rec valuesEqual (v1: Value) (v2: Value) : bool =
     | IntValue a, IntValue b -> a = b
     | BoolValue a, BoolValue b -> a = b
     | StringValue a, StringValue b -> a = b
+    | CharValue a, CharValue b -> a = b
     | TupleValue a, TupleValue b ->
         List.length a = List.length b && List.forall2 valuesEqual a b
     | ListValue a, ListValue b ->
@@ -400,6 +418,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     | Number (n, _) -> IntValue n
     | Bool (b, _) -> BoolValue b
     | String (s, _) -> StringValue s
+    | Char (c, _) -> CharValue c
 
     | Var (name, _) ->
         match Map.tryFind name env with
@@ -486,26 +505,34 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | IntValue n -> IntValue (-n)
         | _ -> failwith "Type error: unary - requires integer operand"
 
-    // Comparison operators - type check for IntValue, return BoolValue
+    // Comparison operators - work on int, string, or char
     | LessThan (left, right, _) ->
         match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l < r)
-        | _ -> failwith "Type error: < requires integer operands"
+        | StringValue l, StringValue r -> BoolValue (System.String.CompareOrdinal(l, r) < 0)
+        | CharValue l, CharValue r -> BoolValue (l < r)
+        | _ -> failwith "Type error: < requires int, string, or char operands"
 
     | GreaterThan (left, right, _) ->
         match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l > r)
-        | _ -> failwith "Type error: > requires integer operands"
+        | StringValue l, StringValue r -> BoolValue (System.String.CompareOrdinal(l, r) > 0)
+        | CharValue l, CharValue r -> BoolValue (l > r)
+        | _ -> failwith "Type error: > requires int, string, or char operands"
 
     | LessEqual (left, right, _) ->
         match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l <= r)
-        | _ -> failwith "Type error: <= requires integer operands"
+        | StringValue l, StringValue r -> BoolValue (System.String.CompareOrdinal(l, r) <= 0)
+        | CharValue l, CharValue r -> BoolValue (l <= r)
+        | _ -> failwith "Type error: <= requires int, string, or char operands"
 
     | GreaterEqual (left, right, _) ->
         match eval recEnv moduleEnv env false left, eval recEnv moduleEnv env false right with
         | IntValue l, IntValue r -> BoolValue (l >= r)
-        | _ -> failwith "Type error: >= requires integer operands"
+        | StringValue l, StringValue r -> BoolValue (System.String.CompareOrdinal(l, r) >= 0)
+        | CharValue l, CharValue r -> BoolValue (l >= r)
+        | _ -> failwith "Type error: >= requires int, string, or char operands"
 
     // Equal and NotEqual delegate to valuesEqual for all value types
     | Equal (left, right, _) ->

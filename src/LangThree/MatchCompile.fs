@@ -48,6 +48,7 @@ let patternToConstructor (pat: Pattern) : (string * int) option =
     | ConstPat(IntConst n, _) -> Some("#int_" + string n, 0)
     | ConstPat(BoolConst b, _) -> Some("#bool_" + (string b).ToLower(), 0)
     | ConstPat(StringConst s, _) -> Some("#str_" + s, 0)
+    | ConstPat(CharConst c, _) -> Some("#char_" + string (int c), 0)
     | OrPat _ -> None  // OrPat should be expanded before reaching here
     | RecordPat(fields, _) ->
         let fieldNames = fields |> List.map fst |> List.sort |> String.concat ","
@@ -173,6 +174,8 @@ let matchesConstructor (value: Value) (ctor: string) : bool =
         (string b).ToLower() = c.Substring(6)
     | StringValue s, c when c.StartsWith("#str_") ->
         s = c.Substring(5)
+    | CharValue c2, c when c.StartsWith("#char_") ->
+        string (int c2) = c.Substring(6)
     | TupleValue _, c when c.StartsWith("#tuple_") -> true
     | RecordValue _, c when c.StartsWith("#record:") -> true
     | _ -> false

@@ -42,6 +42,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     | Number (_, _) -> (empty, TInt)
     | Bool (_, _) -> (empty, TBool)
     | String (_, _) -> (empty, TString)
+    | Char (_, _) -> (empty, TChar)
 
     // === Variables (BIDIR-03) ===
     | Var (name, span) ->
@@ -224,11 +225,28 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s3 = unifyWithContext ctx [] span (apply s2 t1) t2
         (compose s3 (compose s2 s1), TBool)
 
-    // Comparison operators only work on int
-    | LessThan (e1, e2, _) | GreaterThan (e1, e2, _)
-    | LessEqual (e1, e2, _) | GreaterEqual (e1, e2, _) ->
-        let s = inferBinaryOp ctorEnv recEnv ctx env e1 e2 TInt TInt
-        (s, TBool)
+    // Comparison operators work on int, string, or char (ordered types)
+    | LessThan (e1, e2, span) | GreaterThan (e1, e2, span)
+    | LessEqual (e1, e2, span) | GreaterEqual (e1, e2, span) ->
+        let s1, t1 = synth ctorEnv recEnv ctx env e1
+        let s2, t2 = synth ctorEnv recEnv ctx (applyEnv s1 env) e2
+        let appliedT1 = apply s2 t1
+        let s3 = unifyWithContext ctx [] span appliedT1 t2
+        let resultTy = apply s3 appliedT1
+        match resultTy with
+        | TInt | TString | TChar -> (compose s3 (compose s2 s1), TBool)
+        | TVar _ ->
+            // Ambiguous - default to int (backward compatible)
+            let s4 = unifyWithContext ctx [] span resultTy TInt
+            (compose s4 (compose s3 (compose s2 s1)), TBool)
+        | _ ->
+            raise (TypeException {
+                Kind = UnifyMismatch (TInt, resultTy)
+                Span = span
+                Term = Some expr
+                ContextStack = ctx
+                Trace = []
+            })
 
     | And (e1, e2, _) | Or (e1, e2, _) ->
         let s = inferBinaryOp ctorEnv recEnv ctx env e1 e2 TBool TBool

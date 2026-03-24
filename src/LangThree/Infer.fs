@@ -87,6 +87,9 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
     | ConstPat (StringConst _, _) ->
         (Map.empty, TString)
 
+    | ConstPat (CharConst _, _) ->
+        (Map.empty, TChar)
+
     | RecordPat (fields, _) ->
         let envTys = fields |> List.map (fun (_, pat) -> inferPattern ctorEnv pat)
         let env = envTys |> List.map fst |> List.fold (fun acc m -> Map.fold (fun a k v -> Map.add k v a) acc m) Map.empty
@@ -160,6 +163,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | Number (_, _) -> (empty, TInt)
     | Bool (_, _) -> (empty, TBool)
     | String (_, _) -> (empty, TString)
+    | Char (_, _) -> (empty, TChar)
 
     // === Variable reference (INFER-06) ===
     | Var (name, span) ->
