@@ -178,6 +178,11 @@ let main argv =
             if File.Exists filename then
                 try
                     let input = File.ReadAllText filename
+                    // Guard: empty or whitespace-only files produce no declarations
+                    if System.String.IsNullOrWhiteSpace input then
+                        printfn "()"
+                        0
+                    else
                     let m = parseModuleFromString input filename
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
                     | Error diag ->
@@ -192,6 +197,11 @@ let main argv =
                             match m with
                             | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
                             | EmptyModule _ -> []
+                        // Guard: no declarations means nothing to evaluate
+                        if List.isEmpty moduleDecls then
+                            printfn "()"
+                            0
+                        else
                         // Evaluate module declarations with module-aware pipeline
                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
                         let finalEnv, moduleEnv =
