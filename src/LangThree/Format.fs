@@ -291,6 +291,9 @@ let rec formatDecl (decl: Ast.Decl) : string =
             |> String.concat " and "
         sprintf "LetRecDecl (%s)" bindingsStr
 
+    | Ast.LetPatDecl(pat, body, _) ->
+        sprintf "LetPatDecl (%s, %s)" (formatPattern pat) (formatAst body)
+
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =

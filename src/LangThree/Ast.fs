@@ -287,6 +287,7 @@ let patternSpanOf (pat: Pattern) : Span =
 /// Phase 1 (INDENT-05): Module-level declarations
 type Decl =
     | LetDecl of name: string * body: Expr * Span
+    | LetPatDecl of pat: Pattern * body: Expr * Span   // Phase 28: N-tuple module-level binding
     | TypeDecl of TypeDecl  // Phase 2 (ADT-01): Type declaration (discriminated union)
     | RecordTypeDecl of RecordDecl  // Phase 3 (Records): Record type declaration
     // Phase 5 (Modules): Module system declarations
@@ -312,6 +313,7 @@ type Module =
 let declSpanOf (decl: Decl) : Span =
     match decl with
     | LetDecl(_, _, s) -> s
+    | LetPatDecl(_, _, s) -> s
     | TypeDecl td -> typeSpanOf td
     | RecordTypeDecl (RecordDecl(_, _, _, s)) -> s
     | ModuleDecl(_, _, s) -> s

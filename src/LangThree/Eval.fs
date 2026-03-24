@@ -781,6 +781,14 @@ let rec evalModuleDecls
         | LetDecl(name, body, _) ->
             let value = eval recEnv modEnv env false body
             (Map.add name value env, modEnv)
+        | LetPatDecl(pat, bodyExpr, _) ->
+            let value = eval recEnv modEnv env false bodyExpr
+            match matchPattern pat value with
+            | Some bindings ->
+                let env' = List.fold (fun e (n, v) -> Map.add n v e) env bindings
+                (env', modEnv)
+            | None ->
+                failwith "Pattern match failed in module-level let pattern"
         | ModuleDecl(name, innerDecls, _) ->
             let innerEnv, innerModEnv = evalModuleDecls recEnv modEnv env innerDecls
             // Extract only the bindings added by this module (not inherited from parent)

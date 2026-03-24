@@ -583,6 +583,24 @@ let rec typeCheckDecls
                 let matchWarnings = checkMatchWarnings cEnv body
                 (env', cEnv, rEnv, mods, warns @ matchWarnings)
 
+            | LetPatDecl(pat, body, _) ->
+                let refsInBody = collectModuleRefs mods body
+                let rewrittenBody = rewriteModuleAccess mods body
+                let (envForSynth, ctorEnvForSynth, recEnvForSynth) =
+                    if Set.isEmpty refsInBody then (env, cEnv, rEnv)
+                    else mergeModuleExportsForTypeCheck mods refsInBody env cEnv rEnv
+                let s, valueTy = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
+                let patEnv, patTy = Infer.inferPattern cEnv pat
+                let s2 = Unify.unify (apply s valueTy) patTy
+                let s' = compose s2 s
+                let env' = applyEnv s' env
+                let generalizedPatEnv =
+                    patEnv |> Map.map (fun _ (Scheme(_, ty)) ->
+                        generalize env' (apply s' ty))
+                let env'' = Map.fold (fun acc k v -> Map.add k v acc) env' generalizedPatEnv
+                let matchWarnings = checkMatchWarnings cEnv body
+                (env'', cEnv, rEnv, mods, warns @ matchWarnings)
+
             | LetRecDecl(bindings, _) ->
                 // Phase 18: Mutual recursive function type checking
                 // 1. Create fresh type variables for each function
