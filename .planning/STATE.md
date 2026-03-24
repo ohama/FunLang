@@ -10,27 +10,29 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 30 in progress
-Plan: 30-01 complete (1 of N in phase 30)
-Status: In progress
-Last activity: 2026-03-25 — Completed 30-01-PLAN.md (ELSE indentation suppression)
+Phase: 30 complete, next: 31
+Plan: 30-02 of 2 (phase complete)
+Status: Phase 30 complete — SYN-05/01/06/07/08 all implemented
+Last activity: 2026-03-25 — Completed 30-02-PLAN.md (multi-param let rec, unit param, top-level let-in)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░] 4/7 phases (8 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█████░░░░░] 5/7 phases (9 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 75
+- Total plans completed: 77
 - Phase 26: 2 plans in ~6 min (parallel wave)
 - Phase 27: 2 plans in ~7 min (parallel wave)
 - Phase 28: 1 plan in ~11 min
 - Phase 29: 2 plans in ~20 min (29-02 folded into 29-01)
+- Phase 30: 2 plans in ~10 min
 
 **Recent Trend:**
 - v2.0 Phase 27: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 28: 1 phase, 1 plan, <1 hour
 - v2.0 Phase 29: 1 phase, 2 plans, <1 hour
-- Trend: Stable
+- v2.0 Phase 30: 1 phase, 2 plans, ~10 min
+- Trend: Stable, accelerating
 
 ## Accumulated Context
 
@@ -55,6 +57,10 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░]
 - [Phase 29-01]: Comparison widening uses synth-then-unify-then-match (not inferBinaryOp - hardcoded single type)
 - [Phase 30-01]: SYN-05 ELSE fix uses nextToken lookahead in processNewlineWithContext | _ -> branch (not a new JustSawElse flag)
 - [Phase 30-01]: Only emitted INDENT token suppressed before ELSE; indent stack updated normally; DEDENTs always pass through
+- [Phase 30-02]: Expression LetRec uses BuiltinValue + mutable envRef (not FunctionValue) — FunctionValue fails inside lambda bodies due to trampoline losing self-binding
+- [Phase 30-02]: Multi-param expr let rec replaces old IDENT IDENT rules entirely (not additive) to avoid LALR conflict
+- [Phase 30-02]: Unit param shorthand desugars to LambdaAnnot("__unit", TETuple []) matching existing fun () -> body pattern
+- [Phase 30-02]: Top-level let-in wraps as LetDecl("_", Let(...)) using "_" consistent with wildcard sequencing convention
 
 ### Pending Todos
 
@@ -67,9 +73,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 30-01-PLAN.md
+Stopped at: Phase 30 complete, ready to plan Phase 31
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 30, Plan 01 complete)*
+*Last updated: 2026-03-25 (Phase 30 complete)*
