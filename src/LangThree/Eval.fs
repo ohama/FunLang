@@ -607,11 +607,17 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             result
 
     // Let rec - recursive function definition
-    // Creates a function whose closure will be augmented at call time (in App)
+    // Creates a self-referential closure using mutable ref (same as LetRecDecl).
+    // The naive FunctionValue approach breaks when LetRec is inside a lambda body:
+    // the trampoline loop re-applies the outer funcExpr, losing the self-binding.
     | LetRec (name, param, funcBody, inExpr, _) ->
-        let funcVal = FunctionValue (param, funcBody, env)
-        let recFuncEnv = Map.add name funcVal env
-        eval recEnv moduleEnv recFuncEnv tailPos inExpr
+        let envRef = ref env
+        let wrapper = BuiltinValue (fun argVal ->
+            let callEnv = Map.add param argVal !envRef
+            eval recEnv moduleEnv callEnv false funcBody)
+        let recEnv' = Map.add name wrapper env
+        envRef := recEnv'
+        eval recEnv moduleEnv recEnv' tailPos inExpr
 
     // Phase 3 (Records): Record expression - create RecordValue with resolved type name
     | RecordExpr (_, fieldExprs, _) ->
