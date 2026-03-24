@@ -61,6 +61,31 @@ let initialTypeEnv: TypeEnv =
         "char_to_int", Scheme([], TArrow(TChar, TInt))
         // int_to_char : int -> char
         "int_to_char", Scheme([], TArrow(TInt, TChar))
+
+        // Phase 32: File I/O builtins (STD-02 through STD-09)
+        // STD-02: read_file : string -> string
+        "read_file", Scheme([], TArrow(TString, TString))
+
+        // STD-03: stdin_read_all : unit -> string
+        "stdin_read_all", Scheme([], TArrow(TTuple [], TString))
+
+        // STD-04: stdin_read_line : unit -> string
+        "stdin_read_line", Scheme([], TArrow(TTuple [], TString))
+
+        // STD-05: write_file : string -> string -> unit
+        "write_file", Scheme([], TArrow(TString, TArrow(TString, TTuple [])))
+
+        // STD-06: append_file : string -> string -> unit
+        "append_file", Scheme([], TArrow(TString, TArrow(TString, TTuple [])))
+
+        // STD-07: file_exists : string -> bool
+        "file_exists", Scheme([], TArrow(TString, TBool))
+
+        // STD-08: read_lines : string -> string list
+        "read_lines", Scheme([], TArrow(TString, TList TString))
+
+        // STD-09: write_lines : string -> string list -> unit
+        "write_lines", Scheme([], TArrow(TString, TArrow(TList TString, TTuple [])))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
