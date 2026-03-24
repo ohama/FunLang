@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 Milestone: v2.0 Practical Language Completion
 Phase: 26 of 32 (Quick Fixes & Small Additions)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-24 — Roadmap created for v2.0
+Plan: 02 of ? in phase 26
+Status: In progress
+Last activity: 2026-03-24 — Completed 26-02-PLAN.md
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [░░░░░░░░░░] 0/7 phases
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [░░░░░░░░░░] in progress (26-02 done)
 
 ## Performance Metrics
 
@@ -39,6 +39,8 @@ Recent decisions affecting current work:
 
 - [v2.0]: Requirements derived from FunLexYacc real-world usage (24 constraints found)
 - [v2.0]: Module system (import/scoping) is heaviest work, placed late to allow simpler phases first
+- [26-02]: findPreludeDir uses 3-stage search (CWD, assembly-relative, 6-level walk-up) for cross-directory invocation
+- [26-02]: Whitespace-only input guard placed before parse (not after) because parser errors on stray whitespace
 
 ### Pending Todos
 
@@ -51,9 +53,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Roadmap created, ready to plan Phase 26
+Stopped at: Completed 26-02-PLAN.md (Prelude path fix + empty file guard)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (v2.0 roadmap created)*
+*Last updated: 2026-03-24 (completed 26-02)*
