@@ -308,6 +308,8 @@ type Decl =
     | TypeAliasDecl of name: string * typeParams: string list * body: TypeExpr * Span
     // Phase 18 (Mutual Recursion): Module-level let rec (single and mutual)
     | LetRecDecl of bindings: (string * string * Expr * Span) list * Span
+    // Phase 31 (Module System): File-based import declaration
+    | FileImportDecl of path: string * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -330,6 +332,7 @@ let declSpanOf (decl: Decl) : Span =
     | ExceptionDecl(_, _, s) -> s
     | TypeAliasDecl(_, _, _, s) -> s
     | LetRecDecl(_, s) -> s
+    | FileImportDecl(_, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
