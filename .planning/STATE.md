@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v2.0 Practical Language Completion
+**Current focus:** v2.0 COMPLETE
 
 ## Current Position
 
-Milestone: v2.0 Practical Language Completion
-Phase: 32 in progress
-Plan: 32-01 complete
-Status: Phase 32, Plan 1 executed; ready for 32-02
-Last activity: 2026-03-25 — Completed 32-01 (8 file I/O builtins)
+Milestone: v2.0 Practical Language Completion — COMPLETE
+Phase: 32 complete (final phase)
+Plan: 32-02 complete (final plan)
+Status: v2.0 milestone complete; all 7 phases, 14 plans executed
+Last activity: 2026-03-25 — Completed 32-02 (6 system builtins; v2.0 milestone done)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░] 6/7 phases (13 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████████] 7/7 phases (14 plans) COMPLETE
 
 ## Performance Metrics
 
@@ -26,6 +26,8 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░]
 - Phase 28: 1 plan in ~11 min
 - Phase 29: 2 plans in ~20 min (29-02 folded into 29-01)
 - Phase 30: 2 plans in ~10 min
+- Phase 31: 2 plans in ~59 min
+- Phase 32: 2 plans in ~15 min
 
 **Recent Trend:**
 - v2.0 Phase 27: 1 phase, 2 plans, <1 hour
@@ -33,6 +35,7 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░]
 - v2.0 Phase 29: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 30: 1 phase, 2 plans, ~10 min
 - v2.0 Phase 31: 1 phase, 2 plans, ~59 min (01: 42min, 02: 17min)
+- v2.0 Phase 32: 1 phase, 2 plans, ~15 min (01: ~10min, 02: ~5min)
 - Trend: Stable, accelerating
 
 ## Accumulated Context
@@ -72,6 +75,9 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░]
 - [Phase 32-01]: Unit-arg builtins (unit -> 'a) must match TupleValue [] at runtime — () evaluates to TupleValue [], not a unit AST value
 - [Phase 32-01]: File errors in builtins use raise (LangThreeException (StringValue msg)) — failwith raises F# exception not catchable by user try-with
 - [Phase 32-01]: LangThree try-with syntax is match-clause form: try expr with | pattern -> handler (not function form with fun)
+- [Phase 32-02]: scriptArgs mutable declared before initialBuiltinEnv — F# forward-reference: let value body cannot reference mutable declared below it
+- [Phase 32-02]: get_env raises LangThreeException on missing var (not empty string) — consistent with read_file/read_lines behavior for missing resources
+- [Phase 32-02]: Program.fs searches rawArgv for both absFilename and filename for scriptArgs population
 
 ### Pending Todos
 
@@ -84,9 +90,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 32 Plan 01 complete (8 file I/O builtins)
+Stopped at: Phase 32 Plan 02 complete — v2.0 milestone DONE
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 31 complete)*
+*Last updated: 2026-03-25 (v2.0 complete: Phase 32 Plan 02)*
