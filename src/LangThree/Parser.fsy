@@ -119,16 +119,33 @@ Expr:
     | LET IDENT ParamList EQUALS INDENT Expr DEDENT IN Expr
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 9)) $3 $6
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
+    // SYN-07: Unit param shorthand in expression context: let f () = body in expr
+    | LET IDENT LPAREN RPAREN EQUALS Expr IN Expr
+        { let span = ruleSpan parseState 1 8
+          Let($2, LambdaAnnot("__unit", TETuple [], $6, span), $8, span) }
+    | LET IDENT LPAREN RPAREN EQUALS INDENT Expr DEDENT IN Expr
+        { let span = ruleSpan parseState 1 10
+          Let($2, LambdaAnnot("__unit", TETuple [], $7, span), $10, span) }
     // Phase 1 (v3.0): Let with pattern binding
     | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 10 (Unit): let _ = e1 in e2 wildcard sequencing at expression level
     | LET UNDERSCORE EQUALS Expr IN Expr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
     | IF Expr THEN Expr ELSE Expr    { If($2, $4, $6, ruleSpan parseState 1 6) }
-    // Phase 5: Function definitions
-    | LET REC IDENT IDENT EQUALS Expr IN Expr  { LetRec($3, $4, $6, $8, ruleSpan parseState 1 8) }
+    // Phase 5: Function definitions (SYN-01/SYN-06: multi-param let rec via ParamList)
+    | LET REC IDENT ParamList EQUALS Expr IN Expr
+        { let span = ruleSpan parseState 1 8
+          let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $6
+          match lambda with
+          | Lambda(p, b, _) -> LetRec($3, p, b, $8, span)
+          | _ -> failwith "impossible: ParamList must produce at least one param" }
     // Indentation-based let rec with continuation: let rec f x = <indent>expr<dedent> in expr
-    | LET REC IDENT IDENT EQUALS INDENT Expr DEDENT IN Expr  { LetRec($3, $4, $7, $10, ruleSpan parseState 1 10) }
+    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT IN Expr
+        { let span = ruleSpan parseState 1 10
+          let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $7
+          match lambda with
+          | Lambda(p, b, _) -> LetRec($3, p, b, $10, span)
+          | _ -> failwith "impossible: ParamList must produce at least one param" }
     | FUN IDENT ARROW Expr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
     | FUN IDENT ARROW INDENT Expr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
     // v6.0: Annotated lambda - fun (x: T) -> e
@@ -534,6 +551,17 @@ Decl:
     | LET IDENT ParamList EQUALS INDENT Expr DEDENT
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
+    // SYN-07: Unit param shorthand at module level: let f () = body
+    | LET IDENT LPAREN RPAREN EQUALS Expr
+        { let span = ruleSpan parseState 1 6
+          LetDecl($2, LambdaAnnot("__unit", TETuple [], $6, span), span) }
+    | LET IDENT LPAREN RPAREN EQUALS INDENT Expr DEDENT
+        { let span = ruleSpan parseState 1 8
+          LetDecl($2, LambdaAnnot("__unit", TETuple [], $7, span), span) }
+    // SYN-08: Top-level let x = e1 in e2 as module declaration
+    | LET IDENT EQUALS Expr IN Expr
+        { let span = ruleSpan parseState 1 6
+          LetDecl("_", Let($2, $4, $6, span), span) }
 
 // Phase 19 (User-Defined Operators): Operator definition - let (op) params = body
     | LET OpName ParamList EQUALS Expr
