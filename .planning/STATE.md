@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 27 complete, next: 28
-Plan: —
-Status: Phase 27 verified, ready to plan Phase 28
-Last activity: 2026-03-24 — Phase 27 executed and verified
+Phase: 28 in progress (1/1 plans complete)
+Plan: 28-01 complete
+Status: In progress
+Last activity: 2026-03-24 — Completed 28-01-PLAN.md (N-tuple module-level binding)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██░░░░░░░░] 2/7 phases (4 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██░░░░░░░░] 2/7 phases (5 plans)
 
 ## Performance Metrics
 
@@ -44,6 +44,8 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██░░░░░░░░]
 - [Phase 27-01]: Guarded NEWLINE arm (BracketDepth > 0) must appear before unguarded arm in F# match
 - [Phase 27-02]: SYN-03 trailing semicolon via Expr SEMICOLON production in SemiExprList (between single and recursive)
 - [Phase 27-02]: SYN-04 list literal patterns via SemiPatList nonterminal + desugarListPat in parser header
+- [Phase 28-01]: LetPatDecl uses cEnv (not Map.empty) in inferPattern - matches Bidir.fs LetPat pattern
+- [Phase 28-01]: `string` is TYPE_STRING keyword token - cannot use as function in test files
 
 ### Pending Todos
 
@@ -56,9 +58,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Phase 27 complete, ready to plan Phase 28
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (Phase 27 complete)*
+*Last updated: 2026-03-24 (Phase 28 plan 01 complete)*
