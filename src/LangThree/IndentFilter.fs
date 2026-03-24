@@ -30,10 +30,11 @@ type FilterState = {
     JustSawTry: bool            // Flag: did we just see TRY token?
     JustSawModule: bool         // Flag: did we just see MODULE token?
     PrevToken: Parser.token option  // Previous token for function app detection
+    BracketDepth: int           // Depth of [] () {} nesting; NEWLINE suppressed when > 0
 }
 
 /// Initial state
-let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None }
+let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustSawMatch = false; JustSawTry = false; JustSawModule = false; PrevToken = None; BracketDepth = 0 }
 
 /// Error for indentation problems
 exception IndentationError of line: int * message: string
@@ -219,6 +220,18 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
             let token = tokenList.[index]
 
             match token with
+            | Parser.LBRACKET | Parser.LPAREN | Parser.LBRACE ->
+                state <- { state with BracketDepth = state.BracketDepth + 1; PrevToken = Some token }
+                yield token
+
+            | Parser.RBRACKET | Parser.RPAREN | Parser.RBRACE ->
+                state <- { state with BracketDepth = max 0 (state.BracketDepth - 1); PrevToken = Some token }
+                yield token
+
+            | Parser.NEWLINE _ when state.BracketDepth > 0 ->
+                // Inside brackets: suppress INDENT/DEDENT, just advance line counter
+                state <- { state with LineNum = state.LineNum + 1 }
+
             | Parser.NEWLINE col ->
                 // Look ahead to next non-NEWLINE token
                 let nextToken =
