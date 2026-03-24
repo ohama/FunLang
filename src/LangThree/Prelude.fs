@@ -47,10 +47,36 @@ let private getDecls (m: Module) : Decl list =
     | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
     | EmptyModule _ -> []
 
+/// Find the Prelude directory using a 3-stage search strategy
+let private findPreludeDir () : string =
+    // Stage 1: CWD-relative (current dev workflow: dotnet run from repo root)
+    if Directory.Exists "Prelude" then "Prelude"
+    else
+        let assemblyLoc = System.Reflection.Assembly.GetEntryAssembly().Location
+        if not (System.String.IsNullOrEmpty assemblyLoc) then
+            let assemblyDir = Path.GetDirectoryName assemblyLoc
+            // Stage 2: Assembly-relative (dotnet publish / installed binary)
+            let candidate = Path.Combine(assemblyDir, "Prelude")
+            if Directory.Exists candidate then candidate
+            else
+                // Stage 3: Walk up from assembly dir (handles dotnet run from other dirs)
+                // Binary is at src/LangThree/bin/Debug/net10.0/LangThree
+                // Walking up 6 levels reaches repo root where Prelude/ lives
+                let mutable dir = assemblyDir
+                let mutable result = ""
+                for _ in 1..6 do
+                    if result = "" then
+                        let c = Path.Combine(dir, "Prelude")
+                        if Directory.Exists c then result <- c
+                        let parent = Path.GetDirectoryName dir
+                        if parent <> dir then dir <- parent  // guard: stop at filesystem root
+                result
+        else ""
+
 /// Load all Prelude/*.fun files and return accumulated environments
 let loadPrelude () : PreludeResult =
-    let preludeDir = "Prelude"
-    if Directory.Exists preludeDir then
+    let preludeDir = findPreludeDir ()
+    if preludeDir <> "" then
         let files = Directory.GetFiles(preludeDir, "*.fun") |> Array.sort
         if files.Length = 0 then
             emptyPrelude
