@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 29 complete, next: 30
-Plan: —
-Status: Phase 29 verified, ready to plan Phase 30
-Last activity: 2026-03-24 — Phase 29 executed and verified
+Phase: 30 in progress
+Plan: 30-01 complete (1 of N in phase 30)
+Status: In progress
+Last activity: 2026-03-25 — Completed 30-01-PLAN.md (ELSE indentation suppression)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░] 4/7 phases (7 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░] 4/7 phases (8 plans)
 
 ## Performance Metrics
 
@@ -53,10 +53,12 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [████░░░░░░]
 - [Phase 29-01]: char literal rules placed BEFORE type_var in Lexer.fsl (longest-match: 'A' 3 chars > 'a 2 chars)
 - [Phase 29-01]: int_to_char ASCII-only (0-127); string comparisons use System.String.CompareOrdinal
 - [Phase 29-01]: Comparison widening uses synth-then-unify-then-match (not inferBinaryOp - hardcoded single type)
+- [Phase 30-01]: SYN-05 ELSE fix uses nextToken lookahead in processNewlineWithContext | _ -> branch (not a new JustSawElse flag)
+- [Phase 30-01]: Only emitted INDENT token suppressed before ELSE; indent stack updated normally; DEDENTs always pass through
 
 ### Pending Todos
 
-None (expression-level let rec addressed by SYN-01 in Phase 30).
+None.
 
 ### Blockers/Concerns
 
@@ -64,10 +66,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: Phase 29 complete, ready to plan Phase 30
+Last session: 2026-03-25
+Stopped at: Completed 30-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (Phase 29 complete)*
+*Last updated: 2026-03-25 (Phase 30, Plan 01 complete)*
