@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 31 complete, next: 32
-Plan: —
-Status: Phase 31 verified, ready to plan Phase 32
-Last activity: 2026-03-25 — Phase 31 executed and verified
+Phase: 32 in progress
+Plan: 32-01 complete
+Status: Phase 32, Plan 1 executed; ready for 32-02
+Last activity: 2026-03-25 — Completed 32-01 (8 file I/O builtins)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░] 6/7 phases (12 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░] 6/7 phases (13 plans)
 
 ## Performance Metrics
 
@@ -69,6 +69,9 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [██████░░░░]
 - [Phase 31-02]: MOD-05 recEnv scoping already correct — validateUniqueRecordFields only scans direct RecordTypeDecl (not inside ModuleDecl); sibling modules with shared field names coexist safely
 - [Phase 31-02]: Tests using shared mutable currentTypeCheckingFile/currentEvalFile must be wrapped in testSequenced to avoid parallel-execution race conditions
 - [Phase 31-02]: evalFileModule helper triggers Prelude init via Prelude.emptyPrelude access; otherwise fileImportTypeChecker delegate remains error stub
+- [Phase 32-01]: Unit-arg builtins (unit -> 'a) must match TupleValue [] at runtime — () evaluates to TupleValue [], not a unit AST value
+- [Phase 32-01]: File errors in builtins use raise (LangThreeException (StringValue msg)) — failwith raises F# exception not catchable by user try-with
+- [Phase 32-01]: LangThree try-with syntax is match-clause form: try expr with | pattern -> handler (not function form with fun)
 
 ### Pending Todos
 
@@ -81,7 +84,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 31 complete, ready to plan Phase 32
+Stopped at: Phase 32 Plan 01 complete (8 file I/O builtins)
 Resume file: None
 
 ---
