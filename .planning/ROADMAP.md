@@ -137,10 +137,11 @@ Plans:
   7. `get_env "VAR"` returns environment variable value; `get_cwd ()` returns current directory
   8. `path_combine "dir" "file"` returns combined path; `dir_files "path"` returns file list
   9. `eprint` / `eprintln` output to stderr (not stdout)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 32-01: TBD
+- [ ] 32-01-PLAN.md — File I/O builtins: read_file, stdin_read_all, stdin_read_line, write_file, append_file, file_exists, read_lines, write_lines (STD-02 through STD-09)
+- [ ] 32-02-PLAN.md — System builtins: get_args, get_env, get_cwd, path_combine, dir_files, eprint, eprintln + scriptArgs wiring (STD-10 through STD-15)
 
 ## Progress
 
@@ -155,4 +156,4 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 30. Parser Improvements | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
 | 31. Module System | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
-| 32. File I/O | v2.0 | 0/TBD | Not started | - |
+| 32. File I/O | v2.0 | 0/2 | Not started | - |
