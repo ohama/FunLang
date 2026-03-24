@@ -117,10 +117,11 @@ Plans:
   2. A file with multiple `module X` declarations parses and evaluates correctly (each module scoped)
   3. Two modules defining the same type name (e.g., `Token`) can coexist with qualified access (`Parser.Token` vs `Lexer.Token`)
   4. Record field name collisions across modules are resolved via module scoping (no more prefix hacks)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 31-01: TBD
+- [ ] 31-01-PLAN.md — FileImportDecl AST + Parser OPEN STRING + TypeCheck/Eval file loading (MOD-01)
+- [ ] 31-02-PLAN.md — Integration tests for all SC-1 through SC-4 + MOD-05 recEnv scoping fix
 
 ### Phase 32: File I/O & System Builtins
 **Goal**: Programs read/write files, access stdin/args/env, and output to stderr — no shell hacks needed
@@ -153,5 +154,5 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 30. Parser Improvements | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
-| 31. Module System | v2.0 | 0/TBD | Not started | - |
+| 31. Module System | v2.0 | 0/2 | Not started | - |
 | 32. File I/O | v2.0 | 0/TBD | Not started | - |
