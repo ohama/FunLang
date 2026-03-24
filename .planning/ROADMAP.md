@@ -25,7 +25,7 @@
 **Milestone Goal:** FunLexYacc 프로젝트에서 발견된 34개 제약사항 전면 해결. cat/sed 해킹, 접두사 규칙, 26개 등호 체인 등 workaround 제거.
 
 - [x] **Phase 26: Quick Fixes & Small Additions** - Crash fix, Prelude path, failwith, option alias (shipped 2026-03-24)
-- [ ] **Phase 27: List Syntax Completion** - Multi-line lists, trailing semicolons, list patterns
+- [x] **Phase 27: List Syntax Completion** - Multi-line lists, trailing semicolons, list patterns (shipped 2026-03-24)
 - [ ] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring
 - [ ] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators
 - [ ] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in
@@ -60,8 +60,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 27-01-PLAN.md — IndentFilter bracket depth tracking (SYN-02)
-- [ ] 27-02-PLAN.md — Trailing semicolons + list literal patterns in Parser.fsy (SYN-03, SYN-04)
+- [x] 27-01-PLAN.md — IndentFilter bracket depth tracking (SYN-02)
+- [x] 27-02-PLAN.md — Trailing semicolons + list literal patterns in Parser.fsy (SYN-03, SYN-04)
 
 ### Phase 28: N-Tuples
 **Goal**: Users can work with tuples of any size, not just pairs
@@ -147,7 +147,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 26. Quick Fixes | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 27. List Syntax | v2.0 | 0/2 | Not started | - |
+| 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 28. N-Tuples | v2.0 | 0/TBD | Not started | - |
 | 29. Char Type | v2.0 | 0/TBD | Not started | - |
 | 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
