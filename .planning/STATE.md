@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 26 complete, next: 27
-Plan: —
-Status: Phase 26 verified, ready to plan Phase 27
-Last activity: 2026-03-24 — Phase 26 executed and verified
+Phase: 27-list-syntax-completion (in progress)
+Plan: 01 of 2 complete
+Status: In progress
+Last activity: 2026-03-24 — Completed 27-01-PLAN.md (BracketDepth + multi-line list parsing)
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█░░░░░░░░░] 1/7 phases (2 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█░░░░░░░░░] 1/7 phases (3 plans)
 
 ## Performance Metrics
 
@@ -38,6 +38,8 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [█░░░░░░░░░]
 - [Phase 26]: Prelude path uses 3-stage search: CWD → assembly dir → walk-up 6 levels
 - [Phase 26]: `failwith` uses LangThreeException + polymorphic return Scheme([0], TArrow(TString, TVar 0))
 - [Phase 26]: Whitespace-only input guard placed before parse (not after)
+- [Phase 27-01]: BracketDepth uses `max 0 (depth - 1)` on close to guard against underflow
+- [Phase 27-01]: Guarded NEWLINE arm (BracketDepth > 0) must appear before unguarded arm in F# match
 
 ### Pending Todos
 
@@ -49,10 +51,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: Phase 26 complete, ready to plan Phase 27
+Last session: 2026-03-24T08:44:23Z
+Stopped at: Completed 27-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (Phase 26 complete)*
+*Last updated: 2026-03-24 (Phase 27 plan 01 complete)*
