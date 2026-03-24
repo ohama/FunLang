@@ -72,10 +72,10 @@ Plans:
   2. Let-destructuring works for N-tuples: `let (a, b, c) = t` binds all elements
   3. N-tuples work in function parameters: `fun (a, b, c) -> a + b + c`
   4. Existing 2-tuple functionality (fst, snd, tuple patterns) remains intact
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 28-01: TBD
+- [ ] 28-01-PLAN.md — LetPatDecl: module-level tuple pattern binding (TYPE-01, TYPE-02)
 
 ### Phase 29: Char Type & Comparisons
 **Goal**: Character processing works without 26-equality-chain workarounds
@@ -148,7 +148,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 |-------|-----------|----------------|--------|-----------|
 | 26. Quick Fixes | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 28. N-Tuples | v2.0 | 0/TBD | Not started | - |
+| 28. N-Tuples | v2.0 | 0/1 | Not started | - |
 | 29. Char Type | v2.0 | 0/TBD | Not started | - |
 | 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
 | 31. Module System | v2.0 | 0/TBD | Not started | - |
