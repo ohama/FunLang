@@ -60,11 +60,12 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
 
     | TEData (name, args) ->
         // Parameterized named type (e.g., int expr) - Phase 4 GADT
+        let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
         let folder (acc, env) t =
             let (ty, env') = elaborateWithVars env t
             (ty :: acc, env')
         let (revTypes, finalVars) = List.fold folder ([], vars) args
-        (TData(name, List.rev revTypes), finalVars)
+        (TData(canonical, List.rev revTypes), finalVars)
 
 /// Elaborate single type expression with fresh scope
 /// Each call starts with empty type variable environment
@@ -90,7 +91,8 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
     | Ast.TEArrow (t1, t2) -> TArrow (substTypeExprWithMap paramMap t1, substTypeExprWithMap paramMap t2)
     | Ast.TETuple ts -> TTuple (List.map (substTypeExprWithMap paramMap) ts)
     | Ast.TEData(name, args) ->
-        TData(name, List.map (substTypeExprWithMap paramMap) args)
+        let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
+        TData(canonical, List.map (substTypeExprWithMap paramMap) args)
 
 /// Collect all TEVar names from a TypeExpr (for detecting constructor-local type variables)
 let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
