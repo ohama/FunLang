@@ -26,7 +26,7 @@
 
 - [x] **Phase 26: Quick Fixes & Small Additions** - Crash fix, Prelude path, failwith, option alias (shipped 2026-03-24)
 - [x] **Phase 27: List Syntax Completion** - Multi-line lists, trailing semicolons, list patterns (shipped 2026-03-24)
-- [ ] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring
+- [x] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring (shipped 2026-03-24)
 - [ ] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators
 - [ ] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in
 - [ ] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping
@@ -75,7 +75,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 28-01-PLAN.md — LetPatDecl: module-level tuple pattern binding (TYPE-01, TYPE-02)
+- [x] 28-01-PLAN.md — LetPatDecl: module-level tuple pattern binding (TYPE-01, TYPE-02)
 
 ### Phase 29: Char Type & Comparisons
 **Goal**: Character processing works without 26-equality-chain workarounds
@@ -148,7 +148,7 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 |-------|-----------|----------------|--------|-----------|
 | 26. Quick Fixes | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 28. N-Tuples | v2.0 | 0/1 | Not started | - |
+| 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
 | 29. Char Type | v2.0 | 0/TBD | Not started | - |
 | 30. Parser Improvements | v2.0 | 0/TBD | Not started | - |
 | 31. Module System | v2.0 | 0/TBD | Not started | - |

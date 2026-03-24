@@ -16,8 +16,8 @@
 
 ### Type System
 
-- [ ] **TYPE-01**: N-tuple 지원 (3-tuple 이상: `(a, b, c)`, `(a, b, c, d)`)
-- [ ] **TYPE-02**: Let-tuple destructuring (`let (a, b, c) = expr`)
+- [x] **TYPE-01**: N-tuple 지원 (3-tuple 이상: `(a, b, c)`, `(a, b, c, d)`)
+- [x] **TYPE-02**: Let-tuple destructuring (`let (a, b, c) = expr`)
 - [ ] **TYPE-03**: `option`을 `Option`의 타입 별칭으로 추가
 - [ ] **TYPE-04**: Char 타입 + 문자 리터럴 (`'a'`, `'Z'`)
 - [ ] **TYPE-05**: `char_to_int` / `int_to_char` 변환 함수
@@ -78,8 +78,8 @@
 | MOD-03 | Phase 26 | Complete |
 | MOD-04 | Phase 26 | Complete |
 | MOD-05 | Phase 31 | Pending |
-| TYPE-01 | Phase 28 | Pending |
-| TYPE-02 | Phase 28 | Pending |
+| TYPE-01 | Phase 28 | Complete |
+| TYPE-02 | Phase 28 | Complete |
 | TYPE-03 | Phase 26 | Complete |
 | TYPE-04 | Phase 29 | Pending |
 | TYPE-05 | Phase 29 | Pending |
