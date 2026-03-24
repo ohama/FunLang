@@ -28,7 +28,7 @@
 - [x] **Phase 27: List Syntax Completion** - Multi-line lists, trailing semicolons, list patterns (shipped 2026-03-24)
 - [x] **Phase 28: N-Tuples** - 3+ element tuples with let-destructuring (shipped 2026-03-24)
 - [x] **Phase 29: Char Type & Comparisons** - Char literals, conversion functions, ordering operators (shipped 2026-03-24)
-- [ ] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in
+- [x] **Phase 30: Parser Improvements** - Local let rec, unit args, else+keyword, deep nesting, top-level let-in (shipped 2026-03-25)
 - [ ] **Phase 31: Module System** - Import mechanism, multiple modules, module scoping
 - [ ] **Phase 32: File I/O & System Builtins** - read/write files, stdin, args, env, stderr, path utils
 
@@ -105,8 +105,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 30-01-PLAN.md — IndentFilter ELSE fix: suppress INDENT before ELSE token (SYN-05)
-- [ ] 30-02-PLAN.md — Parser grammar + Eval LetRec fix: multi-param let rec, unit param, top-level let-in (SYN-01, SYN-06, SYN-07, SYN-08)
+- [x] 30-01-PLAN.md — IndentFilter ELSE fix: suppress INDENT before ELSE token (SYN-05)
+- [x] 30-02-PLAN.md — Parser grammar + Eval LetRec fix: multi-param let rec, unit param, top-level let-in (SYN-01, SYN-06, SYN-07, SYN-08)
 
 ### Phase 31: Module System
 **Goal**: Multiple .fun files compose without cat/sed hacks
@@ -152,6 +152,6 @@ Phases execute in numeric order: 26 -> 27 -> 28 -> 29 -> 30 -> 31 -> 32
 | 27. List Syntax | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
 | 28. N-Tuples | v2.0 | 1/1 | ✓ Complete | 2026-03-24 |
 | 29. Char Type | v2.0 | 2/2 | ✓ Complete | 2026-03-24 |
-| 30. Parser Improvements | v2.0 | 0/2 | Not started | - |
+| 30. Parser Improvements | v2.0 | 2/2 | ✓ Complete | 2026-03-25 |
 | 31. Module System | v2.0 | 0/TBD | Not started | - |
 | 32. File I/O | v2.0 | 0/TBD | Not started | - |

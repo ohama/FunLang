@@ -25,14 +25,14 @@
 
 ### Syntax
 
-- [ ] **SYN-01**: 함수 본문 내 `let rec ... in` (local recursive functions)
+- [x] **SYN-01**: 함수 본문 내 `let rec ... in` (local recursive functions)
 - [x] **SYN-02**: 여러 줄에 걸친 리스트 리터럴 허용
 - [x] **SYN-03**: 리스트 리터럴 끝 trailing semicolon 허용 (`[1; 2; ]`)
 - [x] **SYN-04**: 리스트 리터럴 패턴 (`[x]`, `[x; y]`, `[x; y; z]`)
-- [ ] **SYN-05**: `else` 뒤 표현식 키워드 동작 (`else match`, `else if`, `else let`, `else try`, `else fun`)
-- [ ] **SYN-06**: 깊은 중첩 함수 본문 파싱 개선
-- [ ] **SYN-07**: `()` unit 리터럴을 함수 인자로 전달 가능 (`f ()`)
-- [ ] **SYN-08**: 모듈 코드 뒤 top-level `let ... in` 표현식 허용
+- [x] **SYN-05**: `else` 뒤 표현식 키워드 동작 (`else match`, `else if`, `else let`, `else try`, `else fun`)
+- [x] **SYN-06**: 깊은 중첩 함수 본문 파싱 개선
+- [x] **SYN-07**: `()` unit 리터럴을 함수 인자로 전달 가능 (`f ()`)
+- [x] **SYN-08**: 모듈 코드 뒤 top-level `let ... in` 표현식 허용
 
 ### Standard Library
 
@@ -84,14 +84,14 @@
 | TYPE-04 | Phase 29 | Complete |
 | TYPE-05 | Phase 29 | Complete |
 | TYPE-06 | Phase 29 | Complete |
-| SYN-01 | Phase 30 | Pending |
+| SYN-01 | Phase 30 | Complete |
 | SYN-02 | Phase 27 | Complete |
 | SYN-03 | Phase 27 | Complete |
 | SYN-04 | Phase 27 | Complete |
-| SYN-05 | Phase 30 | Pending |
-| SYN-06 | Phase 30 | Pending |
-| SYN-07 | Phase 30 | Pending |
-| SYN-08 | Phase 30 | Pending |
+| SYN-05 | Phase 30 | Complete |
+| SYN-06 | Phase 30 | Complete |
+| SYN-07 | Phase 30 | Complete |
+| SYN-08 | Phase 30 | Complete |
 | STD-01 | Phase 26 | Complete |
 | STD-02 | Phase 32 | Pending |
 | STD-03 | Phase 32 | Pending |
