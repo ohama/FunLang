@@ -75,12 +75,12 @@
 |-------------|-------|--------|
 | MOD-01 | Phase 31 | Pending |
 | MOD-02 | Phase 31 | Pending |
-| MOD-03 | Phase 26 | Pending |
-| MOD-04 | Phase 26 | Pending |
+| MOD-03 | Phase 26 | Complete |
+| MOD-04 | Phase 26 | Complete |
 | MOD-05 | Phase 31 | Pending |
 | TYPE-01 | Phase 28 | Pending |
 | TYPE-02 | Phase 28 | Pending |
-| TYPE-03 | Phase 26 | Pending |
+| TYPE-03 | Phase 26 | Complete |
 | TYPE-04 | Phase 29 | Pending |
 | TYPE-05 | Phase 29 | Pending |
 | TYPE-06 | Phase 29 | Pending |
@@ -92,7 +92,7 @@
 | SYN-06 | Phase 30 | Pending |
 | SYN-07 | Phase 30 | Pending |
 | SYN-08 | Phase 30 | Pending |
-| STD-01 | Phase 26 | Pending |
+| STD-01 | Phase 26 | Complete |
 | STD-02 | Phase 32 | Pending |
 | STD-03 | Phase 32 | Pending |
 | STD-04 | Phase 32 | Pending |
