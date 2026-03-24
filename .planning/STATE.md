@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Milestone: v2.0 Practical Language Completion
-Phase: 28 complete, next: 29
-Plan: —
-Status: Phase 28 verified, ready to plan Phase 29
-Last activity: 2026-03-24 — Phase 28 executed and verified
+Phase: 29 in progress (1/? plans complete)
+Plan: 29-01 complete
+Status: Plan 29-01 executed — char type (TYPE-04/05/06) complete
+Last activity: 2026-03-24 — Phase 29, Plan 01 executed
 
-Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [███░░░░░░░] 3/7 phases (5 plans)
+Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [███░░░░░░░] 3/7 phases (6 plans)
 
 ## Performance Metrics
 
@@ -29,6 +29,7 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [███░░░░░░░]
 - v2.0 Phase 26: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 27: 1 phase, 2 plans, <1 hour
 - v2.0 Phase 28: 1 phase, 1 plan, <1 hour
+- v2.0 Phase 29: in progress, plan 01 complete (~20 min)
 - Trend: Stable
 
 ## Accumulated Context
@@ -47,6 +48,11 @@ Progress: v1.0-v1.8 (25p, 68pl) complete | v2.0 [███░░░░░░░]
 - [Phase 27-02]: SYN-04 list literal patterns via SemiPatList nonterminal + desugarListPat in parser header
 - [Phase 28-01]: LetPatDecl uses cEnv (not Map.empty) in inferPattern - matches Bidir.fs LetPat pattern
 - [Phase 28-01]: `string` is TYPE_STRING keyword token - cannot use as function in test files
+- [Phase 29-01]: Unify.fs must have explicit `TX, TX -> empty` case for every new Type DU variant
+- [Phase 29-01]: MatchCompile.fs needs CharConst in patternToConstructor and CharValue in matchesConstructor
+- [Phase 29-01]: char literal rules placed BEFORE type_var in Lexer.fsl (longest-match: 'A' 3 chars > 'a 2 chars)
+- [Phase 29-01]: int_to_char ASCII-only (0-127); string comparisons use System.String.CompareOrdinal
+- [Phase 29-01]: Comparison widening uses synth-then-unify-then-match (not inferBinaryOp - hardcoded single type)
 
 ### Pending Todos
 
@@ -59,9 +65,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Phase 28 complete, ready to plan Phase 29
+Stopped at: Phase 29, Plan 01 complete
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-24 (Phase 28 complete)*
+*Last updated: 2026-03-24 (Phase 29, Plan 01 complete)*
