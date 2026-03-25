@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v3.0 — Phase 41 next
+**Current focus:** v3.0 COMPLETE — all phases done
 
 ## Current Position
 
-Milestone: v3.0 Mutable Data Structures
-Phase: 40 of 41 complete
-Plan: 1/1 in Phase 40
-Status: Phase 40 complete — ready for Phase 41
-Last activity: 2026-03-25 — Phase 40 executed (array_iter/map/fold/init builtins + type schemes + Prelude wrappers)
+Milestone: v3.0 Mutable Data Structures — COMPLETE
+Phase: 41 of 41 complete
+Plan: 1/1 in Phase 41
+Status: v3.0 milestone complete
+Last activity: 2026-03-25 — Phase 41 executed (4 flt tests for Array HOF builtins; 486/486 suite passing)
 
-Progress: [██████████░░░░░░░░░░] v1.0-v2.2 done (37p/92pl) | v3.0: 4/6 plans
+Progress: [████████████████████] v1.0-v2.2 done (37p/92pl) | v3.0: 6/6 plans DONE
 
 ## Performance Metrics
 
@@ -25,9 +25,10 @@ Progress: [██████████░░░░░░░░░░] v1.0-v2
 - v3.0 Phase 38: 2 plans in 1 day
 - v3.0 Phase 39: 1 plan in ~15 min
 - v3.0 Phase 40: 1 plan in ~2 min
+- v3.0 Phase 41: 1 plan in ~5 min
 
 **Recent Trend:**
-- Trend: Stable, accelerating
+- Trend: Stable, accelerating — v3.0 milestone complete
 
 ## Accumulated Context
 
@@ -54,14 +55,14 @@ None.
 
 ### Blockers/Concerns
 
-None.
+None — v3.0 milestone complete.
 
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 40-01-PLAN.md — array_iter/map/fold/init builtins + TypeCheck schemes + Prelude/Array.fun wrappers
+Stopped at: Completed 41-01-PLAN.md — 4 Array HOF flt tests (TST-20); full 486-test suite green
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (40-01 complete: array HOF builtins iter/map/fold/init + callValueRef pattern)*
+*Last updated: 2026-03-25 (41-01 complete: Array HOF flt tests; v3.0 milestone done; 486/486 flt tests passing)*
