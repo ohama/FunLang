@@ -3,24 +3,20 @@
 // --- Input:
 let sorted =
     let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
-    in
     let rec take n = fun xs ->
         if n = 0 then [] else match xs with
         | [] -> []
         | h :: t -> h :: take (n - 1) t
-    in
     let rec drop n = fun xs ->
         if n = 0 then xs else match xs with
         | [] -> []
         | _ :: t -> drop (n - 1) t
-    in
     let rec merge xs = fun ys ->
         match xs with
         | [] -> ys
         | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
-    in
     let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
-    in msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
+    msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 // --- Output:

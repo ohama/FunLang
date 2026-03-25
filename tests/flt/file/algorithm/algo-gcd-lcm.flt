@@ -4,8 +4,7 @@
 let result =
     let rec gcd a = fun b ->
         if b = 0 then a else gcd b (a - (a / b) * b)
-    in
     let lcm = fun a -> fun b -> a / gcd a b * b
-    in (gcd 48 36, lcm 12 18)
+    (gcd 48 36, lcm 12 18)
 // --- Output:
 (12, 36)

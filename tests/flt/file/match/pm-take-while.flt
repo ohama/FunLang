@@ -6,6 +6,6 @@ let result =
         match xs with
         | [] -> []
         | h :: t -> if pred h then h :: takeWhile pred t else []
-    in takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
+    takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
 // --- Output:
 [1; 2; 3; 4]

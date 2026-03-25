@@ -6,6 +6,6 @@ let result =
         match cs with
         | [] -> depth = 0
         | c :: rest -> if c = 1 then check (depth + 1) rest else if c = 0 then if depth > 0 then check (depth - 1) rest else false else check depth rest
-    in (check 0 [1; 1; 0; 0], check 0 [1; 0; 0; 1])
+    (check 0 [1; 1; 0; 0], check 0 [1; 0; 0; 1])
 // --- Output:
 (true, false)

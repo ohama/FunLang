@@ -6,6 +6,6 @@ let result =
         match xs with
         | [] -> acc
         | h :: t -> fold f (f acc h) t
-    in fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
+    fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
 // --- Output:
 55

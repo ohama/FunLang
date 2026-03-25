@@ -8,6 +8,6 @@ type Expr =
 
 let result =
     let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
-    in eval (Add (Mul (Num 3, Num 4), Num 5))
+    eval (Add (Mul (Num 3, Num 4), Num 5))
 // --- Output:
 17

@@ -7,7 +7,7 @@ type Expr 'a =
     | Add : int Expr * int Expr -> int Expr
 
 let result =
-    let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b : int) in
+    let rec eval e = (match e with | IntLit n -> n | BoolLit b -> if b then 1 else 0 | Add (a, b) -> eval a + eval b : int)
     eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 // --- Output:
 42

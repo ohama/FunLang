@@ -6,6 +6,6 @@ let result =
         match xs with
         | [] -> []
         | x :: xt -> match ys with | [] -> [] | y :: yt -> (x, y) :: zip xt yt
-    in zip [1; 2; 3] [10; 20; 30]
+    zip [1; 2; 3] [10; 20; 30]
 // --- Output:
 [(1, 10); (2, 20); (3, 30)]

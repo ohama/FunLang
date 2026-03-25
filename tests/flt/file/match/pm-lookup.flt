@@ -6,12 +6,9 @@ let result =
         match xs with
         | [] -> None
         | (k, v) :: rest -> if k = key then Some v else lookup key rest
-    in
     let env = [(1, "one"); (2, "two"); (3, "three")]
-    in
     let r1 = lookup 2 env
-    in
     let r2 = lookup 9 env
-    in (r1, r2)
+    (r1, r2)
 // --- Output:
 (Some "two", None)
