@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v3.0 — Phase 38: Array Type (complete)
+**Current focus:** v3.0 — Phase 39 next (Hashtable Type)
 
 ## Current Position
 
 Milestone: v3.0 Mutable Data Structures
-Phase: 38 of 41 (Array Type) — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete — ready for Phase 39 (Hashtable) and Phase 40 (Record Mutation)
-Last activity: 2026-03-25 — Completed 38-02-PLAN.md (array builtins + prelude + bug fix)
+Phase: 38 of 41 complete
+Plan: 2/2 in Phase 38
+Status: Phase 38 complete — ready for Phase 39
+Last activity: 2026-03-25 — Phase 38 executed (ArrayValue + TArray + 6 builtins + 4 flt tests)
 
 Progress: [██████████░░░░░░░░░░] v1.0-v2.2 done (37p/92pl) | v3.0: 2/6 plans
 

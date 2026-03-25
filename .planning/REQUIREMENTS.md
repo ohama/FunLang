@@ -52,12 +52,12 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARR-01 | Phase 38 | Pending |
-| ARR-02 | Phase 38 | Pending |
-| ARR-03 | Phase 38 | Pending |
-| ARR-04 | Phase 38 | Pending |
-| ARR-05 | Phase 38 | Pending |
-| ARR-06 | Phase 38 | Pending |
+| ARR-01 | Phase 38 | Complete |
+| ARR-02 | Phase 38 | Complete |
+| ARR-03 | Phase 38 | Complete |
+| ARR-04 | Phase 38 | Complete |
+| ARR-05 | Phase 38 | Complete |
+| ARR-06 | Phase 38 | Complete |
 | HT-01 | Phase 39 | Pending |
 | HT-02 | Phase 39 | Pending |
 | HT-03 | Phase 39 | Pending |
