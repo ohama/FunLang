@@ -54,10 +54,10 @@ Plans:
   3. `Hashtable.containsKey ht "key"` returns `true` when the key exists, `false` otherwise
   4. `Hashtable.keys ht` returns all keys currently in the table as a list
   5. `Hashtable.remove ht "key"` removes the entry so `containsKey` returns `false` afterwards
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 39-01: Add HashtableValue DU case to Ast.fs / Value types; implement Hashtable.create, get, set, containsKey, keys, remove builtins in Eval.fs; register TypeCheck entries
+- [ ] 39-01-PLAN.md — Add HashtableValue DU case + THashtable type; wire all propagation sites; register six hashtable_* builtins in Eval.fs and TypeCheck.fs; create Prelude/Hashtable.fun; add flt integration tests
 
 #### Phase 40: Array Higher-Order Functions
 **Goal**: Users can apply functional patterns (iter, map, fold, init) to arrays without manual indexing
