@@ -774,7 +774,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         let envRef = ref env
         let wrapper = BuiltinValue (fun argVal ->
             let callEnv = Map.add param argVal !envRef
-            eval recEnv moduleEnv callEnv false funcBody)
+            eval recEnv moduleEnv callEnv true funcBody)
         let recEnv' = Map.add name wrapper env
         envRef := recEnv'
         eval recEnv moduleEnv recEnv' tailPos inExpr
@@ -1036,7 +1036,7 @@ let rec evalModuleDecls
                     let wrapper = BuiltinValue (fun argVal ->
                         let currentEnv = !sharedEnvRef
                         let callEnv = Map.add param argVal currentEnv
-                        eval recEnv modEnv callEnv false body)
+                        eval recEnv modEnv callEnv true body)
                     (name, wrapper))
             // Register all functions in the shared env
             let mutualEnv =
