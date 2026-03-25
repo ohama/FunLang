@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 Milestone: v2.1 Bug Fixes & Test Hardening
 Phase: 34 of 35 (Test Coverage)
-Plan: 1 of 2 in Phase 34
-Status: In progress — 34-01 complete, 34-02 ready
-Last activity: 2026-03-25 — Completed 34-01: 11 flt tests added (char + parser, 458/458 passing)
+Plan: 2 of 2 in Phase 34
+Status: Phase 34 complete — ready for Phase 35 (release prep)
+Last activity: 2026-03-25 — Completed 34-02: 10 flt tests added (file import + file I/O, 468/468 passing)
 
-Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [███░░░░░░░] 60% (3/5 plans)
+Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [████░░░░░░] 80% (4/5 plans)
 
 ## Performance Metrics
 
@@ -37,6 +37,8 @@ Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [███░░░░░░░
 - [v2.1]: BuiltinValue signature (Value -> Value) cannot carry tailPos — workaround: use tailPos=true inside wrapper so eval propagates TailCall to App trampoline
 - [Phase 33-01]: TCO fixed — LetRec and LetRecDecl BuiltinValue wrappers now call eval with tailPos=true; 1M-iteration loops complete without stack overflow
 - [Phase 33-02]: MatchCompile global counter eliminated — local counter inside compileMatch, freshTestVar threaded through compile as parameter; fixes parallel-test TestVar ID collisions
+- [Phase 34-02]: open (FileImportDecl) processed at type-check time — write_file+open inline infeasible; use bash -c wrapper in flt Command to pre-create dependency files
+- [Phase 34-02]: List.length broken in flt programs (E0313 field access error); use prelude length function instead
 
 ### Pending Todos
 
@@ -49,9 +51,9 @@ None — TCO regression resolved (33-01: tailPos=false→true in BuiltinValue wr
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 34-01-PLAN.md (char + parser improvement flt tests)
+Stopped at: Phase 34 complete — Completed 34-02-PLAN.md (file import + file I/O flt tests; 468/468 passing)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 34-01 complete: 11 flt tests added, 458/458 passing)*
+*Last updated: 2026-03-25 (Phase 34-02 complete: 10 flt tests added, 468/468 passing; Phase 34 done)*
