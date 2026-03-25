@@ -41,10 +41,10 @@ Plans:
   2. flt tests for `let (a, b) = (1, 2)` module-level destructuring pass
   3. flt test for `open "file.fun"` followed by `Module.func` call passes
   4. flt tests for `List.length` and `List.map` Prelude qualified access pass
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 37-01: TBD
+- [ ] 37-01-PLAN.md — Add 6 flt regression tests for TST-14 through TST-17 (failwith, LetPatDecl, file-import qualified, Prelude qualified)
 
 ---
 
@@ -53,7 +53,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 36. Bug Fixes | v2.2 | 2/2 | Complete | 2026-03-25 |
-| 37. Test Coverage | v2.2 | 0/TBD | Not started | - |
+| 37. Test Coverage | v2.2 | 0/1 | Not started | - |
 
 ---
 
