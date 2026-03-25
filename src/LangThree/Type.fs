@@ -11,6 +11,7 @@ type Type =
     | TArrow of Type * Type          // function type 'a -> 'b
     | TTuple of Type list            // tuple type 'a * 'b
     | TList of Type                  // list type 'a list
+    | TArray of Type                 // array type 'a array (Phase 38)
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
     | TExn                                        // Exception base type
 
@@ -70,6 +71,7 @@ let rec formatType = function
     | TTuple [] -> "unit"
     | TTuple ts -> ts |> List.map formatType |> String.concat " * "
     | TList t -> sprintf "%s list" (formatType t)
+    | TArray t -> sprintf "%s array" (formatType t)
     | TData (name, []) -> name
     | TData (name, args) ->
         let argStr = args |> List.map formatType |> String.concat ", "
@@ -85,6 +87,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TArrow(t1, t2) -> collectVars (collectVars acc t1) t2
         | TTuple ts -> List.fold collectVars acc ts
         | TList t -> collectVars acc t
+        | TArray t -> collectVars acc t
         | TData (_, args) -> List.fold collectVars acc args
         | TInt | TBool | TString | TChar | TExn -> acc
 
@@ -106,6 +109,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TTuple [] -> "unit"
         | TTuple ts -> ts |> List.map format |> String.concat " * "
         | TList t -> sprintf "%s list" (format t)
+        | TArray t -> sprintf "%s array" (format t)
         | TData (name, []) -> name
         | TData (name, args) ->
             let argStr = args |> List.map format |> String.concat ", "
@@ -144,6 +148,7 @@ let rec apply (s: Subst) = function
     | TArrow (t1, t2) -> TArrow (apply s t1, apply s t2)
     | TTuple ts -> TTuple (List.map (apply s) ts)
     | TList t -> TList (apply s t)
+    | TArray t -> TArray (apply s t)
     | TData (name, args) -> TData (name, List.map (apply s) args)
 
 /// Compose two substitutions: s2 after s1 (like function composition)
@@ -173,6 +178,7 @@ let rec freeVars = function
     | TArrow (t1, t2) -> Set.union (freeVars t1) (freeVars t2)
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany
     | TList t -> freeVars t
+    | TArray t -> freeVars t
     | TData (_, args) -> args |> List.map freeVars |> Set.unionMany
 
 /// Free variables in a type scheme (excludes bound variables)

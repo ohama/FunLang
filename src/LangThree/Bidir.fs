@@ -108,7 +108,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let appliedFuncTy = apply s2 funcTy
         // Check if we're trying to apply a non-function type
         match appliedFuncTy with
-        | TInt | TBool | TString | TTuple _ | TList _ | TData _ ->
+        | TInt | TBool | TString | TTuple _ | TList _ | TArray _ | TData _ ->
             raise (TypeException {
                 Kind = NotAFunction appliedFuncTy
                 Span = spanOf func
