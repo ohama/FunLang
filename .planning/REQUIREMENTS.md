@@ -33,18 +33,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | TBD | Pending |
-| MOD-02 | TBD | Pending |
-| PAR-01 | TBD | Pending |
-| TST-14 | TBD | Pending |
-| TST-15 | TBD | Pending |
-| TST-16 | TBD | Pending |
-| TST-17 | TBD | Pending |
+| MOD-01 | Phase 36 | Pending |
+| MOD-02 | Phase 36 | Pending |
+| PAR-01 | Phase 36 | Pending |
+| TST-14 | Phase 37 | Pending |
+| TST-15 | Phase 37 | Pending |
+| TST-16 | Phase 37 | Pending |
+| TST-17 | Phase 37 | Pending |
 
 **Coverage:**
 - v2.2 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
+*Traceability updated: 2026-03-25 (v2.2 roadmap — Phases 36-37)*
