@@ -1,5 +1,28 @@
 # Project Milestones: LangThree
 
+## v2.1 Bug Fixes & Test Hardening (Shipped: 2026-03-25)
+
+**Delivered:** v2.0 런타임 버그 수정 (TCO regression), 테스트 격리 개선, Phase 29-32 flt 테스트 보충, 컴파일 경고 제거
+
+**Phases completed:** 33-35 (5 plans total)
+
+**Key accomplishments:**
+- TCO regression 수정: LetRec/LetRecDecl BuiltinValue wrapper의 tailPos=false→true (2줄 변경)
+- MatchCompile 전역 카운터 제거 → 로컬 카운터로 테스트 격리 완성
+- 21개 flt 테스트 추가 (447→468): char, parser, file import, file I/O
+- FS0025 컴파일 경고 20개 전부 제거
+
+**Stats:**
+- 37 files changed, 1,744 lines added
+- 11,569 lines of F# (from 11,574)
+- 3 phases, 5 plans
+- 1 day (2026-03-25)
+- 214 F# unit tests + 468 flt tests, all passing, 0 warnings
+
+**Git range:** `fix(33-01)` → `docs(35): complete`
+
+---
+
 ## v2.0 Practical Language Completion (Shipped: 2026-03-25)
 
 **Delivered:** FunLexYacc 프로젝트에서 발견된 34개 제약사항 전면 해결 — cat/sed 해킹, 접두사 규칙, 26개 등호 체인 등 모든 workaround 제거
