@@ -52,11 +52,11 @@ Phases 1-32 completed across v1.0–v2.0 milestones. See MILESTONES.md for full 
   3. Local `let rec` inside expressions tail-call-optimizes correctly (LetRec path)
   4. All 214 F# unit tests pass on every run, including under parallel execution
   5. `typeCheckModule` calls do not interfere with each other through shared global state
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 33-01: Fix TCO in LetRec/LetRecDecl BuiltinValue wrappers (propagate tailPos)
-- [ ] 33-02: Fix typeCheckModule global state isolation (testSequenced or reset mechanism)
+- [ ] 33-01-PLAN.md — Fix TCO in LetRec/LetRecDecl BuiltinValue wrappers (tailPos false -> true)
+- [ ] 33-02-PLAN.md — Fix MatchCompile global counter: make freshTestVar local to compileMatch
 
 ---
 
