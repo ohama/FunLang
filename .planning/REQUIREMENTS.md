@@ -52,33 +52,34 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARR-01 | TBD | Pending |
-| ARR-02 | TBD | Pending |
-| ARR-03 | TBD | Pending |
-| ARR-04 | TBD | Pending |
-| ARR-05 | TBD | Pending |
-| ARR-06 | TBD | Pending |
-| HT-01 | TBD | Pending |
-| HT-02 | TBD | Pending |
-| HT-03 | TBD | Pending |
-| HT-04 | TBD | Pending |
-| HT-05 | TBD | Pending |
-| HT-06 | TBD | Pending |
-| ARR-07 | TBD | Pending |
-| ARR-08 | TBD | Pending |
-| ARR-09 | TBD | Pending |
-| ARR-10 | TBD | Pending |
-| TST-18 | TBD | Pending |
-| TST-19 | TBD | Pending |
-| TST-20 | TBD | Pending |
-| TST-21 | TBD | Pending |
-| TST-22 | TBD | Pending |
-| TST-23 | TBD | Pending |
+| ARR-01 | Phase 38 | Pending |
+| ARR-02 | Phase 38 | Pending |
+| ARR-03 | Phase 38 | Pending |
+| ARR-04 | Phase 38 | Pending |
+| ARR-05 | Phase 38 | Pending |
+| ARR-06 | Phase 38 | Pending |
+| HT-01 | Phase 39 | Pending |
+| HT-02 | Phase 39 | Pending |
+| HT-03 | Phase 39 | Pending |
+| HT-04 | Phase 39 | Pending |
+| HT-05 | Phase 39 | Pending |
+| HT-06 | Phase 39 | Pending |
+| ARR-07 | Phase 40 | Pending |
+| ARR-08 | Phase 40 | Pending |
+| ARR-09 | Phase 40 | Pending |
+| ARR-10 | Phase 40 | Pending |
+| TST-18 | Phase 41 | Pending |
+| TST-19 | Phase 41 | Pending |
+| TST-20 | Phase 41 | Pending |
+| TST-21 | Phase 41 | Pending |
+| TST-22 | Phase 41 | Pending |
+| TST-23 | Phase 41 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
+*Traceability updated: 2026-03-25 (v3.0 roadmap)*
