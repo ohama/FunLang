@@ -420,6 +420,56 @@ let initialBuiltinEnv : Env =
                 stderr.Flush()
                 TupleValue []
             | _ -> failwith "eprintln: expected string argument")
+
+        // Phase 38: Array builtins (ARR-01 through ARR-06)
+        // array_create : int -> 'a -> 'a array
+        "array_create", BuiltinValue (fun nVal ->
+            BuiltinValue (fun defVal ->
+                match nVal with
+                | IntValue n when n >= 0 ->
+                    ArrayValue (Array.create n defVal)
+                | IntValue n -> failwithf "Array.create: negative size %d" n
+                | _ -> failwith "Array.create: expected int as first argument"))
+
+        // array_get : 'a array -> int -> 'a
+        "array_get", BuiltinValue (fun arrVal ->
+            BuiltinValue (fun idxVal ->
+                match arrVal, idxVal with
+                | ArrayValue arr, IntValue i ->
+                    if i < 0 || i >= arr.Length then
+                        raise (LangThreeException (StringValue (sprintf "Array.get: index %d out of bounds (length %d)" i arr.Length)))
+                    arr.[i]
+                | _ -> failwith "Array.get: expected (array, int)"))
+
+        // array_set : 'a array -> int -> 'a -> unit
+        "array_set", BuiltinValue (fun arrVal ->
+            BuiltinValue (fun idxVal ->
+                BuiltinValue (fun newVal ->
+                    match arrVal, idxVal with
+                    | ArrayValue arr, IntValue i ->
+                        if i < 0 || i >= arr.Length then
+                            raise (LangThreeException (StringValue (sprintf "Array.set: index %d out of bounds (length %d)" i arr.Length)))
+                        arr.[i] <- newVal
+                        TupleValue []
+                    | _ -> failwith "Array.set: expected (array, int)")))
+
+        // array_length : 'a array -> int
+        "array_length", BuiltinValue (fun arrVal ->
+            match arrVal with
+            | ArrayValue arr -> IntValue arr.Length
+            | _ -> failwith "Array.length: expected array")
+
+        // array_of_list : 'a list -> 'a array
+        "array_of_list", BuiltinValue (fun v ->
+            match v with
+            | ListValue xs -> ArrayValue (Array.ofList xs)
+            | _ -> failwith "Array.ofList: expected list")
+
+        // array_to_list : 'a array -> 'a list
+        "array_to_list", BuiltinValue (fun v ->
+            match v with
+            | ArrayValue arr -> ListValue (Array.toList arr)
+            | _ -> failwith "Array.toList: expected array")
     ]
 
 /// Module value environment for runtime qualified access

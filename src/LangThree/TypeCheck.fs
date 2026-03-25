@@ -107,6 +107,20 @@ let initialTypeEnv: TypeEnv =
         "eprint",   Scheme([], TArrow(TString, TTuple []))
         // STD-15: eprintln : string -> unit
         "eprintln", Scheme([], TArrow(TString, TTuple []))
+
+        // Phase 38: Array builtins (ARR-01 through ARR-06)
+        // array_create : int -> 'a -> 'a array
+        "array_create", Scheme([0], TArrow(TInt, TArrow(TVar 0, TArray (TVar 0))))
+        // array_get : 'a array -> int -> 'a
+        "array_get",    Scheme([0], TArrow(TArray (TVar 0), TArrow(TInt, TVar 0)))
+        // array_set : 'a array -> int -> 'a -> unit
+        "array_set",    Scheme([0], TArrow(TArray (TVar 0), TArrow(TInt, TArrow(TVar 0, TTuple []))))
+        // array_length : 'a array -> int
+        "array_length", Scheme([0], TArrow(TArray (TVar 0), TInt))
+        // array_of_list : 'a list -> 'a array
+        "array_of_list", Scheme([0], TArrow(TList (TVar 0), TArray (TVar 0)))
+        // array_to_list : 'a array -> 'a list
+        "array_to_list", Scheme([0], TArrow(TArray (TVar 0), TList (TVar 0)))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
