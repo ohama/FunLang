@@ -205,9 +205,46 @@ $ langthree safe_div.l3
 
 비교해보면, `Option`을 쓰는 방식 (`if b = 0 then None else Some (a / b)`)은 오류를 값으로 표현해 타입에 드러냅니다. 호출하는 쪽이 `None`을 처리해야 한다는 것이 타입 시스템에 강제됩니다. 어느 방식을 택하느냐는 함수가 실패할 가능성이 얼마나 일상적인가에 달려있습니다. 빈번히 실패할 수 있는 연산이라면 `Option`이나 `Result`가 더 적합하고, 정말 예외적인 상황이라면 예외가 더 자연스럽습니다.
 
+## failwith 내장 함수
+
+`failwith`는 문자열 메시지와 함께 예외를 발생시키는 내장 함수입니다. 간단한 오류 처리에 유용합니다:
+
+```
+$ cat failwith_demo.l3
+let safeDivide a b =
+    if b = 0 then failwith "division by zero"
+    else a / b
+let result =
+    try
+        safeDivide 10 0
+    with
+    | e -> 0
+
+$ langthree failwith_demo.l3
+0
+```
+
+`failwith`는 커스텀 예외를 선언하지 않고도 빠르게 오류를 발생시킬 때 편리합니다. F#의 `failwith`와 동일합니다.
+
+## 인라인 try-with
+
+간단한 경우에는 `try-with`를 한 줄로 작성할 수 있습니다. 파이프 `|` 없이 바로 패턴과 핸들러를 쓸 수 있습니다:
+
+```
+$ cat inline_try.l3
+let result = try failwith "boom" with e -> "caught"
+
+$ langthree inline_try.l3
+"caught"
+```
+
+여러 핸들러가 필요하면 파이프를 사용하는 일반 형태를 쓰세요. 인라인 형태는 단일 catch-all 핸들러에 적합합니다.
+
 ## 구문 참고 사항
 
 - **`raise`는 원자를 받음:** 데이터를 가진 생성자에는 괄호를 사용: `raise (Error msg)`
 - **`try` 들여쓰기:** `with` 핸들러의 파이프는 `match` 파이프와 같은 방식으로 정렬
+- **인라인 try-with:** `try expr with ident -> expr` 형태로 한 줄 작성 가능
+- **`failwith`:** `failwith "msg"`로 예외를 빠르게 발생
 - **개방 타입:** 예외 타입은 완전한 매칭이 불가능 (따라서 W0003 경고 발생)
 - **catch-all:** 모든 예외를 포괄하려면 마지막 핸들러로 `| _ -> ...`를 추가

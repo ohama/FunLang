@@ -196,9 +196,59 @@ $ langthree layers.l3
 
 코드를 읽는 사람이 `DB.host`는 데이터베이스 설정이고 `App.version`은 애플리케이션 버전임을 이름만 봐도 알 수 있습니다. 모듈 이름이 문서 역할을 합니다.
 
+## 파일 임포트
+
+`open "파일경로.fun"`으로 외부 파일을 임포트할 수 있습니다. 임포트된 파일의 모든 바인딩(값, 함수, 타입, 모듈)이 현재 스코프에 추가됩니다:
+
+```
+$ cat lib.fun
+let add x y = x + y
+let double x = x * 2
+
+$ cat main.l3
+open "lib.fun"
+let result = add 3 (double 4)
+
+$ langthree main.l3
+11
+```
+
+경로는 현재 파일의 위치를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.
+
+### 임포트된 모듈의 한정된 접근
+
+임포트된 파일에 모듈이 정의되어 있으면, 한정된 접근(dot notation)으로 사용할 수 있습니다:
+
+```
+$ cat mathlib.fun
+module Math =
+    let square x = x * x
+    let cube x = x * x * x
+
+$ cat main.l3
+open "mathlib.fun"
+let result = Math.square 5 + Math.cube 2
+
+$ langthree main.l3
+33
+```
+
+이 방식으로 여러 파일에 걸친 모듈 시스템을 구성할 수 있습니다.
+
+### 순환 임포트 감지
+
+LangThree는 순환 임포트를 자동으로 감지합니다. `a.fun`이 `b.fun`을 임포트하고 `b.fun`이 다시 `a.fun`을 임포트하면 오류가 발생합니다:
+
+```
+Error: Circular module dependency: a.fun → b.fun → a.fun
+```
+
+의존성 그래프는 항상 단방향이어야 합니다.
+
 ## 참고 사항
 
 - **들여쓰기 기반:** 모듈 본문은 들여쓰기로 구분되며, `end`나 `}`가 아님
 - **위에서 아래 순서:** 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)
 - **`module M =`** 은 중첩 모듈에 `=`을 사용; 최상위 `namespace`는 `=`이 없음
 - **한정된 접근**은 값, 함수, 생성자에 대해 동작함
+- **`open "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능

@@ -32,6 +32,11 @@
 - [GADT](14-gadt.md)
 - [알고리즘과 자료구조](15-algorithms.md)
 
+# v2.0 기능
+
+- [문자 타입](17-char-type.md)
+- [파일 I/O와 시스템 함수](18-file-io.md)
+
 # 부록
 
 - [CLI 참조](16-cli-reference.md)
