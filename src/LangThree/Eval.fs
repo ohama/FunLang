@@ -128,6 +128,9 @@ let rec formatValue (v: Value) : string =
     | ArrayValue arr ->
         let formattedElements = arr |> Array.toList |> List.map formatValue
         sprintf "[|%s|]" (String.concat "; " formattedElements)
+    | HashtableValue ht ->
+        let pairs = ht |> Seq.map (fun kv -> sprintf "%s -> %s" (formatValue kv.Key) (formatValue kv.Value)) |> String.concat "; "
+        sprintf "hashtable{%s}" pairs
     | DataValue (name, None) -> name
     | DataValue (name, Some v) ->
         let argStr = formatValue v
@@ -519,6 +522,7 @@ let rec valuesEqual (v1: Value) (v2: Value) : bool =
             | Some r2 -> valuesEqual !r1 !r2
             | None -> false) f1
     | ArrayValue _, ArrayValue _ -> false  // Arrays use reference identity; two different arrays are never equal by value
+    | HashtableValue _, HashtableValue _ -> false  // Hashtables use reference identity
     | BuiltinValue _, BuiltinValue _ -> false  // Functions not comparable
     | FunctionValue _, FunctionValue _ -> false  // Functions not comparable
     | TailCall _, _ | _, TailCall _ -> false  // TailCall is transient

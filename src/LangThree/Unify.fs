@@ -58,6 +58,12 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
     | TArray t1, TArray t2 ->
         unifyWithContext ctx trace span t1 t2
 
+    // Hashtable types: unify key types and value types
+    | THashtable (k1, v1), THashtable (k2, v2) ->
+        let s1 = unifyWithContext ctx trace span k1 k2
+        let s2 = unifyWithContext ctx trace span (apply s1 v1) (apply s1 v2)
+        compose s2 s1
+
     // Named ADT types: same name, same arity, unify args pairwise
     | TData (n1, args1), TData (n2, args2) when n1 = n2 && List.length args1 = List.length args2 ->
         List.fold2 (fun s a1 a2 ->

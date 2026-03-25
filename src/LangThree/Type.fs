@@ -12,6 +12,7 @@ type Type =
     | TTuple of Type list            // tuple type 'a * 'b
     | TList of Type                  // list type 'a list
     | TArray of Type                 // array type 'a array (Phase 38)
+    | THashtable of Type * Type      // hashtable type (Phase 39)
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
     | TExn                                        // Exception base type
 
@@ -72,6 +73,7 @@ let rec formatType = function
     | TTuple ts -> ts |> List.map formatType |> String.concat " * "
     | TList t -> sprintf "%s list" (formatType t)
     | TArray t -> sprintf "%s array" (formatType t)
+    | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (formatType k) (formatType v)
     | TData (name, []) -> name
     | TData (name, args) ->
         let argStr = args |> List.map formatType |> String.concat ", "
@@ -88,6 +90,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TTuple ts -> List.fold collectVars acc ts
         | TList t -> collectVars acc t
         | TArray t -> collectVars acc t
+        | THashtable (k, v) -> collectVars (collectVars acc k) v
         | TData (_, args) -> List.fold collectVars acc args
         | TInt | TBool | TString | TChar | TExn -> acc
 
@@ -110,6 +113,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TTuple ts -> ts |> List.map format |> String.concat " * "
         | TList t -> sprintf "%s list" (format t)
         | TArray t -> sprintf "%s array" (format t)
+        | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (format k) (format v)
         | TData (name, []) -> name
         | TData (name, args) ->
             let argStr = args |> List.map format |> String.concat ", "
@@ -149,6 +153,7 @@ let rec apply (s: Subst) = function
     | TTuple ts -> TTuple (List.map (apply s) ts)
     | TList t -> TList (apply s t)
     | TArray t -> TArray (apply s t)
+    | THashtable (k, v) -> THashtable (apply s k, apply s v)
     | TData (name, args) -> TData (name, List.map (apply s) args)
 
 /// Compose two substitutions: s2 after s1 (like function composition)
@@ -179,6 +184,7 @@ let rec freeVars = function
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany
     | TList t -> freeVars t
     | TArray t -> freeVars t
+    | THashtable (k, v) -> Set.union (freeVars k) (freeVars v)
     | TData (_, args) -> args |> List.map freeVars |> Set.unionMany
 
 /// Free variables in a type scheme (excludes bound variables)
