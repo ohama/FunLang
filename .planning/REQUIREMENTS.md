@@ -77,9 +77,9 @@
 | TST-11 | Phase 34 | Complete |
 | TST-12 | Phase 34 | Complete |
 | TST-13 | Phase 34 | Complete |
-| WARN-01 | Phase 35 | Pending |
-| WARN-02 | Phase 35 | Pending |
-| WARN-03 | Phase 35 | Pending |
+| WARN-01 | Phase 35 | Complete |
+| WARN-02 | Phase 35 | Complete |
+| WARN-03 | Phase 35 | Complete |
 
 **Coverage:**
 - v2.1 requirements: 21 total
