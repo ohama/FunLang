@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 Milestone: v2.2 Module Access Fix & Test Coverage
 Phase: 36 of 37 (Bug Fixes)
-Plan: — (ready to plan)
-Status: Ready to plan
-Last activity: 2026-03-25 — Roadmap created for v2.2 (Phases 36-37)
+Plan: 02 of 02 complete (36-02 done)
+Status: Phase 36 in progress (36-01 partially committed, 36-02 complete)
+Last activity: 2026-03-25 — Completed 36-02-PLAN.md (PAR-01 inline try-with fix)
 
-Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: Phase 36 ready [░░░░░░░░░░] 0%
+Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: Phase 36 plan 2 done [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -34,6 +34,8 @@ Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: Phase 36 ready [░░░░░
 - [v2.2]: E0313 on Prelude qualified access — Prelude files loaded as flat bindings, no module wrapper
 - [v2.2]: failwith inline parse error — `try failwith "x" with e -> y` fails, multi-line version works
 - [v2.2]: Phase 36 must precede Phase 37 — bug fixes required before tests can pass
+- [36-02]: Option A (IDENT-only TRY rules) used — TryWithClauses caused +17 S/R conflicts
+- [36-02]: evalModule does not load Prelude; PAR-01 tests use `raise Err` not `failwith`
 
 ### Pending Todos
 
@@ -46,9 +48,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: v2.2 roadmap created — Phase 36 ready to plan
+Stopped at: Completed 36-02-PLAN.md — PAR-01 inline try-with fix + regression tests
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (v2.2 roadmap created, Phase 36 ready to plan)*
+*Last updated: 2026-03-25 (36-02 complete — PAR-01 inline try-with fix, 218 tests passing)*
