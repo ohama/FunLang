@@ -36,10 +36,10 @@
 | MOD-01 | Phase 36 | Complete |
 | MOD-02 | Phase 36 | Complete |
 | PAR-01 | Phase 36 | Complete |
-| TST-14 | Phase 37 | Pending |
-| TST-15 | Phase 37 | Pending |
-| TST-16 | Phase 37 | Pending |
-| TST-17 | Phase 37 | Pending |
+| TST-14 | Phase 37 | Complete |
+| TST-15 | Phase 37 | Complete |
+| TST-16 | Phase 37 | Complete |
+| TST-17 | Phase 37 | Complete |
 
 **Coverage:**
 - v2.2 requirements: 7 total
