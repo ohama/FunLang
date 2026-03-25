@@ -38,7 +38,7 @@ let parseAndTypeCheck (input: string) =
 // Returns the formatted value of the last let binding, or None if no let binding.
 let parseAndEval (input: string) : string option =
     let m = parseModule input
-    match TypeCheck.typeCheckModuleWithPrelude Map.empty Map.empty Map.empty m with
+    match TypeCheck.typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty m with
     | Error _ -> None
     | Ok (_, _ctorEnv, recEnv, _modules, _typeEnv) ->
         let decls =
