@@ -88,10 +88,10 @@ Plans:
   1. IntegrationTests.fs has no FS0025 incomplete pattern match warnings
   2. RecordTests.fs has no FS0025 incomplete pattern match warnings
   3. `dotnet test` output shows 0 warnings from the F# compiler
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 35-01: Fix all FS0025 incomplete pattern match warnings in IntegrationTests.fs and RecordTests.fs
+- [ ] 35-01-PLAN.md — Fix all FS0025 incomplete pattern match warnings in IntegrationTests.fs and RecordTests.fs
 
 ---
 
