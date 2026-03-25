@@ -1,0 +1,6 @@
+// Test: top-level let x = e1 in e2 as module declaration (SYN-08)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let x = 10 in x * 2
+// --- Output:
+20

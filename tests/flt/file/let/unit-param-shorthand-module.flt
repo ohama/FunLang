@@ -1,0 +1,7 @@
+// Test: unit param shorthand let f () = body at module level
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let greet () = "hello"
+let result = greet ()
+// --- Output:
+"hello"

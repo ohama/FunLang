@@ -1,0 +1,10 @@
+// Test: local multi-param let rec with accumulator pattern
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+  let rec sum acc n =
+    if n = 0 then acc
+    else sum (acc + n) (n - 1)
+  in sum 0 10
+// --- Output:
+55
