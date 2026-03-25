@@ -1,0 +1,7 @@
+// Test: failwith raises uncaught exception with message
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = failwith "something went wrong"
+// --- ExitCode: 1
+// --- Stderr:
+Error: LangThreeException (StringValue "something went wrong")
