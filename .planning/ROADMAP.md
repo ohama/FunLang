@@ -36,7 +36,7 @@ Phases 1-32 completed across v1.0–v2.0 milestones. See MILESTONES.md for full 
 **Milestone Goal:** Fix runtime regressions from v2.0 and fill test coverage gaps for Phases 29-32.
 
 - [x] **Phase 33: TCO Fix + Test Isolation** — Fix TCO regression and eliminate test state interference
-- [ ] **Phase 34: Test Coverage** — Add missing flt tests for Phases 29-32 features
+- [x] **Phase 34: Test Coverage** — Add missing flt tests for Phases 29-32 features
 - [ ] **Phase 35: Compile Warning Cleanup** — Eliminate all FS0025 and compile warnings
 
 ---
@@ -108,5 +108,5 @@ Plans:
 | 25. Polymorphic GADT | v1.8 | 5/5 | Complete | 2026-03-23 |
 | 26-32. Practical Language Completion | v2.0 | 14/14 | Complete | 2026-03-25 |
 | 33. TCO Fix + Test Isolation | v2.1 | 2/2 | Complete | 2026-03-25 |
-| 34. Test Coverage | v2.1 | 0/2 | Not started | - |
+| 34. Test Coverage | v2.1 | 2/2 | Complete | 2026-03-25 |
 | 35. Compile Warning Cleanup | v2.1 | 0/1 | Not started | - |
