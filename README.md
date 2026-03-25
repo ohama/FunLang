@@ -2,7 +2,7 @@
 
 FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어.
 
-F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, 모듈, 예외 처리, 파이프/합성 연산자, 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자, 다형적 GADT 반환 타입, Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
+F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, 모듈, 예외 처리, 파이프/합성 연산자, 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자, 다형적 GADT 반환 타입, 파일 임포트(open), char 타입, 파일 I/O 시스템 내장 함수, 가변 배열/해시테이블, Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
 
 ## Documentation
 
@@ -12,7 +12,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 >
 > Settings → Pages → Source: `Deploy from a branch` → Branch: `master` / `/docs` → Save
 
-[LangThree Tutorial](https://ohama.github.io/LangThree/) — 16 chapters, 250+ runnable examples
+[LangThree Tutorial](https://ohama.github.io/LangThree/) — 19 chapters, 250+ runnable examples
 
 ## Features
 
@@ -38,6 +38,12 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, �
 | **Implicit `in`** | F#-style offside rule — `let x = 1 / let y = 2 / x + y` | v1.7 |
 | **Semicolon Lists** | F# convention: `[1; 2; 3]` (tuples keep commas) | v1.7 |
 | **Polymorphic GADT** | `eval : 'a Expr -> 'a` — per-branch independent type refinement | v1.8 |
+| **File Import** | `open "file.fun"` — 순환 임포트 감지 포함 | v2.0 |
+| **Char Type** | char 리터럴, char_to_int/int_to_char, 비교 확장 | v2.0 |
+| **N-Tuples** | 3개 이상 요소 튜플, 모듈 레벨 구조 분해 | v2.0 |
+| **File I/O** | read_file, write_file, get_env, get_args + 10개 추가 내장 함수 | v2.0 |
+| **Mutable Array** | Array.create/get/set/length + ofList/toList + iter/map/fold/init | v3.0 |
+| **Mutable Hashtable** | Hashtable.create/get/set/containsKey/keys/remove | v3.0 |
 
 ## Quick Start
 
@@ -121,6 +127,21 @@ let eval e =
 
 let r1 = eval (IntLit 42)     // r1 : int = 42
 let r2 = eval (BoolLit true)  // r2 : bool = true
+
+// Mutable Array
+let arr = Array.create 3 0
+let _ = Array.set arr 0 10
+let _ = Array.set arr 1 20
+let _ = Array.set arr 2 30
+let sum = Array.fold (fun acc x -> acc + x) 0 arr
+// sum = 60
+
+// Mutable Hashtable
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "x" 42
+let _ = Hashtable.set ht "y" 99
+let found = Hashtable.containsKey ht "x"   // true
+let keys  = Hashtable.keys ht              // ["x"; "y"]
 ```
 
 ## Algorithms (from Tutorial Ch.15)
@@ -165,16 +186,16 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (23 files, 10,651 LOC F#)
+├── src/LangThree/       # Interpreter source (~12,000 LOC F#)
 ├── tests/
-│   ├── LangThree.Tests/ # F# unit tests (199 tests)
-│   └── flt/             # fslit integration tests (442 tests)
+│   ├── LangThree.Tests/ # F# unit tests (224 tests)
+│   └── flt/             # fslit integration tests (486 tests)
 │       ├── expr/        # Expression-mode tests (16 subdirs)
 │       ├── file/        # File-mode tests (21 subdirs)
 │       ├── emit/        # AST/type emission tests
 │       └── error/       # Error case tests
-├── tutorial/            # mdBook tutorial (16 chapters)
-├── Prelude/             # Standard library (Core, List, Option, Result)
+├── tutorial/            # mdBook tutorial (19 chapters)
+├── Prelude/             # Standard library (Core, List, Option, Result, Array, Hashtable)
 ├── howto/               # Developer knowledge base (5 documents)
 ├── docs/                # Built tutorial site (GitHub Pages)
 └── .planning/           # GSD project management
@@ -191,13 +212,13 @@ LangThree/
 ## Tests
 
 ```bash
-# F# unit tests (199)
+# F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (442)
+# fslit integration tests (486)
 /path/to/fslit tests/flt/
 
-# Total: 641 tests
+# Total: ~710 tests
 ```
 
 ## Milestones
@@ -211,8 +232,12 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v1.5 | Operators & Utilities | 19-22 | 4 | 2026-03-20 |
 | v1.7 | Offside Rule & List Syntax | 23-24 | 4 | 2026-03-22 |
 | v1.8 | Polymorphic GADT | 25 | 5 | 2026-03-23 |
+| v2.0 | File Import, Char, N-Tuples, File I/O | 26-32 | 14 | 2026-03-24 |
+| v2.1 | Tutorial Ch.17-18 | 33 | 2 | 2026-03-24 |
+| v2.2 | AbstractGrammar, SPEC 정리 | 34 | 2 | 2026-03-24 |
+| v3.0 | Mutable Array & Hashtable | 35 | 4 | 2026-03-25 |
 
-**Total:** 25 phases, 68 plans across 8 milestones
+**Total:** 35 phases, 89 plans across 12 milestones
 
 ## Reference Documents
 
@@ -221,6 +246,7 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | [SPEC.md](SPEC.md) | Language specification — tokens, BNF grammar, operator precedence, type system |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Pipeline design — Lexer → IndentFilter → Parser → TypeCheck → Eval |
 | [TESTS.md](TESTS.md) | Test cases — tokenization, parsing, indentation edge cases, runtime |
+| [AbstractGrammar.md](AbstractGrammar.md) | Abstract grammar — AST node definitions, expression and declaration forms |
 
 ## License
 
