@@ -71,11 +71,11 @@ Plans:
   3. flt tests for `open "lib.fun"` file import and qualified access of imported modules exist and pass
   4. flt tests for all 14 file I/O and system builtins (read_file, write_file, file_exists, append_file, read_lines, write_lines, get_args, get_env, get_cwd, eprint, path_combine, dir_files) exist and pass
   5. `dotnet test` shows the total flt test count increased from 447 with all new tests passing
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 34-01: Add flt tests for char (Phase 29) and parser improvements (Phase 30)
-- [ ] 34-02: Add flt tests for file import (Phase 31) and file I/O + system builtins (Phase 32)
+- [ ] 34-01-PLAN.md — Add flt tests for char (Phase 29) and parser improvements (Phase 30)
+- [ ] 34-02-PLAN.md — Add flt tests for file import (Phase 31) and file I/O + system builtins (Phase 32)
 
 ---
 
