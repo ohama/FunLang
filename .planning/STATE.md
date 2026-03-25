@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Milestone: v2.1 Bug Fixes & Test Hardening
-Phase: 33 of 35 (TCO Fix + Test Isolation)
-Plan: 2 of 2 in Phase 33
-Status: Phase 33 verified — ready for Phase 34
-Last activity: 2026-03-25 — Phase 33 executed and verified (5/5 must-haves)
+Phase: 34 of 35 (Test Coverage)
+Plan: 1 of 2 in Phase 34
+Status: In progress — 34-01 complete, 34-02 ready
+Last activity: 2026-03-25 — Completed 34-01: 11 flt tests added (char + parser, 458/458 passing)
 
-Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [██░░░░░░░░] 40% (2/5 plans)
+Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [███░░░░░░░] 60% (3/5 plans)
 
 ## Performance Metrics
 
@@ -49,9 +49,9 @@ None — TCO regression resolved (33-01: tailPos=false→true in BuiltinValue wr
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 33 complete and verified — Phase 34 ready to plan
+Stopped at: Completed 34-01-PLAN.md (char + parser improvement flt tests)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 33 complete: TCO fix + test isolation verified)*
+*Last updated: 2026-03-25 (Phase 34-01 complete: 11 flt tests added, 458/458 passing)*
