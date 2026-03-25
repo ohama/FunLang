@@ -122,6 +122,16 @@ let initialTypeEnv: TypeEnv =
         // array_to_list : 'a array -> 'a list
         "array_to_list", Scheme([0], TArrow(TArray (TVar 0), TList (TVar 0)))
 
+        // Phase 40: Array higher-order function builtins (ARR-07 through ARR-10)
+        // array_iter : ('a -> unit) -> 'a array -> unit
+        "array_iter",  Scheme([0], TArrow(TArrow(TVar 0, TTuple []), TArrow(TArray (TVar 0), TTuple [])))
+        // array_map : ('a -> 'b) -> 'a array -> 'b array
+        "array_map",   Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TArray (TVar 0), TArray (TVar 1))))
+        // array_fold : ('acc -> 'a -> 'acc) -> 'acc -> 'a array -> 'acc
+        "array_fold",  Scheme([0; 1], TArrow(TArrow(TVar 0, TArrow(TVar 1, TVar 0)), TArrow(TVar 0, TArrow(TArray (TVar 1), TVar 0))))
+        // array_init : int -> (int -> 'a) -> 'a array
+        "array_init",  Scheme([0], TArrow(TInt, TArrow(TArrow(TInt, TVar 0), TArray (TVar 0))))
+
         // Phase 39: Hashtable builtins (HT-01 through HT-06)
         // hashtable_create : unit -> hashtable<'k, 'v>
         "hashtable_create",    Scheme([0; 1], TArrow(TTuple [], THashtable (TVar 0, TVar 1)))

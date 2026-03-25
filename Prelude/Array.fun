@@ -5,3 +5,7 @@ module Array =
     let length arr   = array_length arr
     let ofList xs    = array_of_list xs
     let toList arr   = array_to_list arr
+    let iter f arr       = array_iter f arr
+    let map f arr        = array_map f arr
+    let fold f init arr  = array_fold f init arr
+    let init n f         = array_init n f
