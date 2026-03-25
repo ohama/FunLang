@@ -290,3 +290,64 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
         Expect.equal result (Ast.IntValue 42) "sibling module record types with shared field names do not cause DuplicateFieldName"
     }
 ])
+
+// Helper to eval with prelude loaded
+let evalWithPrelude (input: string) : Ast.Value =
+    let prelude = Prelude.loadPrelude()
+    let m = parseModule input
+    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+    | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+    | Ok (_warnings, _ctorEnv, recEnv, _modules, _typeEnv) ->
+        let decls =
+            match m with
+            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls
+            | Ast.EmptyModule _ -> []
+        let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
+        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
+        let finalEnv, moduleEnv =
+            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv decls
+        match decls |> List.rev |> List.tryPick (function Ast.LetDecl(_, body, _) -> Some body | _ -> None) with
+        | Some lastBody -> Eval.eval mergedRecEnv moduleEnv finalEnv false lastBody
+        | None -> failtest "No let binding found to evaluate"
+
+[<Tests>]
+let moduleBugFixTests = testList "SC-MOD-BUG: Module access bug fixes (Phase 36)" [
+
+    testList "MOD-02: Prelude qualified access" [
+        test "List.length via prelude qualified access" {
+            let result = evalWithPrelude "let result = List.length [1; 2; 3]"
+            Expect.equal result (Ast.IntValue 3) "List.length should return 3"
+        }
+        test "List.map via prelude qualified access" {
+            let result = evalWithPrelude "let result = List.map (fun x -> x + 1) [1; 2; 3]"
+            Expect.equal result (Ast.ListValue [Ast.IntValue 2; Ast.IntValue 3; Ast.IntValue 4]) "List.map should add 1 to each element"
+        }
+        test "unqualified map still works after prelude wrapping" {
+            let result = evalWithPrelude "let result = map (fun x -> x * 2) [1; 2; 3]"
+            Expect.equal result (Ast.ListValue [Ast.IntValue 2; Ast.IntValue 4; Ast.IntValue 6]) "unqualified map should still work"
+        }
+        test "unqualified length still works after prelude wrapping" {
+            let result = evalWithPrelude "let result = length [1; 2; 3; 4]"
+            Expect.equal result (Ast.IntValue 4) "unqualified length should still work"
+        }
+    ]
+
+    testList "MOD-01: Imported file qualified access" [
+        test "module function accessible via qualified access after open" {
+            let tmpPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".fun")
+            System.IO.File.WriteAllText(tmpPath, "module Math =\n    let square x = x * x\n")
+            let code = sprintf "open \"%s\"\nlet result = Math.square 5" tmpPath
+            let result = evalWithPrelude code
+            System.IO.File.Delete(tmpPath)
+            Expect.equal result (Ast.IntValue 25) "Math.square 5 should return 25"
+        }
+        test "multiple module functions accessible after open" {
+            let tmpPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".fun")
+            System.IO.File.WriteAllText(tmpPath, "module Util =\n    let double x = x * 2\n    let triple x = x * 3\n")
+            let code = sprintf "open \"%s\"\nlet result = Util.double 4 + Util.triple 2" tmpPath
+            let result = evalWithPrelude code
+            System.IO.File.Delete(tmpPath)
+            Expect.equal result (Ast.IntValue 14) "Util.double 4 + Util.triple 2 should be 14"
+        }
+    ]
+]
