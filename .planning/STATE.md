@@ -34,7 +34,8 @@ Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [██░░░░░░░░
 - [Phase 30-02]: Expression LetRec uses BuiltinValue + mutable envRef (not FunctionValue) — FunctionValue fails inside lambda bodies due to trampoline losing self-binding
 - [Phase 31-02]: Tests using shared mutable currentTypeCheckingFile/currentEvalFile must be wrapped in testSequenced to avoid parallel-execution race conditions
 - [v2.1]: TCO broken by Phase 30 LetRec→BuiltinValue change (tailPos=false hardcoded in wrapper)
-- [v2.1]: BuiltinValue signature (Value -> Value) cannot carry tailPos — structural limitation requiring workaround
+- [v2.1]: BuiltinValue signature (Value -> Value) cannot carry tailPos — workaround: use tailPos=true inside wrapper so eval propagates TailCall to App trampoline
+- [Phase 33-01]: TCO fixed — LetRec and LetRecDecl BuiltinValue wrappers now call eval with tailPos=true; 1M-iteration loops complete without stack overflow
 - [Phase 33-02]: MatchCompile global counter eliminated — local counter inside compileMatch, freshTestVar threaded through compile as parameter; fixes parallel-test TestVar ID collisions
 
 ### Pending Todos
@@ -43,14 +44,14 @@ None.
 
 ### Blockers/Concerns
 
-- TCO regression: `let rec loop n = if n = 0 then 0 else loop (n - 1)` with 1M iterations → Stack overflow (root cause: Phase 30 BuiltinValue wrapping hardcodes tailPos=false)
+None — TCO regression resolved (33-01: tailPos=false→true in BuiltinValue wrappers)
 
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 33-02-PLAN.md — Phase 33 complete, ready for Phase 34
+Stopped at: Completed 33-01-PLAN.md — all Phase 33 plans done, ready for Phase 34
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (33-02 complete: MatchCompile global counter eliminated, 214 tests passing)*
+*Last updated: 2026-03-25 (33-01 complete: TCO regression fixed, 214 tests passing)*
