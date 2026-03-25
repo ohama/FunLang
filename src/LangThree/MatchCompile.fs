@@ -5,15 +5,6 @@ open Ast
 /// Fresh variable identifier for sub-values during compilation
 type TestVar = int
 
-/// Mutable counter for fresh variable generation
-let mutable private nextTestVar = 0
-
-let freshTestVar () =
-    let v = nextTestVar
-    nextTestVar <- nextTestVar + 1
-    v
-
-let resetTestVarCounter () = nextTestVar <- 0
 
 /// A clause under compilation
 type MatchRow = {
@@ -132,7 +123,7 @@ let splitClauses (testVar: TestVar) (ctorName: string) (freshVars: TestVar list)
 // ============================================================
 // 6. compile: main recursive algorithm (Jacobs Section 3)
 // ============================================================
-let rec compile (clauses: MatchRow list) : DecisionTree =
+let rec compile (freshTestVar: unit -> TestVar) (clauses: MatchRow list) : DecisionTree =
     match clauses with
     | [] -> Fail
     | _ ->
@@ -144,7 +135,7 @@ let rec compile (clauses: MatchRow list) : DecisionTree =
         if Map.isEmpty first.Patterns then
             let fallback =
                 if clauses'.Tail.IsEmpty then None
-                else Some(compile clauses'.Tail)
+                else Some(compile freshTestVar clauses'.Tail)
             Leaf(first.Bindings, first.Guard, first.Body, fallback)
         else
             // Step 2: Select test variable (heuristic)
@@ -158,7 +149,7 @@ let rec compile (clauses: MatchRow list) : DecisionTree =
 
             // Steps 3-4: Split and generate Switch
             let yesClauses, noClauses = splitClauses testVar ctorName freshVars clauses'
-            Switch(testVar, ctorName, freshVars, compile yesClauses, compile noClauses)
+            Switch(testVar, ctorName, freshVars, compile freshTestVar yesClauses, compile freshTestVar noClauses)
 
 // ============================================================
 // 7. matchesConstructor: test if runtime Value matches a constructor name
@@ -239,7 +230,11 @@ let expandOrPatterns (clauses: MatchClause list) : MatchClause list =
         | _ -> [(pat, guard, body)])
 
 let compileMatch (clauses: MatchClause list) : DecisionTree * TestVar =
-    resetTestVarCounter()
+    let mutable nextVar = 0
+    let freshTestVar () =
+        let v = nextVar
+        nextVar <- nextVar + 1
+        v
     let rootVar = freshTestVar()
     let expandedClauses = expandOrPatterns clauses
     let rows =
@@ -249,5 +244,5 @@ let compileMatch (clauses: MatchClause list) : DecisionTree * TestVar =
               Body = body
               Bindings = Map.empty
               OriginalIndex = i })
-    let tree = compile rows
+    let tree = compile freshTestVar rows
     (tree, rootVar)
