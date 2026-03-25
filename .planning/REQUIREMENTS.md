@@ -59,11 +59,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 33 | Pending |
-| FIX-02 | Phase 33 | Pending |
-| FIX-03 | Phase 33 | Pending |
-| ISO-01 | Phase 33 | Pending |
-| ISO-02 | Phase 33 | Pending |
+| FIX-01 | Phase 33 | Complete |
+| FIX-02 | Phase 33 | Complete |
+| FIX-03 | Phase 33 | Complete |
+| ISO-01 | Phase 33 | Complete |
+| ISO-02 | Phase 33 | Complete |
 | TST-01 | Phase 34 | Pending |
 | TST-02 | Phase 34 | Pending |
 | TST-03 | Phase 34 | Pending |

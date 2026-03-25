@@ -12,8 +12,8 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 Milestone: v2.1 Bug Fixes & Test Hardening
 Phase: 33 of 35 (TCO Fix + Test Isolation)
 Plan: 2 of 2 in Phase 33
-Status: Phase 33 complete
-Last activity: 2026-03-25 — Completed 33-02-PLAN.md (MatchCompile global counter elimination)
+Status: Phase 33 verified — ready for Phase 34
+Last activity: 2026-03-25 — Phase 33 executed and verified (5/5 must-haves)
 
 Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [██░░░░░░░░] 40% (2/5 plans)
 
@@ -49,9 +49,9 @@ None — TCO regression resolved (33-01: tailPos=false→true in BuiltinValue wr
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 33-01-PLAN.md — all Phase 33 plans done, ready for Phase 34
+Stopped at: Phase 33 complete and verified — Phase 34 ready to plan
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (33-01 complete: TCO regression fixed, 214 tests passing)*
+*Last updated: 2026-03-25 (Phase 33 complete: TCO fix + test isolation verified)*
