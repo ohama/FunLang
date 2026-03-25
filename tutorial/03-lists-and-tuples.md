@@ -83,7 +83,7 @@ let result =
         match xs with
         | [] -> acc
         | h :: t -> fold f (f acc h) t
-    in fold (fun acc -> fun x -> acc + x) 0 [1..100]
+    fold (fun acc -> fun x -> acc + x) 0 [1..100]
 
 $ langthree range_sum.l3
 5050

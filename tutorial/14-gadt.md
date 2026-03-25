@@ -214,7 +214,7 @@ let result =
         | BoolLit b -> if b then 1 else 0
         | Add (a, b) -> eval a + eval b
         : int)
-    in eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
+    eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
 $ langthree calc.l3
 42
@@ -334,7 +334,7 @@ let result =
         | Add (a, b) -> eval a + eval b
         | Neg x -> 0 - eval x
         : int)
-    in eval (Add (IntLit 10, Neg (IntLit 3)))
+    eval (Add (IntLit 10, Neg (IntLit 3)))
 
 $ langthree typed_eval.l3
 7

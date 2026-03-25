@@ -480,8 +480,8 @@ let rec map f = fun xs ->
 
 let fizzbuzz n =
     let r3 = n % 3
-    in let r5 = n % 5
-    in match (r3, r5) with
+    let r5 = n % 5
+    match (r3, r5) with
     | (0, 0) -> "FizzBuzz"
     | (0, _) -> "Fizz"
     | (_, 0) -> "Buzz"

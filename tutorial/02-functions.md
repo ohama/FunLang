@@ -131,19 +131,19 @@ funlang> let rec len xs = match xs with | [] -> 0 | _ :: rest -> 1 + len rest in
 
 여기서 `[1; 2; 3]`은 리스트이고 `match ... with`는 패턴 매칭입니다. 리스트는 [3장](03-lists-and-tuples.md)에서, 패턴 매칭은 [4장](04-pattern-matching.md)에서 자세히 다룹니다. 지금은 "빈 리스트이면 0, 아니면 1을 더하고 나머지에 재귀"라는 흐름만 이해하면 충분합니다.
 
-파일 모드에서는 최상위 `let` 내부에 `let rec ... in`을 포함시킵니다:
+파일 모드에서는 최상위 `let` 내부에 `let rec`을 포함시킵니다. 들여쓰기가 스코프를 결정하므로 명시적 `in`은 필요 없습니다:
 
 ```
 $ cat factorial.l3
 let result =
     let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
-    in fact 10
+    fact 10
 
 $ langthree factorial.l3
 3628800
 ```
 
-이 패턴은 자주 쓰이므로 익숙해지면 좋습니다. 재귀 함수를 외부에 노출하지 않고 지역 구현 세부사항으로 감추고 싶을 때 유용합니다.
+재귀 함수를 외부에 노출하지 않고 지역 구현 세부사항으로 감추고 싶을 때 유용합니다.
 
 ## 모듈 레벨 let rec
 

@@ -676,7 +676,7 @@ let result =
         match xs with
         | [] -> []
         | h :: t -> if pred h then h :: takeWhile pred t else []
-    in takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
+    takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
 
 $ langthree take_while.l3
 [1; 2; 3; 4]
@@ -695,7 +695,7 @@ type Expr =
 
 let result =
     let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
-    in eval (Add (Mul (Num 3, Num 4), Num 5))
+    eval (Add (Mul (Num 3, Num 4), Num 5))
 
 $ langthree expr_eval.l3
 17
@@ -714,13 +714,10 @@ let result =
         match xs with
         | [] -> None
         | (k, v) :: rest -> if k = key then Some v else lookup key rest
-    in
     let env = [(1, "one"); (2, "two"); (3, "three")]
-    in
     let r1 = lookup 2 env
-    in
     let r2 = lookup 9 env
-    in (r1, r2)
+    (r1, r2)
 
 $ langthree lookup.l3
 (Some "two", None)
@@ -739,15 +736,12 @@ type Tree =
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
     let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + max (depth l) (depth r)
-    in
     // 트리의 노드 수
     let rec size t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + size l + size r
-    in
     // 트리의 모든 값의 합
     let rec sumTree t = match t with | Leaf -> 0 | Node (l, v, r) -> sumTree l + v + sumTree r
-    in
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
-    in (depth t, size t, sumTree t)
+    (depth t, size t, sumTree t)
 
 $ langthree tree_ops.l3
 (3, 4, 10)
@@ -764,9 +758,8 @@ let sorted =
         match xs with
         | [] -> x :: []
         | h :: t -> if x <= h then x :: h :: t else h :: insert x t
-    in
     let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
-    in sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
+    sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 

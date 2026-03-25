@@ -106,7 +106,7 @@ let safeDivide a = fun b -> if b = 0 then raise (DivError "div/0") else a / b
 
 let compute input = try
     let n = parseInt input
-    in try
+    try
         safeDivide 100 n
     with
     | DivError msg -> 0 - 1
