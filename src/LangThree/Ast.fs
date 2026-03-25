@@ -192,6 +192,7 @@ and [<CustomEquality; CustomComparison>] Value =
     | RecordValue of typeName: string * fields: Map<string, Value ref>  // Phase 3 (Records): Record value (ref cells for mutable field support)
     | BuiltinValue of fn: (Value -> Value)  // Phase 11: Native F# built-in function carrier
     | TailCall of func: Value * arg: Value  // Phase 15: Deferred tail call for trampoline TCO
+    | ArrayValue of Value array             // Phase 38: Mutable fixed-size array
 
     override x.Equals(obj) =
         match obj with
@@ -211,6 +212,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | RecordValue(name, _) -> hash name
         | BuiltinValue _ -> 0
         | TailCall _ -> 0
+        | ArrayValue arr -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(arr)
 
     interface System.IEquatable<Value> with
         member x.Equals(y: Value) = Value.valueEqual x y
@@ -234,6 +236,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | FunctionValue(p1, b1, _), FunctionValue(p2, b2, _) -> p1 = p2 && b1 = b2
         | BuiltinValue _, BuiltinValue _ -> false  // functions are never equal
         | TailCall _, _ | _, TailCall _ -> false  // TailCall is transient, never compared
+        | ArrayValue r1, ArrayValue r2 -> System.Object.ReferenceEquals(r1, r2)
         | _ -> false
 
     static member valueCompare (x: Value) (y: Value) =
@@ -243,6 +246,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | StringValue a, StringValue b -> compare a b
         | CharValue a, CharValue b -> compare a b
         | TailCall _, _ | _, TailCall _ -> 0
+        | ArrayValue _, _ | _, ArrayValue _ -> 0
         | _ -> 0
 
 /// Environment mapping variable names to values
