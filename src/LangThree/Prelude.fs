@@ -15,9 +15,11 @@ type PreludeResult = {
     TypeEnv: TypeEnv
     CtorEnv: ConstructorEnv
     RecEnv: RecordEnv
+    Modules: Map<string, ModuleExports>
+    ModuleValueEnv: Map<string, ModuleValueEnv>
 }
 
-let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty }
+let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty }
 
 /// Parse a string as module with IndentFilter
 let parseModuleFromString (input: string) (filename: string) : Module =
@@ -82,7 +84,8 @@ let rec loadAndTypeCheckFileImpl
     (resolvedPath: string)
     (cEnv: ConstructorEnv)
     (rEnv: RecordEnv)
-    (typeEnv: TypeEnv) : TypeEnv * ConstructorEnv * RecordEnv =
+    (typeEnv: TypeEnv)
+    (mods: Map<string, ModuleExports>) : TypeEnv * ConstructorEnv * RecordEnv * Map<string, ModuleExports> =
     if fileLoadingStack.Contains resolvedPath then
         raise (TypeException {
             Kind = CircularModuleDependency [resolvedPath]
@@ -97,12 +100,13 @@ let rec loadAndTypeCheckFileImpl
         TypeCheck.currentTypeCheckingFile <- resolvedPath
         let source = File.ReadAllText resolvedPath
         let m = parseModuleFromString source resolvedPath
-        match typeCheckModuleWithPrelude cEnv rEnv typeEnv m with
-        | Ok (_warnings, fileCEnv, fileREnv, _mods, fileTypeEnv) ->
+        match typeCheckModuleWithPrelude cEnv rEnv typeEnv mods m with
+        | Ok (_warnings, fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
             let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
             let mergedREnv = Map.fold (fun acc k v -> Map.add k v acc) rEnv fileREnv
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) typeEnv fileTypeEnv
-            (mergedTypeEnv, mergedCEnv, mergedREnv)
+            let mergedMods = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
+            (mergedTypeEnv, mergedCEnv, mergedREnv, mergedMods)
         | Error diag ->
             failwithf "Type error in imported file %s:\n%s" resolvedPath (formatDiagnostic diag)
     finally
@@ -154,9 +158,9 @@ let loadPrelude () : PreludeResult =
                     let source = File.ReadAllText file
                     let m = parseModuleFromString source file
 
-                    // Type check with accumulated prelude environments
-                    match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.TypeEnv m with
-                    | Ok (_warnings, ctorEnv, recEnv, _modules, typeEnv) ->
+                    // Type check with accumulated prelude environments (including accumulated modules)
+                    match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.TypeEnv result.Modules m with
+                    | Ok (_warnings, ctorEnv, recEnv, modules, typeEnv) ->
                         // Accumulate type environments (exclude built-in types)
                         let newTypeBindings = typeEnv |> Map.filter (fun k _ -> not (Map.containsKey k initialTypeEnv))
                         let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) result.TypeEnv newTypeBindings
@@ -165,16 +169,20 @@ let loadPrelude () : PreludeResult =
                         let mergedCtorEnv = Map.fold (fun acc k v -> Map.add k v acc) result.CtorEnv ctorEnv
                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) result.RecEnv recEnv
 
+                        // Accumulate module map
+                        let mergedModules = Map.fold (fun acc k v -> Map.add k v acc) result.Modules modules
+
                         // Evaluate module declarations for value environment
                         let decls = getDecls m
                         let evalEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env Eval.initialBuiltinEnv
-                        let (finalEnv, _moduleEnv) = Eval.evalModuleDecls mergedRecEnv Map.empty evalEnv decls
+                        let (finalEnv, fileModuleEnv) = Eval.evalModuleDecls mergedRecEnv result.ModuleValueEnv evalEnv decls
                         // Extract only new bindings (not built-ins or previous prelude)
                         let newValues = finalEnv |> Map.filter (fun k _ ->
                             not (Map.containsKey k Eval.initialBuiltinEnv) && not (Map.containsKey k result.Env))
                         let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env newValues
+                        let mergedModuleValueEnv = Map.fold (fun acc k v -> Map.add k v acc) result.ModuleValueEnv fileModuleEnv
 
-                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv }
+                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv }
 
                     | Error diag ->
                         eprintfn "Warning: Type error in %s: %s" file (formatDiagnostic diag)

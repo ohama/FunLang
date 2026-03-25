@@ -105,7 +105,7 @@ let main argv =
                     // Set current file path for FileImportDecl relative path resolution
                     TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
                     | Ok (warnings, _ctorEnv, _recEnv, _modules, typeEnv) ->
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
@@ -197,7 +197,7 @@ let main argv =
                         | Some i -> rawArgv |> Array.skip (i + 1) |> Array.toList
                         | None -> []
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv m with
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
                     | Error diag ->
                         eprintfn "%s" (formatDiagnostic diag)
                         1
@@ -218,7 +218,7 @@ let main argv =
                         // Evaluate module declarations with module-aware pipeline
                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
                         let finalEnv, moduleEnv =
-                            Eval.evalModuleDecls mergedRecEnv Map.empty initialEnv moduleDecls
+                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv moduleDecls
                         // Print the last let binding's value (look up from env to avoid re-evaluating side effects)
                         match moduleDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
                         | Some lastName ->

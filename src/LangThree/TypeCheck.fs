@@ -593,11 +593,12 @@ let mutable currentTypeCheckingFile : string = ""
 
 /// Mutable delegate for loading and type-checking a file import.
 /// Set by Prelude.fs (or Program.fs) after the parser and lexer are available.
-/// Signature: (resolvedPath, cEnv, rEnv, typeEnv) -> (typeEnv', cEnv', rEnv')
+/// Signature: (resolvedPath, cEnv, rEnv, typeEnv, mods) -> (typeEnv', cEnv', rEnv', mods')
 /// Raises TypeException on error.
 let mutable fileImportTypeChecker :
-    (string -> ConstructorEnv -> RecordEnv -> TypeEnv -> TypeEnv * ConstructorEnv * RecordEnv) =
-    fun resolvedPath _ _ _ ->
+    (string -> ConstructorEnv -> RecordEnv -> TypeEnv -> Map<string, ModuleExports>
+        -> TypeEnv * ConstructorEnv * RecordEnv * Map<string, ModuleExports>) =
+    fun resolvedPath _ _ _ _ ->
         failwithf "FileImport type checker not initialized. Cannot import '%s'." resolvedPath
 
 /// Type check declarations sequentially, building up environments and collecting warnings.
@@ -797,8 +798,9 @@ let rec typeCheckDecls
                 // Use currentTypeCheckingFile for path resolution since span.FileName
                 // may be empty (fsyacc positions use lexbuf.StartPos which isn't set)
                 let resolvedPath = resolveImportPath path currentTypeCheckingFile
-                let (env', cEnv', rEnv') = fileImportTypeChecker resolvedPath cEnv rEnv env
-                (env', cEnv', rEnv', mods, warns)
+                let (env', cEnv', rEnv', fileMods) = fileImportTypeChecker resolvedPath cEnv rEnv env mods
+                let mods' = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
+                (env', cEnv', rEnv', mods', warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope
@@ -840,9 +842,10 @@ let rec typeCheckDecls
 
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
-/// Returns Ok(warnings, RecordEnv, modules) on success, Error(Diagnostic) on type error.
+/// Returns Ok(warnings, CtorEnv, RecordEnv, modules, TypeEnv) on success, Error(Diagnostic) on type error.
 let typeCheckModuleWithPrelude
     (preludeCtorEnv: ConstructorEnv) (preludeRecEnv: RecordEnv) (preludeTypeEnv: TypeEnv)
+    (initialModules: Map<string, ModuleExports>)
     (m: Module)
     : Result<Diagnostic list * ConstructorEnv * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
     try
@@ -860,13 +863,13 @@ let typeCheckModuleWithPrelude
 
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
             let (typeEnv, ctorEnv, recEnv, modules, warnings) =
-                typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv Map.empty
+                typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv initialModules
             Ok (warnings, ctorEnv, recEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
 
 let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
-    match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty m with
+    match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty m with
     | Ok (warnings, _ctorEnv, recEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
     | Error e -> Error e
