@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v2.2 Module Access Fix & Test Coverage — Phase 37 next
+**Current focus:** v2.2 Module Access Fix & Test Coverage — MILESTONE COMPLETE
 
 ## Current Position
 
-Milestone: v2.2 Module Access Fix & Test Coverage
-Phase: 36 of 37 complete
-Plan: 2/2 in Phase 36
-Status: Phase 36 verified — ready for Phase 37
-Last activity: 2026-03-25 — Phase 36 executed and verified (4/4 must-haves)
+Milestone: v2.2 Module Access Fix & Test Coverage — COMPLETE
+Phase: 37 of 37 complete
+Plan: 1/1 in Phase 37
+Status: Milestone complete — all plans executed
+Last activity: 2026-03-25 — Phase 37 Plan 01 executed (474/474 flt, 224/224 dotnet test)
 
-Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: [█████░░░░░] 50% (2/4 plans)
+Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: [██████████] 100% (4/4 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 88
-- v2.1 Phases 33-35: 5 plans in 1 day
+- Total plans completed: 89
+- v2.2 Phases 36-37: 3 plans in 1 day
 
 **Recent Trend:**
 - Trend: Stable, accelerating
@@ -39,6 +39,7 @@ Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: [█████░░░░░
 - [36-01]: typeCheckModuleWithPrelude now takes 5 params (added initialModules: Map<string, ModuleExports>)
 - [36-01]: Prelude .fun files wrapped in `module Stem = ...` blocks; blank lines inside blocks cause parse errors
 - [36-01]: PreludeResult now has Modules and ModuleValueEnv fields; Program.fs threads these through
+- [37-01]: flt file-import tests use bash -c 'printf ... > /tmp/... && BINARY %input' pattern to pre-create lib files
 
 ### Pending Todos
 
@@ -46,14 +47,14 @@ None.
 
 ### Blockers/Concerns
 
-None — both E0313 qualified access bugs are now fixed.
+None — v2.2 milestone complete.
 
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 36 complete and verified — Phase 37 ready to plan
+Stopped at: Phase 37 Plan 01 complete — v2.2 milestone done
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 36 complete: MOD-01 + MOD-02 + PAR-01 verified, 224 F# + 468 flt)*
+*Last updated: 2026-03-25 (Phase 37 complete: 6 flt tests added TST-14/15/16/17, 224 F# + 474 flt)*
