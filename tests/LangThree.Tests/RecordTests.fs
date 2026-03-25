@@ -49,6 +49,7 @@ let parseTypeCheckAndEval (input: string) : Ast.Env =
                     Map.add name value env
                 | _ -> env) Eval.emptyEnv
         | Ast.EmptyModule _ -> Eval.emptyEnv
+        | _ -> Eval.emptyEnv
 
 [<Tests>]
 let recordTests = testList "Records" [
