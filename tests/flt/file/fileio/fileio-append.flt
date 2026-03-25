@@ -1,0 +1,8 @@
+// Test: append_file appends to existing file content
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = write_file "/tmp/flt-fileio-append.txt" "hello"
+let _ = append_file "/tmp/flt-fileio-append.txt" " world"
+let result = read_file "/tmp/flt-fileio-append.txt"
+// --- Output:
+"hello world"

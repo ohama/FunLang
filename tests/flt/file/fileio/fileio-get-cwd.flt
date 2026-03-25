@@ -1,0 +1,7 @@
+// Test: get_cwd returns the current working directory as a non-empty string
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let cwd = get_cwd ()
+let result = cwd <> ""
+// --- Output:
+true

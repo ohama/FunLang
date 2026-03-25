@@ -1,0 +1,9 @@
+// Test: file_exists returns true for existing file and false for missing file
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = write_file "/tmp/flt-fileio-exists.txt" "data"
+let exists = file_exists "/tmp/flt-fileio-exists.txt"
+let missing = file_exists "/tmp/flt-fileio-definitely-not-here-xyzzy.txt"
+let result = exists
+// --- Output:
+true

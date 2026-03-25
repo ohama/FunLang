@@ -1,0 +1,7 @@
+// Test: write_file writes content and read_file reads it back
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = write_file "/tmp/flt-fileio-rw.txt" "hello world"
+let result = read_file "/tmp/flt-fileio-rw.txt"
+// --- Output:
+"hello world"

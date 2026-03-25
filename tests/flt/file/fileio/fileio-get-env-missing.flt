@@ -1,0 +1,9 @@
+// Test: get_env raises LangThreeException for unset environment variable
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = try
+    get_env "FLT_TEST_DEFINITELY_UNSET_XYZZY_12345"
+with
+| _ -> "caught"
+// --- Output:
+"caught"

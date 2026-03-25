@@ -1,0 +1,8 @@
+// Test: dir_files returns list of files in a directory
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = write_file "/tmp/flt-dirfiles-test.txt" "data"
+let files = dir_files "/tmp"
+let result = length files > 0
+// --- Output:
+true
