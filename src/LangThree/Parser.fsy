@@ -200,6 +200,11 @@ Expr:
     // Phase 6 (Exceptions): Try-with expression
     | TRY Expr WITH MatchClauses              { TryWith($2, $4, ruleSpan parseState 1 4) }
     | TRY INDENT Expr DEDENT WITH MatchClauses { TryWith($3, $6, ruleSpan parseState 1 6) }
+    // Phase 36 (PAR-01): Bare inline try-with without leading pipe: try expr with e -> expr
+    | TRY Expr WITH IDENT ARROW Expr
+        { TryWith($2, [(VarPat($4, symSpan parseState 4), None, $6)], ruleSpan parseState 1 6) }
+    | TRY INDENT Expr DEDENT WITH IDENT ARROW Expr
+        { TryWith($3, [(VarPat($6, symSpan parseState 6), None, $8)], ruleSpan parseState 1 8) }
     // Phase 3 (Records-06): Mutable field assignment
     | Atom DOT IDENT LARROW Expr     { SetField($1, $3, $5, ruleSpan parseState 1 5) }
     // Arithmetic - uses Term/Factor for precedence
