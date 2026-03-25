@@ -38,11 +38,11 @@ Phases 1–37 covered: Core language (ADT/GADT/Records/Modules/Exceptions), test
   3. `Array.length arr` returns the exact number of elements in the array
   4. `Array.ofList [1; 2; 3]` and `Array.toList arr` round-trip without data loss
   5. Out-of-bounds access via `Array.get` or `Array.set` raises a runtime exception
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 38-01: Add ArrayValue DU case to Ast.fs / Value types; implement Array.create, get, set, length builtins in Eval.fs; register TypeCheck entries
-- [ ] 38-02: Implement Array.ofList and Array.toList conversion builtins; add bounds checking with exception on OOB
+- [ ] 38-01-PLAN.md — Add ArrayValue DU case to Ast.fs and TArray to Type.fs; wire all propagation sites (apply, freeVars, formatType, Unify, Bidir); add formatValue arm in Eval.fs
+- [ ] 38-02-PLAN.md — Register six array_* builtins in Eval.fs and TypeCheck.fs; create Prelude/Array.fun module wrapper; add flt integration tests
 
 #### Phase 39: Hashtable Type
 **Goal**: Users can create and manipulate mutable key-value hashtables in LangThree programs
