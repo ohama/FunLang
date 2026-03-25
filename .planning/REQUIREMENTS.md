@@ -1,51 +1,84 @@
-# Requirements: LangThree v2.2
+# Requirements: LangThree v3.0
 
 **Defined:** 2026-03-25
-**Core Value:** qualified module access와 누락 테스트 커버리지 확보
+**Core Value:** 변경 가능한 자료구조로 성능이 필요한 알고리즘 지원
 
-## v2.2 Requirements
+## v3.0 Requirements
 
-### Module Access Bug Fixes
+### Mutable Array
 
-- [ ] **MOD-01**: 임포트된 파일의 모듈 qualified access 동작 (`open "file.fun"` 후 `Module.func` 호출 시 E0313 해결)
-- [ ] **MOD-02**: Prelude qualified access 동작 (`List.length`, `List.map`, `List.head` 등 E0313 해결)
+- [ ] **ARR-01**: `Array.create n default` — 크기 n의 배열 생성 (기본값으로 초기화)
+- [ ] **ARR-02**: `Array.get arr i` — 인덱스 i의 요소 반환 (범위 초과 시 예외)
+- [ ] **ARR-03**: `Array.set arr i v` — 인덱스 i에 값 v를 설정 (in-place mutation)
+- [ ] **ARR-04**: `Array.length arr` — 배열의 길이 반환
+- [ ] **ARR-05**: `Array.ofList xs` — 리스트를 배열로 변환
+- [ ] **ARR-06**: `Array.toList arr` — 배열을 리스트로 변환
 
-### Parser Bug Fix
+### Mutable Hashtable
 
-- [ ] **PAR-01**: failwith 인라인 try-with 파싱 동작 (`try failwith "boom" with e -> "caught"` parse error 해결)
+- [ ] **HT-01**: `Hashtable.create ()` — 빈 해시테이블 생성
+- [ ] **HT-02**: `Hashtable.get ht key` — 키로 값 조회 (없으면 예외)
+- [ ] **HT-03**: `Hashtable.set ht key value` — 키에 값 설정 (in-place mutation)
+- [ ] **HT-04**: `Hashtable.containsKey ht key` — 키 존재 여부 확인
+- [ ] **HT-05**: `Hashtable.keys ht` — 모든 키를 리스트로 반환
+- [ ] **HT-06**: `Hashtable.remove ht key` — 키-값 쌍 제거
+
+### Array 고차 함수
+
+- [ ] **ARR-07**: `Array.iter f arr` — 배열의 각 요소에 함수 적용 (부수효과용)
+- [ ] **ARR-08**: `Array.map f arr` — 배열의 각 요소에 함수 적용하여 새 배열 반환
+- [ ] **ARR-09**: `Array.fold f init arr` — 배열을 하나의 값으로 축약
+- [ ] **ARR-10**: `Array.init n f` — f(0), f(1), ..., f(n-1) 으로 배열 생성
 
 ### Test Coverage
 
-- [ ] **TST-14**: failwith flt 테스트 (기본 동작 + try-with 캐치)
-- [ ] **TST-15**: LetPatDecl `let (a, b) = (1, 2)` 모듈 레벨 flt 테스트
-- [ ] **TST-16**: 임포트 모듈 qualified access flt 테스트 (`open "file.fun"` 후 `Module.func`)
-- [ ] **TST-17**: Prelude qualified access flt 테스트 (`List.length`, `List.map`)
+- [ ] **TST-18**: Array 기본 연산 flt 테스트 (create, get, set, length)
+- [ ] **TST-19**: Array 변환 flt 테스트 (ofList, toList)
+- [ ] **TST-20**: Array 고차 함수 flt 테스트 (iter, map, fold, init)
+- [ ] **TST-21**: Hashtable 기본 연산 flt 테스트 (create, get, set, containsKey)
+- [ ] **TST-22**: Hashtable 추가 연산 flt 테스트 (keys, remove)
+- [ ] **TST-23**: 튜토리얼 챕터 작성 (Array + Hashtable)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| 새 언어 기능 | 버그 수정 마일스톤 |
+| for/while 루프 | 함수형 스타일 유지 — iter/map/fold로 대체 |
+| Resizable array (ArrayList) | 고정 크기 배열 우선 — 필요하면 추후 |
+| Hashtable iteration order | 순서 보장 안 함 — keys로 리스트 변환 후 처리 |
 | 네이티브 컴파일 | 별도 마일스톤 |
-| Prelude를 module List로 감싸기 | MOD-02 수정이 이 방식이 아닐 수 있음 — 구현 시 결정 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | Phase 36 | Complete |
-| MOD-02 | Phase 36 | Complete |
-| PAR-01 | Phase 36 | Complete |
-| TST-14 | Phase 37 | Complete |
-| TST-15 | Phase 37 | Complete |
-| TST-16 | Phase 37 | Complete |
-| TST-17 | Phase 37 | Complete |
+| ARR-01 | TBD | Pending |
+| ARR-02 | TBD | Pending |
+| ARR-03 | TBD | Pending |
+| ARR-04 | TBD | Pending |
+| ARR-05 | TBD | Pending |
+| ARR-06 | TBD | Pending |
+| HT-01 | TBD | Pending |
+| HT-02 | TBD | Pending |
+| HT-03 | TBD | Pending |
+| HT-04 | TBD | Pending |
+| HT-05 | TBD | Pending |
+| HT-06 | TBD | Pending |
+| ARR-07 | TBD | Pending |
+| ARR-08 | TBD | Pending |
+| ARR-09 | TBD | Pending |
+| ARR-10 | TBD | Pending |
+| TST-18 | TBD | Pending |
+| TST-19 | TBD | Pending |
+| TST-20 | TBD | Pending |
+| TST-21 | TBD | Pending |
+| TST-22 | TBD | Pending |
+| TST-23 | TBD | Pending |
 
 **Coverage:**
-- v2.2 requirements: 7 total
-- Mapped to phases: 7
-- Unmapped: 0
+- v3.0 requirements: 22 total
+- Mapped to phases: 0
+- Unmapped: 22
 
 ---
 *Requirements defined: 2026-03-25*
-*Traceability updated: 2026-03-25 (v2.2 roadmap — Phases 36-37)*

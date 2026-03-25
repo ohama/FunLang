@@ -1,5 +1,26 @@
 # Project Milestones: LangThree
 
+## v2.2 Module Access Fix & Test Coverage (Shipped: 2026-03-25)
+
+**Delivered:** E0313 qualified module access 버그 수정 (임포트 + Prelude), inline try-with 파싱 수정, 누락 flt 테스트 보충
+
+**Phases completed:** 36-37 (3 plans total)
+
+**Key accomplishments:**
+- 임포트된 파일 모듈 qualified access 수정 (TypeCheck module map 전파)
+- Prelude qualified access 수정 (Prelude 파일 module 래핑 + PreludeResult 확장)
+- inline `try failwith "boom" with e -> "caught"` 파싱 수정
+- 6개 flt 테스트 추가 (468→474)
+
+**Stats:**
+- 224 F# unit tests + 474 flt tests, all passing
+- 2 phases, 3 plans
+- 1 day (2026-03-25)
+
+**Git range:** `feat(36-01)` → `docs(37): complete`
+
+---
+
 ## v2.1 Bug Fixes & Test Hardening (Shipped: 2026-03-25)
 
 **Delivered:** v2.0 런타임 버그 수정 (TCO regression), 테스트 격리 개선, Phase 29-32 flt 테스트 보충, 컴파일 경고 제거
