@@ -1,0 +1,7 @@
+// Test: open file imports multiple bindings accessible directly
+// --- Command: bash -c 'printf "let double x = x * 2\nlet triple x = x * 3\n" > /tmp/flt-import-multi.fun && /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input'
+// --- Input:
+open "/tmp/flt-import-multi.fun"
+let result = double 5 + triple 2
+// --- Output:
+16
