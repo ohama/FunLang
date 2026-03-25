@@ -172,6 +172,32 @@ let exceptionTests = testList "Exceptions" [
     ]
 
     // =====================================================
+    // PAR-01: Inline try-with (no leading pipe)
+    // =====================================================
+
+    testList "PAR-01: Inline try-with (no leading pipe)" [
+        test "inline try-with catches raised exception" {
+            let result = evalModule "exception Err\nlet result = try raise Err with e -> \"caught\""
+            Expect.equal result (Ast.StringValue "caught") "inline try-with should catch raised exception"
+        }
+
+        test "inline try-with with no exception evaluates body" {
+            let result = evalModule "let result = try 42 with e -> 0"
+            Expect.equal result (Ast.IntValue 42) "inline try-with should return body value when no exception"
+        }
+
+        test "inline try-with with identifier pattern catches raised exception" {
+            let result = evalModule "exception Boom\nlet result = try raise Boom with e -> 99"
+            Expect.equal result (Ast.IntValue 99) "bare ident pattern should catch any exception"
+        }
+
+        test "piped try-with still works (regression guard)" {
+            let result = evalModule "exception DivZero\nlet result =\n    try\n        raise DivZero\n    with\n    | DivZero -> 7\n"
+            Expect.equal result (Ast.IntValue 7) "piped try-with should still work after PAR-01 fix"
+        }
+    ]
+
+    // =====================================================
     // Edge cases
     // =====================================================
 
