@@ -1,0 +1,6 @@
+// Test: char greater-than comparison using ASCII ordering
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = 'z' > 'a'
+// --- Output:
+true
