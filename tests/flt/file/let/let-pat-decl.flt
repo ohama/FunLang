@@ -1,0 +1,7 @@
+// Test: module-level tuple pattern destructuring
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let (a, b) = (10, 20)
+let result = a + b
+// --- Output:
+30
