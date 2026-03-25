@@ -1,5 +1,30 @@
 # Project Milestones: LangThree
 
+## v2.0 Practical Language Completion (Shipped: 2026-03-25)
+
+**Delivered:** FunLexYacc 프로젝트에서 발견된 34개 제약사항 전면 해결 — cat/sed 해킹, 접두사 규칙, 26개 등호 체인 등 모든 workaround 제거
+
+**Phases completed:** 26-32 (14 plans total)
+
+**Key accomplishments:**
+- `open "path.fun"` 파일 기반 모듈 임포트 시스템 (cycle detection 포함)
+- Char 타입 + 문자열/문자 비교 연산자 widening (`<`, `>`, `<=`, `>=`)
+- N-tuple (3+ elements) + 모듈 레벨 let-destructuring
+- 멀티라인 리스트, trailing semicolons, 리스트 리터럴 패턴 `[x; y; z]`
+- 로컬 `let rec` (multi-param), unit 파라미터 shorthand `let f () = body`
+- 14개 File I/O + System 빌트인 (read_file, write_file, stdin, get_args, get_env, eprint 등)
+
+**Stats:**
+- 60 files modified, 7,781 lines added
+- 11,574 lines of F# (from 10,651)
+- 7 phases, 14 plans
+- 2 days (2026-03-24 → 2026-03-25)
+- 214 tests passing
+
+**Git range:** `feat(26-01)` → `docs(32): complete`
+
+---
+
 ## v1.8 Polymorphic GADT (Shipped: 2026-03-23)
 
 **Delivered:** OCaml 스타일 다형적 GADT 반환 타입 — `eval : 'a Expr -> 'a` 패턴으로 분기별 다른 타입 반환
