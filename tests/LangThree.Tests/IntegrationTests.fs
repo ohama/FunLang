@@ -93,6 +93,7 @@ let integrationTests = testList "Integration" [
                 ()
             | _ -> failtest "Declarations should match expected structure"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     test "testModuleLevelWithIndentedBodies" {
@@ -106,6 +107,7 @@ let integrationTests = testList "Integration" [
                 ()
             | _ -> failtest "Should have two let declarations"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     test "testEmptyModule" {
@@ -114,6 +116,7 @@ let integrationTests = testList "Integration" [
         match result with
         | Ast.EmptyModule _ -> ()
         | Ast.Module _ -> failtest "Empty input should parse as EmptyModule"
+        | _ -> failtest "Unexpected module variant"
     }
 
     test "testModuleWithVariousExprTypes" {
@@ -129,6 +132,7 @@ let integrationTests = testList "Integration" [
                 ()
             | _ -> failtest "Declarations should have lambda, number, and application"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     // Phase 1 (01-02): Multi-line function application tests
@@ -154,6 +158,7 @@ let integrationTests = testList "Integration" [
                 | _ -> failtest $"Expected App(App(Var add, 10), 20), got: %A{appExpr}"
             | _ -> failtest "Should have add and result declarations"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     test "testMultiLineFunctionAppWithComplexArgs" {
@@ -171,6 +176,7 @@ let integrationTests = testList "Integration" [
                 | _ -> failtest $"Expected nested App with Add args, got: %A{appExpr}"
             | _ -> failtest "Should have f and result declarations"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     test "testCurriedMultiLineApp" {
@@ -186,6 +192,7 @@ let integrationTests = testList "Integration" [
                 ()
             | _ -> failtest "Should have add, addTen, and result declarations with correct structure"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 
     // Phase 2 (ADT-01): Type declaration parsing tests
@@ -388,8 +395,10 @@ let integrationTests = testList "Integration" [
                 match decl with
                 | Ast.LetDecl(name, body, _) ->
                     let value = Eval.eval Map.empty Map.empty env false body
-                    Map.add name value env) Eval.emptyEnv
+                    Map.add name value env
+                | _ -> env) Eval.emptyEnv
         | Ast.EmptyModule _ -> Eval.emptyEnv
+        | _ -> failtest "Unexpected module variant"
 
     // Phase 2 (02-05): ADT evaluation integration tests
 
@@ -522,6 +531,7 @@ let integrationTests = testList "Integration" [
                 | _ -> failtest $"Expected App(App(App(f, 1), 2), 3), got: %A{appExpr}"
             | _ -> failtest "Should have f and result declarations"
         | Ast.EmptyModule _ -> failtest "Should not be empty module"
+        | _ -> failtest "Unexpected module variant"
     }
 ]
 
