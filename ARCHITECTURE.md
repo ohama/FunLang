@@ -120,6 +120,7 @@ let f x y z = body
 **LALR(1) 충돌 처리:**
 - 332 shift/reduce conflicts — 모두 shift 우선으로 올바르게 해결
 - `INDENT Expr DEDENT` 규칙으로 인한 41개 추가 충돌 포함
+- `TryWithClauses`: `try`/`with` 블록에서 파이프 없이 인라인으로 예외 핸들러를 작성하는 문법 지원
 
 ### 2.4 Elaborate (Elaborate.fs)
 
@@ -134,6 +135,11 @@ let f x y z = body
 ### 2.5 Type Checker (Bidir.fs + TypeCheck.fs)
 
 **역할:** AST + 타입 환경 → 타입 검증된 AST
+
+**모듈 맵 전파 (v2.2):**
+- `typeCheckModuleWithPrelude`는 `initialModules` 파라미터를 받아 파일 임포트 시 이미 로드된 모듈 맵을 전달
+- 파일 임포트(`fileImportTypeChecker` 델리게이트)가 반환한 모듈 맵이 타입 체크 환경에 병합
+- `Program.fs`가 prelude 모듈 맵을 타입 체크와 평가 단계로 스레딩
 
 **Bidirectional Type Checking:**
 
@@ -180,10 +186,13 @@ type Value =
     | IntValue of int
     | BoolValue of bool
     | StringValue of string
+    | CharValue of char
     | FunctionValue of param * body * closure_env
     | BuiltinValue of (Value -> Value)
     | TupleValue of Value list
     | ListValue of Value list
+    | ArrayValue of Value array
+    | HashtableValue of Dictionary<Value, Value>
     | DataValue of constructorName * Value option
     | RecordValue of typeName * Map<string, Value ref>
     | TailCall of func * arg  // TCO trampoline
@@ -191,8 +200,10 @@ type Value =
 
 **Prelude 로딩:**
 1. `Prelude/` 디렉토리의 `.fun` 파일을 알파벳순 로드
-2. 각 파일을 파싱 → 타입 체크 → 평가
-3. 결과 환경(타입 + 값)을 사용자 코드에 주입
+2. 각 파일을 `module <Stem> = ...` 블록으로 래핑 후 `open <Stem>` 삽입 → 비정규화 접근 가능
+3. 각 파일을 파싱 → 타입 체크 → 평가
+4. `PreludeResult`는 `Modules`(타입 모듈 맵)와 `ModuleValueEnv`(값 모듈 맵) 필드를 포함
+5. `Program.fs`가 prelude 모듈 맵을 타입 체크 및 평가 단계로 스레딩하여 정규화 접근(`List.map` 등)을 보장
 
 ## 3. Data Flow Example
 
@@ -230,6 +241,7 @@ src/LangThree/
 ├── Exhaustive.fs      # Pattern exhaustiveness checking
 ├── MatchCompile.fs    # Pattern → decision tree compilation
 ├── Eval.fs            # Runtime evaluation + built-in functions
+├── Prelude.fs         # Prelude loading, file import delegates
 ├── Format.fs          # AST/type pretty-printing
 ├── Diagnostic.fs      # Error/warning message formatting
 ├── Program.fs         # CLI entry point (--expr, file, --emit-ast, etc.)
@@ -239,27 +251,54 @@ src/LangThree/
 
 ## 5. Key Design Patterns
 
-### 5.1 Token Filter Pattern
+### 5.1 Core Types
+
+**기본 타입:**
+- `int`, `bool`, `string`, `char`, `unit`
+- `TList of Type` — 동종 리스트
+- `TArray of Type` — 뮤터블 배열
+- `THashtable of Type * Type` — 해시 테이블 (키 타입, 값 타입)
+- `TTuple of Type list` — 튜플
+- `TArrow of Type * Type` — 함수 타입
+- `TData of name * Type list` — 사용자 정의 ADT / GADT
+- `TRecord of name * fields` — 레코드
+- `TVar of int` — 타입 변수 (추론용)
+- `TForall of int * Type` — 전칭 다형 타입
+
+### 5.2 Token Filter Pattern
 
 Lexer → **Filter** → Parser 구조로 들여쓰기를 처리. 파서 문법을 context-free로 유지.
 이 패턴은 Python, F#, Haskell 모두 사용.
 
-### 5.2 Context Stack Pattern
+### 5.3 Context Stack Pattern
 
 IndentFilter의 `SyntaxContext list`로 중첩된 문법 구조 추적.
 Counter 대신 stack을 쓰면 중첩과 문맥 구분이 자연스럽게 해결.
 
-### 5.3 Bidirectional Type Checking
+### 5.4 Bidirectional Type Checking
 
 `synth`와 `check` 두 모드로 타입 추론과 검증을 분리.
 GADT 타입 정제는 check 모드에서만 동작 — synth는 fresh var로 위임.
 
-### 5.4 Trampoline TCO
+### 5.5 Trampoline TCO
 
 `TailCall(func, arg)` DU + while loop으로 꼬리 호출 최적화.
 스택 오버플로 없이 무한 재귀 가능.
 
-### 5.5 Decision Tree Pattern Compilation
+### 5.6 Decision Tree Pattern Compilation
 
 Jules Jacobs 알고리즘으로 패턴 → 이진 결정 트리 컴파일.
 순차 비교 대신 최소한의 비교로 올바른 분기에 도달.
+
+### 5.7 Module Map Threading
+
+`PreludeResult`는 `Modules`(타입 모듈 맵)와 `ModuleValueEnv`(값 모듈 맵)를 함께 전달.
+`fileImportTypeChecker` 델리게이트는 임포트된 파일의 모듈 맵을 반환하고, 호출자가 이를 현재 환경에 병합.
+`Program.fs`가 prelude 모듈 맵을 타입 체크 → 평가 단계 전체에 스레딩하여 Prelude와 임포트된 파일 모두에서 정규화 접근이 동작하도록 보장.
+
+### 5.8 callValueRef Forward Reference
+
+`Array.map`, `Array.fold` 등 HOF 빌트인은 사용자 함수를 호출해야 하지만 `eval`을 직접 참조할 수 없음.
+`callValueRef: (Value -> Value -> Value) ref` 뮤터블 ref 패턴으로 해결:
+빌트인 정의 시점에 ref를 플레이스홀더로 생성하고, `eval` 함수가 정의된 후 실제 구현으로 채움.
+순환 의존성 없이 HOF 빌트인과 평가기를 연결하는 표준 F# 패턴.

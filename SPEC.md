@@ -17,7 +17,7 @@ type_var    = '\'' letter (letter | digit | '_')*
 op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '~']
 ```
 
-### 1.2 Keywords (21)
+### 1.2 Keywords (22)
 
 | Token | Keyword | Token | Keyword |
 |-------|---------|-------|---------|
@@ -32,8 +32,9 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | OPEN | `open` | EXCEPTION | `exception` |
 | RAISE | `raise` | TRY | `try` |
 | WHEN | `when` | MUTABLE | `mutable` |
+| CHAR | `char` | | |
 
-### 1.3 Type Keywords (5)
+### 1.3 Type Keywords (6)
 
 | Token | Keyword |
 |-------|---------|
@@ -42,6 +43,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | TYPE_STRING | `string` |
 | TYPE_LIST | `list` |
 | TYPE_UNIT | `unit` |
+| TYPE_CHAR | `char` |
 
 ### 1.4 Operators and Delimiters
 
@@ -77,6 +79,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 |-------|---------|---------|
 | NUMBER | `digit+` | `42`, `0`, `100` |
 | STRING | `"..."` (escapes: `\n`, `\t`, `\\`, `\"`) | `"hello\nworld"` |
+| CHAR | `'\'' char '\''` (escapes: `\n`, `\t`, `\\`, `\'`) | `'a'`, `'\n'` |
 | IDENT | `ident_start ident_char*` | `x`, `myFunc`, `_temp` |
 | TYPE_VAR | `'\'' letter ident_char*` | `'a`, `'key` |
 
@@ -154,6 +157,7 @@ Decls       ::= Decl*
 
 Decl        ::= LetDecl | TypeDecl | RecordDecl | TypeAliasDecl
               | LetRecDecl | ModuleDecl | OpenDecl | ExceptionDecl
+              | LetPatDecl | FileImportDecl
 
 LetDecl     ::= 'let' IDENT '=' Expr
               | 'let' IDENT ParamList '=' Expr
@@ -173,6 +177,10 @@ TypeAliasDecl ::= 'type' IDENT TypeParams '=' TypeExpr
 ModuleDecl  ::= 'module' IDENT '=' INDENT Decls DEDENT
 
 OpenDecl    ::= 'open' QualifiedIdent
+
+FileImportDecl ::= 'open' STRING                // file import (distinct from module open)
+
+LetPatDecl  ::= 'let' '(' Pattern ',' Pattern ')' '=' Expr  // module-level tuple destructuring
 
 ExceptionDecl ::= 'exception' IDENT ('of' TypeExpr)?
 
@@ -206,6 +214,7 @@ Expr    ::= 'let' IDENT '=' Expr 'in' Expr
           | 'fun' TuplePattern '->' Expr
           | 'match' Expr 'with' MatchClauses
           | 'try' Expr 'with' MatchClauses
+          | 'try' Expr 'with' IDENT '->' Expr   // inline try-with without pipe (v2.2)
           | Expr '|>' Expr
           | Expr '>>' Expr
           | Expr '<<' Expr
@@ -230,7 +239,7 @@ Factor  ::= '-' Factor | 'raise' Atom
 AppExpr ::= AppExpr Atom | Atom
 
 Atom    ::= '(' ')'                    // unit
-          | NUMBER | IDENT | TRUE | FALSE | STRING
+          | NUMBER | IDENT | TRUE | FALSE | STRING | CHAR
           | '(' Expr ')'
           | '(' Expr ':' TypeExpr ')'  // type annotation
           | '(' Expr ',' ExprList ')'  // tuple
@@ -252,11 +261,13 @@ Pattern ::= IDENT                        // variable or nullary constructor
           | NUMBER | '-' NUMBER           // int constant (positive/negative)
           | TRUE | FALSE                  // bool constant
           | STRING                        // string constant
+          | CHAR                         // char constant
           | '(' PatternList ')'          // tuple pattern
           | '[' ']'                       // empty list
           | Pattern '::' Pattern         // cons
           | IDENT Pattern                // constructor with argument
           | '{' RecordPatFields '}'      // record pattern
+          | '[' Pattern (';' Pattern)* ']'  // list literal pattern (e.g. [x; y; z])
 
 OrPattern   ::= Pattern ('|' Pattern)*
 MatchClause ::= '|' OrPattern ('when' Expr)? '->' Expr
@@ -274,12 +285,14 @@ TypeExpr    ::= TupleType '->' TypeExpr   // function type
 TupleType   ::= AtomicType '*' TupleType  // tuple type
               | AtomicType
 
-AtomicType  ::= 'int' | 'bool' | 'string' | 'unit'
+AtomicType  ::= 'int' | 'bool' | 'string' | 'unit' | 'char'
               | TYPE_VAR                   // 'a, 'b, ...
               | IDENT                      // named type
               | AtomicType 'list'          // list type
+              | AtomicType 'array'         // array type
               | AtomicType IDENT           // parameterized type (e.g., int Expr)
               | '(' TypeExpr ')'
+// Note: hashtable type is not yet expressible in type annotations
 ```
 
 ### 3.7 Records
@@ -354,11 +367,13 @@ let result =
 ### 5.1 Core Types
 
 ```
-Type = int | bool | string | unit
+Type = int | bool | string | char | unit
      | 'a, 'b, ...                    // type variables
      | Type -> Type                    // function type
      | Type * Type * ...               // tuple type
      | Type list                       // list type
+     | Type array                      // mutable array
+     | (Type, Type) hashtable          // mutable hashtable
      | TypeName<Type, ...>             // parameterized type (ADT/GADT)
      | exn                             // exception type
 ```
@@ -400,6 +415,8 @@ let eval e =
 
 ### 5.5 Built-in Functions
 
+**String / Output:**
+
 | Function | Type | Description |
 |----------|------|-------------|
 | `string_length` | `string -> int` | 문자열 길이 |
@@ -414,6 +431,63 @@ let eval e =
 | `printfn` | `string -> ...` | 형식 출력 + 줄바꿈 |
 | `sprintf` | `string -> ... -> string` | 형식 문자열 생성 |
 
+**Char:**
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `char_to_int` | `char -> int` | ASCII code |
+| `int_to_char` | `int -> char` | ASCII code → char |
+
+**File I/O:**
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `read_file` | `string -> string` | Read file contents |
+| `write_file` | `string -> string -> unit` | Write to file |
+| `append_file` | `string -> string -> unit` | Append to file |
+| `file_exists` | `string -> bool` | Check file existence |
+| `read_lines` | `string -> string list` | Read lines |
+| `write_lines` | `string -> string list -> unit` | Write lines |
+
+**System:**
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `get_cwd` | `unit -> string` | Current directory |
+| `get_env` | `string -> string` | Environment variable |
+| `get_args` | `unit -> string list` | CLI arguments |
+| `path_combine` | `string -> string -> string` | Join paths |
+| `dir_files` | `string -> string list` | List files in directory |
+| `eprint` | `string -> unit` | Stderr output |
+| `stdin_read_line` | `unit -> string` | Read line from stdin |
+| `failwith` | `string -> 'a` | Raise exception with message |
+
+**Array:**
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `array_create` | `int -> 'a -> 'a array` | Create array |
+| `array_get` | `'a array -> int -> 'a` | Get element |
+| `array_set` | `'a array -> int -> 'a -> unit` | Set element |
+| `array_length` | `'a array -> int` | Array length |
+| `array_ofList` | `'a list -> 'a array` | List → array |
+| `array_toList` | `'a array -> 'a list` | Array → list |
+| `array_iter` | `('a -> unit) -> 'a array -> unit` | Iterate |
+| `array_map` | `('a -> 'b) -> 'a array -> 'b array` | Map |
+| `array_fold` | `('b -> 'a -> 'b) -> 'b -> 'a array -> 'b` | Fold |
+| `array_init` | `int -> (int -> 'a) -> 'a array` | Initialize |
+
+**Hashtable:**
+
+| Function | Type | Description |
+|----------|------|-------------|
+| `hashtable_create` | `unit -> ('k,'v) hashtable` | Create empty hashtable |
+| `hashtable_get` | `('k,'v) hashtable -> 'k -> 'v` | Get value |
+| `hashtable_set` | `('k,'v) hashtable -> 'k -> 'v -> unit` | Set value |
+| `hashtable_containsKey` | `('k,'v) hashtable -> 'k -> bool` | Check key |
+| `hashtable_keys` | `('k,'v) hashtable -> 'k list` | Get all keys |
+| `hashtable_remove` | `('k,'v) hashtable -> 'k -> unit` | Remove entry |
+
 ### 5.6 Prelude (Standard Library)
 
 `Prelude/` 디렉토리의 `.fun` 파일이 시작 시 자동 로드:
@@ -425,3 +499,7 @@ let eval e =
 **Core functions:** `id`, `const`, `compose`, `flip`, `apply`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore`
 
 **Operators:** `++` (list append), `<|>` (Option fallback), `^^` (string concat)
+
+**Array functions (qualified):** `Array.create`, `Array.get`, `Array.set`, `Array.length`, `Array.ofList`, `Array.toList`, `Array.iter`, `Array.map`, `Array.fold`, `Array.init`
+
+**Hashtable functions (qualified):** `Hashtable.create`, `Hashtable.get`, `Hashtable.set`, `Hashtable.containsKey`, `Hashtable.keys`, `Hashtable.remove`
