@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone
+**Current focus:** v2.2 Module Access Fix & Test Coverage
 
 ## Current Position
 
-Milestone: v2.1 archived, next milestone not yet defined
-Phase: —
+Milestone: v2.2 Module Access Fix & Test Coverage
+Phase: Not started (defining requirements)
 Plan: —
-Status: Between milestones — v2.1 shipped, ready for next
-Last activity: 2026-03-25 — v2.1 milestone archived
+Status: Defining requirements
+Last activity: 2026-03-25 — Milestone v2.2 started
 
-Progress: v1.0-v2.1 (35p, 87pl) complete | Next: TBD
+Progress: v1.0-v2.1 (35p, 87pl) complete | v2.2: defining
 
 ## Performance Metrics
 
@@ -30,7 +30,9 @@ Progress: v1.0-v2.1 (35p, 87pl) complete | Next: TBD
 
 ### Decisions
 
-(Full log in PROJECT.md Key Decisions table)
+- [v2.2]: E0313 on imported module qualified access — TypeCheck module environment not propagated through file imports
+- [v2.2]: E0313 on Prelude qualified access — Prelude files loaded as flat bindings, no module wrapper
+- [v2.2]: failwith inline parse error — `try failwith "x" with e -> y` fails, multi-line version works
 
 ### Pending Todos
 
@@ -38,14 +40,14 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- E0313 qualified access bug affects both Prelude and imported file modules
 
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: v2.1 milestone archived
+Stopped at: Milestone v2.2 initialization
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (v2.1 complete: archived to milestones/)*
+*Last updated: 2026-03-25 (v2.2 milestone started)*
