@@ -1,0 +1,6 @@
+// Test: Prelude List.length qualified access
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = List.length [10; 20; 30; 40; 50]
+// --- Output:
+5

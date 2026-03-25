@@ -1,0 +1,6 @@
+// Test: Prelude List.map qualified access
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = List.map (fun x -> x * 3) [1; 2; 3]
+// --- Output:
+[3; 6; 9]
