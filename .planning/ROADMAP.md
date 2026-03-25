@@ -82,11 +82,11 @@ Plans:
   2. flt tests for Array conversions (ofList/toList) and higher-order functions (iter/map/fold/init) all pass in CI
   3. flt tests for Hashtable operations (create/get/set/containsKey/keys/remove) all pass in CI
   4. A tutorial chapter covering both Array and Hashtable with runnable examples exists and all examples are verified
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 41-01: Write flt tests for Array (TST-18, TST-19) and Hashtable basic + extra operations (TST-21, TST-22)
-- [ ] 41-02: Write flt tests for Array higher-order functions (TST-20); write tutorial chapter for Array + Hashtable (TST-23)
+- [ ] 41-01-PLAN.md — Write flt tests for Array HOF (TST-20); run full flt suite to confirm TST-18/19/21/22 still pass
+- [ ] 41-02-PLAN.md — Write tutorial chapter for Array + Hashtable (TST-23); update SUMMARY.md
 
 ## Progress
 
