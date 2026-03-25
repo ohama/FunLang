@@ -10,7 +10,7 @@ Fix two classes of qualified module access failures (E0313) in imported file mod
 
 ## Phases
 
-- [ ] **Phase 36: Bug Fixes** - Fix E0313 for imported + Prelude module qualified access and fix failwith inline parse error
+- [x] **Phase 36: Bug Fixes** - Fix E0313 for imported + Prelude module qualified access and fix failwith inline parse error
 - [ ] **Phase 37: Test Coverage** - Add flt tests for fixed features and fill missing coverage gaps
 
 ## Phase Details
@@ -52,7 +52,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 36. Bug Fixes | v2.2 | 0/2 | Not started | - |
+| 36. Bug Fixes | v2.2 | 2/2 | Complete | 2026-03-25 |
 | 37. Test Coverage | v2.2 | 0/TBD | Not started | - |
 
 ---

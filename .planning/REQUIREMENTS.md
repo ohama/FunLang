@@ -33,9 +33,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | Phase 36 | Pending |
-| MOD-02 | Phase 36 | Pending |
-| PAR-01 | Phase 36 | Pending |
+| MOD-01 | Phase 36 | Complete |
+| MOD-02 | Phase 36 | Complete |
+| PAR-01 | Phase 36 | Complete |
 | TST-14 | Phase 37 | Pending |
 | TST-15 | Phase 37 | Pending |
 | TST-16 | Phase 37 | Pending |
