@@ -783,11 +783,16 @@ let rec typeCheckDecls
                     Map.fold (fun acc k v ->
                         if Map.containsKey k rEnv then acc
                         else Map.add k v acc) Map.empty innerRecEnv
+                // SubModules: only modules newly defined INSIDE this module (not outer mods)
+                let newSubMods =
+                    Map.fold (fun acc k v ->
+                        if Map.containsKey k mods then acc
+                        else Map.add k v acc) Map.empty innerMods
                 let exports = {
                     TypeEnv = moduleTypeEnv
                     CtorEnv = moduleCtorEnv
                     RecEnv = moduleRecEnv
-                    SubModules = innerMods
+                    SubModules = newSubMods
                 }
                 (env, cEnv, rEnv, Map.add name exports mods, warns @ innerWarns)
 

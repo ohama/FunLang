@@ -1,0 +1,8 @@
+// Test: out-of-bounds Array.get raises catchable exception
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 2 0
+let result = try Array.get arr 5 with e -> -1
+let _ = println (to_string result)
+// --- Output:
+-1

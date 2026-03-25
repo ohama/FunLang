@@ -1,0 +1,9 @@
+// Test: Array.set mutates in place; Array.get returns updated value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 3 0
+let _ = Array.set arr 1 42
+let result = Array.get arr 1
+let _ = println (to_string result)
+// --- Output:
+42

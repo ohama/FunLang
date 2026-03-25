@@ -1,0 +1,9 @@
+// Test: Array.create and Array.get, Array.length basics
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 3 0
+let _ = println (to_string (Array.get arr 0))
+let _ = println (to_string (Array.length arr))
+// --- Output:
+0
+3
