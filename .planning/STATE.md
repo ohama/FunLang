@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 Milestone: v3.0 Mutable Data Structures — COMPLETE
 Phase: 41 of 41 complete
-Plan: 1/1 in Phase 41
-Status: v3.0 milestone complete
-Last activity: 2026-03-25 — Phase 41 executed (4 flt tests for Array HOF builtins; 486/486 suite passing)
+Plan: 2/2 in Phase 41 — ALL PLANS DONE
+Status: v3.0 milestone complete — tutorial chapter written and verified
+Last activity: 2026-03-25 — Completed 41-02-PLAN.md (Korean tutorial for Array + Hashtable; SUMMARY.md updated; TST-23 done)
 
 Progress: [████████████████████] v1.0-v2.2 done (37p/92pl) | v3.0: 6/6 plans DONE
 
@@ -25,7 +25,7 @@ Progress: [████████████████████] v1.0-v2
 - v3.0 Phase 38: 2 plans in 1 day
 - v3.0 Phase 39: 1 plan in ~15 min
 - v3.0 Phase 40: 1 plan in ~2 min
-- v3.0 Phase 41: 1 plan in ~5 min
+- v3.0 Phase 41: 2 plans — plan 01 in ~5 min, plan 02 in ~5 min
 
 **Recent Trend:**
 - Trend: Stable, accelerating — v3.0 milestone complete
@@ -60,9 +60,9 @@ None — v3.0 milestone complete.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Completed 41-01-PLAN.md — 4 Array HOF flt tests (TST-20); full 486-test suite green
+Stopped at: Completed 41-02-PLAN.md — Korean tutorial chapter for Array + Hashtable; SUMMARY.md updated
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (41-01 complete: Array HOF flt tests; v3.0 milestone done; 486/486 flt tests passing)*
+*Last updated: 2026-03-25 (41-02 complete: tutorial/19-mutable-data.md + SUMMARY.md; v3.0 fully documented)*
