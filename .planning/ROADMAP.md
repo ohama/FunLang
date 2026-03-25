@@ -25,10 +25,11 @@ Fix two classes of qualified module access failures (E0313) in imported file mod
   2. `List.length`, `List.map`, `List.head` from Prelude resolve correctly at runtime (no E0313)
   3. `try failwith "boom" with e -> "caught"` parses and evaluates without error
   4. All 214 F# unit tests and 468+ flt tests continue to pass after fixes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 36-01: TBD
+- [ ] 36-01-PLAN.md — Thread module maps through TypeCheck/Prelude/Program and wrap Prelude files in modules (MOD-01, MOD-02)
+- [ ] 36-02-PLAN.md — Add TryWithClauses grammar nonterminal for inline try-with (PAR-01)
 
 ### Phase 37: Test Coverage
 
@@ -51,7 +52,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 36. Bug Fixes | v2.2 | 0/TBD | Not started | - |
+| 36. Bug Fixes | v2.2 | 0/2 | Not started | - |
 | 37. Test Coverage | v2.2 | 0/TBD | Not started | - |
 
 ---
