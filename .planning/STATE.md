@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Milestone: v2.1 Bug Fixes & Test Hardening
-Phase: 34 of 35 complete
-Plan: 2/2 in Phase 34
-Status: Phase 34 verified — ready for Phase 35
-Last activity: 2026-03-25 — Phase 34 executed and verified (5/5 must-haves, 468/468 flt passing)
+Milestone: v2.1 Bug Fixes & Test Hardening — COMPLETE
+Phase: 35 of 35 complete
+Plan: 1/1 in Phase 35
+Status: Milestone complete — all phases done
+Last activity: 2026-03-25 — Completed 35-01-PLAN.md (zero FS0025 warnings; 214/214 tests passing)
 
-Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [████░░░░░░] 80% (4/5 plans)
+Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [██████████] 100% (5/5 plans)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [████░░░░░░
 - [Phase 33-02]: MatchCompile global counter eliminated — local counter inside compileMatch, freshTestVar threaded through compile as parameter; fixes parallel-test TestVar ID collisions
 - [Phase 34-02]: open (FileImportDecl) processed at type-check time — write_file+open inline infeasible; use bash -c wrapper in flt Command to pre-create dependency files
 - [Phase 34-02]: List.length broken in flt programs (E0313 field access error); use prelude length function instead
+- [Phase 35-01]: All Ast.Module DU matches in tests must include wildcard arm — NamedModule/NamespacedModule cases cause FS0025 warnings; test helpers use failtest wildcards, eval folds use silent `| _ -> env`
 
 ### Pending Todos
 
@@ -51,9 +52,9 @@ None — TCO regression resolved (33-01: tailPos=false→true in BuiltinValue wr
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: Phase 34 complete — Completed 34-02-PLAN.md (file import + file I/O flt tests; 468/468 passing)
+Stopped at: v2.1 milestone complete — Completed 35-01-PLAN.md (zero FS0025 warnings; 214/214 tests passing)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (Phase 34-02 complete: 10 flt tests added, 468/468 passing; Phase 34 done)*
+*Last updated: 2026-03-25 (Phase 35-01 complete: zero FS0025 warnings in IntegrationTests.fs + RecordTests.fs; v2.1 milestone done)*
