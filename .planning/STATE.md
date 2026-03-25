@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 Milestone: v3.0 Mutable Data Structures
 Phase: 38 of 41 (Array Type)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-03-25 — v3.0 roadmap created (Phases 38-41)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-03-25 — Completed 38-01-PLAN.md (ArrayValue + TArray infrastructure)
 
-Progress: [██████████░░░░░░░░░░] v1.0-v2.2 done (37p/92pl) | v3.0: 0/6 plans
+Progress: [██████████░░░░░░░░░░] v1.0-v2.2 done (37p/92pl) | v3.0: 1/6 plans
 
 ## Performance Metrics
 
@@ -35,6 +35,8 @@ Progress: [██████████░░░░░░░░░░] v1.0-v2
 Key decisions relevant to v3.0:
 - BuiltinValue DU for native F# functions — ArrayValue and HashtableValue follow same pattern
 - Phase 38 and Phase 39 can execute in parallel (independent DU cases)
+- ArrayValue uses Value array (no outer ref) — in-place element mutation via arr.[i] <- v; no need to replace whole array
+- Array equality uses ReferenceEquals — two distinct arrays are never equal by value (matches F# mutable semantics)
 
 ### Pending Todos
 
@@ -47,9 +49,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: v3.0 roadmap created — ready to plan Phase 38
+Stopped at: Completed 38-01-PLAN.md — ArrayValue + TArray infrastructure
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (v3.0 roadmap created)*
+*Last updated: 2026-03-25 (38-01 complete: ArrayValue + TArray infrastructure)*
