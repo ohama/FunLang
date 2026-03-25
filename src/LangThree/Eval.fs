@@ -150,6 +150,15 @@ let rec formatValue (v: Value) : string =
 /// Set by Program.fs after Argu parsing. Used by get_args builtin.
 let mutable scriptArgs : string list = []
 
+/// Forward reference to eval, set after eval is defined.
+/// Used by array higher-order function builtins (Phase 40) to invoke user closures.
+let callValueRef : (Value -> Value -> Value) ref =
+    ref (fun _ _ -> failwith "callValueRef not initialized")
+
+/// Invoke a user-supplied function value from within a builtin.
+/// Delegates to callValueRef which is wired up after eval is defined.
+let callValue (f: Value) (arg: Value) : Value = (!callValueRef) f arg
+
 /// Initial built-in environment: all 6 string functions as BuiltinValue.
 /// Merged into the evaluation environment at startup (Program.fs, Repl.fs).
 /// Curried multi-arg builtins use nested BuiltinValue wrappers.
@@ -473,6 +482,43 @@ let initialBuiltinEnv : Env =
             match v with
             | ArrayValue arr -> ListValue (Array.toList arr)
             | _ -> failwith "Array.toList: expected array")
+
+        // Phase 40: Array higher-order function builtins (ARR-07 through ARR-10)
+        // array_iter : ('a -> unit) -> 'a array -> unit
+        "array_iter", BuiltinValue (fun fVal ->
+            BuiltinValue (fun arrVal ->
+                match arrVal with
+                | ArrayValue arr ->
+                    for x in arr do
+                        callValue fVal x |> ignore
+                    TupleValue []
+                | _ -> failwith "Array.iter: expected array"))
+
+        // array_map : ('a -> 'b) -> 'a array -> 'b array
+        "array_map", BuiltinValue (fun fVal ->
+            BuiltinValue (fun arrVal ->
+                match arrVal with
+                | ArrayValue arr ->
+                    ArrayValue (Array.map (fun x -> callValue fVal x) arr)
+                | _ -> failwith "Array.map: expected array"))
+
+        // array_fold : ('acc -> 'a -> 'acc) -> 'acc -> 'a array -> 'acc
+        "array_fold", BuiltinValue (fun fVal ->
+            BuiltinValue (fun initVal ->
+                BuiltinValue (fun arrVal ->
+                    match arrVal with
+                    | ArrayValue arr ->
+                        Array.fold (fun acc x -> callValue (callValue fVal acc) x) initVal arr
+                    | _ -> failwith "Array.fold: expected array")))
+
+        // array_init : int -> (int -> 'a) -> 'a array
+        "array_init", BuiltinValue (fun nVal ->
+            BuiltinValue (fun fVal ->
+                match nVal with
+                | IntValue n when n >= 0 ->
+                    ArrayValue (Array.init n (fun i -> callValue fVal (IntValue i)))
+                | IntValue n -> failwithf "Array.init: negative size %d" n
+                | _ -> failwith "Array.init: expected int as first argument"))
 
         // Phase 39: Hashtable builtins (HT-01 through HT-06)
 
@@ -1067,6 +1113,17 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 /// Convenience function for top-level evaluation
 let evalExpr (expr: Expr) : Value =
     eval Map.empty Map.empty emptyEnv false expr
+
+/// Wire up callValueRef now that eval is defined.
+/// This allows array HOF builtins (Phase 40) to invoke user closures.
+do callValueRef :=
+    (fun f arg ->
+        match f with
+        | BuiltinValue fn -> fn arg
+        | FunctionValue (param, body, env) ->
+            let callEnv = Map.add param arg env
+            eval Map.empty Map.empty callEnv false body
+        | _ -> failwith "expected function value")
 
 /// Evaluate module declarations, building value and module environments
 let rec evalModuleDecls
