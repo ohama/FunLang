@@ -1,0 +1,15 @@
+// Test: Hashtable.create, Hashtable.set, Hashtable.get, Hashtable.containsKey basics (HT-01, HT-02, HT-04)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "x" 10
+let _ = Hashtable.set ht "y" 20
+let _ = println (to_string (Hashtable.get ht "x"))
+let _ = println (to_string (Hashtable.get ht "y"))
+let _ = println (to_string (Hashtable.containsKey ht "x"))
+let _ = println (to_string (Hashtable.containsKey ht "z"))
+// --- Output:
+10
+20
+true
+false

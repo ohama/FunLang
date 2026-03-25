@@ -121,6 +121,20 @@ let initialTypeEnv: TypeEnv =
         "array_of_list", Scheme([0], TArrow(TList (TVar 0), TArray (TVar 0)))
         // array_to_list : 'a array -> 'a list
         "array_to_list", Scheme([0], TArrow(TArray (TVar 0), TList (TVar 0)))
+
+        // Phase 39: Hashtable builtins (HT-01 through HT-06)
+        // hashtable_create : unit -> hashtable<'k, 'v>
+        "hashtable_create",    Scheme([0; 1], TArrow(TTuple [], THashtable (TVar 0, TVar 1)))
+        // hashtable_get : hashtable<'k, 'v> -> 'k -> 'v
+        "hashtable_get",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TVar 1)))
+        // hashtable_set : hashtable<'k, 'v> -> 'k -> 'v -> unit
+        "hashtable_set",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TArrow(TVar 1, TTuple []))))
+        // hashtable_containsKey : hashtable<'k, 'v> -> 'k -> bool
+        "hashtable_containsKey", Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TBool)))
+        // hashtable_keys : hashtable<'k, 'v> -> 'k list
+        "hashtable_keys",      Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TList (TVar 0)))
+        // hashtable_remove : hashtable<'k, 'v> -> 'k -> unit
+        "hashtable_remove",    Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [])))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

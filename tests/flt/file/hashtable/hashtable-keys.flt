@@ -1,0 +1,11 @@
+// Test: Hashtable.keys returns all current keys as a list (HT-05)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "only" 42
+let ks = Hashtable.keys ht
+let _ = println (to_string (List.length ks))
+let _ = println (to_string (Hashtable.containsKey ht "only"))
+// --- Output:
+1
+true

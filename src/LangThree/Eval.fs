@@ -473,6 +473,55 @@ let initialBuiltinEnv : Env =
             match v with
             | ArrayValue arr -> ListValue (Array.toList arr)
             | _ -> failwith "Array.toList: expected array")
+
+        // Phase 39: Hashtable builtins (HT-01 through HT-06)
+
+        // hashtable_create : unit -> hashtable<'k, 'v>
+        "hashtable_create", BuiltinValue (fun _ ->
+            HashtableValue (System.Collections.Generic.Dictionary<Value, Value>()))
+
+        // hashtable_get : hashtable<'k, 'v> -> 'k -> 'v   (raises LangThreeException if missing)
+        "hashtable_get", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    match ht.TryGetValue(keyVal) with
+                    | true, v -> v
+                    | false, _ ->
+                        raise (LangThreeException (StringValue (sprintf "Hashtable.get: key not found")))
+                | _ -> failwith "Hashtable.get: expected hashtable"))
+
+        // hashtable_set : hashtable<'k, 'v> -> 'k -> 'v -> unit
+        "hashtable_set", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                BuiltinValue (fun valVal ->
+                    match htVal with
+                    | HashtableValue ht ->
+                        ht.[keyVal] <- valVal
+                        TupleValue []
+                    | _ -> failwith "Hashtable.set: expected hashtable")))
+
+        // hashtable_containsKey : hashtable<'k, 'v> -> 'k -> bool
+        "hashtable_containsKey", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht -> BoolValue (ht.ContainsKey(keyVal))
+                | _ -> failwith "Hashtable.containsKey: expected hashtable"))
+
+        // hashtable_keys : hashtable<'k, 'v> -> 'k list
+        "hashtable_keys", BuiltinValue (fun htVal ->
+            match htVal with
+            | HashtableValue ht -> ListValue (ht.Keys |> Seq.toList)
+            | _ -> failwith "Hashtable.keys: expected hashtable")
+
+        // hashtable_remove : hashtable<'k, 'v> -> 'k -> unit
+        "hashtable_remove", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    ht.Remove(keyVal) |> ignore
+                    TupleValue []
+                | _ -> failwith "Hashtable.remove: expected hashtable"))
     ]
 
 /// Module value environment for runtime qualified access
