@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 Milestone: v2.1 Bug Fixes & Test Hardening
 Phase: 33 of 35 (TCO Fix + Test Isolation)
-Plan: 0 of 2 in Phase 33
-Status: Ready to plan
-Last activity: 2026-03-25 — Roadmap created for v2.1 (Phases 33-35)
+Plan: 2 of 2 in Phase 33
+Status: Phase 33 complete
+Last activity: 2026-03-25 — Completed 33-02-PLAN.md (MatchCompile global counter elimination)
 
-Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [░░░░░░░░░░] 0% (0/5 plans)
+Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [██░░░░░░░░] 40% (2/5 plans)
 
 ## Performance Metrics
 
@@ -35,6 +35,7 @@ Progress: v1.0-v2.0 (32p, 82pl) complete | v2.1: [░░░░░░░░░░
 - [Phase 31-02]: Tests using shared mutable currentTypeCheckingFile/currentEvalFile must be wrapped in testSequenced to avoid parallel-execution race conditions
 - [v2.1]: TCO broken by Phase 30 LetRec→BuiltinValue change (tailPos=false hardcoded in wrapper)
 - [v2.1]: BuiltinValue signature (Value -> Value) cannot carry tailPos — structural limitation requiring workaround
+- [Phase 33-02]: MatchCompile global counter eliminated — local counter inside compileMatch, freshTestVar threaded through compile as parameter; fixes parallel-test TestVar ID collisions
 
 ### Pending Todos
 
@@ -47,9 +48,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-25
-Stopped at: v2.1 roadmap created — Phase 33 ready to plan
+Stopped at: Completed 33-02-PLAN.md — Phase 33 complete, ready for Phase 34
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-25 (v2.1 roadmap written, Phases 33-35 defined)*
+*Last updated: 2026-03-25 (33-02 complete: MatchCompile global counter eliminated, 214 tests passing)*
