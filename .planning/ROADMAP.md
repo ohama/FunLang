@@ -68,10 +68,10 @@ Plans:
   2. `Array.map (fun x -> x * 2) arr` returns a new array with each element doubled
   3. `Array.fold (fun acc x -> acc + x) 0 arr` reduces the array to a single accumulated value
   4. `Array.init 5 (fun i -> i * i)` creates `[|0; 1; 4; 9; 16|]` without an explicit create+set loop
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 40-01: Implement Array.iter, Array.map, Array.fold, Array.init builtins in Eval.fs; register TypeCheck entries; verify 0 compiler warnings
+- [ ] 40-01-PLAN.md — Add array_iter/map/fold/init builtins to Eval.fs + TypeCheck.fs; expose as Array.iter/map/fold/init in Prelude/Array.fun; verify 0 compiler warnings
 
 #### Phase 41: Tests and Documentation
 **Goal**: All new mutable data structure features are verified by flt tests and documented in the tutorial
