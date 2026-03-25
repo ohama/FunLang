@@ -64,10 +64,10 @@
 | HT-04 | Phase 39 | Complete |
 | HT-05 | Phase 39 | Complete |
 | HT-06 | Phase 39 | Complete |
-| ARR-07 | Phase 40 | Pending |
-| ARR-08 | Phase 40 | Pending |
-| ARR-09 | Phase 40 | Pending |
-| ARR-10 | Phase 40 | Pending |
+| ARR-07 | Phase 40 | Complete |
+| ARR-08 | Phase 40 | Complete |
+| ARR-09 | Phase 40 | Complete |
+| ARR-10 | Phase 40 | Complete |
 | TST-18 | Phase 41 | Pending |
 | TST-19 | Phase 41 | Pending |
 | TST-20 | Phase 41 | Pending |
