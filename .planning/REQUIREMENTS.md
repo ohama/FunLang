@@ -42,23 +42,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MUT-01 | — | Pending |
-| MUT-02 | — | Pending |
-| MUT-03 | — | Pending |
-| MUT-04 | — | Pending |
-| MUT-05 | — | Pending |
-| MUT-06 | — | Pending |
-| MUT-07 | — | Pending |
-| MUT-08 | — | Pending |
-| TST-24 | — | Pending |
-| TST-25 | — | Pending |
-| TST-26 | — | Pending |
-| TST-27 | — | Pending |
+| MUT-01 | Phase 42 | Pending |
+| MUT-02 | Phase 42 | Pending |
+| MUT-03 | Phase 42 | Pending |
+| MUT-04 | Phase 43 | Pending |
+| MUT-05 | Phase 42 | Pending |
+| MUT-06 | Phase 43 | Pending |
+| MUT-07 | Phase 43 | Pending |
+| MUT-08 | Phase 43 | Pending |
+| TST-24 | Phase 44 | Pending |
+| TST-25 | Phase 44 | Pending |
+| TST-26 | Phase 44 | Pending |
+| TST-27 | Phase 44 | Pending |
 
 **Coverage:**
 - v4.0 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
+*Traceability updated: 2026-03-26*
