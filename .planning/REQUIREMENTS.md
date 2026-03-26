@@ -42,11 +42,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MUT-01 | Phase 42 | Pending |
-| MUT-02 | Phase 42 | Pending |
-| MUT-03 | Phase 42 | Pending |
+| MUT-01 | Phase 42 | Complete |
+| MUT-02 | Phase 42 | Complete |
+| MUT-03 | Phase 42 | Complete |
 | MUT-04 | Phase 43 | Pending |
-| MUT-05 | Phase 42 | Pending |
+| MUT-05 | Phase 42 | Complete |
 | MUT-06 | Phase 43 | Pending |
 | MUT-07 | Phase 43 | Pending |
 | MUT-08 | Phase 43 | Pending |

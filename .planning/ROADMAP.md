@@ -22,7 +22,7 @@ v4.0 adds `let mut` mutable variable declarations and `<-` reassignment to LangT
 
 **Milestone Goal:** `let mut` mutable variable declaration and `<-` reassignment with full type safety
 
-- [ ] **Phase 42: Core Mutable Variables** - AST, Parser, Eval, TypeCheck for let mut and x <- expr
+- [x] **Phase 42: Core Mutable Variables** - AST, Parser, Eval, TypeCheck for let mut and x <- expr
 - [ ] **Phase 43: Edge Cases and Error Handling** - Closure capture, immutability enforcement, parameter safety
 - [ ] **Phase 44: Tests and Documentation** - flt test suite and tutorial chapter
 
@@ -40,8 +40,8 @@ v4.0 adds `let mut` mutable variable declarations and `<-` reassignment to LangT
 **Plans**: 2 plans
 
 Plans:
-- [ ] 42-01-PLAN.md — AST nodes, parser grammar, diagnostics, formatting, inference stubs
-- [ ] 42-02-PLAN.md — Eval, Bidir type checking, TypeCheck module-level support
+- [x] 42-01-PLAN.md — AST nodes, parser grammar, diagnostics, formatting, inference stubs
+- [x] 42-02-PLAN.md — Eval, Bidir type checking, TypeCheck module-level support
 
 ### Phase 43: Edge Cases and Error Handling
 **Goal**: Mutable variable system correctly rejects invalid operations and handles advanced scenarios like closure capture
@@ -78,7 +78,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Core Mutable Variables | v4.0 | 0/2 | Planned | - |
+| 42. Core Mutable Variables | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 43. Edge Cases and Error Handling | v4.0 | 0/TBD | Not started | - |
 | 44. Tests and Documentation | v4.0 | 0/TBD | Not started | - |
 
