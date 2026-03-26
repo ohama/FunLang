@@ -47,6 +47,8 @@ type TypeErrorKind =
     | NonExhaustiveMatch of missingPatterns: string list
     | RedundantPattern of index: int
     | NonExhaustiveExceptionHandler of missingInfo: string       // W0003
+    // Phase 42 (Mutable Variables): Immutable variable assignment error
+    | ImmutableVariableAssignment of varName: string            // E0320
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -302,6 +304,11 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "W0003",
             sprintf "Non-exhaustive exception handler: %s" missingInfo,
             Some "Add a catch-all handler or handle all possible exceptions"
+
+        | ImmutableVariableAssignment varName ->
+            Some "E0320",
+            sprintf "Cannot assign to immutable variable '%s'. Use 'let mut' to declare mutable variables." varName,
+            Some "Declare the variable with 'let mut' to allow assignment"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "

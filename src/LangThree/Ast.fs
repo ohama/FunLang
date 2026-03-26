@@ -109,6 +109,9 @@ type Expr =
     | Range of start: Expr * stop: Expr * step: Expr option * Span
     // Phase 21: Modulo operator
     | Modulo of Expr * Expr * Span
+    // Phase 42 (Mutable Variables): Mutable variable support
+    | LetMut of name: string * value: Expr * body: Expr * span: Span
+    | Assign of name: string * value: Expr * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -194,6 +197,7 @@ and [<CustomEquality; CustomComparison>] Value =
     | TailCall of func: Value * arg: Value  // Phase 15: Deferred tail call for trampoline TCO
     | ArrayValue of Value array             // Phase 38: Mutable fixed-size array
     | HashtableValue of System.Collections.Generic.Dictionary<Value, Value>  // Phase 39: Mutable key-value hashtable
+    | RefValue of Value ref  // Phase 42: Mutable variable ref cell (transparent to user code)
 
     override x.Equals(obj) =
         match obj with
@@ -215,6 +219,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | TailCall _ -> 0
         | ArrayValue arr -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(arr)
         | HashtableValue ht -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(ht)
+        | RefValue r -> hash (!r)
 
     interface System.IEquatable<Value> with
         member x.Equals(y: Value) = Value.valueEqual x y
@@ -240,6 +245,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | TailCall _, _ | _, TailCall _ -> false  // TailCall is transient, never compared
         | ArrayValue r1, ArrayValue r2 -> System.Object.ReferenceEquals(r1, r2)
         | HashtableValue h1, HashtableValue h2 -> System.Object.ReferenceEquals(h1, h2)
+        | RefValue r1, RefValue r2 -> Value.valueEqual !r1 !r2
         | _ -> false
 
     static member valueCompare (x: Value) (y: Value) =
@@ -251,6 +257,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | TailCall _, _ | _, TailCall _ -> 0
         | ArrayValue _, _ | _, ArrayValue _ -> 0
         | HashtableValue _, _ | _, HashtableValue _ -> 0
+        | RefValue r1, RefValue r2 -> Value.valueCompare !r1 !r2
         | _ -> 0
 
 /// Environment mapping variable names to values
@@ -289,6 +296,7 @@ let spanOf (expr: Expr) : Span =
     | PipeRight(_, _, s) | ComposeRight(_, _, s) | ComposeLeft(_, _, s) -> s
     | Range(_, _, _, s) -> s
     | Modulo(_, _, s) -> s
+    | LetMut(_, _, _, s) | Assign(_, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
@@ -318,6 +326,8 @@ type Decl =
     | LetRecDecl of bindings: (string * string * Expr * Span) list * Span
     // Phase 31 (Module System): File-based import declaration
     | FileImportDecl of path: string * Span
+    // Phase 42 (Mutable Variables): Module-level mutable variable declaration
+    | LetMutDecl of name: string * body: Expr * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -341,6 +351,7 @@ let declSpanOf (decl: Decl) : Span =
     | TypeAliasDecl(_, _, _, s) -> s
     | LetRecDecl(_, s) -> s
     | FileImportDecl(_, s) -> s
+    | LetMutDecl(_, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
