@@ -37,11 +37,11 @@ v4.0 adds `let mut` mutable variable declarations and `<-` reassignment to LangT
   2. User can write `let mut x = 0` at module level and the variable persists across subsequent module-level expressions
   3. User can write `x <- 10` to reassign a mutable variable and the expression returns unit
   4. Type checker correctly infers and tracks mutable variable types without annotation
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 42-01: TBD
-- [ ] 42-02: TBD
+- [ ] 42-01-PLAN.md — AST nodes, parser grammar, diagnostics, formatting, inference stubs
+- [ ] 42-02-PLAN.md — Eval, Bidir type checking, TypeCheck module-level support
 
 ### Phase 43: Edge Cases and Error Handling
 **Goal**: Mutable variable system correctly rejects invalid operations and handles advanced scenarios like closure capture
@@ -78,7 +78,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Core Mutable Variables | v4.0 | 0/TBD | Not started | - |
+| 42. Core Mutable Variables | v4.0 | 0/2 | Planned | - |
 | 43. Edge Cases and Error Handling | v4.0 | 0/TBD | Not started | - |
 | 44. Tests and Documentation | v4.0 | 0/TBD | Not started | - |
 
