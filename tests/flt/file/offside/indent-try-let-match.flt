@@ -1,0 +1,29 @@
+// Test: try-with containing let + match at depth 5
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception DivByZero
+
+let safe_div a b =
+    try
+        let result =
+            if b = 0 then raise DivByZero
+            else
+                let q = a / b
+                let label =
+                    match q with
+                    | 0 -> "zero"
+                    | _ ->
+                        let s = to_string q
+                        s
+                label
+        result
+    with
+    | DivByZero -> "div-by-zero"
+
+let _ = println (safe_div 10 3)
+let _ = println (safe_div 10 0)
+let _ = println (safe_div 0 5)
+// --- Output:
+3
+div-by-zero
+zero

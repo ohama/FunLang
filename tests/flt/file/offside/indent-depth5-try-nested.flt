@@ -1,0 +1,28 @@
+// Test: deeply nested try-with with let bindings (depth 5)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+exception E1
+exception E2
+exception E3
+
+let result =
+    try
+        let a =
+            try
+                let b =
+                    try
+                        let c =
+                            try raise E3
+                            with
+                            | E1 -> 1
+                        c
+                    with
+                    | E2 -> 2
+                b
+            with
+            | E3 -> 3
+        a
+    with
+    | _ -> 99
+// --- Output:
+3

@@ -1,0 +1,34 @@
+// Test: nested match expressions (match inside match clause) at depth 5
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Shape = Circle of int | Rect of int * int | Point
+
+let describe s colored =
+    match s with
+    | Circle r ->
+        let size =
+            match r with
+            | 0 -> "zero"
+            | _ ->
+                let label =
+                    match colored with
+                    | true ->
+                        let c = "red"
+                        string_concat c "-circle"
+                    | false -> "plain-circle"
+                label
+        size
+    | Rect (w, h) ->
+        let area = w * h
+        to_string area
+    | Point -> "point"
+
+let _ = println (describe (Circle 5) true)
+let _ = println (describe (Circle 0) false)
+let _ = println (describe (Rect (3, 4)) false)
+let _ = println (describe Point true)
+// --- Output:
+red-circle
+zero
+12
+point

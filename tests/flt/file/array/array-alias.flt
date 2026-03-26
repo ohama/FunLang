@@ -1,0 +1,9 @@
+// Test: Array aliasing - mutation through one reference visible from another
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 3 0
+let alias = arr
+let _ = Array.set arr 1 77
+let _ = println (to_string (Array.get alias 1))
+// --- Output:
+77

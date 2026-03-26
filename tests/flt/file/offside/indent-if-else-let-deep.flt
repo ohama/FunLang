@@ -1,0 +1,36 @@
+// Test: if-then-else with let bindings in both branches, deeply nested
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let clamp lo hi x =
+    if x < lo then
+        let clamped = lo
+        let msg =
+            if clamped = 0 then
+                let tag =
+                    let prefix = "zero"
+                    prefix
+                tag
+            else
+                let tag =
+                    let prefix = "lo"
+                    let val_str = to_string clamped
+                    string_concat prefix (string_concat "=" val_str)
+                tag
+        msg
+    else if x > hi then
+        let clamped = hi
+        let msg = string_concat "hi=" (to_string clamped)
+        msg
+    else
+        let msg = string_concat "ok=" (to_string x)
+        msg
+
+let _ = println (clamp 0 100 50)
+let _ = println (clamp 0 100 150)
+let _ = println (clamp 0 100 (0 - 5))
+let _ = println (clamp 10 100 5)
+// --- Output:
+ok=50
+hi=100
+zero
+lo=10

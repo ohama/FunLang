@@ -1,0 +1,17 @@
+// Test: let rec with deep nesting (depth 5)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let rec sum_to n =
+        if n <= 0 then 0
+        else
+            let rest =
+                let prev = n - 1
+                let sub_sum =
+                    let r = sum_to prev
+                    r
+                sub_sum
+            n + rest
+    sum_to 10
+// --- Output:
+55

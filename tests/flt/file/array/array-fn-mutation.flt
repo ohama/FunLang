@@ -1,0 +1,17 @@
+// Test: Array passed to function - mutation visible after function returns
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let fillArray = fun arr -> fun v ->
+  let _ = Array.set arr 0 v
+  let _ = Array.set arr 1 (v + 1)
+  let _ = Array.set arr 2 (v + 2)
+  ()
+let arr = Array.create 3 0
+let _ = fillArray arr 100
+let _ = println (to_string (Array.get arr 0))
+let _ = println (to_string (Array.get arr 1))
+let _ = println (to_string (Array.get arr 2))
+// --- Output:
+100
+101
+102

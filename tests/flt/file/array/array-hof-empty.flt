@@ -1,0 +1,14 @@
+// Test: HOF on empty arrays - fold returns init, map returns empty, init 0 returns empty
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let empty = Array.create 0 0
+let sum = Array.fold (fun acc -> fun x -> acc + x) 42 empty
+let _ = println (to_string sum)
+let mapped = Array.map (fun x -> x * 2) empty
+let _ = println (to_string (Array.length mapped))
+let inited = Array.init 0 (fun i -> i)
+let _ = println (to_string (Array.length inited))
+// --- Output:
+42
+0
+0

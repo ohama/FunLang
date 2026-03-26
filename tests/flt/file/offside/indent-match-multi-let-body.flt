@@ -1,0 +1,30 @@
+// Test: multiple let bindings in each match clause body at various depths
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let eval op a b =
+    match op with
+    | "add" ->
+        let x = a + b
+        let label = "sum"
+        let msg = string_concat label (string_concat "=" (to_string x))
+        msg
+    | "mul" ->
+        let x = a * b
+        let doubled =
+            let d = x * 2
+            d
+        let msg = string_concat "double-product=" (to_string doubled)
+        msg
+    | _ ->
+        let msg =
+            let unknown = string_concat "unknown:" op
+            unknown
+        msg
+
+let _ = println (eval "add" 3 4)
+let _ = println (eval "mul" 3 4)
+let _ = println (eval "sub" 3 4)
+// --- Output:
+sum=7
+double-product=24
+unknown:sub

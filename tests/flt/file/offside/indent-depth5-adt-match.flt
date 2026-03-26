@@ -1,0 +1,29 @@
+// Test: ADT pattern matching with deep nested let bindings in clauses
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
+
+let rec eval e =
+    match e with
+    | Num n -> n
+    | Add (l, r) ->
+        let lv =
+            let result = eval l
+            result
+        let rv =
+            let result = eval r
+            result
+        lv + rv
+    | Mul (l, r) ->
+        let lv =
+            let result = eval l
+            result
+        let rv =
+            let result = eval r
+            result
+        lv * rv
+
+let expr = Add (Mul (Num 2, Num 3), Add (Num 4, Num 5))
+let _ = println (to_string (eval expr))
+// --- Output:
+15

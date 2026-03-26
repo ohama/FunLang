@@ -10,7 +10,7 @@ Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 # F# unit tests (224 tests)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (486 tests)
+# fslit integration tests (521 tests)
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)
@@ -62,20 +62,20 @@ tests/flt/
 │   ├── tuple/      # 튜플
 │   ├── type-annot/ # 타입 주석
 │   └── unit/       # 유닛 타입
-├── file/           # 파일 모드 테스트 (281 tests, 26 subdirs)
+├── file/           # 파일 모드 테스트 (331 tests, 26 subdirs)
 │   ├── adt/        # ADT + GADT (17 tests)
 │   ├── algorithm/  # 알고리즘 (27 tests)
-│   ├── array/      # mutable array (8 tests)
+│   ├── array/      # mutable array (18 tests)
 │   ├── char/       # char type (6 tests)
 │   ├── exception/  # 예외 처리 (9 tests)
 │   ├── fileio/     # file I/O (8 tests)
 │   ├── function/   # 함수 (12 tests)
-│   ├── hashtable/  # hashtable (4 tests)
+│   ├── hashtable/  # hashtable (10 tests)
 │   ├── implicit-in/# implicit in (8 tests)
 │   ├── import/     # file import (3 tests)
 │   ├── match/      # 패턴 매칭 (38 tests)
 │   ├── module/     # 모듈 (11 tests)
-│   ├── offside/    # offside rule (15 tests)
+│   ├── offside/    # offside rule (34 tests)
 │   ├── operator/   # 사용자 정의 연산자 (16 tests)
 │   ├── option/     # Option 타입 (6 tests)
 │   ├── pipe/       # 파이프 (7 tests)

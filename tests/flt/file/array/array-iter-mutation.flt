@@ -1,0 +1,13 @@
+// Test: Array.map used to double elements, then verify via fold
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let src = Array.ofList [10; 20; 30]
+let doubled = Array.map (fun x -> x * 2) src
+let sum = Array.fold (fun acc -> fun x -> acc + x) 0 doubled
+let _ = println (to_string sum)
+let _ = println (to_string (Array.get doubled 0))
+let _ = println (to_string (Array.get doubled 2))
+// --- Output:
+120
+20
+60

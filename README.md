@@ -189,7 +189,7 @@ LangThree/
 ├── src/LangThree/       # Interpreter source (~12,000 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (486 tests)
+│   └── flt/             # fslit integration tests (521 tests)
 │       ├── expr/        # Expression-mode tests (16 subdirs)
 │       ├── file/        # File-mode tests (21 subdirs)
 │       ├── emit/        # AST/type emission tests
@@ -215,10 +215,10 @@ LangThree/
 # F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (486)
+# fslit integration tests (521)
 /path/to/fslit tests/flt/
 
-# Total: ~710 tests
+# Total: ~745 tests
 ```
 
 ## Milestones

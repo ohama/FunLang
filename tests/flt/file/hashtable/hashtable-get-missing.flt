@@ -1,0 +1,8 @@
+// Test: Hashtable.get on missing key raises catchable exception
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = Hashtable.create ()
+let r = try Hashtable.get ht "nope" with e -> "caught"
+let _ = println r
+// --- Output:
+caught

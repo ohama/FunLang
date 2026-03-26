@@ -1,0 +1,14 @@
+// Test: mixed explicit and implicit 'in' at depth 5
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a = 1
+    let b =
+        let c = let d = 2 in d + 1
+        let e =
+            let f = let g = c * 2 in g + 1
+            f + 1
+        e + c
+    a + b
+// --- Output:
+12

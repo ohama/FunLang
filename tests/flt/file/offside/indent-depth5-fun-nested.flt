@@ -1,0 +1,16 @@
+// Test: deeply nested lambda (fun) with let bindings (depth 5)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let make_adder = fun base ->
+    let offset =
+        let inner = fun delta ->
+            let adjusted =
+                let scaled = delta * 2
+                scaled + base
+            adjusted
+        inner 5
+    offset
+
+let _ = println (to_string (make_adder 100))
+// --- Output:
+110

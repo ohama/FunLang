@@ -1,5 +1,28 @@
 # Project Milestones: LangThree
 
+## v3.0 Mutable Data Structures (Shipped: 2026-03-25)
+
+**Delivered:** Array와 Hashtable 가변 자료구조 추가 — 생성/조회/변이/변환/고차함수 + 한국어 튜토리얼
+
+**Phases completed:** 38-41 (6 plans total)
+
+**Key accomplishments:**
+- ArrayValue (mutable fixed-size array) — create/get/set/length/ofList/toList
+- HashtableValue (mutable key-value store) — create/get/set/containsKey/keys/remove
+- Array HOF builtins (iter/map/fold/init) with callValueRef forward reference pattern
+- Korean tutorial chapter (19-mutable-data.md) + flt test suite (486→521 tests)
+
+**Stats:**
+- 38 files changed, +3,177 LOC
+- ~11,850 lines of F# source
+- 4 phases, 6 plans
+- 1 day (2026-03-25)
+- 224 F# unit tests + 521 flt tests, all passing
+
+**Git range:** `feat(38-01)` → `docs(41): complete`
+
+---
+
 ## v2.2 Module Access Fix & Test Coverage (Shipped: 2026-03-25)
 
 **Delivered:** E0313 qualified module access 버그 수정 (임포트 + Prelude), inline try-with 파싱 수정, 누락 flt 테스트 보충

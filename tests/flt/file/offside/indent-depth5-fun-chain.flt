@@ -1,0 +1,18 @@
+// Test: chained lambda definitions with deep nesting
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let apply3 = fun f -> fun g -> fun h -> fun x ->
+    let a =
+        let r1 = f x
+        let r2 = g r1
+        let r3 = h r2
+        r3
+    a
+
+let double = fun x -> x * 2
+let inc = fun x -> x + 1
+let square = fun x -> x * x
+
+let _ = println (to_string (apply3 double inc square 3))
+// --- Output:
+49

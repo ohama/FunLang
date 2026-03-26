@@ -1,0 +1,13 @@
+// Test: Hashtable passed to function - mutation visible after function returns
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let addEntry = fun ht -> fun k -> fun v ->
+  Hashtable.set ht k v
+let ht = Hashtable.create ()
+let _ = addEntry ht "x" 100
+let _ = addEntry ht "y" 200
+let _ = println (to_string (Hashtable.get ht "x"))
+let _ = println (to_string (Hashtable.get ht "y"))
+// --- Output:
+100
+200

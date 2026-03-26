@@ -1,0 +1,13 @@
+// Test: Empty array (size 0) - create, length, toList
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 0 0
+let _ = println (to_string (Array.length arr))
+let xs = Array.toList arr
+let _ = println (to_string (List.length xs))
+let arr2 = Array.ofList []
+let _ = println (to_string (Array.length arr2))
+// --- Output:
+0
+0
+0

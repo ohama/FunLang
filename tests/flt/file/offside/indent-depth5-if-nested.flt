@@ -1,0 +1,30 @@
+// Test: deeply nested if-then-else with let bindings (depth 5)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let grade score =
+    if score >= 90 then
+        let tier =
+            if score >= 95 then
+                let bonus =
+                    if score >= 98 then
+                        let extra =
+                            if score = 100 then "perfect"
+                            else "near-perfect"
+                        extra
+                    else "excellent"
+                bonus
+            else "good"
+        tier
+    else "below"
+
+let _ = println (grade 100)
+let _ = println (grade 98)
+let _ = println (grade 95)
+let _ = println (grade 90)
+let _ = println (grade 80)
+// --- Output:
+perfect
+near-perfect
+excellent
+good
+below

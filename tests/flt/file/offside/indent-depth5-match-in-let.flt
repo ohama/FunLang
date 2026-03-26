@@ -1,0 +1,16 @@
+// Test: match nested inside deep let bindings (depth 5)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let x = 10
+    let y =
+        let z =
+            let w =
+                match x with
+                | 10 -> 100
+                | _ -> 0
+            w + 1
+        z + 1
+    y + 1
+// --- Output:
+103

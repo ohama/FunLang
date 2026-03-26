@@ -1,0 +1,21 @@
+// Test: 5-level deep let chain (sequential lets at each depth)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a1 = 1
+    let a2 =
+        let b1 = a1 + 1
+        let b2 =
+            let c1 = b1 + 1
+            let c2 =
+                let d1 = c1 + 1
+                let d2 =
+                    let e1 = d1 + 1
+                    let e2 = e1 + 1
+                    e1 + e2
+                d1 + d2
+            c1 + c2
+        b1 + b2
+    a1 + a2
+// --- Output:
+21

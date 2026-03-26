@@ -1,0 +1,11 @@
+// Test: Hashtable.remove on non-existent key is a no-op (no exception)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "a" 1
+let _ = Hashtable.remove ht "nonexistent"
+let _ = println (to_string (Hashtable.containsKey ht "a"))
+let _ = println (to_string (Hashtable.get ht "a"))
+// --- Output:
+true
+1

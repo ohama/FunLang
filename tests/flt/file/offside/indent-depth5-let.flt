@@ -1,0 +1,16 @@
+// Test: 5-level deep nested let bindings with implicit in
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let a =
+        let b =
+            let c =
+                let d =
+                    let e = 1
+                    e + 1
+                d + 1
+            c + 1
+        b + 1
+    a + 1
+// --- Output:
+6

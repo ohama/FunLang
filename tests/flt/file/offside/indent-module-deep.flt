@@ -1,0 +1,19 @@
+// Test: module with deeply nested internal let bindings (depth 5 from module)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Calc =
+    let compute x =
+        let step1 =
+            let a = x * 2
+            let step2 =
+                let b = a + 3
+                let step3 =
+                    let c = b * b
+                    c - 1
+                step3
+            step2
+        step1
+
+let _ = println (to_string (Calc.compute 5))
+// --- Output:
+168

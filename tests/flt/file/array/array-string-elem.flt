@@ -1,0 +1,11 @@
+// Test: Array with string elements
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.ofList ["hello"; "world"; "test"]
+let _ = println (Array.get arr 0)
+let _ = println (Array.get arr 2)
+let _ = println (to_string (Array.length arr))
+// --- Output:
+hello
+test
+3

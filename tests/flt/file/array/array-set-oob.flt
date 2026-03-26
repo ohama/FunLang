@@ -1,0 +1,12 @@
+// Test: out-of-bounds Array.set raises catchable exception
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 3 0
+let r1 = try (let _ = Array.set arr 5 99 in "no-error") with e -> "caught"
+let _ = println r1
+let neg = 0 - 1
+let r2 = try (let _ = Array.set arr neg 99 in "no-error") with e -> "caught"
+let _ = println r2
+// --- Output:
+caught
+caught
