@@ -736,6 +736,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     | Var (name, _) ->
         match Map.tryFind name env with
+        | Some (RefValue r) -> r.Value  // Phase 42: Dereference mutable variable
         | Some value -> value
         | None -> failwithf "Undefined variable: %s" name
 
@@ -743,6 +744,23 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         let value = eval recEnv moduleEnv env false binding
         let extendedEnv = Map.add name value env
         eval recEnv moduleEnv extendedEnv tailPos body
+
+    // Phase 42: Mutable variable binding
+    | LetMut (name, valueExpr, body, _) ->
+        let value = eval recEnv moduleEnv env false valueExpr
+        let refCell = ref value
+        let env' = Map.add name (RefValue refCell) env
+        eval recEnv moduleEnv env' tailPos body
+
+    // Phase 42: Mutable variable assignment
+    | Assign (name, valueExpr, _) ->
+        let newValue = eval recEnv moduleEnv env false valueExpr
+        match Map.tryFind name env with
+        | Some (RefValue r) ->
+            r.Value <- newValue
+            TupleValue []  // assignment returns unit
+        | Some _ -> failwithf "Cannot assign to immutable variable '%s'" name
+        | None -> failwithf "Undefined variable '%s'" name
 
     // Phase 1 (v3.0): Tuples
     | Tuple (exprs, _) ->
@@ -1139,6 +1157,11 @@ let rec evalModuleDecls
         | LetDecl(name, body, _) ->
             let value = eval recEnv modEnv env false body
             (Map.add name value env, modEnv)
+        | LetMutDecl(name, body, _) ->
+            let value = eval recEnv modEnv env false body
+            let refCell = ref value
+            let env' = Map.add name (RefValue refCell) env
+            (env', modEnv)
         | LetPatDecl(pat, bodyExpr, _) ->
             let value = eval recEnv modEnv env false bodyExpr
             match matchPattern pat value with
