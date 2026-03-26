@@ -293,6 +293,8 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | FieldAccess(e, _, _) -> collectMatches e
     | RecordUpdate(src, fields, _) -> collectMatches src @ (fields |> List.collect (fun (_, e) -> collectMatches e))
     | SetField(e, _, v, _) -> collectMatches e @ collectMatches v
+    | LetMut(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
+    | Assign(_, value, _) -> collectMatches value
     | Raise(e, _) -> collectMatches e
     | TryWith(body, clauses, _) ->
         collectMatches body
@@ -411,6 +413,8 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             | FieldAccess(e, _, _) -> collectTryWiths e
             | RecordUpdate(src, fields, _) -> collectTryWiths src @ (fields |> List.collect (fun (_, e) -> collectTryWiths e))
             | SetField(e, _, v, _) -> collectTryWiths e @ collectTryWiths v
+            | LetMut(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
+            | Assign(_, value, _) -> collectTryWiths value
             | Raise(e, _) -> collectTryWiths e
             | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
                 collectTryWiths a @ collectTryWiths b
@@ -490,6 +494,8 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | RecordUpdate(src, fields, _) ->
         Set.unionMany (collectModuleRefs modules src :: (fields |> List.map (fun (_, e) -> collectModuleRefs modules e)))
     | SetField(e, _, v, _) -> Set.union (collectModuleRefs modules e) (collectModuleRefs modules v)
+    | LetMut(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
+    | Assign(_, value, _) -> collectModuleRefs modules value
     | Raise(e, _) -> collectModuleRefs modules e
     | TryWith(body, clauses, _) ->
         let clauseRefs = clauses |> List.map (fun (_, _, handler) -> collectModuleRefs modules handler)
@@ -572,6 +578,8 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | RecordUpdate(src, fields, s) ->
         RecordUpdate(rewriteModuleAccess modules src, fields |> List.map (fun (n, e) -> (n, rewriteModuleAccess modules e)), s)
     | SetField(e, f, v, s) -> SetField(rewriteModuleAccess modules e, f, rewriteModuleAccess modules v, s)
+    | LetMut(n, rhs, body, s) -> LetMut(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | Assign(n, value, s) -> Assign(n, rewriteModuleAccess modules value, s)
     | Raise(e, s) -> Raise(rewriteModuleAccess modules e, s)
     | TryWith(body, clauses, s) ->
         TryWith(rewriteModuleAccess modules body,
@@ -704,6 +712,23 @@ let rec typeCheckDecls
                 let scheme = generalize (applyEnv s env) ty'
                 let env' = Map.add name scheme env
                 // Collect match warnings from this let body
+                let matchWarnings = checkMatchWarnings cEnv body
+                (env', cEnv, rEnv, mods, warns @ matchWarnings)
+
+            | LetMutDecl(name, body, _) ->
+                // Phase 42: Mutable variable at module level (monomorphic, no generalization)
+                let refsInBody = collectModuleRefs mods body
+                let rewrittenBody = rewriteModuleAccess mods body
+                let (envForSynth, ctorEnvForSynth, recEnvForSynth) =
+                    if Set.isEmpty refsInBody then (env, cEnv, rEnv)
+                    else mergeModuleExportsForTypeCheck mods refsInBody env cEnv rEnv
+                let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
+                let ty' = apply s ty
+                // NO generalization -- mutable variables must be monomorphic
+                let scheme = Scheme([], ty')
+                let env' = Map.add name scheme env
+                // Track as mutable for Assign checks
+                Bidir.mutableVars <- Set.add name Bidir.mutableVars
                 let matchWarnings = checkMatchWarnings cEnv body
                 (env', cEnv, rEnv, mods, warns @ matchWarnings)
 
@@ -892,6 +917,8 @@ let typeCheckModuleWithPrelude
     (m: Module)
     : Result<Diagnostic list * ConstructorEnv * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
     try
+        // Phase 42: Reset mutable variable tracking for each top-level type check
+        Bidir.mutableVars <- Set.empty
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
