@@ -205,6 +205,15 @@ Expr:
         { TryWith($2, [(VarPat($4, symSpan parseState 4), None, $6)], ruleSpan parseState 1 6) }
     | TRY INDENT Expr DEDENT WITH IDENT ARROW Expr
         { TryWith($3, [(VarPat($6, symSpan parseState 6), None, $8)], ruleSpan parseState 1 8) }
+    // Phase 42 (Mutable Variables): let mut expression
+    | LET MUTABLE IDENT EQUALS Expr IN Expr
+        { LetMut($3, $5, $7, ruleSpan parseState 1 7) }
+    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT IN Expr
+        { LetMut($3, $6, $9, ruleSpan parseState 1 9) }
+    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT
+        { LetMut($3, $6, Tuple([], symSpan parseState 7), ruleSpan parseState 1 7) }
+    // Phase 42 (Mutable Variables): Variable reassignment
+    | IDENT LARROW Expr              { Assign($1, $3, ruleSpan parseState 1 3) }
     // Phase 3 (Records-06): Mutable field assignment
     | Atom DOT IDENT LARROW Expr     { SetField($1, $3, $5, ruleSpan parseState 1 5) }
     // Arithmetic - uses Term/Factor for precedence
@@ -572,6 +581,12 @@ Decl:
     | LET IDENT EQUALS Expr IN Expr
         { let span = ruleSpan parseState 1 6
           LetDecl("_", Let($2, $4, $6, span), span) }
+
+// Phase 42 (Mutable Variables): Module-level let mut declaration
+    | LET MUTABLE IDENT EQUALS Expr
+        { LetMutDecl($3, $5, ruleSpan parseState 1 5) }
+    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT
+        { LetMutDecl($3, $6, ruleSpan parseState 1 7) }
 
 // Phase 19 (User-Defined Operators): Operator definition - let (op) params = body
     | LET OpName ParamList EQUALS Expr

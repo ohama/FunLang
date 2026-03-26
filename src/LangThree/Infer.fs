@@ -336,6 +336,19 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let finalS, _ = List.fold folder (s1, 0) clauses
         (finalS, apply finalS resultTy)
 
+    // === Phase 42: Mutable variables (stub - primary implementation in Bidir) ===
+    | LetMut (name, value, body, _) ->
+        let s1, valTy = inferWithContext ctx env value
+        let env' = applyEnv s1 env
+        let scheme = Scheme([], apply s1 valTy)
+        let bodyEnv = Map.add name scheme env'
+        let s2, bodyTy = inferWithContext ctx bodyEnv body
+        (compose s2 s1, bodyTy)
+
+    | Assign (name, value, span) ->
+        let s1, _valTy = inferWithContext ctx env value
+        (s1, TTuple [])  // returns unit
+
     // === Record expressions (stub - primary implementation in Bidir) ===
     | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
         (empty, freshVar())

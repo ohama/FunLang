@@ -143,6 +143,7 @@ let rec formatValue (v: Value) : string =
             |> Map.toList
             |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
         sprintf "{ %s }" (String.concat "; " fieldStrs)
+    | RefValue r -> formatValue !r  // Phase 42: Transparent - show dereferenced value
     | BuiltinValue _ -> "<builtin>"
     | TailCall _ -> "<tailcall>"
 

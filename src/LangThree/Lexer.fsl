@@ -68,7 +68,9 @@ rule tokenize = parse
     | "of"          { OF }
     | "and"         { AND_KW }
     // Phase 3 (Records-06): Mutable field keyword
+    // Phase 42: 'mut' alias for 'mutable' (let mut x = ...)
     | "mutable"     { MUTABLE }
+    | "mut"         { MUTABLE }
     // Phase 5 (Modules): Module system keywords
     | "module"      { MODULE }
     | "namespace"   { NAMESPACE }

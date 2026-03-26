@@ -195,6 +195,11 @@ let rec formatAst (expr: Ast.Expr) : string =
         match stepOpt with
         | None -> sprintf "Range (%s, %s)" (formatAst start) (formatAst stop)
         | Some step -> sprintf "Range (%s, %s, %s)" (formatAst start) (formatAst stop) (formatAst step)
+    // Phase 42 (Mutable Variables)
+    | Ast.LetMut (name, value, body, _) ->
+        sprintf "LetMut (\"%s\", %s, %s)" name (formatAst value) (formatAst body)
+    | Ast.Assign (name, value, _) ->
+        sprintf "Assign (\"%s\", %s)" name (formatAst value)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =
@@ -302,6 +307,9 @@ let rec formatDecl (decl: Ast.Decl) : string =
 
     | Ast.FileImportDecl(path, _) ->
         sprintf "FileImportDecl \"%s\"" path
+
+    | Ast.LetMutDecl(name, body, _) ->
+        sprintf "LetMutDecl (\"%s\", %s)" name (formatAst body)
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =
