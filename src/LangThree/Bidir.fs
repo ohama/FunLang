@@ -7,6 +7,9 @@ open Elaborate
 open Diagnostic
 open Infer  // Reuse freshVar, instantiate, generalize
 
+/// Mutable variables currently in scope (Phase 42)
+let mutable mutableVars : Set<string> = Set.empty
+
 // ============================================================================
 // GADT Detection
 // ============================================================================
@@ -151,6 +154,44 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let bodyEnv = Map.add name scheme env'
         let s2, bodyTy = synth ctorEnv recEnv (InLetBody (name, span) :: ctx) bodyEnv body
         (compose s2 s1, bodyTy)
+
+    // === LetMut (Phase 42 - mutable variable, NO generalization) ===
+    | LetMut (name, value, body, span) ->
+        let s1, valueTy = synth ctorEnv recEnv (InLetRhs (name, span) :: ctx) env value
+        let env' = applyEnv s1 env
+        // NO generalization -- mutable variables must be monomorphic
+        let scheme = Scheme([], apply s1 valueTy)
+        let bodyEnv = Map.add name scheme env'
+        let savedMutableVars = mutableVars
+        mutableVars <- Set.add name mutableVars
+        let s2, bodyTy = synth ctorEnv recEnv (InLetBody (name, span) :: ctx) bodyEnv body
+        mutableVars <- savedMutableVars  // restore (name goes out of scope)
+        (compose s2 s1, bodyTy)
+
+    // === Assign (Phase 42 - mutable variable assignment) ===
+    | Assign (name, value, span) ->
+        if not (Set.contains name mutableVars) then
+            raise (TypeException {
+                Kind = ImmutableVariableAssignment name
+                Span = span
+                Term = Some expr
+                ContextStack = ctx
+                Trace = []
+            })
+        match Map.tryFind name env with
+        | Some scheme ->
+            let varTy = instantiate scheme
+            let s1, valTy = synth ctorEnv recEnv ctx env value
+            let s2 = unifyWithContext ctx [] span (apply s1 varTy) valTy
+            (compose s2 s1, TTuple [])  // returns unit
+        | None ->
+            raise (TypeException {
+                Kind = UnboundVar name
+                Span = span
+                Term = Some expr
+                ContextStack = ctx
+                Trace = []
+            })
 
     // === LetRec ===
     | LetRec (name, param, body, expr, span) ->
