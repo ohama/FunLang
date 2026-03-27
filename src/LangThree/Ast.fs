@@ -112,6 +112,9 @@ type Expr =
     // Phase 42 (Mutable Variables): Mutable variable support
     | LetMut of name: string * value: Expr * body: Expr * span: Span
     | Assign of name: string * value: Expr * span: Span
+    // Phase 46 (Loop Constructs): while and for loops
+    | WhileExpr of cond: Expr * body: Expr * span: Span
+    | ForExpr of var: string * start: Expr * isTo: bool * stop: Expr * body: Expr * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -297,6 +300,8 @@ let spanOf (expr: Expr) : Span =
     | Range(_, _, _, s) -> s
     | Modulo(_, _, s) -> s
     | LetMut(_, _, _, s) | Assign(_, _, s) -> s
+    | WhileExpr(_, _, s) -> s
+    | ForExpr(_, _, _, _, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =

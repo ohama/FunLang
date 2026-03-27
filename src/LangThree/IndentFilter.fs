@@ -314,7 +314,7 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                             else
                                 // Push expression block for EQUALS (not module) or ARROW
                                 match state.PrevToken with
-                                | Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN ->
+                                | Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO ->
                                     // baseCol = parent indent level (before INDENT)
                                     let baseCol = match state.IndentStack with _ :: parent :: _ -> parent | _ -> 0
                                     state <- { state with Context = InExprBlock(baseCol) :: state.Context }

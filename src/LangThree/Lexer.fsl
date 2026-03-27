@@ -89,6 +89,12 @@ rule tokenize = parse
     | "raise"       { RAISE }
     | "try"         { TRY }
     | "when"        { WHEN }
+    // Phase 46 (Loop Constructs): Loop keywords
+    | "while"       { WHILE }
+    | "for"         { FOR }
+    | "to"          { TO }
+    | "downto"      { DOWNTO }
+    | "do"          { DO }
     // Phase 1 (v3.0): Wildcard pattern (must come before identifier)
     | '_'           { UNDERSCORE }
     // Phase 29: Char literals - MUST come before type_var rule (longest match wins: 'A' > 'a)

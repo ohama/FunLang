@@ -81,6 +81,12 @@ let formatToken (token: Parser.token) : string =
     | Parser.RAISE -> "RAISE"
     | Parser.TRY -> "TRY"
     | Parser.WHEN -> "WHEN"
+    // Phase 46 (Loop Constructs): Loop keyword tokens
+    | Parser.WHILE -> "WHILE"
+    | Parser.FOR -> "FOR"
+    | Parser.TO -> "TO"
+    | Parser.DOWNTO -> "DOWNTO"
+    | Parser.DO -> "DO"
     // Phase 9 (Pipe & Composition): Pipe and composition tokens
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
@@ -200,6 +206,12 @@ let rec formatAst (expr: Ast.Expr) : string =
         sprintf "LetMut (\"%s\", %s, %s)" name (formatAst value) (formatAst body)
     | Ast.Assign (name, value, _) ->
         sprintf "Assign (\"%s\", %s)" name (formatAst value)
+    // Phase 46 (Loop Constructs)
+    | Ast.WhileExpr (cond, body, _) ->
+        sprintf "WhileExpr (%s, %s)" (formatAst cond) (formatAst body)
+    | Ast.ForExpr (var, start, isTo, stop, body, _) ->
+        let dir = if isTo then "to" else "downto"
+        sprintf "ForExpr (\"%s\", %s, %s, %s, %s)" var (formatAst start) dir (formatAst stop) (formatAst body)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =
