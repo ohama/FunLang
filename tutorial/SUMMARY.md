@@ -23,6 +23,7 @@
 - [모듈과 네임스페이스](10-modules.md)
 - [파일 I/O와 시스템 함수](18-file-io.md)
 - [가변 데이터 구조](19-mutable-data.md)
+- [가변 변수](20-mutable-variables.md)
 
 # 에러 처리
 
