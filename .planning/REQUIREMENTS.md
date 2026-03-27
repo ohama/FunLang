@@ -53,9 +53,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEQ-01 | Phase 45 | Pending |
-| SEQ-02 | Phase 45 | Pending |
-| SEQ-03 | Phase 45 | Pending |
+| SEQ-01 | Phase 45 | Complete |
+| SEQ-02 | Phase 45 | Complete |
+| SEQ-03 | Phase 45 | Complete |
 | LOOP-01 | Phase 46 | Pending |
 | LOOP-02 | Phase 46 | Pending |
 | LOOP-03 | Phase 46 | Pending |

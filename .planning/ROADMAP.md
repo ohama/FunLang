@@ -23,7 +23,7 @@ v5.0 adds four imperative syntax constructs that complement v4.0's mutable varia
 
 **Milestone Goal:** Array indexing syntax, expression sequencing, loops, and if-then without else — the imperative ergonomics layer on top of mutable variables
 
-- [ ] **Phase 45: Expression Sequencing** — `e1; e2` desugars to `let _ = e1 in e2`, enabling multi-step imperative blocks
+- [x] **Phase 45: Expression Sequencing** — `e1; e2` desugars to `let _ = e1 in e2`, enabling multi-step imperative blocks
 - [ ] **Phase 46: Loop Constructs** — `while cond do body` and `for i = start to end do body` with immutable loop variable
 - [ ] **Phase 47: Array and Hashtable Indexing Syntax** — `arr.[i]` / `arr.[i] <- v` / `ht.[key]` / `ht.[key] <- v` with chained indexing
 - [ ] **Phase 48: If-Then Without Else** — `if cond then expr` accepted when expr is unit, type error otherwise
@@ -42,7 +42,7 @@ v5.0 adds four imperative syntax constructs that complement v4.0's mutable varia
 **Plans**: 1 plan
 
 Plans:
-- [ ] 45-01-PLAN.md — SeqExpr nonterminal in Parser.fsy (desugar to LetPat(WildcardPat,...)), all statement-position Expr->SeqExpr updates, 5 flt tests
+- [x] 45-01-PLAN.md — SeqExpr nonterminal in Parser.fsy (desugar to LetPat(WildcardPat,...)), all statement-position Expr->SeqExpr updates, 5 flt tests
 
 ### Phase 46: Loop Constructs
 **Goal**: Users can write `while` and `for` loops for imperative iteration, with the loop variable immutable inside the body
@@ -112,7 +112,7 @@ Plans:
 | 42. Core Mutable Variables | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 43. Edge Cases and Error Handling | v4.0 | 1/1 | Complete | 2026-03-27 |
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
-| 45. Expression Sequencing | v5.0 | 0/1 | Not started | - |
+| 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 46. Loop Constructs | v5.0 | 0/TBD | Not started | - |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 0/TBD | Not started | - |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
