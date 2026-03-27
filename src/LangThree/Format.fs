@@ -73,6 +73,8 @@ let formatToken (token: Parser.token) : string =
     | Parser.DOT -> "DOT"
     // Phase 18 (Ranges): DOTDOT token
     | Parser.DOTDOT -> "DOTDOT"
+    // Phase 47 (Array/Hashtable Indexing): DOTLBRACKET token
+    | Parser.DOTLBRACKET -> "DOTLBRACKET"
     // Phase 3 (Records-06): Mutable field tokens
     | Parser.MUTABLE -> "MUTABLE"
     | Parser.LARROW -> "LARROW"
@@ -212,6 +214,10 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.ForExpr (var, start, isTo, stop, body, _) ->
         let dir = if isTo then "to" else "downto"
         sprintf "ForExpr (\"%s\", %s, %s, %s, %s)" var (formatAst start) dir (formatAst stop) (formatAst body)
+    | Ast.IndexGet (coll, idx, _) ->
+        sprintf "IndexGet (%s, %s)" (formatAst coll) (formatAst idx)
+    | Ast.IndexSet (coll, idx, v, _) ->
+        sprintf "IndexSet (%s, %s, %s)" (formatAst coll) (formatAst idx) (formatAst v)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

@@ -556,6 +556,52 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | _ ->
             raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
 
+    // === IndexGet (Phase 47 - array/hashtable index read) ===
+    | IndexGet (collExpr, idxExpr, span) ->
+        let s1, collTy = synth ctorEnv recEnv ctx env collExpr
+        let resolvedCollTy = apply s1 collTy
+        match resolvedCollTy with
+        | TArray elemTy ->
+            let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            (compose s3 (compose s2 s1), apply (compose s3 s2) elemTy)
+        | THashtable (keyTy, valTy) ->
+            let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) keyTy
+            (compose s3 (compose s2 s1), apply s3 valTy)
+        | ty ->
+            raise (TypeException {
+                Kind = IndexOnNonCollection ty
+                Span = span; Term = Some expr; ContextStack = ctx; Trace = []
+            })
+
+    // === IndexSet (Phase 47 - array/hashtable index write) ===
+    | IndexSet (collExpr, idxExpr, valExpr, span) ->
+        let s1, collTy = synth ctorEnv recEnv ctx env collExpr
+        let resolvedCollTy = apply s1 collTy
+        match resolvedCollTy with
+        | TArray elemTy ->
+            let env1 = applyEnv s1 env
+            let s2, idxTy = synth ctorEnv recEnv ctx env1 idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            let env2 = applyEnv (compose s3 s2) env1
+            let s4, valTy = synth ctorEnv recEnv ctx env2 valExpr
+            let s5 = unifyWithContext ctx [] span (apply s4 valTy) (apply (compose s4 (compose s3 s2)) elemTy)
+            (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
+        | THashtable (keyTy, valTy) ->
+            let env1 = applyEnv s1 env
+            let s2, idxTy = synth ctorEnv recEnv ctx env1 idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) keyTy
+            let env2 = applyEnv (compose s3 s2) env1
+            let s4, valTy' = synth ctorEnv recEnv ctx env2 valExpr
+            let s5 = unifyWithContext ctx [] span (apply s4 valTy') (apply (compose s4 s3) valTy)
+            (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
+        | ty ->
+            raise (TypeException {
+                Kind = IndexOnNonCollection ty
+                Span = span; Term = Some expr; ContextStack = ctx; Trace = []
+            })
+
     // === Phase 18: Range expression ===
     // [start..stop] or [start..step..stop] — all components must be int, result is int list
     | Range (startExpr, stopExpr, stepOpt, span) ->

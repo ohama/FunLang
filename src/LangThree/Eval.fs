@@ -775,6 +775,37 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             TupleValue []
         | _ -> failwith "for: start and end must be integers"
 
+    // Phase 47: Array/hashtable index read
+    | IndexGet (collExpr, idxExpr, _) ->
+        let collVal = eval recEnv moduleEnv env false collExpr
+        let idxVal  = eval recEnv moduleEnv env false idxExpr
+        match collVal, idxVal with
+        | ArrayValue arr, IntValue i ->
+            if i < 0 || i >= arr.Length then
+                raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+            arr.[i]
+        | HashtableValue ht, key ->
+            match ht.TryGetValue(key) with
+            | true, v -> v
+            | false, _ -> raise (LangThreeException (StringValue "Hashtable key not found"))
+        | _ -> failwith "IndexGet: expected array or hashtable"
+
+    // Phase 47: Array/hashtable index write
+    | IndexSet (collExpr, idxExpr, valExpr, _) ->
+        let collVal = eval recEnv moduleEnv env false collExpr
+        let idxVal  = eval recEnv moduleEnv env false idxExpr
+        let newVal  = eval recEnv moduleEnv env false valExpr
+        match collVal, idxVal with
+        | ArrayValue arr, IntValue i ->
+            if i < 0 || i >= arr.Length then
+                raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+            arr.[i] <- newVal
+            TupleValue []
+        | HashtableValue ht, key ->
+            ht.[key] <- newVal
+            TupleValue []
+        | _ -> failwith "IndexSet: expected array or hashtable"
+
     // Phase 42: Mutable variable assignment
     | Assign (name, valueExpr, _) ->
         let newValue = eval recEnv moduleEnv env false valueExpr

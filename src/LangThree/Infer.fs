@@ -364,6 +364,10 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
         (empty, freshVar())
 
+    // === Phase 47: IndexGet/IndexSet stubs (primary implementation in Bidir) ===
+    | IndexGet _ | IndexSet _ ->
+        (empty, freshVar())
+
     // === Phase 6: Exception stubs (primary implementation in Bidir) ===
     | Raise _ | TryWith _ ->
         (empty, freshVar())

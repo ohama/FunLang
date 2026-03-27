@@ -306,6 +306,9 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     // Phase 46 (Loop Constructs)
     | WhileExpr(cond, body, _) -> collectMatches cond @ collectMatches body
     | ForExpr(_, start, _, stop, body, _) -> collectMatches start @ collectMatches stop @ collectMatches body
+    // Phase 47 (Array/Hashtable Indexing)
+    | IndexGet(coll, idx, _) -> collectMatches coll @ collectMatches idx
+    | IndexSet(coll, idx, v, _) -> collectMatches coll @ collectMatches idx @ collectMatches v
     | Number _ | Bool _ | String _ | Char _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body
@@ -416,6 +419,9 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             | FieldAccess(e, _, _) -> collectTryWiths e
             | RecordUpdate(src, fields, _) -> collectTryWiths src @ (fields |> List.collect (fun (_, e) -> collectTryWiths e))
             | SetField(e, _, v, _) -> collectTryWiths e @ collectTryWiths v
+            // Phase 47 (Array/Hashtable Indexing)
+            | IndexGet(coll, idx, _) -> collectTryWiths coll @ collectTryWiths idx
+            | IndexSet(coll, idx, v, _) -> collectTryWiths coll @ collectTryWiths idx @ collectTryWiths v
             | LetMut(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | Assign(_, value, _) -> collectTryWiths value
             | Raise(e, _) -> collectTryWiths e
@@ -497,6 +503,9 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | RecordUpdate(src, fields, _) ->
         Set.unionMany (collectModuleRefs modules src :: (fields |> List.map (fun (_, e) -> collectModuleRefs modules e)))
     | SetField(e, _, v, _) -> Set.union (collectModuleRefs modules e) (collectModuleRefs modules v)
+    // Phase 47 (Array/Hashtable Indexing)
+    | IndexGet(coll, idx, _) -> Set.union (collectModuleRefs modules coll) (collectModuleRefs modules idx)
+    | IndexSet(coll, idx, v, _) -> Set.unionMany [collectModuleRefs modules coll; collectModuleRefs modules idx; collectModuleRefs modules v]
     | LetMut(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
     | Assign(_, value, _) -> collectModuleRefs modules value
     | Raise(e, _) -> collectModuleRefs modules e
@@ -581,6 +590,9 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | RecordUpdate(src, fields, s) ->
         RecordUpdate(rewriteModuleAccess modules src, fields |> List.map (fun (n, e) -> (n, rewriteModuleAccess modules e)), s)
     | SetField(e, f, v, s) -> SetField(rewriteModuleAccess modules e, f, rewriteModuleAccess modules v, s)
+    // Phase 47 (Array/Hashtable Indexing)
+    | IndexGet(coll, idx, s) -> IndexGet(rewriteModuleAccess modules coll, rewriteModuleAccess modules idx, s)
+    | IndexSet(coll, idx, v, s) -> IndexSet(rewriteModuleAccess modules coll, rewriteModuleAccess modules idx, rewriteModuleAccess modules v, s)
     | LetMut(n, rhs, body, s) -> LetMut(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
     | Assign(n, value, s) -> Assign(n, rewriteModuleAccess modules value, s)
     | Raise(e, s) -> Raise(rewriteModuleAccess modules e, s)
