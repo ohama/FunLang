@@ -45,11 +45,11 @@
 | MUT-01 | Phase 42 | Complete |
 | MUT-02 | Phase 42 | Complete |
 | MUT-03 | Phase 42 | Complete |
-| MUT-04 | Phase 43 | Pending |
+| MUT-04 | Phase 43 | Complete |
 | MUT-05 | Phase 42 | Complete |
-| MUT-06 | Phase 43 | Pending |
-| MUT-07 | Phase 43 | Pending |
-| MUT-08 | Phase 43 | Pending |
+| MUT-06 | Phase 43 | Complete |
+| MUT-07 | Phase 43 | Complete |
+| MUT-08 | Phase 43 | Complete |
 | TST-24 | Phase 44 | Pending |
 | TST-25 | Phase 44 | Pending |
 | TST-26 | Phase 44 | Pending |
