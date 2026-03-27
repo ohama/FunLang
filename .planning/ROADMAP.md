@@ -39,11 +39,10 @@ v5.0 adds four imperative syntax constructs that complement v4.0's mutable varia
   1. User can write `print "hello"; print "world"` and both effects execute in order
   2. User can chain three or more expressions with `;` and get the value of the last expression
   3. Sequencing works inside indentation-based blocks (offside rule handles `;` at same column)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 45-01: Lexer/parser: `;` as sequencing operator (distinct from list separator), AST node, desugar to `let _ = e1 in e2`
-- [ ] 45-02: Eval, type checker, and offside rule integration for expression sequencing
+- [ ] 45-01-PLAN.md — SeqExpr nonterminal in Parser.fsy (desugar to LetPat(WildcardPat,...)), all statement-position Expr->SeqExpr updates, 5 flt tests
 
 ### Phase 46: Loop Constructs
 **Goal**: Users can write `while` and `for` loops for imperative iteration, with the loop variable immutable inside the body
@@ -113,7 +112,7 @@ Plans:
 | 42. Core Mutable Variables | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 43. Edge Cases and Error Handling | v4.0 | 1/1 | Complete | 2026-03-27 |
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
-| 45. Expression Sequencing | v5.0 | 0/TBD | Not started | - |
+| 45. Expression Sequencing | v5.0 | 0/1 | Not started | - |
 | 46. Loop Constructs | v5.0 | 0/TBD | Not started | - |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 0/TBD | Not started | - |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
