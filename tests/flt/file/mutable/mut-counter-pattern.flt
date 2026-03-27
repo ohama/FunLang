@@ -1,0 +1,11 @@
+// Test: mutable counter pattern — increment via closure
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut count = 0
+let inc x = count <- count + 1
+let _ = inc 0
+let _ = inc 0
+let _ = inc 0
+let _ = println (to_string count)
+// --- Output:
+3

@@ -1,0 +1,11 @@
+// Test: mutable variable holding an array reference
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut arr = Array.create 3 0
+let _ = Array.set arr 0 10
+let _ = arr <- Array.ofList [100; 200; 300]
+let _ = println (to_string (Array.get arr 0))
+let _ = println (to_string (Array.length arr))
+// --- Output:
+100
+3

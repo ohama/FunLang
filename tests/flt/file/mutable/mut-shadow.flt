@@ -1,0 +1,15 @@
+// Test: mutable variable shadowing — inner scope shadows outer
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let mut x = 10
+    let inner =
+        let mut x = 100
+        let _ = x <- 200
+        x
+    let _ = x <- 20
+    (inner, x)
+
+let _ = println (to_string result)
+// --- Output:
+(200, 20)

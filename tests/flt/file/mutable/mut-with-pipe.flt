@@ -1,0 +1,8 @@
+// Test: mutable variable used with pipe operator
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut x = 5
+let _ = x <- x |> (fun n -> n * 2)
+let _ = println (to_string x)
+// --- Output:
+10

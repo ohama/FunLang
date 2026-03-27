@@ -1,0 +1,12 @@
+// Test: multiple module-level mutable variables interacting
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut a = 1
+let mut b = 2
+let _ = a <- a + b
+let _ = b <- a * b
+let _ = println (to_string a)
+let _ = println (to_string b)
+// --- Output:
+3
+6

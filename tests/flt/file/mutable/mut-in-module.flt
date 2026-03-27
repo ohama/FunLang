@@ -1,0 +1,13 @@
+// Test: mutable variable inside module declaration
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Counter =
+    let mut value = 0
+    let inc x = value <- value + 1
+    let get x = value
+
+let _ = Counter.inc 0
+let _ = Counter.inc 0
+let _ = println (to_string (Counter.get 0))
+// --- Output:
+2

@@ -1,0 +1,14 @@
+// Test: multiple closures share same mutable variable
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut x = 0
+let inc y = x <- x + 1
+let dec y = x <- x - 1
+let get y = x
+let _ = inc 0
+let _ = inc 0
+let _ = inc 0
+let _ = dec 0
+let _ = println (to_string (get 0))
+// --- Output:
+2

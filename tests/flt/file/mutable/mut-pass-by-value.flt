@@ -1,0 +1,12 @@
+// Test: mutable variable passed to function — function gets value, not ref
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add10 n = n + 10
+let mut x = 5
+let y = add10 x
+let _ = x <- 99
+let _ = println (to_string y)
+let _ = println (to_string x)
+// --- Output:
+15
+99

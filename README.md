@@ -189,12 +189,12 @@ LangThree/
 ├── src/LangThree/       # Interpreter source (~12,000 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (521 tests)
+│   └── flt/             # fslit integration tests (551 tests)
 │       ├── expr/        # Expression-mode tests (16 subdirs)
 │       ├── file/        # File-mode tests (21 subdirs)
 │       ├── emit/        # AST/type emission tests
 │       └── error/       # Error case tests
-├── tutorial/            # mdBook tutorial (19 chapters)
+├── tutorial/            # mdBook tutorial (20 chapters)
 ├── Prelude/             # Standard library (Core, List, Option, Result, Array, Hashtable)
 ├── howto/               # Developer knowledge base (5 documents)
 ├── docs/                # Built tutorial site (GitHub Pages)
@@ -215,10 +215,10 @@ LangThree/
 # F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (521)
+# fslit integration tests (551)
 /path/to/fslit tests/flt/
 
-# Total: ~745 tests
+# Total: ~775 tests
 ```
 
 ## Milestones

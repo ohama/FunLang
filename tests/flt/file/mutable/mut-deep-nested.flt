@@ -1,0 +1,16 @@
+// Test: deeply nested let mut (3 levels)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let mut a = 1
+    let _ =
+        let mut b = 10
+        let _ =
+            let mut c = 100
+            let _ = c <- c + 1
+            let _ = b <- b + c
+            a <- a + b
+        ()
+    a
+// --- Output:
+112
