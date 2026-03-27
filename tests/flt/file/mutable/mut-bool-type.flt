@@ -1,0 +1,6 @@
+// Test: mutable variable with bool type
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let mut b = true in let _ = b <- false in b
+// --- Output:
+false
