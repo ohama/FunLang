@@ -1,65 +1,83 @@
-# Requirements: LangThree v4.0
+# Requirements: LangThree v5.0
 
-**Defined:** 2026-03-26
-**Core Value:** `let mut` 가변 변수로 명령형 스타일 프로그래밍 지원
+**Defined:** 2026-03-28
+**Core Value:** v4.0 가변 변수와 자연스럽게 어우러지는 명령형 구문 요소 추가
 
-## v4.0 Requirements
+## v5.0 Requirements
 
-### Mutable Variable Declaration
+### Array/Hashtable Indexing Syntax
 
-- [ ] **MUT-01**: `let mut x = expr` — expression-level 가변 변수 선언 (implicit in 지원)
-- [ ] **MUT-02**: `let mut x = expr` — module-level 가변 변수 선언
-- [ ] **MUT-03**: `x <- expr` — 가변 변수 재할당 (unit 반환)
-- [ ] **MUT-04**: 불변 변수에 `<-` 사용 시 타입 에러 발생
+- [ ] **IDX-01**: `arr.[i]` reads array element (desugars to `array_get arr i`)
+- [ ] **IDX-02**: `arr.[i] <- v` writes array element (desugars to `array_set arr i v`)
+- [ ] **IDX-03**: `ht.[key]` reads hashtable value (desugars to `hashtable_get ht key`)
+- [ ] **IDX-04**: `ht.[key] <- v` writes hashtable value (desugars to `hashtable_set ht key v`)
+- [ ] **IDX-05**: Chained indexing works: `matrix.[r].[c]`
 
-### Type System
+### Expression Sequencing
 
-- [ ] **MUT-05**: Type checker가 변수의 mutability를 추적 (mutable/immutable 구분)
-- [ ] **MUT-06**: 가변 변수의 재할당 시 동일 타입 강제 (type mismatch 에러)
+- [ ] **SEQ-01**: `e1; e2` evaluates e1 (discards result), then evaluates and returns e2
+- [ ] **SEQ-02**: Multi-statement sequencing `e1; e2; e3` works (left-associative)
+- [ ] **SEQ-03**: Sequencing works with indentation-based blocks (offside rule)
 
-### Edge Cases
+### Loop Constructs
 
-- [ ] **MUT-07**: 클로저가 외부 `let mut` 변수를 캡처하여 읽기/쓰기 가능
-- [ ] **MUT-08**: 함수 파라미터는 항상 불변 (`<-` 불가)
+- [ ] **LOOP-01**: `while cond do body` — repeats body while cond is true, returns unit
+- [ ] **LOOP-02**: `for i = start to end do body` — ascending loop, i bound in body
+- [ ] **LOOP-03**: `for i = start downto end do body` — descending loop
+- [ ] **LOOP-04**: Loop variable `i` is immutable within body (cannot reassign)
+
+### If-Then Without Else
+
+- [ ] **IFTHEN-01**: `if cond then expr` accepted when expr returns unit
+- [ ] **IFTHEN-02**: `if cond then expr` produces type error when expr is non-unit
 
 ### Test Coverage
 
-- [ ] **TST-24**: `let mut` 기본 연산 flt 테스트 (선언, 재할당, 읽기)
-- [ ] **TST-25**: `let mut` 에러 케이스 flt 테스트 (불변 변수 재할당, 타입 mismatch)
-- [ ] **TST-26**: `let mut` 고급 시나리오 flt 테스트 (클로저 캡처, 중첩, offside rule)
-- [ ] **TST-27**: 튜토리얼 챕터 작성 (mutable variables)
+- [ ] **TST-28**: Array/hashtable indexing syntax flt tests
+- [ ] **TST-29**: Expression sequencing flt tests
+- [ ] **TST-30**: Loop construct flt tests (while, for-to, for-downto)
+- [ ] **TST-31**: If-then without else flt tests
+- [ ] **TST-32**: Tutorial chapter update for v5.0 features
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| `ref` 타입 (OCaml style) | `let mut`이 더 직관적, F# 스타일 유지 |
-| `mutable` function parameter | F#에서도 미지원, 복잡도 높음 |
-| `let mut` pattern destructuring | `let mut (x, y) = ...` 은 의미가 불명확 |
-| for/while 루프 | 별도 마일스톤 — iter/map/fold로 대체 |
+| `arr[i]` C-style indexing | F# uses `arr.[i]` — consistent with record dot notation |
+| `for x in collection do` | Collection iteration via for-in deferred — use `iter`/`map` HOFs |
+| List indexing `list.[i]` | Lists are linked lists — O(n) access discouraged by design |
+| `do` blocks / `begin`/`end` | Sequencing via `;` sufficient — no block delimiters needed |
+| Mutable loop variable | `for` loop variable is always immutable — F# convention |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MUT-01 | Phase 42 | Complete |
-| MUT-02 | Phase 42 | Complete |
-| MUT-03 | Phase 42 | Complete |
-| MUT-04 | Phase 43 | Complete |
-| MUT-05 | Phase 42 | Complete |
-| MUT-06 | Phase 43 | Complete |
-| MUT-07 | Phase 43 | Complete |
-| MUT-08 | Phase 43 | Complete |
-| TST-24 | Phase 44 | Complete |
-| TST-25 | Phase 44 | Complete |
-| TST-26 | Phase 44 | Complete |
-| TST-27 | Phase 44 | Complete |
+| IDX-01 | Pending | Pending |
+| IDX-02 | Pending | Pending |
+| IDX-03 | Pending | Pending |
+| IDX-04 | Pending | Pending |
+| IDX-05 | Pending | Pending |
+| SEQ-01 | Pending | Pending |
+| SEQ-02 | Pending | Pending |
+| SEQ-03 | Pending | Pending |
+| LOOP-01 | Pending | Pending |
+| LOOP-02 | Pending | Pending |
+| LOOP-03 | Pending | Pending |
+| LOOP-04 | Pending | Pending |
+| IFTHEN-01 | Pending | Pending |
+| IFTHEN-02 | Pending | Pending |
+| TST-28 | Pending | Pending |
+| TST-29 | Pending | Pending |
+| TST-30 | Pending | Pending |
+| TST-31 | Pending | Pending |
+| TST-32 | Pending | Pending |
 
 **Coverage:**
-- v4.0 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0
+- v5.0 requirements: 19 total
+- Mapped to phases: 0
+- Unmapped: 19 ⚠️
 
 ---
-*Requirements defined: 2026-03-26*
-*Traceability updated: 2026-03-26*
+*Requirements defined: 2026-03-28*
+*Last updated: 2026-03-28 after initial definition*
