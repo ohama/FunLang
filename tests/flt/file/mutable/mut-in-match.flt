@@ -1,0 +1,11 @@
+// Test: let mut used with match expression
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let mut x = 0
+    let _ =
+        match 42 with
+        | n -> x <- n
+    x
+// --- Output:
+42

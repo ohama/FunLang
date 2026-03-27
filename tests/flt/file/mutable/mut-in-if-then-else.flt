@@ -1,0 +1,9 @@
+// Test: let mut used with if-then-else
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let mut x = 0
+    let _ = if true then x <- 100 else x <- 200
+    x
+// --- Output:
+100

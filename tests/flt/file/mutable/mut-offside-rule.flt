@@ -1,0 +1,12 @@
+// Test: let mut inside offside-rule indented block
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let counter n =
+    let mut i = 0
+    let mut sum = 0
+    let _ = i <- n
+    let _ = sum <- i + 10
+    sum
+let result = counter 5
+// --- Output:
+15

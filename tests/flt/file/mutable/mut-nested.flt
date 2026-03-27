@@ -1,0 +1,6 @@
+// Test: nested let mut variables with independent scopes
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let mut x = 1 in let mut y = 10 in let _ = x <- 2 in let _ = y <- 20 in x + y
+// --- Output:
+22
