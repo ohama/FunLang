@@ -1,0 +1,6 @@
+// Test: closure captures mutable variable and writes to it
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let mut x = 0 in let inc y = x <- x + 1 in let a = inc 0 in let b = inc 0 in x
+// --- Output:
+2
