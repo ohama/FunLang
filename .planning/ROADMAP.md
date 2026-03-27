@@ -52,10 +52,10 @@ Plans:
   2. Reassigning a mutable variable with a different type produces a type mismatch error
   3. A closure that captures an outer `let mut` variable can both read its current value and write a new value
   4. Attempting `<-` on a function parameter produces a type error
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 43-01: TBD
+- [ ] 43-01-PLAN.md — flt tests for error diagnostics (E0320, E0301) and closure capture
 
 ### Phase 44: Tests and Documentation
 **Goal**: Comprehensive flt test coverage for all mutable variable scenarios and a tutorial chapter for users
@@ -79,7 +79,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 42. Core Mutable Variables | v4.0 | 2/2 | Complete | 2026-03-27 |
-| 43. Edge Cases and Error Handling | v4.0 | 0/TBD | Not started | - |
+| 43. Edge Cases and Error Handling | v4.0 | 0/1 | Not started | - |
 | 44. Tests and Documentation | v4.0 | 0/TBD | Not started | - |
 
 ---
