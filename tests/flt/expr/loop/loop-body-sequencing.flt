@@ -1,0 +1,12 @@
+// Test LOOP-01 + SeqExpr: while loop body using ; sequencing
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut i = 0
+let mut acc = 0
+let _ =
+    while i < 3 do
+        acc <- acc + i; i <- i + 1
+let _ = println (to_string acc)
+// --- Output:
+3
+()

@@ -1,0 +1,8 @@
+// Test LOOP-04: loop variable i is immutable — assignment produces E0320
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ =
+    for i = 0 to 9 do
+        i <- 42
+// --- Error:
+E0320

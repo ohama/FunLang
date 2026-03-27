@@ -1,0 +1,9 @@
+// Test LOOP-01: while loop with inline body, condition checked before each iteration
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut i = 0
+let _ = while i < 3 do i <- i + 1
+let _ = println (to_string i)
+// --- Output:
+3
+()

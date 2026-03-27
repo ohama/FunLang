@@ -1,0 +1,11 @@
+// Test LOOP-02: for loop with empty range (start > end for to) executes body zero times
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut count = 0
+let _ =
+    for i = 5 to 3 do
+        count <- count + 1
+let _ = println (to_string count)
+// --- Output:
+0
+()

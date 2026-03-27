@@ -1,0 +1,11 @@
+// Test LOOP-03: for loop descending, i takes values 3 down to 0
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut total = 0
+let _ =
+    for i = 3 downto 0 do
+        total <- total + i
+let _ = println (to_string total)
+// --- Output:
+6
+()
