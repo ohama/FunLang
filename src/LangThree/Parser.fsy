@@ -101,77 +101,90 @@ let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
 // Use precedence declarations for new operators
 
 start:
-    | Expr EOF           { $1 }
+    | SeqExpr EOF           { $1 }
+
+// Phase 45 (Expression Sequencing): SeqExpr wraps Expr and adds e1; e2 sequencing
+// SEQ-01: e1; e2 evaluates e1 (discards result), then evaluates and returns e2
+// SEQ-02: Multi-statement via right-associativity: e1; e2; e3 = e1; (e2; e3)
+// Desugars to existing LetPat(WildcardPat, e1, e2) = let _ = e1 in e2
+// Only valid at statement positions — list/record/pattern contexts use bare Expr
+SeqExpr:
+    | Expr SEMICOLON SeqExpr
+        { LetPat(WildcardPat(symSpan parseState 2), $1, $3, ruleSpan parseState 1 3) }
+    | Expr SEMICOLON
+        { $1 }
+    | Expr
+        { $1 }
 
 Expr:
     // Phase 3 (v3.0): Match expression - lowest precedence
     | MATCH Expr WITH MatchClauses   { Match($2, $4, ruleSpan parseState 1 4) }
     // Let expression - lowest precedence
-    | LET IDENT EQUALS Expr IN Expr  { Let($2, $4, $6, ruleSpan parseState 1 6) }
+    | LET IDENT EQUALS Expr IN SeqExpr  { Let($2, $4, $6, ruleSpan parseState 1 6) }
     // Indentation-based let: let x = <indent>expr<dedent> (standalone, no continuation)
     | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Tuple([], symSpan parseState 6), ruleSpan parseState 1 6) }
     // Indentation-based let with continuation: let x = <indent>expr<dedent> in expr
-    | LET IDENT EQUALS INDENT Expr DEDENT IN Expr  { Let($2, $5, $8, ruleSpan parseState 1 8) }
+    | LET IDENT EQUALS INDENT Expr DEDENT IN SeqExpr  { Let($2, $5, $8, ruleSpan parseState 1 8) }
     // Multi-param let in expression: let f x y = body in expr (desugars to lambda)
-    | LET IDENT ParamList EQUALS Expr IN Expr
+    | LET IDENT ParamList EQUALS Expr IN SeqExpr
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $5
           Let($2, lambda, $7, ruleSpan parseState 1 7) }
-    | LET IDENT ParamList EQUALS INDENT Expr DEDENT IN Expr
+    | LET IDENT ParamList EQUALS INDENT Expr DEDENT IN SeqExpr
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 9)) $3 $6
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
     // SYN-07: Unit param shorthand in expression context: let f () = body in expr
-    | LET IDENT LPAREN RPAREN EQUALS Expr IN Expr
+    | LET IDENT LPAREN RPAREN EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 8
           Let($2, LambdaAnnot("__unit", TETuple [], $6, span), $8, span) }
-    | LET IDENT LPAREN RPAREN EQUALS INDENT Expr DEDENT IN Expr
+    | LET IDENT LPAREN RPAREN EQUALS INDENT Expr DEDENT IN SeqExpr
         { let span = ruleSpan parseState 1 10
           Let($2, LambdaAnnot("__unit", TETuple [], $7, span), $10, span) }
     // Phase 1 (v3.0): Let with pattern binding
-    | LET TuplePattern EQUALS Expr IN Expr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
+    | LET TuplePattern EQUALS Expr IN SeqExpr  { LetPat($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 10 (Unit): let _ = e1 in e2 wildcard sequencing at expression level
-    | LET UNDERSCORE EQUALS Expr IN Expr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
+    | LET UNDERSCORE EQUALS Expr IN SeqExpr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
-    | IF Expr THEN Expr ELSE Expr    { If($2, $4, $6, ruleSpan parseState 1 6) }
+    | IF Expr THEN SeqExpr ELSE SeqExpr    { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 5: Function definitions (SYN-01/SYN-06: multi-param let rec via ParamList)
-    | LET REC IDENT ParamList EQUALS Expr IN Expr
+    | LET REC IDENT ParamList EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 8
           let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $6
           match lambda with
           | Lambda(p, b, _) -> LetRec($3, p, b, $8, span)
           | _ -> failwith "impossible: ParamList must produce at least one param" }
     // Indentation-based let rec with continuation: let rec f x = <indent>expr<dedent> in expr
-    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT IN Expr
+    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT IN SeqExpr
         { let span = ruleSpan parseState 1 10
           let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $7
           match lambda with
           | Lambda(p, b, _) -> LetRec($3, p, b, $10, span)
           | _ -> failwith "impossible: ParamList must produce at least one param" }
-    | FUN IDENT ARROW Expr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
-    | FUN IDENT ARROW INDENT Expr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
+    | FUN IDENT ARROW SeqExpr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
+    | FUN IDENT ARROW INDENT SeqExpr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
     // v6.0: Annotated lambda - fun (x: T) -> e
     // Single parameter
-    | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW Expr
+    | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW SeqExpr
         { LambdaAnnot($3, $5, $8, ruleSpan parseState 1 8) }
-    | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW INDENT Expr DEDENT
+    | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW INDENT SeqExpr DEDENT
         { LambdaAnnot($3, $5, $9, ruleSpan parseState 1 10) }
     // Phase 10 (Unit): fun () -> body (unit parameter)
-    | FUN LPAREN RPAREN ARROW Expr
+    | FUN LPAREN RPAREN ARROW SeqExpr
         { LambdaAnnot("__unit", TETuple [], $5, ruleSpan parseState 1 5) }
-    | FUN LPAREN RPAREN ARROW INDENT Expr DEDENT
+    | FUN LPAREN RPAREN ARROW INDENT SeqExpr DEDENT
         { LambdaAnnot("__unit", TETuple [], $6, ruleSpan parseState 1 7) }
     // v6.0: Curried annotated lambda - fun (x: T) (y: U) -> e
     // Multiple parameters via AnnotParamList
-    | FUN AnnotParamList ARROW Expr
+    | FUN AnnotParamList ARROW SeqExpr
         { desugarAnnotParams $2 $4 (ruleSpan parseState 1 4) }
-    | FUN AnnotParamList ARROW INDENT Expr DEDENT
+    | FUN AnnotParamList ARROW INDENT SeqExpr DEDENT
         { desugarAnnotParams $2 $5 (ruleSpan parseState 1 6) }
     // Phase 22: Tuple parameter lambda - fun (x, y) -> body
-    | FUN TuplePattern ARROW Expr
+    | FUN TuplePattern ARROW SeqExpr
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $4, ruleSpan parseState 1 4), ruleSpan parseState 1 4) }
-    | FUN TuplePattern ARROW INDENT Expr DEDENT
+    | FUN TuplePattern ARROW INDENT SeqExpr DEDENT
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $5, ruleSpan parseState 1 6), ruleSpan parseState 1 6) }
     // Indented expression block (e.g., match clause body, general indented expression)
-    | INDENT Expr DEDENT             { $2 }
+    | INDENT SeqExpr DEDENT          { $2 }
     // Logical operators (precedence from %left declarations)
     | Expr OR Expr                   { Or($1, $3, ruleSpan parseState 1 3) }
     | Expr AND Expr                  { And($1, $3, ruleSpan parseState 1 3) }
@@ -198,17 +211,17 @@ Expr:
           let opSpan = symSpan parseState 2
           App(App(Var($2, opSpan), $1, span), $3, span) }
     // Phase 6 (Exceptions): Try-with expression
-    | TRY Expr WITH MatchClauses              { TryWith($2, $4, ruleSpan parseState 1 4) }
-    | TRY INDENT Expr DEDENT WITH MatchClauses { TryWith($3, $6, ruleSpan parseState 1 6) }
+    | TRY SeqExpr WITH MatchClauses              { TryWith($2, $4, ruleSpan parseState 1 4) }
+    | TRY INDENT SeqExpr DEDENT WITH MatchClauses { TryWith($3, $6, ruleSpan parseState 1 6) }
     // Phase 36 (PAR-01): Bare inline try-with without leading pipe: try expr with e -> expr
-    | TRY Expr WITH IDENT ARROW Expr
+    | TRY SeqExpr WITH IDENT ARROW SeqExpr
         { TryWith($2, [(VarPat($4, symSpan parseState 4), None, $6)], ruleSpan parseState 1 6) }
-    | TRY INDENT Expr DEDENT WITH IDENT ARROW Expr
+    | TRY INDENT SeqExpr DEDENT WITH IDENT ARROW SeqExpr
         { TryWith($3, [(VarPat($6, symSpan parseState 6), None, $8)], ruleSpan parseState 1 8) }
     // Phase 42 (Mutable Variables): let mut expression
-    | LET MUTABLE IDENT EQUALS Expr IN Expr
+    | LET MUTABLE IDENT EQUALS Expr IN SeqExpr
         { LetMut($3, $5, $7, ruleSpan parseState 1 7) }
-    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT IN Expr
+    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT IN SeqExpr
         { LetMut($3, $6, $9, ruleSpan parseState 1 9) }
     | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT
         { LetMut($3, $6, Tuple([], symSpan parseState 7), ruleSpan parseState 1 7) }
@@ -382,10 +395,10 @@ Pattern:
 // Phase 6: Extended with optional when guards (Pattern * Expr option * Expr)
 // Phase 16: OrPattern allows multiple patterns per clause (| 1 | 2 | 3 -> expr)
 MatchClauses:
-    | PIPE OrPattern ARROW Expr                         { [($2, None, $4)] }
-    | PIPE OrPattern WHEN Expr ARROW Expr               { [($2, Some $4, $6)] }
-    | PIPE OrPattern ARROW Expr MatchClauses            { ($2, None, $4) :: $5 }
-    | PIPE OrPattern WHEN Expr ARROW Expr MatchClauses  { ($2, Some $4, $6) :: $7 }
+    | PIPE OrPattern ARROW SeqExpr                         { [($2, None, $4)] }
+    | PIPE OrPattern WHEN Expr ARROW SeqExpr               { [($2, Some $4, $6)] }
+    | PIPE OrPattern ARROW SeqExpr MatchClauses            { ($2, None, $4) :: $5 }
+    | PIPE OrPattern WHEN Expr ARROW SeqExpr MatchClauses  { ($2, Some $4, $6) :: $7 }
 
 // Phase 16: Or-pattern nonterminal (| 1 | 2 | 3 parsed as OrPat)
 OrPattern:
@@ -549,50 +562,50 @@ Decls:
 // Each declaration can have indented body using INDENT/DEDENT
 Decl:
     // Phase 28: Module-level tuple pattern binding
-    | LET TuplePattern EQUALS Expr
+    | LET TuplePattern EQUALS SeqExpr
         { LetPatDecl($2, $4, ruleSpan parseState 1 4) }
-    | LET TuplePattern EQUALS INDENT Expr DEDENT
+    | LET TuplePattern EQUALS INDENT SeqExpr DEDENT
         { LetPatDecl($2, $5, ruleSpan parseState 1 6) }
     // Phase 10 (Unit): let _ = expr wildcard sequencing at module level
-    | LET UNDERSCORE EQUALS Expr
+    | LET UNDERSCORE EQUALS SeqExpr
         { LetDecl("_", $4, ruleSpan parseState 1 4) }
-    | LET UNDERSCORE EQUALS INDENT Expr DEDENT
+    | LET UNDERSCORE EQUALS INDENT SeqExpr DEDENT
         { LetDecl("_", $5, ruleSpan parseState 1 6) }
     // Simple let binding: let x = expr
-    | LET IDENT EQUALS Expr
+    | LET IDENT EQUALS SeqExpr
         { LetDecl($2, $4, ruleSpan parseState 1 4) }
-    | LET IDENT EQUALS INDENT Expr DEDENT
+    | LET IDENT EQUALS INDENT SeqExpr DEDENT
         { LetDecl($2, $5, ruleSpan parseState 1 6) }
     // Function declaration: let f x = expr (desugar to lambda)
-    | LET IDENT ParamList EQUALS Expr
+    | LET IDENT ParamList EQUALS SeqExpr
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
           LetDecl($2, lambda, ruleSpan parseState 1 5) }
-    | LET IDENT ParamList EQUALS INDENT Expr DEDENT
+    | LET IDENT ParamList EQUALS INDENT SeqExpr DEDENT
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     // SYN-07: Unit param shorthand at module level: let f () = body
-    | LET IDENT LPAREN RPAREN EQUALS Expr
+    | LET IDENT LPAREN RPAREN EQUALS SeqExpr
         { let span = ruleSpan parseState 1 6
           LetDecl($2, LambdaAnnot("__unit", TETuple [], $6, span), span) }
-    | LET IDENT LPAREN RPAREN EQUALS INDENT Expr DEDENT
+    | LET IDENT LPAREN RPAREN EQUALS INDENT SeqExpr DEDENT
         { let span = ruleSpan parseState 1 8
           LetDecl($2, LambdaAnnot("__unit", TETuple [], $7, span), span) }
     // SYN-08: Top-level let x = e1 in e2 as module declaration
-    | LET IDENT EQUALS Expr IN Expr
+    | LET IDENT EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 6
           LetDecl("_", Let($2, $4, $6, span), span) }
 
 // Phase 42 (Mutable Variables): Module-level let mut declaration
-    | LET MUTABLE IDENT EQUALS Expr
+    | LET MUTABLE IDENT EQUALS SeqExpr
         { LetMutDecl($3, $5, ruleSpan parseState 1 5) }
-    | LET MUTABLE IDENT EQUALS INDENT Expr DEDENT
+    | LET MUTABLE IDENT EQUALS INDENT SeqExpr DEDENT
         { LetMutDecl($3, $6, ruleSpan parseState 1 7) }
 
 // Phase 19 (User-Defined Operators): Operator definition - let (op) params = body
-    | LET OpName ParamList EQUALS Expr
+    | LET OpName ParamList EQUALS SeqExpr
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
           LetDecl($2, lambda, ruleSpan parseState 1 5) }
-    | LET OpName ParamList EQUALS INDENT Expr DEDENT
+    | LET OpName ParamList EQUALS INDENT SeqExpr DEDENT
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
 
@@ -677,23 +690,23 @@ AliasAtomicType:
 // Phase 18 (Mutual Recursion): Module-level let rec declaration
 // Produces a list containing a single LetRecDecl (possibly with multiple bindings via AND_KW)
 LetRecDeclaration:
-    | LET REC IDENT ParamList EQUALS Expr LetRecContinuation
+    | LET REC IDENT ParamList EQUALS SeqExpr LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 6)) $4 $6
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | _ -> failwith "impossible: empty param list" }
-    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT LetRecContinuation
+    | LET REC IDENT ParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 8)) $4 $7
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
           | _ -> failwith "impossible: empty param list" }
     // Phase 19: let rec (op) params = body
-    | LET REC OpName ParamList EQUALS Expr LetRecContinuation
+    | LET REC OpName ParamList EQUALS SeqExpr LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 6)) $4 $6
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | _ -> failwith "impossible: empty param list" }
-    | LET REC OpName ParamList EQUALS INDENT Expr DEDENT LetRecContinuation
+    | LET REC OpName ParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 8)) $4 $7
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
@@ -702,12 +715,12 @@ LetRecDeclaration:
 // Continuation for mutual recursion: and g y = body2 [and h z = body3 ...]
 LetRecContinuation:
     |                                   { [] }
-    | AND_KW IDENT ParamList EQUALS Expr LetRecContinuation
+    | AND_KW IDENT ParamList EQUALS SeqExpr LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
           match lambda with
           | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 5) :: $6
           | _ -> failwith "impossible: empty param list" }
-    | AND_KW IDENT ParamList EQUALS INDENT Expr DEDENT LetRecContinuation
+    | AND_KW IDENT ParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
           match lambda with
           | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 7) :: $8
