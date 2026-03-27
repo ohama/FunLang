@@ -50,10 +50,10 @@
 | MUT-06 | Phase 43 | Complete |
 | MUT-07 | Phase 43 | Complete |
 | MUT-08 | Phase 43 | Complete |
-| TST-24 | Phase 44 | Pending |
-| TST-25 | Phase 44 | Pending |
-| TST-26 | Phase 44 | Pending |
-| TST-27 | Phase 44 | Pending |
+| TST-24 | Phase 44 | Complete |
+| TST-25 | Phase 44 | Complete |
+| TST-26 | Phase 44 | Complete |
+| TST-27 | Phase 44 | Complete |
 
 **Coverage:**
 - v4.0 requirements: 12 total
