@@ -67,11 +67,10 @@ Plans:
   2. User can write `arr.[i] <- v` to write an array element (equivalent to `array_set arr i v`)
   3. User can write `ht.[key]` and `ht.[key] <- v` to read/write hashtable entries
   4. User can write `matrix.[r].[c]` to index a nested array (chained indexing)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 47-01: Lexer/parser: `.[` token, AST nodes for index-read and index-write expressions
-- [ ] 47-02: Eval and type checker for indexing syntax, chained indexing support
+- [ ] 47-01-PLAN.md — DOTLBRACKET token, IndexGet/IndexSet AST nodes, Bidir type check (TArray/THashtable dispatch), Infer stub, Eval bounds-checked runtime, Format cases, TypeCheck 4 helpers, IndentFilter bracket tracking, 7 flt tests
 
 ### Phase 48: If-Then Without Else
 **Goal**: Users can write `if cond then expr` when the then-branch returns unit, with a clear type error when it does not
@@ -113,7 +112,7 @@ Plans:
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 46. Loop Constructs | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 47. Array and Hashtable Indexing Syntax | v5.0 | 0/TBD | Not started | - |
+| 47. Array and Hashtable Indexing Syntax | v5.0 | 0/1 | Not started | - |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
 | 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
 
