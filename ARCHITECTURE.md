@@ -52,6 +52,7 @@ Source Code
 - 들여쓰기를 `NEWLINE(col)` 토큰으로 전달 — INDENT/DEDENT 생성은 하지 않음
 - 키워드는 식별자보다 먼저 매칭 (longest match rule)
 - 사용자 정의 연산자(INFIXOP)는 선두 문자로 우선순위 분류
+- `mut`과 `mutable` 모두 `MUTABLE` 토큰으로 매핑 (v4.0)
 
 **중요 패턴:**
 - `NEWLINE(col)`: 줄바꿈 후 다음 줄의 첫 비공백 문자 column

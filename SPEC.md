@@ -32,7 +32,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | OPEN | `open` | EXCEPTION | `exception` |
 | RAISE | `raise` | TRY | `try` |
 | WHEN | `when` | MUTABLE | `mutable` |
-| CHAR | `char` | | |
+| CHAR | `char` | MUT | `mut` |
 
 ### 1.3 Type Keywords (6)
 
@@ -156,7 +156,7 @@ QualifiedIdent ::= IDENT ('.' IDENT)*
 Decls       ::= Decl*
 
 Decl        ::= LetDecl | TypeDecl | RecordDecl | TypeAliasDecl
-              | LetRecDecl | ModuleDecl | OpenDecl | ExceptionDecl
+              | LetRecDecl | LetMutDecl | ModuleDecl | OpenDecl | ExceptionDecl
               | LetPatDecl | FileImportDecl
 
 LetDecl     ::= 'let' IDENT '=' Expr
@@ -166,6 +166,8 @@ LetDecl     ::= 'let' IDENT '=' Expr
 
 LetRecDecl  ::= 'let' 'rec' IDENT ParamList '=' Expr
                 ('and' IDENT ParamList '=' Expr)*
+
+LetMutDecl  ::= 'let' ('mut' | 'mutable') IDENT '=' Expr
 
 TypeDecl    ::= 'type' IDENT TypeParams '=' ['|'] Constructors
                 ('and' IDENT TypeParams '=' ['|'] Constructors)*
@@ -207,6 +209,8 @@ Expr    ::= 'let' IDENT '=' Expr 'in' Expr
           | 'let' TuplePattern '=' Expr 'in' Expr
           | 'let' '_' '=' Expr 'in' Expr
           | 'let' 'rec' IDENT IDENT '=' Expr 'in' Expr
+          | 'let' ('mut' | 'mutable') IDENT '=' Expr 'in' Expr
+          | IDENT '<-' Expr
           | 'if' Expr 'then' Expr 'else' Expr
           | 'fun' IDENT '->' Expr
           | 'fun' '(' IDENT ':' TypeExpr ')' '->' Expr

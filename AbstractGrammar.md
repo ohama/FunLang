@@ -60,6 +60,8 @@ decl ::= 'let' IDENT '=' expr
            ('and' IDENT param+ '=' expr)*
        | 'let' 'rec' '(' op_name ')' param+ '=' expr
 
+       | 'let' ('mut' | 'mutable') IDENT '=' expr
+
        | 'type' IDENT type_var* '=' constructor ('|' constructor)*
        | 'type' IDENT type_var* '=' '{' field_decl (';' field_decl)* ';'? '}'
        | 'type' IDENT type_var* '=' type_alias_expr
@@ -107,6 +109,8 @@ expr ::= -- 바인딩 형식
        | 'let' tuple_pattern '=' expr 'in' expr
        | 'let' '_' '=' expr 'in' expr
        | 'let' 'rec' IDENT IDENT '=' expr 'in' expr
+       | 'let' ('mut' | 'mutable') IDENT '=' expr 'in' expr
+       | IDENT '<-' expr                               -- 가변 변수 재할당
 
          -- 패턴 매칭 / 예외 처리
        | 'match' expr 'with' match_clause+

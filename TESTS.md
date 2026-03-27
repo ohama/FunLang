@@ -62,7 +62,7 @@ tests/flt/
 │   ├── tuple/      # 튜플
 │   ├── type-annot/ # 타입 주석
 │   └── unit/       # 유닛 타입
-├── file/           # 파일 모드 테스트 (361 tests, 27 subdirs)
+├── file/           # 파일 모드 테스트 (361 tests, 28 subdirs)
 │   ├── adt/        # ADT + GADT (17 tests)
 │   ├── algorithm/  # 알고리즘 (27 tests)
 │   ├── array/      # mutable array (18 tests)
