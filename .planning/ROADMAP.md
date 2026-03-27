@@ -53,11 +53,10 @@ Plans:
   2. User can write `for i = 0 to 9 do body` and `i` takes values 0 through 9 in sequence
   3. User can write `for i = 9 downto 0 do body` and `i` takes values 9 down to 0
   4. Attempting `i <- 42` inside a for loop body produces a type error (loop variable is immutable)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 46-01: AST nodes, parser grammar for while and for-to/downto, eval semantics, unit return
-- [ ] 46-02: Type checker for loop constructs, loop variable immutability enforcement
+- [ ] 46-01-PLAN.md — Lexer tokens (WHILE FOR TO DOWNTO DO), AST nodes (WhileExpr ForExpr), parser grammar (6 productions), IndentFilter DO fix, eval, Bidir type checker with LOOP-04 immutability, Infer stubs, Format cases, 7 flt tests
 
 ### Phase 47: Array and Hashtable Indexing Syntax
 **Goal**: Users can read and write array/hashtable elements with `.[i]` syntax instead of calling `array_get`/`array_set` functions
@@ -113,7 +112,7 @@ Plans:
 | 43. Edge Cases and Error Handling | v4.0 | 1/1 | Complete | 2026-03-27 |
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 46. Loop Constructs | v5.0 | 0/TBD | Not started | - |
+| 46. Loop Constructs | v5.0 | 0/1 | Not started | - |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 0/TBD | Not started | - |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
 | 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
