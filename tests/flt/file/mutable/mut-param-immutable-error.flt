@@ -1,0 +1,7 @@
+// Test: function parameter is always immutable, assignment produces E0320
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let f x = x <- 10
+// --- ExitCode: 1
+// --- Stderr:
+error[E0320]: Cannot assign to immutable variable 'x'. Use 'let mut' to declare mutable variables.

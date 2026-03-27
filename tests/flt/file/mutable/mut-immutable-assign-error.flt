@@ -1,0 +1,7 @@
+// Test: assigning to immutable variable produces E0320 error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let x = 5 in x <- 10
+// --- ExitCode: 1
+// --- Stderr:
+error[E0320]: Cannot assign to immutable variable 'x'. Use 'let mut' to declare mutable variables.
