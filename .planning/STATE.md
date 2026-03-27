@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v4.0 Mutable Variables — Phase 44: Tests and Documentation (plan 2/2 complete)
+**Current focus:** v4.0 Mutable Variables — Phase 44: Tests and Documentation (complete)
 
 ## Current Position
 
 Milestone: v4.0 Mutable Variables
 Phase: 44 of 44 (Tests and Documentation)
-Plan: 2 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-26 — Completed 44-02-PLAN.md
+Plan: 1 of 2 in current phase (44-01 complete, 44-02 already done)
+Status: Phase complete
+Last activity: 2026-03-26 — Completed 44-01-PLAN.md
 
-Progress: [████████████████████] v1.0-v3.0 done (41p/98pl) | v4.0: [█████████░] 4/6 plans
+Progress: [████████████████████] v1.0-v3.0 done (41p/98pl) | v4.0: [██████████] 5/6 plans
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 102
+- Total plans completed: 103
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day
 
@@ -41,6 +41,7 @@ Key context for v4.0:
 - Mutable variables are monomorphic (no generalization) (42-02)
 - D42-01-01: Added `mut` as keyword alias for `mutable`
 - D42-02-01: Module-level mutable set in Bidir.fs for mutableVars tracking
+- D44-01-01: Used simple match pattern instead of ADT for mut-in-match test (parse error with ADT in offside context)
 
 ### Pending Todos
 
@@ -53,9 +54,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Completed 44-02-PLAN.md
+Stopped at: Completed 44-01-PLAN.md (all v4.0 test plans complete)
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-26 (44-02 complete)*
+*Last updated: 2026-03-26 (44-01 complete)*
