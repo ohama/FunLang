@@ -1,0 +1,6 @@
+// Test SEQ-02: e1; e2; e3 chains correctly (right-associative), returning value of last expr
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result = let mut x = 0 in x <- 1; x <- x + 1; x <- x + 1; x
+// --- Output:
+3

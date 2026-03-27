@@ -1,0 +1,8 @@
+// Test SEQ-01: e1; e2 evaluates both expressions in order and returns value of e2
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = println "hello"; println "world"
+// --- Output:
+hello
+world
+()
