@@ -66,11 +66,11 @@ Plans:
   2. flt tests cover error cases: immutable variable reassignment error, type mismatch error on reassignment
   3. flt tests cover advanced scenarios: closure capture of mutable variables, nested let mut, offside rule with let mut
   4. Tutorial chapter explains mutable variables with progressive examples from basic to advanced usage
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 44-01: TBD
-- [ ] 44-02: TBD
+- [ ] 44-01-PLAN.md — flt tests for basic operations (TST-24) and advanced scenarios (TST-26)
+- [ ] 44-02-PLAN.md — Tutorial chapter for mutable variables (TST-27)
 
 ## Progress
 
@@ -80,7 +80,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 42. Core Mutable Variables | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 43. Edge Cases and Error Handling | v4.0 | 1/1 | Complete | 2026-03-27 |
-| 44. Tests and Documentation | v4.0 | 0/TBD | Not started | - |
+| 44. Tests and Documentation | v4.0 | 0/2 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-26*
