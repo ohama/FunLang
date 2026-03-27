@@ -149,6 +149,8 @@ rule tokenize = parse
     | '{'           { LBRACE }
     | '}'           { RBRACE }
     | ';'           { SEMICOLON }
+    // Phase 47 (Array/Hashtable Indexing): dot-bracket as single token (avoids LALR conflict)
+    | ".["          { DOTLBRACKET }
     // Phase 18 (Ranges): DOTDOT must come before DOT (longest match)
     | ".."          { DOTDOT }
     | '.'           { DOT }

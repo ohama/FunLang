@@ -227,7 +227,7 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
             let token = tokenList.[index]
 
             match token with
-            | Parser.LBRACKET | Parser.LPAREN | Parser.LBRACE ->
+            | Parser.LBRACKET | Parser.LPAREN | Parser.LBRACE | Parser.DOTLBRACKET ->
                 state <- { state with BracketDepth = state.BracketDepth + 1; PrevToken = Some token }
                 yield token
 

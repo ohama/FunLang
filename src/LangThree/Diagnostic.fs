@@ -49,6 +49,8 @@ type TypeErrorKind =
     | NonExhaustiveExceptionHandler of missingInfo: string       // W0003
     // Phase 42 (Mutable Variables): Immutable variable assignment error
     | ImmutableVariableAssignment of varName: string            // E0320
+    // Phase 47 (Array/Hashtable Indexing): tried to index non-array/hashtable
+    | IndexOnNonCollection of ty: Type                          // E0471
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -309,6 +311,11 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0320",
             sprintf "Cannot assign to immutable variable '%s'. Use 'let mut' to declare mutable variables." varName,
             Some "Declare the variable with 'let mut' to allow assignment"
+
+        | IndexOnNonCollection ty ->
+            Some "E0471",
+            sprintf "Cannot index into value of type %s; expected array or hashtable" (formatType ty),
+            Some "Use array_create to create an array or hashtable_create to create a hashtable"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "

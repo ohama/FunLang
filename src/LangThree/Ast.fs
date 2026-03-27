@@ -115,6 +115,9 @@ type Expr =
     // Phase 46 (Loop Constructs): while and for loops
     | WhileExpr of cond: Expr * body: Expr * span: Span
     | ForExpr of var: string * start: Expr * isTo: bool * stop: Expr * body: Expr * span: Span
+    // Phase 47 (Array/Hashtable Indexing): index access
+    | IndexGet of collection: Expr * index: Expr * span: Span
+    | IndexSet of collection: Expr * index: Expr * value: Expr * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -302,6 +305,7 @@ let spanOf (expr: Expr) : Span =
     | LetMut(_, _, _, s) | Assign(_, _, s) -> s
     | WhileExpr(_, _, s) -> s
     | ForExpr(_, _, _, _, _, s) -> s
+    | IndexGet(_, _, s) | IndexSet(_, _, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
