@@ -56,10 +56,10 @@
 | SEQ-01 | Phase 45 | Complete |
 | SEQ-02 | Phase 45 | Complete |
 | SEQ-03 | Phase 45 | Complete |
-| LOOP-01 | Phase 46 | Pending |
-| LOOP-02 | Phase 46 | Pending |
-| LOOP-03 | Phase 46 | Pending |
-| LOOP-04 | Phase 46 | Pending |
+| LOOP-01 | Phase 46 | Complete |
+| LOOP-02 | Phase 46 | Complete |
+| LOOP-03 | Phase 46 | Complete |
+| LOOP-04 | Phase 46 | Complete |
 | IDX-01 | Phase 47 | Pending |
 | IDX-02 | Phase 47 | Pending |
 | IDX-03 | Phase 47 | Pending |

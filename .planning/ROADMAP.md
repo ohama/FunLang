@@ -24,7 +24,7 @@ v5.0 adds four imperative syntax constructs that complement v4.0's mutable varia
 **Milestone Goal:** Array indexing syntax, expression sequencing, loops, and if-then without else — the imperative ergonomics layer on top of mutable variables
 
 - [x] **Phase 45: Expression Sequencing** — `e1; e2` desugars to `let _ = e1 in e2`, enabling multi-step imperative blocks
-- [ ] **Phase 46: Loop Constructs** — `while cond do body` and `for i = start to end do body` with immutable loop variable
+- [x] **Phase 46: Loop Constructs** — `while cond do body` and `for i = start to end do body` with immutable loop variable
 - [ ] **Phase 47: Array and Hashtable Indexing Syntax** — `arr.[i]` / `arr.[i] <- v` / `ht.[key]` / `ht.[key] <- v` with chained indexing
 - [ ] **Phase 48: If-Then Without Else** — `if cond then expr` accepted when expr is unit, type error otherwise
 - [ ] **Phase 49: Tests and Documentation** — flt test suites for all v5.0 features and tutorial chapter update
@@ -56,7 +56,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 46-01-PLAN.md — Lexer tokens (WHILE FOR TO DOWNTO DO), AST nodes (WhileExpr ForExpr), parser grammar (6 productions), IndentFilter DO fix, eval, Bidir type checker with LOOP-04 immutability, Infer stubs, Format cases, 7 flt tests
+- [x] 46-01-PLAN.md — Lexer tokens (WHILE FOR TO DOWNTO DO), AST nodes (WhileExpr ForExpr), parser grammar (6 productions), IndentFilter DO fix, eval, Bidir type checker with LOOP-04 immutability, Infer stubs, Format cases, 7 flt tests
 
 ### Phase 47: Array and Hashtable Indexing Syntax
 **Goal**: Users can read and write array/hashtable elements with `.[i]` syntax instead of calling `array_get`/`array_set` functions
@@ -112,7 +112,7 @@ Plans:
 | 43. Edge Cases and Error Handling | v4.0 | 1/1 | Complete | 2026-03-27 |
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 46. Loop Constructs | v5.0 | 0/1 | Not started | - |
+| 46. Loop Constructs | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 0/TBD | Not started | - |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
 | 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
