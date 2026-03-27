@@ -168,6 +168,31 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         mutableVars <- savedMutableVars  // restore (name goes out of scope)
         (compose s2 s1, bodyTy)
 
+    // === WhileExpr (Phase 46 - while loop) ===
+    | WhileExpr (cond, body, span) ->
+        let s1, condTy = synth ctorEnv recEnv ctx env cond
+        let s2 = unifyWithContext ctx [] span (apply s1 condTy) TBool
+        let s12 = compose s2 s1
+        let env' = applyEnv s12 env
+        let s3, _bodyTy = synth ctorEnv recEnv ctx env' body
+        (compose s3 s12, TTuple [])  // while always returns unit
+
+    // === ForExpr (Phase 46 - for loop) ===
+    | ForExpr (var, startExpr, _isTo, stopExpr, body, span) ->
+        let s1, startTy = synth ctorEnv recEnv ctx env startExpr
+        let s2 = unifyWithContext ctx [] span (apply s1 startTy) TInt
+        let s12 = compose s2 s1
+        let env1 = applyEnv s12 env
+        let s3, stopTy = synth ctorEnv recEnv ctx env1 stopExpr
+        let s4 = unifyWithContext ctx [] span (apply s3 stopTy) TInt
+        let s1234 = compose s4 (compose s3 s12)
+        let env2 = applyEnv s1234 env
+        // Bind loop variable as immutable int — NOT in mutableVars (LOOP-04)
+        let loopEnv = Map.add var (Scheme([], TInt)) env2
+        // Do NOT add var to mutableVars — loop variable must be immutable
+        let s5, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
+        (compose s5 s1234, TTuple [])  // for always returns unit
+
     // === Assign (Phase 42 - mutable variable assignment) ===
     | Assign (name, value, span) ->
         if not (Set.contains name mutableVars) then

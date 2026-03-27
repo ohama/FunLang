@@ -349,6 +349,17 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let s1, _valTy = inferWithContext ctx env value
         (s1, TTuple [])  // returns unit
 
+    // === Phase 46: Loop constructs (stub — primary implementation in Bidir) ===
+    | WhileExpr (_, body, _) ->
+        let s1, _ = inferWithContext ctx env body
+        (s1, TTuple [])
+
+    | ForExpr (_, start, _, stop, body, _) ->
+        let s1, _ = inferWithContext ctx env start
+        let s2, _ = inferWithContext ctx env stop
+        let s3, _ = inferWithContext ctx env body
+        (compose s3 (compose s2 s1), TTuple [])
+
     // === Record expressions (stub - primary implementation in Bidir) ===
     | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
         (empty, freshVar())

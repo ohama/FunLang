@@ -303,6 +303,9 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
         collectMatches a @ collectMatches b
     | Range(start, stop, stepOpt, _) ->
         collectMatches start @ collectMatches stop @ (stepOpt |> Option.map collectMatches |> Option.defaultValue [])
+    // Phase 46 (Loop Constructs)
+    | WhileExpr(cond, body, _) -> collectMatches cond @ collectMatches body
+    | ForExpr(_, start, _, stop, body, _) -> collectMatches start @ collectMatches stop @ collectMatches body
     | Number _ | Bool _ | String _ | Char _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body

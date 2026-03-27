@@ -752,6 +752,29 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         let env' = Map.add name (RefValue refCell) env
         eval recEnv moduleEnv env' tailPos body
 
+    // Phase 46: while loop
+    | WhileExpr (cond, body, _) ->
+        let mutable keepGoing = true
+        while keepGoing do
+            match eval recEnv moduleEnv env false cond with
+            | BoolValue true  -> eval recEnv moduleEnv env false body |> ignore
+            | BoolValue false -> keepGoing <- false
+            | _ -> failwith "while: condition must be of type bool"
+        TupleValue []
+
+    // Phase 46: for loop
+    | ForExpr (var, startExpr, isTo, stopExpr, body, _) ->
+        let startVal = eval recEnv moduleEnv env false startExpr
+        let stopVal  = eval recEnv moduleEnv env false stopExpr
+        match startVal, stopVal with
+        | IntValue s, IntValue e ->
+            let range = if isTo then [s..e] else [s .. -1 .. e]
+            for iVal in range do
+                let loopEnv = Map.add var (IntValue iVal) env
+                eval recEnv moduleEnv loopEnv false body |> ignore
+            TupleValue []
+        | _ -> failwith "for: start and end must be integers"
+
     // Phase 42: Mutable variable assignment
     | Assign (name, valueExpr, _) ->
         let newValue = eval recEnv moduleEnv env false valueExpr
