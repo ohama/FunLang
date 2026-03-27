@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-26)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v4.0 Mutable Variables — Phase 44: Tests and Documentation (complete)
+**Current focus:** v5.0 Imperative Ergonomics — Not started (defining requirements)
 
 ## Current Position
 
-Milestone: v4.0 Mutable Variables
-Phase: 44 of 44 (Tests and Documentation)
-Plan: 1 of 2 in current phase (44-01 complete, 44-02 already done)
-Status: Phase complete
-Last activity: 2026-03-26 — Completed 44-01-PLAN.md
+Milestone: v5.0 Imperative Ergonomics
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v5.0 started
 
-Progress: [████████████████████] v1.0-v3.0 done (41p/98pl) | v4.0: [██████████] 5/6 plans
+Progress: [████████████████████] v1.0-v4.0 done (44p/103pl) | v5.0: defining
 
 ## Performance Metrics
 
@@ -23,6 +23,7 @@ Progress: [████████████████████] v1.0-v3
 - Total plans completed: 103
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day
+- v4.0: 5 plans across 3 phases in 1 day
 
 ## Accumulated Context
 
@@ -30,18 +31,13 @@ Progress: [████████████████████] v1.0-v3
 
 (Full log in PROJECT.md Key Decisions table)
 
-Key context for v4.0:
-- MUTABLE token and LARROW (<-) already exist in lexer; 'mut' alias added
-- Record mutable fields already use `mutable` keyword and `<-` assignment via SetField AST node
-- AST has LetMut, Assign, LetMutDecl, RefValue (42-01)
-- Parser accepts `let mut/mutable x = expr` and `x <- expr` (42-01)
-- Diagnostic E0320 ImmutableVariableAssignment ready (42-01)
-- Eval uses ref cells for mutable variable values; Var dereferences transparently (42-02)
-- Bidir.mutableVars set tracks mutable variables in scope (42-02)
-- Mutable variables are monomorphic (no generalization) (42-02)
-- D42-01-01: Added `mut` as keyword alias for `mutable`
-- D42-02-01: Module-level mutable set in Bidir.fs for mutableVars tracking
-- D44-01-01: Used simple match pattern instead of ADT for mut-in-match test (parse error with ADT in offside context)
+Key context for v5.0:
+- Grammar already has `atom '.' IDENT` for record field access and `atom '.' IDENT '<-'` for mutable field assignment
+- Semicolons currently used only as list/record separators, not general sequencing
+- `let _ = e1 in e2` is current sequencing pattern
+- `if` requires else branch (Ast.fs: `If of Expr * Expr * Expr * span: Span`)
+- No loop constructs exist; iteration is via recursion or HOFs
+- IndentFilter handles INDENT/DEDENT token generation
 
 ### Pending Todos
 
@@ -53,10 +49,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26
-Stopped at: Completed 44-01-PLAN.md (all v4.0 test plans complete)
+Last session: 2026-03-28
+Stopped at: Milestone v5.0 started, defining requirements
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-26 (44-01 complete)*
+*Last updated: 2026-03-28 (v5.0 milestone started)*
