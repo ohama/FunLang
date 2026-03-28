@@ -31,7 +31,7 @@ See MILESTONES.md for full history of completed phases.
 
 **Milestone Goal:** 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, Option/Result 유틸리티로 실용적 프로그래밍 완성
 
-- [ ] **Phase 50: Newline Implicit Sequencing** — IndentFilter auto-inserts SEMICOLON at same-indent newlines inside expression blocks
+- [x] **Phase 50: Newline Implicit Sequencing** — IndentFilter auto-inserts SEMICOLON at same-indent newlines inside expression blocks
 - [ ] **Phase 51: For-In Collection Loops** — `for x in collection do body` iterates lists and arrays
 - [ ] **Phase 52: Option/Result Prelude Utilities** — map, bind, defaultValue, iter, filter and Result bridging functions in Prelude
 - [ ] **Phase 53: Tests and Documentation** — flt integration tests + tutorial chapter 22 for all v6.0 features
@@ -52,7 +52,7 @@ See MILESTONES.md for full history of completed phases.
 **Plans:** 1 plan
 
 Plans:
-- [ ] 50-01-PLAN.md — IndentFilter SEMICOLON injection for same-level newlines in InExprBlock contexts
+- [x] 50-01-PLAN.md — IndentFilter SEMICOLON injection for same-level newlines in InExprBlock contexts
 
 ---
 
