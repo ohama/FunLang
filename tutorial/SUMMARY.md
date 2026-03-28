@@ -24,6 +24,7 @@
 - [파일 I/O와 시스템 함수](18-file-io.md)
 - [가변 데이터 구조](19-mutable-data.md)
 - [가변 변수](20-mutable-variables.md)
+- [명령형 에르고노믹스](21-imperative-ergonomics.md)
 
 # 에러 처리
 
