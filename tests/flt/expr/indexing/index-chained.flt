@@ -1,0 +1,21 @@
+// Test IDX-05: matrix.[r].[c] chained indexing
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let row0 = array_create 2 0
+let row1 = array_create 2 0
+let _ = row0.[0] <- 1
+let _ = row0.[1] <- 2
+let _ = row1.[0] <- 3
+let _ = row1.[1] <- 4
+let matrix = array_create 2 row0
+let _ = matrix.[1] <- row1
+let _ = println (to_string matrix.[0].[0])
+let _ = println (to_string matrix.[0].[1])
+let _ = println (to_string matrix.[1].[0])
+let _ = println (to_string matrix.[1].[1])
+// --- Output:
+1
+2
+3
+4
+()

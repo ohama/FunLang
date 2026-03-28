@@ -1,0 +1,7 @@
+// Test: indexing a non-array/hashtable raises a type error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = 42
+let _ = x.[0]
+// --- Error:
+Cannot index into value of type

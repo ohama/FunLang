@@ -1,0 +1,12 @@
+// Test IDX-03: ht.[key] reads hashtable value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = hashtable_create ()
+let _ = hashtable_set ht "x" 100
+let _ = hashtable_set ht "y" 200
+let _ = println (to_string ht.["x"])
+let _ = println (to_string ht.["y"])
+// --- Output:
+100
+200
+()

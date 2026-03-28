@@ -1,0 +1,12 @@
+// Test IDX-04: ht.[key] <- v writes hashtable value
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ht = hashtable_create ()
+let _ = ht.["name"] <- "Alice"
+let _ = ht.["score"] <- 95
+let _ = println ht.["name"]
+let _ = println (to_string ht.["score"])
+// --- Output:
+Alice
+95
+()
