@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v5.0 Imperative Ergonomics — Phase 46: Loop Constructs (complete)
+**Current focus:** v5.0 Imperative Ergonomics — Phase 47: Array and Hashtable Indexing (complete)
 
 ## Current Position
 
 Milestone: v5.0 Imperative Ergonomics
-Phase: 46 of 49 (Loop Constructs)
+Phase: 47 of 49 (Array and Hashtable Indexing)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-03-27 — Completed 46-01-PLAN.md (while/for loops + 7 flt tests, 563/563 passing)
+Last activity: 2026-03-28 — Completed 47-01-PLAN.md (.[i] indexing syntax + 7 flt tests, 570/570 passing)
 
-Progress: [████████████████████] v1.0-v4.0 done (44p/103pl) | v5.0: [██░░░] 2/5 phases
+Progress: [████████████████████] v1.0-v4.0 done (44p/103pl) | v5.0: [███░░] 3/5 phases
 
 ## Performance Metrics
 
@@ -41,6 +41,9 @@ Key context for v5.0:
 - Multi-statement loop bodies require explicit `;` — newline-based implicit sequencing not implemented
 - SeqExpr established: future statement-position grammar rules must use SeqExpr not Expr
 - WHILE FOR TO DOWNTO DO are now reserved keywords
+- [DONE] arr.[i] / ht.[key] indexing syntax added (Phase 47) — DOTLBRACKET token, IndexGet/IndexSet AST nodes
+- Array builtins: array_create (not array_new), hashtable_create (not hashtable_new)
+- IndexGet in Atom (left-recursive chaining); IndexSet in Expr (mirrors SetField)
 
 ### Pending Todos
 
@@ -52,10 +55,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27
-Stopped at: Completed 46-01-PLAN.md — Phase 46 Loop Constructs done
+Last session: 2026-03-28
+Stopped at: Completed 47-01-PLAN.md — Phase 47 Array/Hashtable Indexing done
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-27 (Phase 46 Loop Constructs complete)*
+*Last updated: 2026-03-28 (Phase 47 Array and Hashtable Indexing complete)*
