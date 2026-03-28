@@ -94,12 +94,10 @@ Plans:
   3. flt tests for `while` loop and `for` to/downto loops including immutable loop variable error all pass
   4. flt tests for `if cond then expr` (unit case and non-unit type error case) all pass
   5. Tutorial chapter covers all four v5.0 feature areas with working examples
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 49-01: flt tests for indexing syntax (TST-28)
-- [ ] 49-02: flt tests for sequencing (TST-29) and if-then without else (TST-31)
-- [ ] 49-03: flt tests for loop constructs (TST-30) and tutorial chapter (TST-32)
+- [ ] 49-01-PLAN.md — Tutorial chapter 21 covering all four v5.0 features (sequencing, loops, indexing, if-then) in Korean with verified code examples, SUMMARY.md updated
 
 ## Progress
 
@@ -114,7 +112,7 @@ Plans:
 | 46. Loop Constructs | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 48. If-Then Without Else | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
+| 49. Tests and Documentation | v5.0 | 0/1 | Not started | - |
 
 ---
 *Roadmap created: 2026-03-28*
