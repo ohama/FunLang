@@ -79,10 +79,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can write `if x > 0 then print "positive"` and it compiles and runs correctly, returning unit
   2. Writing `if x > 0 then 42` (non-unit then-branch) produces a type error at compile time
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 48-01: Parser accepts optional else branch, AST update, eval returns unit for absent else, type checker enforces unit constraint
+- [ ] 48-01-PLAN.md — Parser.fsy new grammar rule (IF Expr THEN SeqExpr desugars to If with unit else), Parser.fs regenerated, 3 flt tests (IFTHEN-01, IFTHEN-01+SEQ, IFTHEN-02)
 
 ### Phase 49: Tests and Documentation
 **Goal**: Comprehensive flt test coverage for all v5.0 features and an updated tutorial chapter that users can follow to learn the new syntax
@@ -113,7 +113,7 @@ Plans:
 | 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 46. Loop Constructs | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 47. Array and Hashtable Indexing Syntax | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
+| 48. If-Then Without Else | v5.0 | 0/1 | Not started | - |
 | 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
 
 ---
