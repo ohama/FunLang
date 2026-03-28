@@ -88,6 +88,23 @@ let canBeFunction (token: Parser.token) : bool =
     | Parser.IDENT _ | Parser.RPAREN -> true
     | _ -> false
 
+/// Check if a token starts a continuation line (infix operator continuing prev expr)
+/// These tokens cannot start a new statement, so no SEMICOLON should precede them.
+let isContinuationStart (token: Parser.token) : bool =
+    match token with
+    | Parser.PIPE_RIGHT | Parser.COMPOSE_RIGHT | Parser.COMPOSE_LEFT -> true
+    | Parser.AND | Parser.OR | Parser.CONS -> true
+    | Parser.INFIXOP0 _ | Parser.INFIXOP1 _ | Parser.INFIXOP2 _
+    | Parser.INFIXOP3 _ | Parser.INFIXOP4 _ -> true
+    | _ -> false
+
+/// Check if a token is a structural terminator that should NOT be preceded by SEMICOLON.
+/// These keywords close or continue an outer construct (if-then-else, try-with, match arms).
+let isStructuralTerminator (token: Parser.token) : bool =
+    match token with
+    | Parser.ELSE | Parser.WITH | Parser.THEN | Parser.PIPE | Parser.IN -> true
+    | _ -> false
+
 /// Check if a token is an atom (can be an argument)
 let isAtom (token: Parser.token) : bool =
     match token with
@@ -279,8 +296,23 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                         state <- { newState with Context = newCtx }
                         yield! insTokens
                     else
-                        state <- newState
-                        yield! emitted
+                        // NLSEQ: inject SEMICOLON if InExprBlock is the direct top context
+                        // and the next token is neither a structural terminator nor a continuation operator.
+                        let shouldInjectSemicolon =
+                            match newState.Context with
+                            | InExprBlock _ :: _ ->
+                                let suppressByNext =
+                                    match nextToken with
+                                    | Some t -> isContinuationStart t || isStructuralTerminator t
+                                    | None -> false
+                                not suppressByNext
+                            | _ -> false
+                        if shouldInjectSemicolon then
+                            state <- newState
+                            yield Parser.SEMICOLON
+                        else
+                            state <- newState
+                            yield! emitted
                 else
                     // Check offside on DEDENT too: pop InLetDecl contexts that are above
                     // the new indent level, emitting IN for each block-let AFTER the DEDENT.
