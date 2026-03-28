@@ -67,11 +67,11 @@
 | IDX-05 | Phase 47 | Complete |
 | IFTHEN-01 | Phase 48 | Complete |
 | IFTHEN-02 | Phase 48 | Complete |
-| TST-28 | Phase 49 | Pending |
-| TST-29 | Phase 49 | Pending |
-| TST-30 | Phase 49 | Pending |
-| TST-31 | Phase 49 | Pending |
-| TST-32 | Phase 49 | Pending |
+| TST-28 | Phase 49 | Complete |
+| TST-29 | Phase 49 | Complete |
+| TST-30 | Phase 49 | Complete |
+| TST-31 | Phase 49 | Complete |
+| TST-32 | Phase 49 | Complete |
 
 **Coverage:**
 - v5.0 requirements: 19 total
