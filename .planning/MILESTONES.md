@@ -1,5 +1,29 @@
 # Project Milestones: LangThree
 
+## v5.0 Imperative Ergonomics (Shipped: 2026-03-28)
+
+**Delivered:** 표현식 시퀀싱(`e1; e2`), while/for 루프, 배열/해시테이블 인덱싱 구문(`arr.[i]`), else 없는 if — v4.0 가변 변수 위에 명령형 에르고노믹스 레이어 완성
+
+**Phases completed:** 45-49 (5 plans total)
+
+**Key accomplishments:**
+- SeqExpr nonterminal로 LALR 충돌 없이 `;` 시퀀싱 추가 (OCaml parser.mly 패턴)
+- while/for 루프 — 5 키워드, 2 AST 노드, E0320으로 루프 변수 불변성 보장
+- DOTLBRACKET 단일 토큰으로 `arr.[i]`/`ht.[key]` 인덱싱 구문 (IndexGet/IndexSet AST 노드)
+- Parser-only desugar로 if-then-without-else 구현 (AST/Eval/Bidir 변경 0)
+- 한국어 튜토리얼 챕터 21 (324줄) + 22개 flt 테스트
+
+**Stats:**
+- 34 files changed, +840 LOC
+- ~12,577 lines of F# source
+- 5 phases, 5 plans
+- 1 day (2026-03-28)
+- 224 F# unit tests + 573 flt tests, all passing
+
+**Git range:** `feat(45-01)` → `docs(49-01)`
+
+---
+
 ## v3.0 Mutable Data Structures (Shipped: 2026-03-25)
 
 **Delivered:** Array와 Hashtable 가변 자료구조 추가 — 생성/조회/변이/변환/고차함수 + 한국어 튜토리얼
