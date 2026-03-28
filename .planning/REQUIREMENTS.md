@@ -56,10 +56,10 @@
 | FORIN-02 | Phase 51 | Pending |
 | FORIN-03 | Phase 51 | Pending |
 | FORIN-04 | Phase 51 | Pending |
-| OPTRES-01 | Phase 52 | Pending |
-| OPTRES-02 | Phase 52 | Pending |
-| OPTRES-03 | Phase 52 | Pending |
-| OPTRES-04 | Phase 52 | Pending |
+| OPTRES-01 | Phase 52 | Complete |
+| OPTRES-02 | Phase 52 | Complete |
+| OPTRES-03 | Phase 52 | Complete |
+| OPTRES-04 | Phase 52 | Complete |
 | TST-33 | Phase 53 | Pending |
 | TST-34 | Phase 53 | Pending |
 | TST-35 | Phase 53 | Pending |
@@ -72,4 +72,4 @@
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after roadmap creation — all 17 requirements mapped*
+*Last updated: 2026-03-29 — OPTRES-01 through OPTRES-04 marked Complete (Phase 52)*

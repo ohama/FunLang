@@ -33,7 +33,7 @@ See MILESTONES.md for full history of completed phases.
 
 - [x] **Phase 50: Newline Implicit Sequencing** — IndentFilter auto-inserts SEMICOLON at same-indent newlines inside expression blocks
 - [x] **Phase 51: For-In Collection Loops** — `for x in collection do body` iterates lists and arrays
-- [ ] **Phase 52: Option/Result Prelude Utilities** — map, bind, defaultValue, iter, filter and Result bridging functions in Prelude
+- [x] **Phase 52: Option/Result Prelude Utilities** — map, bind, defaultValue, iter, filter and Result bridging functions in Prelude
 - [ ] **Phase 53: Tests and Documentation** — flt integration tests + tutorial chapter 22 for all v6.0 features
 
 ---
@@ -86,7 +86,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 52-01-PLAN.md — Add optionIter/optionFilter/optionDefaultValue/optionIsSome/optionIsNone to Option.fun and resultIter/resultToOption/resultDefaultValue to Result.fun with 7 flt tests
+- [x] 52-01-PLAN.md — Add optionIter/optionFilter/optionDefaultValue/optionIsSome/optionIsNone to Option.fun and resultIter/resultToOption/resultDefaultValue to Result.fun with 7 flt tests
 
 ---
 
@@ -117,5 +117,5 @@ Plans:
 | 1-49. Prior milestones | v1.0-v5.0 | 108/108 | Complete | 2026-03-28 |
 | 50. Newline Implicit Sequencing | v6.0 | 1/1 | Complete | 2026-03-28 |
 | 51. For-In Collection Loops | v6.0 | 1/1 | Complete | 2026-03-28 |
-| 52. Option/Result Prelude Utilities | v6.0 | 0/1 | Not started | - |
+| 52. Option/Result Prelude Utilities | v6.0 | 1/1 | Complete | 2026-03-29 |
 | 53. Tests and Documentation | v6.0 | 0/TBD | Not started | - |
