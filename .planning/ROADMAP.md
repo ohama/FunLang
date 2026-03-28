@@ -66,10 +66,10 @@ Plans:
   2. `for x in arr do body` iterates over all elements of a mutable array
   3. Assigning to the loop variable `x <- newValue` inside the body produces E0320 (immutable assignment error)
   4. `for x in [] do body` and `for x in empty_array do body` execute body zero times and return unit
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 51-01: ForInExpr AST node, parser rules, type checker, evaluator, and passthrough files
+- [ ] 51-01-PLAN.md — ForInExpr AST node, parser rules, Bidir/Eval/Infer/Format/TypeCheck, 4 flt tests
 
 ---
 
@@ -115,7 +115,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-49. Prior milestones | v1.0-v5.0 | 108/108 | Complete | 2026-03-28 |
-| 50. Newline Implicit Sequencing | v6.0 | 0/1 | Not started | - |
-| 51. For-In Collection Loops | v6.0 | 0/TBD | Not started | - |
+| 50. Newline Implicit Sequencing | v6.0 | 1/1 | Complete | 2026-03-28 |
+| 51. For-In Collection Loops | v6.0 | 0/1 | Not started | - |
 | 52. Option/Result Prelude Utilities | v6.0 | 0/TBD | Not started | - |
 | 53. Tests and Documentation | v6.0 | 0/TBD | Not started | - |
