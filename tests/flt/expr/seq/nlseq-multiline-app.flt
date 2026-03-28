@@ -1,0 +1,12 @@
+// Test NLSEQ-MA: multi-line function application (indented args not split into separate expressions)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add3 a b c = a + b + c
+let result =
+    add3
+        1
+        2
+        3
+let _ = result
+// --- Output:
+6
