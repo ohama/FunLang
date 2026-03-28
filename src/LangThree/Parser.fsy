@@ -149,6 +149,8 @@ Expr:
     | LET UNDERSCORE EQUALS Expr IN SeqExpr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
     | IF Expr THEN SeqExpr ELSE SeqExpr    { If($2, $4, $6, ruleSpan parseState 1 6) }
+    // Phase 48: If-then without else — desugar to If(cond, then, Tuple([], unit_span), full_span)
+    | IF Expr THEN SeqExpr                 { If($2, $4, Tuple([], symSpan parseState 4), ruleSpan parseState 1 4) }
     // Phase 5: Function definitions (SYN-01/SYN-06: multi-param let rec via ParamList)
     | LET REC IDENT ParamList EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 8
