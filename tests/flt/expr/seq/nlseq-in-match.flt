@@ -1,0 +1,14 @@
+// Test NLSEQ-02: match arm body auto-sequences multiple statements
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = 1
+let _ =
+    match x with
+    | 1 ->
+        println "one"
+        println "done"
+    | _ ->
+        println "other"
+// --- Output:
+one
+done

@@ -1,0 +1,12 @@
+// Test NLSEQ-03: while body auto-sequences without explicit semicolons
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mutable i = 0
+let _ =
+    while i < 2 do
+        println "tick"
+        i <- i + 1
+// --- Output:
+tick
+tick
+()

@@ -1,0 +1,9 @@
+// Test NLSEQ-05: module-level let declarations are independent (no spurious SEMICOLON)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let a = 1
+let b = 2
+let c = a + b
+let _ = println (to_string c)
+// --- Output:
+3
