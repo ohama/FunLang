@@ -1,0 +1,9 @@
+// Test IFTHEN-01+SEQ: if-then without else with semicolon-sequenced then-branch
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = 3
+let _ = if x > 0 then println "a"; println "b"
+// --- Output:
+a
+b
+()

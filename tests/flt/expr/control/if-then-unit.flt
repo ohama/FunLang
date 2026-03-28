@@ -1,0 +1,8 @@
+// Test IFTHEN-01: if-then without else accepted when then-branch returns unit
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let x = 5
+let _ = if x > 0 then println "positive"
+// --- Output:
+positive
+()

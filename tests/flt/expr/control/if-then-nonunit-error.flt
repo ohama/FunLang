@@ -1,0 +1,7 @@
+// Test IFTHEN-02: if-then without else with non-unit then-branch produces type error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = if true then 42
+// --- ExitCode: 1
+// --- Stderr:
+error[E0301]: Type mismatch: expected int but got unit
