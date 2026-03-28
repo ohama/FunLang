@@ -65,8 +65,8 @@
 | IDX-03 | Phase 47 | Complete |
 | IDX-04 | Phase 47 | Complete |
 | IDX-05 | Phase 47 | Complete |
-| IFTHEN-01 | Phase 48 | Pending |
-| IFTHEN-02 | Phase 48 | Pending |
+| IFTHEN-01 | Phase 48 | Complete |
+| IFTHEN-02 | Phase 48 | Complete |
 | TST-28 | Phase 49 | Pending |
 | TST-29 | Phase 49 | Pending |
 | TST-30 | Phase 49 | Pending |
