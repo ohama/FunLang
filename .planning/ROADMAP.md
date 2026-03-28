@@ -16,7 +16,7 @@
 - ✅ **v3.0 Mutable Data Structures** — Phases 38-41 (shipped 2026-03-25)
 - ✅ **v4.0 Mutable Variables** — Phases 42-44 (shipped 2026-03-28)
 - ✅ **v5.0 Imperative Ergonomics** — Phases 45-49 (shipped 2026-03-28)
-- 🚧 **v6.0 Practical Programming** — Phases 50-53 (in progress)
+- ✅ **v6.0 Practical Programming** — Phases 50-53 (shipped 2026-03-29)
 
 ## Phases
 
@@ -27,14 +27,14 @@ See MILESTONES.md for full history of completed phases.
 
 </details>
 
-### 🚧 v6.0 Practical Programming (In Progress)
+### ✅ v6.0 Practical Programming (Shipped 2026-03-29)
 
 **Milestone Goal:** 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, Option/Result 유틸리티로 실용적 프로그래밍 완성
 
 - [x] **Phase 50: Newline Implicit Sequencing** — IndentFilter auto-inserts SEMICOLON at same-indent newlines inside expression blocks
 - [x] **Phase 51: For-In Collection Loops** — `for x in collection do body` iterates lists and arrays
 - [x] **Phase 52: Option/Result Prelude Utilities** — map, bind, defaultValue, iter, filter and Result bridging functions in Prelude
-- [ ] **Phase 53: Tests and Documentation** — flt integration tests + tutorial chapter 22 for all v6.0 features
+- [x] **Phase 53: Tests and Documentation** — flt integration tests + tutorial chapter 22 for all v6.0 features
 
 ---
 
@@ -103,8 +103,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 53-01-PLAN.md — NLSEQ regression flt tests (structural terminator + multi-line application)
-- [ ] 53-02-PLAN.md — Tutorial chapter 22 — Practical Programming
+- [x] 53-01-PLAN.md — NLSEQ regression flt tests (structural terminator + multi-line application)
+- [x] 53-02-PLAN.md — Tutorial chapter 22 — Practical Programming
 
 ---
 
@@ -118,4 +118,4 @@ Plans:
 | 50. Newline Implicit Sequencing | v6.0 | 1/1 | Complete | 2026-03-28 |
 | 51. For-In Collection Loops | v6.0 | 1/1 | Complete | 2026-03-28 |
 | 52. Option/Result Prelude Utilities | v6.0 | 1/1 | Complete | 2026-03-29 |
-| 53. Tests and Documentation | v6.0 | 0/2 | Not started | - |
+| 53. Tests and Documentation | v6.0 | 2/2 | Complete | 2026-03-29 |

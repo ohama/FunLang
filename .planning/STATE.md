@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v6.0 Practical Programming — Phase 53 (in progress)
+**Current focus:** v6.0 Practical Programming — COMPLETE
 
 ## Current Position
 
-Milestone: v6.0 Practical Programming
-Phase: 53 of 53 (Tests and Documentation) — In progress
-Plan: 2 of N in current phase
-Status: In progress — 53-01 and 53-02 complete
-Last activity: 2026-03-29 — Completed 53-02-PLAN.md (tutorial chapter 22, 223 lines, all examples verified)
+Milestone: v6.0 Practical Programming — COMPLETE
+Phase: 53 of 53 (Tests and Documentation) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Milestone complete — all 4 phases done
+Last activity: 2026-03-29 — Completed Phase 53 (2 NLSEQ regression tests + tutorial chapter 22)
 
-Progress: [████████████████████] v1.0-v5.0 done (49p/108pl) | v6.0: 3/4 phases complete, 53 in progress (112 plans total)
+Progress: [████████████████████] v1.0-v6.0 done (53p/112pl)
 
 ## Performance Metrics
 
@@ -49,14 +49,14 @@ None.
 
 ### Blockers/Concerns
 
-None — Phase 53-02 completed cleanly.
+None — v6.0 milestone completed cleanly.
 
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 53-02-PLAN.md — tutorial chapter 22 written and verified
+Stopped at: v6.0 milestone complete — all 53 phases, 112 plans done
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (Phase 53-02 complete — tutorial chapter 22, 223 lines, all 8 examples binary-verified)*
+*Last updated: 2026-03-29 (v6.0 milestone complete — 53 phases, 112 plans)*
