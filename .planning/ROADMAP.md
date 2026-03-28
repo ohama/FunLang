@@ -100,11 +100,11 @@ Plans:
   2. flt tests for for-in loops cover list iteration, array iteration, immutable loop variable, and empty collection
   3. flt tests for Option/Result utilities cover all eight new functions with both Some/None and Ok/Error inputs
   4. Tutorial chapter 22 (22-practical-programming.md) is present with runnable examples for all three v6.0 features
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 53-01: flt tests for newline sequencing, for-in loops, and Option/Result utilities
-- [ ] 53-02: Tutorial chapter 22 — Practical Programming
+- [ ] 53-01-PLAN.md — NLSEQ regression flt tests (structural terminator + multi-line application)
+- [ ] 53-02-PLAN.md — Tutorial chapter 22 — Practical Programming
 
 ---
 
@@ -118,4 +118,4 @@ Plans:
 | 50. Newline Implicit Sequencing | v6.0 | 1/1 | Complete | 2026-03-28 |
 | 51. For-In Collection Loops | v6.0 | 1/1 | Complete | 2026-03-28 |
 | 52. Option/Result Prelude Utilities | v6.0 | 1/1 | Complete | 2026-03-29 |
-| 53. Tests and Documentation | v6.0 | 0/TBD | Not started | - |
+| 53. Tests and Documentation | v6.0 | 0/2 | Not started | - |
