@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v5.0 Imperative Ergonomics — Phase 48: If-Then Without Else (complete)
+**Current focus:** v5.0 Imperative Ergonomics — MILESTONE COMPLETE**
 
 ## Current Position
 
-Milestone: v5.0 Imperative Ergonomics
-Phase: 48 of 49 (If-Then Without Else)
+Milestone: v5.0 Imperative Ergonomics — COMPLETE
+Phase: 49 of 49 (Tests and Documentation)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-03-28 — Completed 48-01-PLAN.md (if-then desugar in parser + 3 flt tests, 573/573 passing)
+Status: Milestone complete
+Last activity: 2026-03-28 — Completed 49-01-PLAN.md (tutorial chapter 21 — Imperative Ergonomics, all v5.0 feature areas documented)
 
-Progress: [████████████████████] v1.0-v4.0 done (44p/103pl) | v5.0: [████░] 4/5 phases
+Progress: [████████████████████] v1.0-v4.0 done (44p/103pl) | v5.0: [█████] 5/5 phases DONE
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 103
+- Total plans completed: 104
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day
 - v4.0: 5 plans across 3 phases in 1 day
@@ -56,9 +56,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: Completed 48-01-PLAN.md — Phase 48 If-Then Without Else done
+Stopped at: Completed 49-01-PLAN.md — v5.0 Imperative Ergonomics milestone complete
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-28 (Phase 48 If-Then Without Else complete)*
+*Last updated: 2026-03-28 (Phase 49 Tests and Documentation complete — v5.0 milestone done, 573/573 flt tests passing)*
