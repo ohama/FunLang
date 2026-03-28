@@ -47,29 +47,29 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NLSEQ-01 | Pending | Pending |
-| NLSEQ-02 | Pending | Pending |
-| NLSEQ-03 | Pending | Pending |
-| NLSEQ-04 | Pending | Pending |
-| NLSEQ-05 | Pending | Pending |
-| FORIN-01 | Pending | Pending |
-| FORIN-02 | Pending | Pending |
-| FORIN-03 | Pending | Pending |
-| FORIN-04 | Pending | Pending |
-| OPTRES-01 | Pending | Pending |
-| OPTRES-02 | Pending | Pending |
-| OPTRES-03 | Pending | Pending |
-| OPTRES-04 | Pending | Pending |
-| TST-33 | Pending | Pending |
-| TST-34 | Pending | Pending |
-| TST-35 | Pending | Pending |
-| TST-36 | Pending | Pending |
+| NLSEQ-01 | Phase 50 | Pending |
+| NLSEQ-02 | Phase 50 | Pending |
+| NLSEQ-03 | Phase 50 | Pending |
+| NLSEQ-04 | Phase 50 | Pending |
+| NLSEQ-05 | Phase 50 | Pending |
+| FORIN-01 | Phase 51 | Pending |
+| FORIN-02 | Phase 51 | Pending |
+| FORIN-03 | Phase 51 | Pending |
+| FORIN-04 | Phase 51 | Pending |
+| OPTRES-01 | Phase 52 | Pending |
+| OPTRES-02 | Phase 52 | Pending |
+| OPTRES-03 | Phase 52 | Pending |
+| OPTRES-04 | Phase 52 | Pending |
+| TST-33 | Phase 53 | Pending |
+| TST-34 | Phase 53 | Pending |
+| TST-35 | Phase 53 | Pending |
+| TST-36 | Phase 53 | Pending |
 
 **Coverage:**
 - v6.0 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 after roadmap creation — all 17 requirements mapped*
