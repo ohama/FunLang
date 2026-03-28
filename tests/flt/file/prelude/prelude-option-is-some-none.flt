@@ -1,0 +1,10 @@
+// Test: Prelude optionIsSome and optionIsNone predicates
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = optionIsSome (Some 42)
+let r2 = optionIsSome None
+let r3 = optionIsNone (Some 42)
+let r4 = optionIsNone None
+let result = (r1, r2, r3, r4)
+// --- Output:
+(true, false, false, true)

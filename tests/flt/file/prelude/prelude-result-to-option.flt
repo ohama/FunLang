@@ -1,0 +1,8 @@
+// Test: Prelude resultToOption converts Ok to Some and Error to None
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = resultToOption (Ok 42)
+let r2 = resultToOption (Error "oops")
+let result = (r1, r2)
+// --- Output:
+(Some 42, None)

@@ -1,0 +1,9 @@
+// Test: Prelude optionFilter keeps Some when pred holds, drops otherwise
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = optionFilter (fun x -> x > 0) (Some 42)
+let r2 = optionFilter (fun x -> x > 0) (Some (-1))
+let r3 = optionFilter (fun x -> x > 0) None
+let result = (r1, r2, r3)
+// --- Output:
+(Some 42, None, None)
