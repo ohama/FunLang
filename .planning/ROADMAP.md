@@ -49,10 +49,10 @@ See MILESTONES.md for full history of completed phases.
   3. Structural keywords (`else`, `with`, `|`, `then`) appearing after an expression are not preceded by a spurious SEMICOLON
   4. Explicit `;` sequencing written by users continues to parse and execute correctly
   5. Module-level `let` declarations are not sequenced — top-level bindings remain independent
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 50-01: IndentFilter SEMICOLON injection for same-level newlines in InExprBlock contexts
+- [ ] 50-01-PLAN.md — IndentFilter SEMICOLON injection for same-level newlines in InExprBlock contexts
 
 ---
 
@@ -115,7 +115,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-49. Prior milestones | v1.0-v5.0 | 108/108 | Complete | 2026-03-28 |
-| 50. Newline Implicit Sequencing | v6.0 | 0/TBD | Not started | - |
+| 50. Newline Implicit Sequencing | v6.0 | 0/1 | Not started | - |
 | 51. For-In Collection Loops | v6.0 | 0/TBD | Not started | - |
 | 52. Option/Result Prelude Utilities | v6.0 | 0/TBD | Not started | - |
 | 53. Tests and Documentation | v6.0 | 0/TBD | Not started | - |
