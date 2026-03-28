@@ -193,6 +193,29 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s5, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
         (compose s5 s1234, TTuple [])  // for always returns unit
 
+    // === ForInExpr (Phase 51 - for-in collection loop) ===
+    | ForInExpr (var, collExpr, body, span) ->
+        let s1, collTy = synth ctorEnv recEnv ctx env collExpr
+        // Try to unify collection type with TList(elemTv); if that fails, try TArray(elemTv)
+        let elemTv = freshVar ()
+        let s2 =
+            try unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
+            with _ ->
+                let elemTv2 = freshVar ()
+                unifyWithContext ctx [] span (apply s1 collTy) (TArray elemTv2)
+        let s12 = compose s2 s1
+        let collTyResolved = apply s12 collTy
+        let elemTy =
+            match collTyResolved with
+            | TList t -> t
+            | TArray t -> t
+            | _ -> freshVar ()
+        let env2 = applyEnv s12 env
+        // Bind loop variable as immutable — NOT in mutableVars (FORIN-03)
+        let loopEnv = Map.add var (Scheme([], elemTy)) env2
+        let s3, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
+        (compose s3 s12, TTuple [])  // for-in always returns unit
+
     // === Assign (Phase 42 - mutable variable assignment) ===
     | Assign (name, value, span) ->
         if not (Set.contains name mutableVars) then

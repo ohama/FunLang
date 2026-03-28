@@ -214,6 +214,8 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.ForExpr (var, start, isTo, stop, body, _) ->
         let dir = if isTo then "to" else "downto"
         sprintf "ForExpr (\"%s\", %s, %s, %s, %s)" var (formatAst start) dir (formatAst stop) (formatAst body)
+    | Ast.ForInExpr (var, coll, body, _) ->
+        sprintf "ForInExpr (\"%s\", %s, %s)" var (formatAst coll) (formatAst body)
     | Ast.IndexGet (coll, idx, _) ->
         sprintf "IndexGet (%s, %s)" (formatAst coll) (formatAst idx)
     | Ast.IndexSet (coll, idx, v, _) ->

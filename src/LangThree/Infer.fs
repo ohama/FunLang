@@ -360,6 +360,11 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let s3, _ = inferWithContext ctx env body
         (compose s3 (compose s2 s1), TTuple [])
 
+    | ForInExpr (_, coll, body, _) ->
+        let s1, _ = inferWithContext ctx env coll
+        let s2, _ = inferWithContext ctx env body
+        (compose s2 s1, TTuple [])
+
     // === Record expressions (stub - primary implementation in Bidir) ===
     | RecordExpr _ | FieldAccess _ | RecordUpdate _ | SetField _ ->
         (empty, freshVar())

@@ -775,6 +775,19 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             TupleValue []
         | _ -> failwith "for: start and end must be integers"
 
+    // Phase 51: for-in collection loop
+    | ForInExpr (var, collExpr, body, _) ->
+        let collVal = eval recEnv moduleEnv env false collExpr
+        let elements =
+            match collVal with
+            | ListValue xs -> xs
+            | ArrayValue arr -> arr |> Array.toList
+            | _ -> failwith "for-in: collection must be a list or array"
+        for elemVal in elements do
+            let loopEnv = Map.add var elemVal env
+            eval recEnv moduleEnv loopEnv false body |> ignore
+        TupleValue []
+
     // Phase 47: Array/hashtable index read
     | IndexGet (collExpr, idxExpr, _) ->
         let collVal = eval recEnv moduleEnv env false collExpr

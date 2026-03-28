@@ -306,6 +306,7 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     // Phase 46 (Loop Constructs)
     | WhileExpr(cond, body, _) -> collectMatches cond @ collectMatches body
     | ForExpr(_, start, _, stop, body, _) -> collectMatches start @ collectMatches stop @ collectMatches body
+    | ForInExpr(_, coll, body, _) -> collectMatches coll @ collectMatches body
     // Phase 47 (Array/Hashtable Indexing)
     | IndexGet(coll, idx, _) -> collectMatches coll @ collectMatches idx
     | IndexSet(coll, idx, v, _) -> collectMatches coll @ collectMatches idx @ collectMatches v
@@ -429,6 +430,7 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
                 collectTryWiths a @ collectTryWiths b
             | Range(start, stop, stepOpt, _) ->
                 collectTryWiths start @ collectTryWiths stop @ (stepOpt |> Option.map collectTryWiths |> Option.defaultValue [])
+            | ForInExpr(_, coll, body, _) -> collectTryWiths coll @ collectTryWiths body
             | _ -> []
 
         let allTryWiths = collectTryWiths body
@@ -517,6 +519,7 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
         Set.union (collectModuleRefs modules a) (collectModuleRefs modules b)
     | Range(start, stop, stepOpt, _) ->
         Set.unionMany [collectModuleRefs modules start; collectModuleRefs modules stop; stepOpt |> Option.map (collectModuleRefs modules) |> Option.defaultValue Set.empty]
+    | ForInExpr(_, coll, body, _) -> Set.union (collectModuleRefs modules coll) (collectModuleRefs modules body)
     | _ -> Set.empty
 
 /// Rewrite qualified module access in an expression tree.
@@ -594,6 +597,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | IndexGet(coll, idx, s) -> IndexGet(rewriteModuleAccess modules coll, rewriteModuleAccess modules idx, s)
     | IndexSet(coll, idx, v, s) -> IndexSet(rewriteModuleAccess modules coll, rewriteModuleAccess modules idx, rewriteModuleAccess modules v, s)
     | LetMut(n, rhs, body, s) -> LetMut(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | ForInExpr(var, coll, body, s) -> ForInExpr(var, rewriteModuleAccess modules coll, rewriteModuleAccess modules body, s)
     | Assign(n, value, s) -> Assign(n, rewriteModuleAccess modules value, s)
     | Raise(e, s) -> Raise(rewriteModuleAccess modules e, s)
     | TryWith(body, clauses, s) ->
