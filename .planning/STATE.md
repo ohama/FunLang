@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone
+**Current focus:** v6.0 Practical Programming — Defining requirements
 
 ## Current Position
 
-Milestone: v5.0 Imperative Ergonomics — SHIPPED
-Phase: —
+Milestone: v6.0 Practical Programming
+Phase: Not started (defining requirements)
 Plan: —
-Status: Milestone archived, ready for next
-Last activity: 2026-03-28 — v5.0 milestone complete and archived
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v6.0 started
 
-Progress: [████████████████████] v1.0-v5.0 done (49p/108pl)
+Progress: [████████████████████] v1.0-v5.0 done (49p/108pl) | v6.0: defining
 
 ## Performance Metrics
 
@@ -32,11 +32,12 @@ Progress: [████████████████████] v1.0-v5
 
 (Full log in PROJECT.md Key Decisions table)
 
-Key architectural patterns established:
-- SeqExpr nonterminal: future statement-position grammar rules must use SeqExpr not Expr
-- DOTLBRACKET: compound tokens resolve LALR conflicts with shared-prefix grammar rules
-- Parser desugar: when semantics match existing AST nodes, desugar in parser (zero downstream changes)
-- mutableVars exclusion: immutability enforced by NOT adding to set (reuses E0320)
+Key context for v6.0:
+- SeqExpr nonterminal established — newline sequencing should insert SEMICOLON tokens that SeqExpr already handles
+- IndentFilter has context stack (InLetDecl, InExprBlock, etc.) — newline sequencing heuristic needs to detect "same-level next statement" vs "multi-line application continuation"
+- `for` keyword already exists (Phase 46) — `for x in xs do` adds `IN` variant to existing ForExpr or new ForInExpr
+- Option/Result types exist in Prelude — just need utility functions (map, bind, etc.)
+- Multi-statement loop bodies currently require explicit `;` — newline sequencing fixes this
 
 ### Pending Todos
 
@@ -49,9 +50,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-28
-Stopped at: v5.0 milestone archived
+Stopped at: Milestone v6.0 started, defining requirements
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-28 (v5.0 milestone archived)*
+*Last updated: 2026-03-28 (v6.0 milestone started)*
