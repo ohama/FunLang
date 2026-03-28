@@ -1,0 +1,12 @@
+// Test FORIN-02: for-in iterates array elements
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.ofList [10; 20; 30]
+let mut sum = 0
+let _ =
+    for v in arr do
+        sum <- sum + v
+let _ = println (to_string sum)
+// --- Output:
+60
+()

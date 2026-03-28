@@ -1,0 +1,11 @@
+// Test FORIN-04: empty collection executes body zero times, returns unit
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let mut count = 0
+let result =
+    for x in [] do
+        count <- count + 1
+let _ = println (to_string count)
+// --- Output:
+0
+()

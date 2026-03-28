@@ -1,0 +1,8 @@
+// Test FORIN-03: loop variable is immutable — assignment produces E0320
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ =
+    for x in [1; 2; 3] do
+        x <- 42
+// --- Error:
+E0320
