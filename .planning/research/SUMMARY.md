@@ -1,240 +1,172 @@
 # Project Research Summary
 
-**Project:** LangThree - ML-style functional language with F# features
-**Domain:** Programming language implementation (interpreter with type inference)
-**Researched:** 2026-02-25
+**Project:** LangThree v6.0 — Practical Programming Features
+**Domain:** ML-style functional language interpreter extension
+**Researched:** 2026-03-28
 **Confidence:** HIGH
 
 ## Executive Summary
 
-LangThree extends FunLang v6.0 (an existing Hindley-Milner type inferencer with bidirectional type checking) by adding six major features: indentation-based syntax, algebraic data types (ADT), generalized algebraic data types (GADT), records, F#-style modules, and exceptions. Research indicates this is a well-trodden path in programming language implementation, with established patterns from Python (indentation), OCaml/Haskell (GADTs), and F# (modules).
+LangThree v6.0 adds three practical programming features to an already-mature interpreter codebase: newline implicit sequencing, `for x in collection do` loops, and expanded Option/Result Prelude utilities. All three features extend well-understood existing infrastructure with no new dependencies, no stack changes, and no major architectural redesigns. The recommended approach is to implement in a specific order driven by dependency: newline sequencing first (every subsequent test benefits from it), for-in loops second (new AST node + parser + type checker + evaluator), and Prelude utilities last (pure `.fun` additions with zero interpreter changes).
 
-The recommended approach follows a staged implementation: start with indentation syntax (affects lexer only), then build type system features (ADT, GADT, Records) leveraging existing Hindley-Milner infrastructure, followed by organizational features (Modules) and runtime support (Exceptions). The critical architectural insight is that FunLang's existing bidirectional type checker provides the foundation needed for GADTs, making this extension incremental rather than revolutionary. Indentation parsing via lexer token injection (INDENT/DEDENT tokens) keeps the parser context-free and avoids grammar ambiguity.
+The key risk is concentrated in Phase 1: the IndentFilter already manages a complex state machine (BracketDepth, InFunctionApp, InLetDecl offside, InExprBlock, InMatch, InTry), and adding SEMICOLON injection to that machine without breaking existing multi-line function application is the most dangerous change in the milestone. The critical guard is: do not emit SEMICOLON when the previous token can be a function and the next token is an atom — this distinguishes "f x / y" (application continuation) from "f x / let y = ..." (new statement). Phase 2 carries moderate risk in the type checker (extracting element types from collection types), and Phase 3 is the lowest-risk phase of the milestone.
 
-Key risks center on three areas: (1) indentation lexer state management across multiple DEDENT tokens, (2) GADT type inference requiring mandatory type annotations to avoid undecidability, and (3) circular module dependencies breaking builds. Mitigation strategies are well-documented: implement Python's indentation stack algorithm, enforce explicit GADT annotations with clear error messages, and adopt F#'s strict file-ordering discipline for modules.
+The entire implementation touches a small number of files: IndentFilter.fs for sequencing; Ast.fs, Parser.fsy, Bidir.fs, and Eval.fs for for-in (plus passthrough in Elaborate/Format/Infer/Exhaustive); and Prelude/Option.fun and Prelude/Result.fun for utilities. F#'s exhaustive DU matching means any missed ForInExpr case is a compile-time error, not a runtime surprise.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack inherits FunLang v6.0's foundation: F# on .NET 10, with fslex/fsyacc (FsLexYacc 12.x+) for lexer and parser generation. This choice is prescriptive—FunLang already provides Hindley-Milner type inference and bidirectional type checking, which are exactly what's needed for ADT/GADT support.
+The stack is unchanged from v5.0. F# on .NET 10, FsLexYacc 12.x for lexer/parser, IndentFilter for token-stream layout processing, and `.fun` Prelude files for the standard library. No new NuGet packages, no tooling changes, no version upgrades needed.
 
 **Core technologies:**
-- **F# / .NET 10**: Implementation language — required by FunLang base, excellent for compiler work with algebraic types and pattern matching
-- **fslex (FsLexYacc)**: Lexer generation — OCamllex-compatible, supports mutable state for indentation stack
-- **fsyacc (FsLexYacc)**: LALR parser generation — OCamlyacc-compatible, proven for ML-family languages
-- **FunLang v6.0**: Type inference foundation — provides Hindley-Milner + bidirectional checking, eliminating need to build type system from scratch
-
-**Key insight from STACK.md:** Indentation is purely a lexer concern (emit INDENT/DEDENT tokens), keeping parser grammar context-free. GADTs leverage existing bidirectional type checking rather than extending Hindley-Milner, which would break principal types property.
+- **IndentFilter.fs**: Layout rule engine — the sole target for newline sequencing work; emits INDENT/DEDENT and now also SEMICOLON in InExprBlock contexts
+- **FsLexYacc (fslex/fsyacc)**: Existing LALR(1) parser — receives 2 new grammar rules for ForInExpr; no conflicts expected because FOR/LET are distinct shift states
+- **SeqExpr nonterminal**: Already handles `e1; e2` — implicit sequencing injects SEMICOLON upstream with zero parser changes needed
+- **Prelude/*.fun**: Standard library in LangThree itself — the only change surface for Option/Result utilities; loaded alphabetically by Prelude.fs
 
 ### Expected Features
 
-Research reveals a clear three-tier feature classification based on ML-family language expectations.
-
 **Must have (table stakes):**
-- **Indentation-based syntax**: Offside rule for blocks, let-bindings, match expressions — F# syntax principle
-- **ADT with pattern matching**: Sum types with constructors, exhaustiveness checking, type parameters — core ML feature
-- **Records with field access**: Named fields, dot notation, copy-and-update syntax, structural equality — standard data structure
-- **Module system (F# style)**: Top-level modules, namespace declarations, `open` keyword, qualified names — code organization
-- **Basic GADT support**: Explicit constructor return types, type refinement in pattern matching — enables typed DSLs
-- **Exception handling**: Exception declarations, `raise`, `try...with` expressions — error handling
+- Newline-as-semicolon in function bodies, loop bodies, and lambda bodies — F# convention; expected by any ML-style developer
+- `for x in list do body` and `for x in array do body` — collection iteration without `List.iter` boilerplate
+- Loop variable immutability in for-in — consistent with existing `for i = s to e` semantics
+- `optionIter`, `optionFilter`, `resultIter`, `resultToOption` — the four highest-priority missing Prelude functions
+- Module-level declarations NOT affected by newline sequencing — critical correctness: SEMICOLON must not appear between top-level `let` bindings
 
 **Should have (competitive):**
-- **GADT exhaustiveness checking**: Refutation clauses for impossible patterns — advanced but expected in modern languages
-- **Module recursive support**: `module rec` for mutual recursion — convenience feature, not critical for v1
-- **try...finally**: Resource cleanup guarantees — RAII replacement for safety
+- Short-name Prelude aliases (`map`, `bind`, `defaultValue`) for ergonomic use after `open Option`
+- `optionGet`, `optionOrElse`, `resultMapBoth`, `resultFold` — useful but not blocking
+- Mixing explicit `;` and newline sequencing (both styles work simultaneously)
+- `optionToList`, `optionOfBool`, `resultFromOption` — completeness
 
 **Defer (v2+):**
-- **Row polymorphism for records**: Extensible record types `{x: int | r}` — complex type system feature
-- **Record field punning**: `{name}` shorthand for `{name = name}` — syntax sugar
-- **Anonymous records**: F# `{| x = 1 |}` syntax — lightweight but not essential
-- **Module signatures**: `.fsi` interface files for separate compilation — scalability feature
-
-**Anti-features (explicitly excluded):**
-- **Mixed tabs/spaces**: Indentation source of bugs — enforce spaces-only
-- **OCaml functors**: Parameterized modules too complex — F#-style simple modules only
-- **Checked exceptions**: Java-style throws clauses break ML semantics — dynamic exceptions only
-- **Automatic GADT inference**: Undecidable in general — require explicit annotations
+- Tuple pattern destructuring in loop variable (`for (a, b) in pairs do`) — Medium complexity, not urgent
+- `for x in seq do` — lazy sequence iteration (Seq type not in scope)
+- Computation expressions for Option/Result (`option { ... }`) — requires computation expression infrastructure
+- String iteration (`for c in "hello" do`) — not supported; document workaround instead
 
 ### Architecture Approach
 
-LangThree maintains FunLang's pipeline architecture: Lexer → Parser → Type Checker → Evaluator. Each new feature extends specific pipeline stages without breaking the overall flow. The key architectural principle is respecting component boundaries—indentation is lexer-only, type system features affect Type Checker/AST, modules affect all components via namespace resolution, exceptions affect runtime only.
+All three features slot into the existing pipeline without disrupting it. The pipeline is unchanged: Source → Lexer.fsl → IndentFilter.fs → Parser.fsy → Elaborate.fs → Bidir.fs → Eval.fs. Newline sequencing is entirely a token-stream transformation in IndentFilter; the parser and evaluator are unaware of it. ForInExpr follows the exact same extension pattern as the existing ForExpr: new AST variant, two parser rules, one Bidir synth case, one Eval case. Option/Result utilities are implemented purely in `.fun` files, taking advantage of the fact that the existing HM type inference already handles polymorphic ADT functions correctly.
 
-**Major components:**
-1. **Lexer (Lexer.fsl)** — Tokenization + indentation stack management (emit INDENT/DEDENT tokens)
-2. **Parser (Parser.fsy, Ast.fs)** — Syntax analysis, AST construction (new nodes: TypeDef, RecordExpr, ModuleDef, TryWith)
-3. **Type Checker (Type.fs, Infer.fs, Bidir.fs)** — Hindley-Milner inference for ADT/Records, bidirectional checking for GADTs
-4. **Module System (new: Modules.fs)** — Two-phase compilation: collect signatures, resolve qualified names
-5. **Evaluator (Eval.fs)** — Runtime execution, pattern matching (new: record ops, exception unwinding)
-6. **Exception Support (new: Exceptions.fs)** — Stack unwinding, handler matching (leverages F# exception mechanism)
+**Major components and their change scope:**
 
-**Component independence:** Indentation (lexer) is independent of type system features. ADT, GADT, Records can be developed in parallel (different AST nodes, different type rules). Modules require stable type system but are independent of runtime. Exceptions are orthogonal to type features (mostly runtime concern).
+1. **IndentFilter.fs** — SEMICOLON injection at same-level NEWLINE inside InExprBlock; guarded by prevToken/nextToken checks and mutual exclusion with the offside IN rule
+2. **Ast.fs + Parser.fsy + Bidir.fs + Eval.fs** — ForInExpr variant with two grammar rules (inline and indented body), element-type extraction from TList/TArray, and loop-body evaluation for both ListValue and ArrayValue
+3. **Prelude/Option.fun + Prelude/Result.fun** — additive-only utility functions; load order already correct (O before R); no interpreter changes required
 
 ### Critical Pitfalls
 
-Top 5 pitfalls from domain research, with prevention strategies:
+1. **Newline sequencing breaks multi-line function application (V6-1)** — `f x` followed by `y` at the same indent is currently `(f x y)`. Implicit SEMICOLON would silently change it to `f x; y`. Prevent by checking `canBeFunction prevToken && isAtom nextToken` — if true, do NOT emit SEMICOLON. Run all existing flt function-application tests immediately after any IndentFilter change.
 
-1. **Indentation lexer state corruption** — Multiple DEDENT tokens on a single line (e.g., indent 8→0 requires two DEDENTs) require token buffering. **Prevention:** Implement explicit indentation stack with token queue, use Python's algorithm (compare current indent to stack top, emit multiple DEDENTs as needed). Test edge case: three-level dedent in one line.
+2. **Double-emission: offside IN and implicit SEMICOLON on same newline (V6-2)** — mutual exclusion required: if the offside rule fires (emits IN in InLetDecl context), SEMICOLON must not also be emitted. These contexts are mutually exclusive — newline sequencing fires only in InExprBlock, offside IN fires in InLetDecl.
 
-2. **Mixed tabs and spaces** — Code appears correct visually but parser rejects with confusing errors. Tabs render differently (2/4/8 spaces) across editors. **Prevention:** Follow F# approach—reject tabs entirely with clear error "tabs not allowed, use spaces". Strict spaces-only mode prevents invisible bugs.
+3. **SEMICOLON emitted before structural terminators (V6-3)** — `ELSE`, `WITH`, `PIPE`, `IN`, `THEN`, `DEDENT`, `EOF` must be on a "do not emit SEMICOLON before this" blocklist. The IndentFilter already computes `nextToken`; add a terminator-token check before any SEMICOLON emission.
 
-3. **GADT type inference undecidability** — Type inference for GADTs is undecidable without annotations. Hindley-Milner assumes principal types, but GADTs break this property. **Prevention:** Require explicit type signatures on GADT pattern matches. Document clearly: "GADTs require type annotations—this is fundamental, not a bug." Use bidirectional type checking where annotations guide inference.
+4. **Lines starting with infix operators are continuations, not statements (V6-7)** — `|> List.map f` on the next line is a pipe continuation, not a new statement. If the next token is a binary operator (`|>`, `>>`, `+`, `&&`, etc.), do not emit SEMICOLON.
 
-4. **GADT rigid type variables escaping scope** — Existential types from GADT pattern matching leak into broader scope, causing type unsoundness. **Prevention:** Implement rigid/wobbly type system—mark GADT-opened existentials as rigid (cannot unify with anything), check no rigid variables escaped when leaving branch scope.
-
-5. **Circular module dependencies** — Two modules depend on each other, breaking build even when no actual value-level cycle exists. ML-family languages require declaration-before-use ordering. **Prevention:** Enforce strict file ordering (F# style)—no circularity allowed. Use `and` keyword for mutual recursion in same file. Provide clear error messages with cycle path: "A.fs → B.fs → A.fs".
+5. **ForInExpr loop variable scoping in type checker (V6-5)** — extract element type from the collection's synthesized type (`TList elemTy` or `TArray elemTy`), bind loop variable as `Scheme([], elemTy)`, and do NOT add it to `mutableVars`. Forgetting the mutableVars exclusion allows `x <- newValue` inside the body, which is semantically wrong.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure follows dependency order and risk profile:
+Three phases are the natural implementation order, driven by technical dependency and risk profile.
 
-### Phase 1: Indentation-Based Syntax
-**Rationale:** Indentation affects all subsequent parsing—must be stable before implementing other features. Lexer is foundation that all downstream components depend on.
-**Delivers:** Parser accepts indentation-based syntax for all language constructs (let-bindings, match expressions, modules)
-**Addresses:** Offside rule implementation, spaces-only enforcement, INDENT/DEDENT token generation
-**Avoids:** Pitfall #1 (indentation state corruption) via token queue, Pitfall #2 (mixed tabs/spaces) via strict rejection
-**Complexity:** Medium-High (lexer state management is tricky)
-**Research flag:** LOW—Python's algorithm is well-documented and proven
+### Phase 1: Newline Implicit Sequencing
 
-### Phase 2: Algebraic Data Types (ADT)
-**Rationale:** Simplest type system extension, provides foundation for GADTs. Extends existing pattern matching rather than rebuilding.
-**Delivers:** Sum types with constructors, pattern matching, exhaustiveness checking, type parameters
-**Uses:** Hindley-Milner inference (Infer.fs), fsyacc grammar extensions for type declarations
-**Implements:** Type.fs (TData type), Ast.fs (TypeDef node), Eval.fs (constructor pattern matching)
-**Addresses:** Core data modeling capability expected in ML-family languages
-**Complexity:** Medium (standard HM extension)
-**Research flag:** LOW—well-established patterns from OCaml/F#
+**Rationale:** Every subsequent test — for for-in loops and Prelude utilities — will want to write multi-line bodies without explicit semicolons. Implementing sequencing first means all later tests are written in clean idiomatic style. It is also the highest-risk change and benefits from being isolated so the full regression suite can be run without interference from other changes.
 
-### Phase 3: Records
-**Rationale:** Independent of ADT/GADT, can be developed in parallel with Phase 4. Simpler than modules (no cross-file dependencies).
-**Delivers:** Record types, field access, copy-and-update syntax, structural equality, pattern matching
-**Uses:** Structural typing (nominal requires more infrastructure), Type.fs (TRecord), Unify.fs (field unification)
-**Implements:** RecordExpr AST nodes, runtime representation as Map<string, Value>
-**Addresses:** Named product types, immutable data structures
-**Avoids:** Pitfall #6 (field name collisions) via module namespacing or type-directed disambiguation
-**Complexity:** Medium (type inference + structural typing)
-**Research flag:** LOW—standard record semantics, defer row polymorphism
+**Delivers:** Newline-as-semicolon in all expression block contexts (function bodies, loop bodies, lambda bodies, let-RHS blocks). No parser or AST changes — purely an IndentFilter token-stream transformation.
 
-### Phase 4: Generalized Algebraic Data Types (GADT)
-**Rationale:** Builds on ADT infrastructure. Requires bidirectional checking (already in FunLang). Can be parallel with Phase 3.
-**Delivers:** Explicit constructor return types, type refinement in pattern matching, indexed type families
-**Uses:** Bidirectional type checking (Bidir.fs), equational constraints in unification
-**Implements:** GADTConstructor AST extensions, TGADTInstance types, rigid/wobbly type variables
-**Addresses:** Type-safe DSLs, typed expression evaluators
-**Avoids:** Pitfall #3 (undecidable inference) via mandatory annotations, Pitfall #4 (rigid variable escape) via scope checking
-**Complexity:** High (type system extension with refinement)
-**Research flag:** MEDIUM—bidirectional typing integration needs careful design
+**Files changed:** `src/LangThree/IndentFilter.fs` only (~15-25 lines of logic)
 
-### Phase 5: Module System
-**Rationale:** Requires complete type system (ADT/Records/GADT must exist to put into modules). Affects all components but builds on type system work.
-**Delivers:** Top-level modules, namespace declarations, nested modules, `open` keyword, qualified name resolution
-**Uses:** Two-phase compilation (collect signatures, then resolve names), topological sort for dependencies
-**Implements:** New Modules.fs, Env.fs extensions, all files support qualified names
-**Addresses:** Code organization, namespace management
-**Avoids:** Pitfall #7 (circular dependencies) via strict file ordering and cycle detection
-**Complexity:** Medium (coordination across components, dependency ordering)
-**Research flag:** MEDIUM—two-phase compilation needs careful design
+**Features addressed:** Multi-line function bodies, multi-line while/for-to bodies, pipe chains, all imperative code patterns without explicit `;`
 
-### Phase 6: Exceptions
-**Rationale:** Most isolated feature. Primarily runtime concern, leverages F# exception mechanism. Can be developed anytime after ADT (exception constructors are ADT-like).
-**Delivers:** Exception declarations, `raise` function, `try...with` expressions, pattern matching on exception types
-**Uses:** Extensible variant types (exn), stack unwinding via F# exceptions
-**Implements:** New Exceptions.fs, Eval.fs handler stack, TryWith/Raise AST nodes
-**Addresses:** Error handling, control flow
-**Avoids:** Resource leak pitfalls via eventual try...finally support
-**Complexity:** Low-Medium (leverages existing infrastructure)
-**Research flag:** LOW—F# exception semantics are well-defined
+**Pitfalls to avoid:** V6-1 (function app breakage via prevToken/nextToken guard), V6-2 (double-emission mutual exclusion with offside), V6-3 (terminator blocklist), V6-7 (operator-continuation rule)
+
+**Research flag: NEEDS phase-specific research.** IndentFilter is the most complex existing component. The precise ordering and interaction of guards (prevToken check, nextToken check, offside mutual exclusion, terminator blocklist) must be specified exactly before coding. One wrong ordering causes silent semantic changes with no compile error and no parse error.
+
+### Phase 2: For-In Collection Loops
+
+**Rationale:** After newline sequencing is stable, the for-in feature can be implemented and tested with clean multi-line bodies. This is the most invasive change (AST + Parser + Bidir + Eval + passthrough files), but the pattern is well-established — it exactly mirrors how ForExpr was added in a prior phase.
+
+**Delivers:** `for x in list do body` and `for x in array do body`. Returns unit. Loop variable immutable. Empty collection is a no-op (zero iterations).
+
+**Files changed:** `Ast.fs`, `Parser.fsy`, `Bidir.fs`, `Eval.fs`, plus passthrough in `Elaborate.fs`, `Format.fs`, `Infer.fs`, `Exhaustive.fs` (each ~2-4 lines)
+
+**Features addressed:** Collection iteration over lists and arrays, replacing `List.iter` boilerplate, ergonomic loop syntax consistent with F#
+
+**Pitfalls to avoid:** V6-4 (LALR conflict — verify at build time with `dotnet build`), V6-5 (element type extraction from TList/TArray; exclude from mutableVars), V6-6 (handle both ListValue and ArrayValue; test empty collection), V6-10 (closure capture correct via Map.add immutable bind), V6-12 (clear error message for string iteration)
+
+**Research flag:** Standard patterns — ForExpr is the direct template. Verify LALR conflict at build time. The type checker's TList vs TArray handling requires a design decision (MVP: constrain to TList only; arrays work at eval time regardless of whether the type checker accepts TArray).
+
+### Phase 3: Option/Result Prelude Utilities
+
+**Rationale:** Pure `.fun` additions with zero interpreter changes. The lowest-risk phase. Placing it last means tests can use the clean multi-line style from Phase 1 and can be validated in programs that also use for-in loops.
+
+**Delivers:** `optionIter`, `optionFilter`, `optionGet`, `optionOrElse`, `optionToList`, `optionOfBool` (Option module); `resultIter`, `resultToOption`, `resultFromOption`, `resultMapBoth`, `resultFold` (Result module). Plus short-name aliases (`map`, `bind`, `defaultValue`) for use after `open Option` / `open Result`.
+
+**Files changed:** `Prelude/Option.fun`, `Prelude/Result.fun` only (~14-20 lines total)
+
+**Features addressed:** Side effects on optional values, conditional filtering, Result-to-Option bridging, complete parity with F# Option/Result modules for common operations
+
+**Pitfalls to avoid:** V6-8 (naming: follow `optionX` / `resultX` prefix convention, not bare `map`/`bind` at top level), V6-9 (verify ADT constructors enter ConstructorEnv when Prelude loads), V6-11 (define in .fun files for inferred polymorphism, not as Eval.fs builtins), V6-14 (snake_case naming consistent with existing builtins), V6-15 (test monad laws — specifically `Error e` unchanged through `result_bind`)
+
+**Research flag:** Standard patterns — Array.fun and Hashtable.fun are the naming/structure templates. No additional research phase needed.
 
 ### Phase Ordering Rationale
 
-**Sequential dependencies:**
-- Indentation → everything (lexer is foundation)
-- ADT → GADT (GADT extends ADT syntax and type checking)
-- Type system (ADT/GADT/Records) → Modules (modules contain typed declarations)
-
-**Parallel opportunities:**
-- After Indentation: ADT foundation work can start
-- After ADT: GADT and Records can proceed in parallel (different type system concerns)
-- After Modules: Exceptions can be developed independently
-
-**Risk-based ordering:**
-- Highest risk (Indentation lexer state, GADT type inference) tackled early when flexibility is high
-- Lower risk (Records, Exceptions) can be deferred or developed in parallel
-- Modules in middle—coordination overhead but standard patterns exist
-
-**Total estimate:** 7-12 weeks sequential, 6-9 weeks with parallel work (Phase 3 || Phase 4)
+- **Sequencing before loops:** For-in tests need multi-line bodies; without sequencing those bodies require explicit `;` everywhere, making tests awkward to write and non-representative
+- **Sequencing before Prelude:** `optionIter` called on separate lines in a do-block only works with sequencing; tests read better with implicit sequencing in place
+- **Loops before Prelude:** Prelude additions are independent and could be done in any order, but keeping Phase 2 diff focused on interpreter files is cleaner when Phase 3 is deferred
+- **F# exhaustive DU matching:** Every missed ForInExpr case in propagation is a compile-time error — Phase 2 propagation to all files is caught at build time, not at test time
 
 ### Research Flags
 
 **Phases needing deeper research during planning:**
-- **Phase 4 (GADT):** Bidirectional type checking integration with FunLang's existing Bidir.fs—may need prototype to validate approach
-- **Phase 5 (Modules):** Two-phase compilation and topological sorting—need to design module signature extraction algorithm
+- **Phase 1 (Newline Sequencing):** The IndentFilter state machine has the highest complexity in the codebase. The exact condition for SEMICOLON emission — specifically the ordering and interaction of prevToken, nextToken, context check, offside mutual exclusion, and BracketDepth — requires a precise written specification before coding. One incorrect guard ordering produces silent semantic breakage that only appears at runtime with wrong values, not with parse errors.
 
 **Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Indentation):** Python's algorithm is authoritative, well-documented
-- **Phase 2 (ADT):** Standard Hindley-Milner extension, OCaml/F# patterns apply directly
-- **Phase 3 (Records):** Structural typing is straightforward, ML semantics are clear
-- **Phase 6 (Exceptions):** F# exception mechanism can be leveraged directly
+- **Phase 2 (For-In Loop):** ForExpr is the direct template. Grammar, type-checker, and evaluator patterns are established. Verify LALR conflict at first build.
+- **Phase 3 (Prelude Utilities):** Array.fun and Hashtable.fun are the naming and structure templates. Purely additive, no interpreter involvement.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | **HIGH** | FunLang v6.0 base is prescriptive, fslex/fsyacc are standard F# tools with official docs |
-| Features | **HIGH** | Feature expectations based on official F#/OCaml docs and academic papers on GADTs |
-| Architecture | **HIGH** | Pipeline architecture is proven for interpreters, component boundaries are clear |
-| Pitfalls | **MEDIUM-HIGH** | Critical pitfalls well-documented (Python indentation, GADT papers), some edge cases may emerge |
+| Stack | HIGH | No changes to stack; all existing tools verified at v5.0 |
+| Features | HIGH | All three features have direct F# standard library precedents; scope is well-bounded |
+| Architecture | HIGH | ForExpr and IndentFilter patterns are concrete existing code; integration points identified from source inspection |
+| Pitfalls | HIGH | Based on direct inspection of IndentFilter.fs, Bidir.fs, Eval.fs source; not theoretical; prior phase analysis (45-RESEARCH.md) already resolved earlier pitfalls |
 
-**Overall confidence:** **HIGH**
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-Areas where research was inconclusive or needs validation during implementation:
+- **TList vs TArray in Bidir.fs for ForInExpr:** MVP recommendation is constrain type checker to `TList elemTy` only (ranges also evaluate to ListValue). ArrayValue works at eval time regardless. If the type checker should also accept `for x in array do`, a second unification attempt against `TArray elemTy` is needed. This design decision should be made explicit during Phase 2 — do not leave it implicit.
 
-- **GADT exhaustiveness checking:** Complex algorithm, may need to defer refutation clauses to post-v1. Literature exists but implementation details are sparse. **Handling:** Start with basic exhaustiveness warnings, accept some false positives for GADTs initially.
+- **REPL behavior under newline sequencing (V6-13):** If the REPL uses the same IndentFilter pipeline as file parsing, a mode flag may be needed to suppress implicit SEMICOLON in interactive mode. The recommended approach (REPL requires explicit `;;` or `;`; file mode uses implicit sequencing) mirrors OCaml REPL convention. Verify against `Repl.fs` implementation before releasing Phase 1.
 
-- **Record field disambiguation strategy:** Choice between module namespacing, type-directed resolution, or unique names constraint. All are valid; needs design decision. **Handling:** Start with module namespacing (simplest), can add type-directed resolution later if needed.
-
-- **Exception marshalling safety:** Not a priority for v1 (no serialization), but worth documenting limitation. **Handling:** Add warning in docs that `exn` type cannot be marshaled across processes.
-
-- **Module mutual recursion:** F#'s `module rec` allows cycles, but adds complexity. **Handling:** Skip for v1, enforce acyclic dependencies. Can add `module rec` in later version if demand exists.
-
-- **Value restriction with GADTs:** GADT let-bindings may become monomorphic due to value restriction. **Handling:** Accept limitation initially, document eta-expansion workaround. Consider relaxed value restriction in future.
-
-## Feature Summary Table
-
-Comprehensive view of all features with complexity and dependencies for roadmap planning:
-
-| Feature | Phase | Complexity | Dependencies | Critical Pitfall | Research Needed |
-|---------|-------|------------|--------------|------------------|-----------------|
-| **Indentation syntax** | 1 | Medium-High | None | Token buffering, tabs/spaces | LOW (Python algorithm) |
-| **ADT (basic)** | 2 | Medium | Indentation | None major | LOW (standard HM) |
-| **Records** | 3 | Medium | Indentation, Type system | Field name collisions | LOW (ML semantics) |
-| **GADT** | 4 | High | ADT, Bidir.fs | Type inference, rigid vars | MEDIUM (integration) |
-| **Modules** | 5 | Medium | Type system complete | Circular dependencies | MEDIUM (2-phase compile) |
-| **Exceptions** | 6 | Low-Medium | ADT (constructors) | Resource cleanup | LOW (F# semantics) |
+- **Short-name alias coexistence:** Both long-name (`optionMap`) and short-name (`map`) aliases can coexist in Option.fun. The safe choice is additive short-name aliases only, keeping full backward compatibility for all existing tests. This must be confirmed as the policy before Phase 3 implementation.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Python 3.14 Lexical Analysis](https://docs.python.org/3/reference/lexical_analysis.html) — Official indentation algorithm specification
-- [FsLexYacc GitHub](https://github.com/fsprojects/FsLexYacc) — fslex/fsyacc capabilities and examples
-- [F# Language Reference - Modules](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules) — Module system semantics
-- [F# Language Reference - Records](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/records) — Record type specifications
-- [Simple unification-based type inference for GADTs](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gadt-pldi.pdf) — Simon Peyton Jones et al., foundational GADT type checking
+- Direct inspection of `IndentFilter.fs` — InExprBlock, BracketDepth, canBeFunction, isAtom, processNewlineWithContext
+- Direct inspection of `Parser.fsy` — SeqExpr, ForExpr grammar rules, IN token usage
+- Direct inspection of `Bidir.fs` — ForExpr type checker, mutableVars exclusion pattern
+- Direct inspection of `Eval.fs` — ForExpr evaluator, ListValue/ArrayValue handling
+- Direct inspection of `Ast.fs` — Expr DU, ForExpr/ForInExpr candidate patterns
+- Project history via `PROJECT.md` — Key Decisions table (closure capture, mutableVars, SeqExpr)
+- Phase 45 research (`45-RESEARCH.md`) — SeqExpr and offside interaction analysis
 
 ### Secondary (MEDIUM confidence)
-- [Bidirectional Typing](https://arxiv.org/pdf/1908.05839) — Jana Dunfield comprehensive survey on bidirectional type checking
-- [Principled Parsing for Indentation-Sensitive Languages](https://michaeldadams.org/papers/layout_parsing/LayoutParsing.pdf) — Formal offside rule specification
-- [Real World OCaml - Records](https://dev.realworldocaml.org/records.html) — OCaml record semantics and patterns
-- [Real World OCaml - GADTs](https://dev.realworldocaml.org/gadts.html) — Practical GADT examples and type checking
-- [F# for fun and profit - Removing cyclic dependencies](https://fsharpforfunandprofit.com/posts/removing-cyclic-dependencies/) — Module dependency best practices
-
-### Tertiary (LOW confidence - validation needed)
-- [Marcel Goh - Scanning Spaces](https://marcelgoh.ca/2019/04/14/scanning-spaces.html) — Practical lexer implementation blog post
-- [Thunderseethe - HM vs Bidirectional](https://thunderseethe.dev/posts/how-to-choose-between-hm-and-bidir/) — Type system design tradeoffs
-- Community discussions on GADTs, row polymorphism, module systems (various forum posts cited in research files)
+- [F# for...in Expression — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/loops-for-in-expression)
+- [F# Option Module — FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html)
+- [F# Result Module — FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html)
+- [F# syntax: indentation and verbosity — F# for fun and profit](https://fsharpforfunandprofit.com/posts/fsharp-syntax/)
+- [OCaml Mutability and Imperative Control Flow](https://ocaml.org/docs/mutability-imperative-control-flow)
 
 ---
-*Research completed: 2026-02-25*
+*Research completed: 2026-03-28*
 *Ready for roadmap: yes*

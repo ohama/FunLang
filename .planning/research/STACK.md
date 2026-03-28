@@ -1,640 +1,270 @@
-# Technology Stack: LangThree Feature Implementation
+# Technology Stack: LangThree v6.0 Practical Programming
 
-**Project:** LangThree - ML-style functional language with F# features
-**Researched:** 2026-02-25
-**Domain:** Programming language implementation (lexer/parser/type checker)
-
-## Executive Summary
-
-This research focuses on specific techniques for implementing indentation-based syntax, ADT/GADT, Records, Modules, and Exceptions in F# using fslex/fsyacc. The recommendations are prescriptive and implementation-focused, based on FunLang v6.0's existing Hindley-Milner type inference and bidirectional type checking foundation.
-
-**Key Finding:** Indentation-based parsing is the most technically challenging feature, requiring significant lexer state management. GADTs present theoretical complexity but can leverage existing bidirectional type checking. Other features (Records, Modules, Exceptions) are relatively straightforward grammar extensions.
+**Project:** LangThree — ML-style functional language interpreter
+**Researched:** 2026-03-28
+**Milestone:** v6.0 — newline implicit sequencing, for-in loops, Option/Result utilities
+**Confidence:** HIGH — all three features extend well-understood existing infrastructure
 
 ---
 
-## Core Stack (Inherited from FunLang)
+## Existing Stack (No Changes Needed)
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| F# | .NET 10 | Implementation language | Required by FunLang base, excellent for compiler work |
-| fslex | FsLexYacc 12.x+ | Lexer generation | Standard F# lexer generator, OCamllex-compatible |
-| fsyacc | FsLexYacc 12.x+ | Parser generation | LALR parser generator, OCamlyacc-compatible |
-| FunLang v6.0 | Base | Type inference foundation | Provides Hindley-Milner + bidirectional checking |
+| Technology | Version | Role |
+|------------|---------|------|
+| F# | .NET 10 | Implementation language |
+| fslex (FsLexYacc) | 12.x | Lexer — Lexer.fsl |
+| fsyacc (FsLexYacc) | 12.x | LALR(1) parser — Parser.fsy |
+| IndentFilter.fs | custom | Token-stream filter between lexer and parser |
+| SeqExpr nonterminal | Parser.fsy | e1; e2 sequencing, desugars to LetPat(WildcardPat, e1, e2) |
+| Prelude/*.fun | .fun files | Auto-loaded standard library |
+
+The entire stack is inherited and validated. No new dependencies, no version changes.
 
 ---
 
-## Feature 1: Indentation-Based Syntax
+## Feature 1: Newline Implicit Sequencing
 
-### Recommended Approach: Token Queue with Indentation Stack
+### What Must Change
 
-**Confidence: MEDIUM** - Well-documented pattern but requires careful implementation
+**IndentFilter.fs only.** The parser and evaluator need zero changes because SeqExpr already handles `e1; e2`.
 
-#### Technique Details
+The goal: two statements at the same indentation level inside an expression block are automatically sequenced, as if the user wrote `;` between them.
 
-Implement a **token queue + indentation stack** hybrid lexer following Python's algorithm ([Python 3.14 Lexical Analysis](https://docs.python.org/3/reference/lexical_analysis.html)):
-
-1. **Lexer State Management**
-   - Maintain mutable state outside lexer: `indentStack: int list` (initialized `[0]`)
-   - Maintain token queue: `tokenQueue: Queue<token>` for buffering DEDENT tokens
-   - Track whether we're at line beginning: `atLineStart: bool ref`
-
-2. **Token Generation Algorithm**
-   ```fsharp
-   (* In fslex action code *)
-   rule token = parse
-   | '\n' { atLineStart := true; NEWLINE }
-   | [' ' '\t']+ as ws when !atLineStart ->
-       {
-         let spaces = countSpaces ws  (* tabs = 8 spaces *)
-         let topIndent = List.head !indentStack
-         atLineStart := false;
-
-         if spaces > topIndent then
-           (* INDENT case *)
-           indentStack := spaces :: !indentStack;
-           INDENT
-         elif spaces < topIndent then
-           (* DEDENT case - may emit multiple tokens *)
-           let rec popAndQueue acc stack =
-             match stack with
-             | top :: rest when top > spaces ->
-                 tokenQueue.Enqueue DEDENT;
-                 popAndQueue (acc + 1) rest
-             | top :: _ when top = spaces ->
-                 indentStack := stack;
-                 if acc = 0 then DEDENT (* first one returned *)
-                 else tokenQueue.Dequeue()
-             | _ -> failwith "Indentation error"
-           popAndQueue 0 !indentStack
-         else
-           (* Equal indent - consume whitespace *)
-           token lexbuf
-       }
-   ```
-
-3. **Wrapper Function for Multiple DEDENTs**
-   ```fsharp
-   let lexerWrapper lexbuf =
-     if not (tokenQueue.IsEmpty) then
-       tokenQueue.Dequeue()
-     else
-       Lexer.token lexbuf
-   ```
-
-#### Why This Works
-
-- **Queue enables multiple DEDENT emission**: When dedenting multiple levels (e.g., from 12 spaces to 0), generate all required DEDENT tokens at once, queue them, return first immediately ([Marcel Goh - Scanning Spaces](https://marcelgoh.ca/2019/04/14/scanning-spaces.html))
-- **Stack tracks valid dedent targets**: Ensures dedent only to previous indentation levels, catches `IndentationError`
-- **fslex allows mutable state**: Actions are "arbitrary F# expressions" with access to external state ([FsLex docs](https://github.com/fsprojects/FsLexYacc/blob/master/docs/content/fslex.md))
-
-#### Grammar Impact
-
-fsyacc grammar becomes simpler - use INDENT/DEDENT as block delimiters:
-
-```fsharp
-(* In .fsy file *)
-Block:
-  | INDENT StmtList DEDENT { $2 }
-
-IfExpr:
-  | IF Expr COLON NEWLINE Block { IfExpr($2, $5, None) }
-  | IF Expr COLON NEWLINE Block ELSE COLON NEWLINE Block
-      { IfExpr($2, $5, Some $9) }
+**Current behavior:**
+```
+let _ =
+    println "a"    ← these are two separate lines at the same indent
+    println "b"    ← second line is currently a parse error or ignored
 ```
 
-#### Pitfalls
+**Target behavior:**
+```
+let _ =
+    println "a"
+    println "b"    ← treated as: println "a"; println "b"
+```
 
-- **Tabs vs Spaces**: Must decide on tab=8 spaces (Python style) or reject tabs entirely (Python 3+ warning). **Recommendation**: Reject tabs, spaces only.
-- **EOF handling**: Must emit DEDENT for all remaining stack levels at EOF
-- **Blank lines**: Ignore entirely - don't change indentation state for lines with only whitespace
-- **First line indentation**: Error if first line is indented (unless in REPL continuation mode)
+### Mechanism
 
-#### Alternative Considered: Offside Rule Parser Extensions
+IndentFilter already injects `IN` tokens for the offside rule. The analogous mechanism for sequencing is: when processing a `NEWLINE col` where `col` equals the current indent level, and we are inside an `InExprBlock` context, emit a `SEMICOLON` token before the next statement.
 
-Michael D. Adams' offside rule grammar extensions ([Layout Parsing paper](https://michaeldadams.org/papers/layout_parsing/LayoutParsing.pdf)) extend CFGs with layout annotations. **Why Not**: Requires modifying fsyacc itself, not just grammar. Too much infrastructure work for single language. Token-based approach is standard and proven.
+**Specifically, in `filter` in IndentFilter.fs:**
+
+The `isAtSameLevel` branch (no INDENT/DEDENT emitted, same column as current indent) is the insertion point. Currently this branch either emits pending `IN` tokens or nothing. The addition is: also emit `SEMICOLON` when inside `InExprBlock`.
+
+**Condition for SEMICOLON emission:**
+- `isAtSameLevel = true` (col equals current indent top, no INDENT/DEDENT)
+- Current context is `InExprBlock _`
+- Previous token is not a token that opens a block continuation (EQUALS, ARROW, IN, DO, THEN, ELSE, PIPE, WITH — these indicate the current expression continues on next line, not a new statement)
+- Next token is not EOF
+
+**No new tokens, no new AST nodes, no new grammar rules.**
+
+### Token Considerations
+
+`SEMICOLON` is the correct token to inject — it is exactly what SeqExpr expects, and the parser rule is already:
+
+```fsharp
+SeqExpr:
+    | Expr SEMICOLON SeqExpr   { LetPat(WildcardPat(...), $1, $3, ...) }
+    | Expr SEMICOLON           { $1 }
+    | Expr                     { $1 }
+```
+
+### InExprBlock Context
+
+`InExprBlock baseCol` is pushed when `INDENT` follows `EQUALS`, `ARROW`, `IN`, or `DO`. This is the correct scope for implicit sequencing — it covers:
+- `let f () = <INDENT>body<DEDENT>` — function body
+- `fun x -> <INDENT>body<DEDENT>` — lambda body
+- `let x = <INDENT>body<DEDENT>` — let RHS
+- `while cond do <INDENT>body<DEDENT>` — loop body
+- `for i = s to e do <INDENT>body<DEDENT>` — loop body
+
+**Do not emit SEMICOLON in `InLetDecl`, `InMatch`, `InTry`, `InModule`, or `TopLevel`.** Those contexts use different mechanisms (IN token, pipe alignment, declarations).
+
+### LALR(1) Safety
+
+Injecting SEMICOLON into the token stream is safe because:
+1. SEMICOLON already exists at the grammar level for SeqExpr
+2. SeqExpr is the top nonterminal for expression positions
+3. The injection happens only inside `InExprBlock`, never at record literal or list literal positions (those are inside bracket depth > 0, where NEWLINE is already suppressed)
 
 ---
 
-## Feature 2: Algebraic Data Types with GADT Support
+## Feature 2: for x in collection do body
 
-### Recommended Approach: Grammar Extension + Type Checker Enhancement
+### What Must Change
 
-**Confidence: HIGH** - Grammar is straightforward, type checking builds on existing bidirectional foundation
+Three files: Lexer.fsl, Parser.fsy, Eval.fs. Type.fs, Bidir.fs, Infer.fs need minor additions.
 
-#### Grammar Extension (fsyacc)
+### Token Situation
 
-Add production rules for ADT declarations:
+`IN` is already a keyword token, used for `let x = e in body`. This is the same `in` keyword that `for x in xs do` would use.
+
+**Recommendation: reuse the existing `IN` token.** The grammar context disambiguates — `FOR IDENT IN Expr DO` vs `LET IDENT EQUALS Expr IN SeqExpr` — these are different production rules and the LALR(1) parser has no ambiguity because FOR/LET are distinct lookahead tokens.
+
+No new token declaration needed.
+
+### AST Node
+
+Add a new variant to `Expr` in Ast.fs:
 
 ```fsharp
-(* .fsy syntax *)
-TypeDecl:
-  | TYPE TypeParams ID EQUALS ConstructorList
-      { TypeDecl($2, $3, $5) }
-
-ConstructorList:
-  | Constructor { [$1] }
-  | Constructor BAR ConstructorList { $1 :: $3 }
-
-Constructor:
-  (* Simple ADT: Option = Some of 'a | None *)
-  | ID OF Type { SimpleConstructor($1, $3) }
-  | ID { NullaryConstructor($1) }
-
-  (* GADT: return type specified *)
-  | ID COLON Type { GADTConstructor($1, $3) }
+| ForInExpr of var: string * collection: Expr * body: Expr * span: Span
 ```
 
-#### Type System Extension
+Do not reuse `ForExpr` (which has `isTo: bool` and integer `start`/`stop` semantics). `ForInExpr` iterates any `ListValue` or `ArrayValue`, binding each element to `var`.
 
-**Key Insight**: FunLang already has bidirectional type checking - leverage this for GADT ([How to Choose Between Hindley-Milner and Bidirectional Typing](https://thunderseethe.dev/posts/how-to-choose-between-hm-and-bidir/))
+### Grammar Rules (Parser.fsy)
 
-1. **Simple ADT (Standard Hindley-Milner)**
-   ```fsharp
-   type Option<'a> =
-     | Some of 'a
-     | None
-   ```
-   - Constructor types: `Some : 'a -> Option<'a>`, `None : Option<'a>`
-   - Pattern matching introduces type equality constraint
-   - Standard unification handles this
+Add inside the `Expr` production, adjacent to existing `ForExpr` rules:
 
-2. **GADT (Requires Bidirectional)**
-   ```fsharp
-   type Expr<'t> =
-     | IntLit : int -> Expr<int>
-     | BoolLit : bool -> Expr<bool>
-     | If : Expr<bool> * Expr<'a> * Expr<'a> -> Expr<'a>
-   ```
-   - Return types are **specified**, not inferred
-   - Pattern matching refines type parameters based on constructor
-   - Need type equality propagation in environment
+```fsharp
+// FORIN-01: for x in collection do body (inline body)
+| FOR IDENT IN Expr DO SeqExpr
+    { ForInExpr($2, $4, $6, ruleSpan parseState 1 6) }
+// FORIN-02: for x in collection do <indent>body<dedent>
+| FOR IDENT IN Expr DO INDENT SeqExpr DEDENT
+    { ForInExpr($2, $4, $7, ruleSpan parseState 1 8) }
+```
 
-#### Implementation Strategy
+The `IN` token in `FOR IDENT IN Expr` cannot conflict with `let x = e IN body` because the LALR(1) parser sees `FOR` as the first token and shifts into the for-loop production.
 
-1. **AST Representation**
-   ```fsharp
-   type TypeConstructor =
-     | SimpleCons of name: string * argType: Type
-     | GADTCons of name: string * fullType: Type
+### Evaluator (Eval.fs)
 
-   type TypeDecl = {
-     Name: string
-     TypeParams: string list
-     Constructors: TypeConstructor list
-     IsGADT: bool  (* true if any constructor has explicit return type *)
-   }
-   ```
+Add one match arm in `eval`:
 
-2. **Type Environment Extension**
-   ```fsharp
-   (* Add to type environment *)
-   type TyEnv = {
-     (* existing fields *)
-     TypeConstructors: Map<string, TypeDecl>
-     DataConstructors: Map<string, ConstructorType>
-   }
+```fsharp
+| ForInExpr (var, collExpr, body, _) ->
+    let collVal = eval recEnv moduleEnv env false collExpr
+    match collVal with
+    | ListValue xs ->
+        for x in xs do
+            let loopEnv = Map.add var x env
+            eval recEnv moduleEnv loopEnv false body |> ignore
+        TupleValue []
+    | ArrayValue arr ->
+        for x in arr do
+            let loopEnv = Map.add var x env
+            eval recEnv moduleEnv loopEnv false body |> ignore
+        TupleValue []
+    | _ -> failwith "for-in: expected list or array"
+```
 
-   type ConstructorType =
-     | SimpleADT of Type -> Type
-     | GADT of Type  (* full type with equality constraints *)
-   ```
+### Type Checker (Bidir.fs / Infer.fs)
 
-3. **Pattern Matching with GADTs**
+`ForInExpr` returns `unit` (TETuple []). The collection must be `TList 'a` or `TArray 'a`, and `var` is bound to `'a` in the body. The body must type-check to unit (same constraint as `WhileExpr` and `ForExpr`).
 
-   When checking `match expr with | IntLit n -> ...`:
-   - **Check mode**: `expr : Expr<'t>` for some unknown `'t`
-   - **Synthesis mode**: Pattern binding introduces `'t = int` constraint
-   - Propagate constraint into branch body type checking
+Add `var` to `mutableVars` exclusion set (same pattern as `ForExpr` — loop variable is immutable):
 
-   **Implementation**: Extend existing bidirectional checking with local type equations:
-   ```fsharp
-   let checkPattern env pattern expectedType =
-     match pattern with
-     | ConsPattern(consName, subPatterns) ->
-         let consType = lookupConstructor env consName
-         match consType with
-         | GADT fullType ->
-             (* Unify expectedType with constructor's return type *)
-             let returnType = extractReturnType fullType
-             let tyEqs = unify expectedType returnType
-             (* Add type equations to environment for branch *)
-             let env' = addTypeEquations env tyEqs
-             (env', subPatterns)
-   ```
+```fsharp
+// In Bidir.fs synth/check for ForInExpr:
+// var is loop-bound, immutable — add to mutableVars exclusion (or simply don't add to mutableVars)
+```
 
-#### Why This Works
+### IndentFilter.fs
 
-- **GADT type checking is bidirectional**: "Work on GADTs uses unification to propagate equality information" ([Bidirectional Typing paper](https://arxiv.org/pdf/1908.05839))
-- **FunLang already has bidirectional**: Extending it is incremental, not revolutionary
-- **No HM principal types**: GADTs break HM principality anyway - bidirectional is the modern approach ([Omnidirectional Type Inference](https://inria.hal.science/hal-05438544v1/document))
+`DO` is already in the set of tokens that trigger `InExprBlock` on the next INDENT:
 
-#### Pitfalls
+```fsharp
+| Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO ->
+    state <- { state with Context = InExprBlock(baseCol) :: state.Context }
+```
 
-- **GADT requires annotations**: Cannot infer return types. Must require explicit `COLON Type` in grammar.
-- **Type equation scope**: Constraints from pattern matching are **local** to match branch. Don't leak.
-- **Recursive types**: Handle occurs-check carefully with GADTs (same as existing FunLang)
-
-#### F# Native Workaround Note
-
-F# itself doesn't support GADTs due to .NET CLR limitations ([F# GADT Issue #179](https://github.com/fsharp/fslang-suggestions/issues/179)). LangThree can implement them because:
-1. We're implementing a language, not extending F# runtime
-2. GADTs are in our AST and type checker, not in F#/.NET
-3. F#'s algebraic types handle our AST representation fine
+No change needed — `for x in xs do <INDENT>body<DEDENT>` already pushes `InExprBlock` correctly.
 
 ---
 
-## Feature 3: Records
+## Feature 3: Option/Result Utility Functions
 
-### Recommended Approach: Simple Grammar Extension
+### What Must Change
 
-**Confidence: HIGH** - Straightforward syntax, standard type checking
+**Prelude/Option.fun and Prelude/Result.fun only.** Zero changes to F# source files.
 
-#### Grammar (fsyacc)
+These are pure library additions written in LangThree itself.
 
-```fsharp
-(* Record type declaration *)
-TypeDecl:
-  | TYPE ID EQUALS RecordType { RecordTypeDecl($2, $4) }
+### Current State
 
-RecordType:
-  | LBRACE FieldDeclList RBRACE { RecordType($2) }
+**Option.fun (current):**
+- `optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone`, `(<|>)`
 
-FieldDeclList:
-  | FieldDecl { [$1] }
-  | FieldDecl SEMICOLON FieldDeclList { $1 :: $3 }
+**Result.fun (current):**
+- `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `isOk`, `isError`
 
-FieldDecl:
-  | ID COLON Type { FieldDecl($1, $3) }
+### Additions Needed
 
-(* Record expressions *)
-Expr:
-  | LBRACE FieldExprList RBRACE { RecordExpr($2) }
-  | Expr DOT ID { FieldAccess($1, $3) }
-  | LBRACE Expr WITH FieldExprList RBRACE { RecordUpdate($2, $4) }
-
-FieldExprList:
-  | FieldExpr { [$1] }
-  | FieldExpr SEMICOLON FieldExprList { $1 :: $3 }
-
-FieldExpr:
-  | ID EQUALS Expr { ($1, $3) }
-```
-
-#### Type Checking
-
-Records are **structural types** in F# style:
+**Option.fun — add idiomatic short aliases:**
 
 ```fsharp
-type RecordType = {
-  Name: string
-  Fields: Map<string, Type>
-}
-
-(* Type checking record construction *)
-let checkRecordExpr env fields =
-  (* Check all field expressions *)
-  let fieldTypes =
-    fields |> List.map (fun (name, expr) ->
-      name, inferType env expr)
-    |> Map.ofList
-
-  (* Construct record type *)
-  RecordType { Name = freshName(); Fields = fieldTypes }
+let map f opt     = optionMap f opt
+let bind f opt    = optionBind f opt
+let defaultValue d opt = optionDefault d opt
+let orElse b a    = match a with | Some x -> Some x | None -> b
+let filter pred opt = match opt with | Some x -> if pred x then Some x else None | None -> None
+let toList opt    = match opt with | Some x -> [x] | None -> []
+let ofBool b x    = if b then Some x else None
 ```
 
-#### Pattern Matching on Records
+**Result.fun — add idiomatic short aliases:**
 
 ```fsharp
-Pattern:
-  | LBRACE FieldPatternList RBRACE { RecordPattern($2) }
-
-FieldPatternList:
-  | FieldPattern { [$1] }
-  | FieldPattern SEMICOLON FieldPatternList { $1 :: $3 }
-
-FieldPattern:
-  | ID EQUALS Pattern { ($1, $3) }
+let map f r       = resultMap f r
+let bind f r      = resultBind f r
+let mapError f r  = resultMapError f r
+let defaultValue d r = resultDefault d r
+let toOption r    = match r with | Ok x -> Some x | Error _ -> None
+let fromOption err opt = match opt with | Some x -> Ok x | None -> Error err
+let fold onOk onError r = match r with | Ok x -> onOk x | Error e -> onError e
 ```
 
-#### Why This Works
+**No new types, no new builtins, no grammar changes.**
 
-- **Records are just product types**: Like tuples but with named fields
-- **Structural typing**: `{ x: int; y: int }` is same type anywhere declared
-- **Field access is projection**: Type checker looks up field in record type
+### Naming Convention Decision
 
-#### Pitfalls
+The existing functions use long prefixed names (`optionMap`, `resultBind`) which are module-qualified as `Option.map` etc. The additions should use short names (`map`, `bind`) for ergonomic use after `open Option`.
 
-- **Field order**: Decide if `{ x: int; y: bool }` ≡ `{ y: bool; x: int }`. **Recommendation**: Yes (structural), but warn on different order.
-- **Duplicate fields**: Parser must reject `{ x: int; x: bool }`
-- **Record update syntax**: `{ r with x = 5 }` requires original record type inference
+The existing long-name functions are kept for backward compatibility. Short names are aliases.
 
 ---
 
-## Feature 4: Module System
-
-### Recommended Approach: Namespace Resolution Layer
-
-**Confidence: MEDIUM-HIGH** - Grammar is simple, implementation requires environment refactoring
-
-#### Grammar (fsyacc)
-
-```fsharp
-(* Module declarations *)
-Program:
-  | ModuleDecl Program { ModuleDecl($1) :: $2 }
-  | TopLevelDecl Program { TopLevelDecl($1) :: $2 }
-  | EOF { [] }
-
-ModuleDecl:
-  | MODULE ModulePath EQUALS INDENT DeclList DEDENT
-      { Module($2, $5) }
-
-ModulePath:
-  | ID { [|$1|] }
-  | ID DOT ModulePath { $1 :: $3 }
-
-(* Module expressions *)
-Expr:
-  | ModulePath { ModuleAccess($1) }
-  | OPEN ModulePath IN Expr { OpenModule($2, $4) }
-```
-
-#### Implementation Strategy
-
-1. **Module Environment**
-   ```fsharp
-   type ModulePath = string list
-
-   type Module = {
-     Path: ModulePath
-     Types: Map<string, TypeDecl>
-     Values: Map<string, Type>
-     Submodules: Map<string, Module>
-   }
-
-   type TyEnv = {
-     CurrentModule: ModulePath
-     RootModule: Module
-     OpenModules: ModulePath list  (* for name resolution *)
-   }
-   ```
-
-2. **Name Resolution**
-   ```fsharp
-   let rec resolveQualifiedName env (path: string list) =
-     match path with
-     | [] -> None
-     | [name] ->
-         (* Try current module, then open modules *)
-         tryResolveSimpleName env name
-     | moduleName :: rest ->
-         (* Resolve module, then name in that module *)
-         let module' = findModule env.RootModule moduleName
-         resolveInModule module' rest
-   ```
-
-3. **Module Compilation**
-   ```fsharp
-   let checkModule env (Module(path, decls)) =
-     (* Enter module scope *)
-     let env' = { env with CurrentModule = path }
-
-     (* Check all declarations in module *)
-     let checkedDecls = decls |> List.map (checkDecl env')
-
-     (* Add module to environment *)
-     addModuleToEnv env path checkedDecls
-   ```
-
-#### Why F# Style (Not OCaml Functors)
-
-- **Simpler**: Modules are just namespaces, not first-class values
-- **Practical**: PROJECT.md explicitly excludes functors for complexity reasons
-- **Sufficient**: Can express most modular code without functor parameterization
-
-Reference: [F# Modules vs Namespaces](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules)
-
-#### Pitfalls
-
-- **Circular dependencies**: Modules can't circularly reference each other. Detect at compile time.
-- **Name shadowing**: Decide priority - qualified names vs open'd modules vs local definitions
-- **Module signatures**: Start without signatures (all exports public), add later if needed
-
----
-
-## Feature 5: Exceptions
-
-### Recommended Approach: Grammar + AST Extension, No Type System Changes
-
-**Confidence: HIGH** - Exceptions don't affect type inference
-
-#### Grammar (fsyacc)
-
-```fsharp
-(* Exception declaration *)
-Decl:
-  | EXCEPTION ID OF Type { ExceptionDecl($2, Some $4) }
-  | EXCEPTION ID { ExceptionDecl($2, None) }
-
-(* Exception expressions *)
-Expr:
-  | RAISE Expr { Raise($2) }
-  | TRY Expr WITH MatchCases { TryWith($2, $4) }
-  | TRY Expr FINALLY Expr { TryFinally($2, $4) }
-
-(* Cannot combine try-with-finally in single expression - must nest *)
-```
-
-#### Type Checking
-
-**Key Insight**: Exceptions are **untyped** in type system (like F#):
-
-```fsharp
-(* Type checking rules *)
-let inferType env expr =
-  match expr with
-  | Raise exnExpr ->
-      (* exnExpr must type as exception *)
-      let exnType = inferType env exnExpr
-      checkIsException env exnType;
-      (* Raise has any type - represents non-returning *)
-      freshTypeVar()
-
-  | TryWith(body, cases) ->
-      let bodyType = inferType env body
-      (* Each case must return same type as body *)
-      cases |> List.iter (fun (pat, handler) ->
-        checkPattern env pat ExceptionType;
-        let handlerType = inferType env handler
-        unify bodyType handlerType)
-      bodyType
-
-  | TryFinally(body, finalizer) ->
-      let bodyType = inferType env body
-      let finalizerType = inferType env finalizer
-      (* finalizer return ignored - must be unit for effects *)
-      unify finalizerType UnitType;
-      bodyType
-```
-
-#### Runtime Representation
-
-Since LangThree is an interpreter:
-
-```fsharp
-(* Evaluation with exceptions *)
-type EvalResult<'a> =
-  | Value of 'a
-  | Exception of exnValue: Value * trace: string list
-
-let rec eval env expr =
-  match expr with
-  | Raise exnExpr ->
-      let exnVal = eval env exnExpr
-      Exception(exnVal, [currentLocation()])
-
-  | TryWith(body, cases) ->
-      match eval env body with
-      | Value v -> Value v
-      | Exception(exn, trace) ->
-          (* Try to match exception against cases *)
-          match findMatchingCase cases exn with
-          | Some handler -> eval env handler
-          | None -> Exception(exn, currentLocation() :: trace)
-```
-
-#### Why This Works
-
-- **Exceptions bypass type system**: Like F#, exception raises have polymorphic type `'a` ([F# Exceptions](https://fsharpforfunandprofit.com/posts/exceptions/))
-- **No effect types needed**: Not tracking exceptions in types (save for advanced future)
-- **Match exhaustiveness**: Same algorithm as ADT pattern matching
-
-#### Pitfalls
-
-- **No exception types**: Unlike checked exceptions (Java), F# exceptions are unchecked
-- **Match order matters**: First matching case handles exception, not most specific
-- **Finally guarantees**: Must run finally block even if exception occurs (use F# `try...finally` semantics)
-
----
-
-## Implementation Order (Dependencies)
-
-Based on complexity and dependencies:
-
-1. **Records** (Easiest, no dependencies)
-   - Grammar extension
-   - Simple structural type checking
-   - Test: `let r = { x = 1; y = true } in r.x`
-
-2. **ADT without GADT** (Builds on records)
-   - Grammar for simple ADT
-   - Constructor type checking
-   - Pattern matching
-   - Test: `type Option = Some of int | None`
-
-3. **Exceptions** (Independent)
-   - Grammar extension
-   - Runtime evaluation changes
-   - Test: `raise (Exception "test")`
-
-4. **Modules** (Requires stable declarations)
-   - After ADT and Records declared
-   - Environment refactoring
-   - Test: `module M = let x = 1` then `M.x`
-
-5. **Indentation Syntax** (Most complex, can parallelize)
-   - Independent of type system
-   - Lexer changes only
-   - Test all previous features with indentation
-
-6. **GADT** (Last - requires ADT + bidirectional)
-   - Extends ADT grammar
-   - Extends type checker with constraints
-   - Test: `type Expr = IntLit : int -> Expr<int>`
-
----
-
-## Testing Strategy
-
-For each feature:
-
-### Unit Tests
-- **Lexer**: Test token generation (especially INDENT/DEDENT)
-- **Parser**: Test grammar accepts/rejects appropriate syntax
-- **Type Checker**: Test type inference and unification
-
-### Integration Tests
-- **Feature combinations**: Records in modules, GADTs with exceptions, etc.
-- **Error messages**: Indentation errors, type errors, module not found
-
-### Property-Based Tests
-- **Indentation invariants**: Stack never negative, EOF DEDENTs balance
-- **Type soundness**: Well-typed programs don't get stuck
-
----
-
-## Key References (with Confidence Levels)
-
-### High Confidence (Authoritative Sources)
-- [Python 3.14 Lexical Analysis](https://docs.python.org/3/reference/lexical_analysis.html) - INDENT/DEDENT algorithm (official spec)
-- [FsLexYacc GitHub](https://github.com/fsprojects/FsLexYacc) - fslex/fsyacc capabilities
-- [F# Modules Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules) - Module semantics
-- [F# Discriminated Unions](https://fsharpforfunandprofit.com/posts/discriminated-unions/) - ADT patterns
-
-### Medium-High Confidence (Academic/Research)
-- [Bidirectional Typing](https://arxiv.org/pdf/1908.05839) - GADT type checking approach
-- [Layout Parsing](https://michaeldadams.org/papers/layout_parsing/LayoutParsing.pdf) - Offside rule theory
-- [Marcel Goh - Scanning Spaces](https://marcelgoh.ca/2019/04/14/scanning-spaces.html) - Practical lexer implementation
-
-### Medium Confidence (Community/Blog Posts)
-- [thanos.codes FsLexYacc tutorial](https://thanos.codes/blog/using-fslexyacc-the-fsharp-lexer-and-parser/) - Practical examples
-- [Thunderseethe - HM vs Bidirectional](https://thunderseethe.dev/posts/how-to-choose-between-hm-and-bidir/) - Type system tradeoffs
-
----
-
-## Open Questions / Research Needed During Implementation
-
-1. **Indentation + Modules**: How do indentation rules interact with module nesting? Test Python's approach.
-
-2. **GADT Type Inference**: FunLang's existing bidirectional checking - how much needs extension? Prototype small GADT first.
-
-3. **Record Type Inference**: Should records be nominal (named) or structural (shape-based)? PROJECT.md doesn't specify. **Recommendation**: Start structural (simpler), can add nominal later.
-
-4. **Exception Hierarchies**: Support exception subtyping? F# does, but adds complexity. **Recommendation**: Start flat, no hierarchy.
-
-5. **Module Mutual Recursion**: Do we need `module rec`? PROJECT.md doesn't mention. **Recommendation**: No, too complex for first version.
+## Summary: What Changes Per File
+
+| File | Change | Scope |
+|------|--------|-------|
+| `IndentFilter.fs` | Emit SEMICOLON in `InExprBlock` at same-level NEWLINE | ~10-20 lines |
+| `Ast.fs` | Add `ForInExpr` variant to `Expr` DU and `spanOf` | ~4 lines |
+| `Lexer.fsl` | No changes | — |
+| `Parser.fsy` | Add 2 grammar rules for `FOR IDENT IN Expr DO` | ~6 lines |
+| `Eval.fs` | Add `ForInExpr` match arm | ~10 lines |
+| `Bidir.fs` | Add `ForInExpr` type checking | ~8 lines |
+| `Infer.fs` | Add `ForInExpr` to inferType if present | ~4 lines |
+| `Elaborate.fs` | Add `ForInExpr` passthrough | ~2 lines |
+| `Format.fs` | Add `ForInExpr` formatting | ~3 lines |
+| `Exhaustive.fs` | Add `ForInExpr` traversal if present | ~2 lines |
+| `Prelude/Option.fun` | Add short-name aliases + filter/toList/ofBool | ~7 lines |
+| `Prelude/Result.fun` | Add short-name aliases + toOption/fromOption/fold | ~7 lines |
+
+**No new NuGet packages. No new tools. No version changes.**
 
 ---
 
 ## Alternatives Considered
 
-| Feature | Considered | Rejected Why |
-|---------|-----------|--------------|
-| Indentation | Offside rule grammar extension | Requires modifying fsyacc core |
-| Indentation | Preprocessor (indent to braces) | Loses position info for error messages |
-| GADT | Full HM with constraint solving | Breaks principality, bidirectional is cleaner |
-| GADT | Skip entirely, only simple ADT | PROJECT.md explicitly requires GADT |
-| Records | Nominal typing | More complex, structural is F# style |
-| Modules | OCaml functors | PROJECT.md excludes, too complex |
-| Exceptions | Checked exceptions (Java style) | Not F# style, adds type system complexity |
+| Decision | Alternative | Why This Way |
+|----------|-------------|--------------|
+| Reuse `IN` token for for-in | New `IN_KW` or `OF_KW` token | Grammar context is unambiguous; same keyword is natural |
+| New `ForInExpr` AST node | Desugar to `List.iter` call | Need type-level dispatch (list vs array); desugar loses error context |
+| SEMICOLON injection in IndentFilter | New `NEWLINE_SEQ` token | SeqExpr already handles SEMICOLON; no grammar change needed |
+| Short aliases in Option/Result | Rename existing functions | Break backward compatibility for existing tests |
+| Emit SEMICOLON only in InExprBlock | Also in InLetDecl/TopLevel | Declarations are not statements; sequencing only applies inside expression blocks |
 
 ---
 
-## Success Criteria
+## Risk Assessment
 
-Each feature complete when:
-
-- [ ] Grammar accepts valid syntax, rejects invalid
-- [ ] Type checker infers types correctly (or checks annotations)
-- [ ] Interpreter evaluates semantics correctly
-- [ ] Error messages are clear (especially indentation errors)
-- [ ] Integration tests pass with other features
-- [ ] Performance is acceptable (not 10x slower than FunLang base)
-
----
-
-**Next Steps**:
-1. Read this STACK.md during roadmap creation
-2. Create phases in recommended order (Records → ADT → Exceptions → Modules → Indentation → GADT)
-3. Use `/gsd:research-phase` for deeper investigation during each phase
-4. Prototype risky parts early (indentation lexer, GADT type checking)
+| Area | Risk | Mitigation |
+|------|------|------------|
+| SEMICOLON injection | Could break multi-line expressions misread as two statements | Gated strictly on `InExprBlock`; previous-token guard prevents false positives |
+| `IN` token reuse | LALR(1) conflict | FOR and LET are distinct shift states; parser table verified at build time by fsyacc |
+| ForInExpr propagation | Missing a case in one of 6+ files causes compile error | F# exhaustive DU matching — the compiler flags every missing case |
+| Option/Result additions | Name collision with existing | Short names are new; long names kept — no removal |

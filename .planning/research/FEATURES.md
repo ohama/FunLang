@@ -1,709 +1,425 @@
-# Feature Landscape: LangThree Language Capabilities
+# Feature Landscape: v6.0 Practical Programming
 
-**Project:** LangThree - Practical ML-style Language
-**Base:** FunLang v6.0 with F# syntax
-**Researched:** 2026-02-25
-
-## Overview
-
-This document catalogs the specific features needed for six core language capabilities in LangThree. Each capability is broken down into table stakes (must-have), differentiators (nice-to-have), and anti-features (deliberately excluded in v1).
+**Domain:** ML-style interpreter — LangThree v6.0 milestone
+**Researched:** 2026-03-28
+**Milestone focus:** Newline implicit sequencing, for-in collection loops, Option/Result utility functions
 
 ---
 
-## 1. Indentation-Based Syntax
+## Context: What Already Exists
 
-### Table Stakes (Must Have)
+Before categorizing new features, the baseline matters:
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Offside rule for blocks** | Core F# syntax principle - eliminates `begin/end` | **High** | Lexer token preprocessing | Layout algorithm inserts virtual tokens |
-| **Let-bindings indentation** | Most common construct | Medium | Offside rule | `let x = expr` continuation on next line |
-| **Function application** | Multi-line function calls | Medium | Offside rule | Arguments aligned or indented |
-| **Match expressions** | Pattern clauses alignment | Medium | Offside rule | Each `\|` clause at same level |
-| **Module-level declarations** | Top-level definitions | Low | Offside rule | No mandatory indentation at file top-level |
-| **Spaces-only enforcement** | Prevent tabs/spaces mixing | Low | Lexer | Reject tabs outside strings/comments |
-| **4-space indentation standard** | F# convention | Low | None | Recommended, not enforced |
-
-**Implementation Notes:**
-- Requires lexer preprocessing to insert `INDENT`/`DEDENT`/`NEWLINE` tokens
-- fslex/fsyacc: Use custom lexer state to track indentation stack
-- Error messages must reference logical structure, not virtual tokens
-
-### Differentiators (Nice to Have)
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Configurable indent width | Flexibility for users | Low | Post-v1 — stick to 4-space standard initially |
-| Smart error recovery | Better error messages | Medium | "Expected indentation at column N" |
-| Flexible if-then-else | Single-line vs multi-line | Medium | OCaml allows both, F# prefers indentation |
-
-### Anti-Features (Explicitly NOT Building)
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| Tabs support | Source of bugs, inconsistent rendering | Reject with clear error |
-| Mixed indent styles | Causes subtle bugs | Enforce spaces-only |
-| Optional braces syntax | Adds parser complexity | Pure indentation only |
-| Significant blank lines | Python-style double-newline | Ignore blank line count |
-
-### Feature Dependencies
-
-```
-Lexer preprocessing → Offside rule implementation → All indentation features
-                   ↓
-              Error messages (reference logical structure)
-```
-
-### Critical Pitfalls
-
-**Tab vs Space Mixing:** Most common source of frustration in indentation-based languages. Python's `TabError` warns about this. **Solution:** Fail fast at lexer level with clear error.
-
-**Invisible bugs:** One TAB press can change program semantics without syntax error (code remains grammatically correct). **Solution:** Strict spaces-only mode prevents this entirely.
-
-**Copy-paste errors:** Copying code between editors with different tab settings. **Solution:** Documentation emphasizes spaces-only, provide linter tool.
-
-### Constructs Requiring Indentation Rules
-
-1. **Let bindings** - Right-hand side continuation
-2. **Match expressions** - Pattern clause alignment
-3. **Function definitions** - Parameter and body indentation
-4. **If-then-else** - Branch alignment
-5. **Type definitions** - Constructor/field alignment
-6. **Module definitions** - Nested module indentation
+| Feature | Status | Notes |
+|---------|--------|-------|
+| `e1; e2` explicit sequencing (SeqExpr) | Shipped v5.0 | Desugars to `let _ = e1 in e2` |
+| `while cond do body` loop | Shipped v5.0 | Returns unit |
+| `for i = s to e do body` loop | Shipped v5.0 | Integer ranges only |
+| `for i = s downto e do body` loop | Shipped v5.0 | Integer ranges only |
+| Option type: `None`, `Some` | Prelude | `optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone`, `<|>` operator |
+| Result type: `Ok`, `Error` | Prelude | `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `isOk`, `isError` |
+| Implicit `in` via offside rule | Shipped (InLetDecl contexts) | F#-style let sequences without `in` |
+| Mutable variables (`let mut`) | Shipped v4.0 | `x <- expr` reassignment |
 
 ---
 
-## 2. Algebraic Data Types (ADT)
+## Feature 1: Newline Implicit Sequencing
 
-### Table Stakes (Must Have)
+### What It Is
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Sum types (variants)** | Core ADT feature | Medium | Type checker | `type Option = Some of 'a \| None` |
-| **Product types (tuples)** | Already in FunLang | Low | Existing | `(int * string)` |
-| **Constructor syntax** | Pattern matching | Medium | Parser | `Some 42` creates value |
-| **Pattern matching** | Already in FunLang v6.0 | Low | Existing | Extend for ADT constructors |
-| **Exhaustiveness checking** | Type safety guarantee | High | Type checker | Warn on missing patterns |
-| **Type parameters** | Polymorphic types | Medium | HM inference | `type 'a list = Nil \| Cons of 'a * 'a list` |
-| **Recursive types** | Lists, trees | Medium | Type checker | Self-referencing definitions |
-| **Mutually recursive types** | Type dependencies | Medium | Type checker | `type ... and ...` syntax |
-
-**Implementation Notes:**
-- Extends existing FunLang pattern matching
-- Constructor arity checking at compile time
-- Pattern exhaustiveness: Use decision tree algorithm
-- ML-style syntax preferred over F# verbose syntax
-
-### Differentiators (Nice to Have)
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Redundancy checking | Warn about unreachable patterns | Medium | Dead code detection |
-| Named constructors | Better documentation | Low | `type Color = Red \| Green \| Blue` |
-| Constraint syntax | Refined types | High | Defer to GADT discussion |
-
-### Anti-Features (Explicitly NOT Building)
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| Anonymous sum types | No established syntax in ML family | Use named types |
-| Extensible variants | Complex, OCaml-specific | Closed world only |
-| Default constructors | Ambiguous semantics | All cases explicit |
-| Structural typing for ADT | F# uses nominal | Nominal only |
-
-### Feature Dependencies
-
-```
-Type inference (HM) → Type parameters → Polymorphic ADT
-                   ↓
-Pattern matching → Exhaustiveness checking
-                ↓
-             Type checker error reporting
-```
-
-### Minimal Complete Feature Set
-
-For MVP ADT:
-1. Sum types with multiple constructors
-2. Product types (tuples) - already have
-3. Pattern matching - extend existing
-4. Exhaustiveness warnings
-5. Type parameters
-6. Recursive type definitions
-
-Defer to post-MVP:
-- Redundancy checking (nice warning, not critical)
-- Complex constraint systems (covered by GADT)
-
----
-
-## 3. Generalized Algebraic Data Types (GADT)
-
-### What GADTs Add Beyond Basic ADT
-
-**Core difference:** GADT constructors can return **different type instantiations** of the same type constructor, enabling type refinement during pattern matching.
-
-Example:
-```fsharp
-(* Basic ADT - all constructors return 'a expr *)
-type 'a expr =
-  | Int of int
-  | Bool of bool
-
-(* GADT - constructors return specific instantiations *)
-type _ expr =
-  | Int : int -> int expr          (* returns int expr *)
-  | Bool : bool -> bool expr       (* returns bool expr *)
-  | Add : int expr * int expr -> int expr
-  | If : bool expr * 'a expr * 'a expr -> 'a expr
-```
-
-### Table Stakes (Must Have)
-
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Explicit constructor return types** | Core GADT feature | High | Type checker | `Int : int -> int expr` |
-| **Type refinement in pattern matching** | Type-safe evaluation | High | Bidirectional checking | Compiler learns type info when descending into match |
-| **Indexed type families** | Typed DSLs | High | Type checker | `'a expr` where `'a` determined by constructor |
-| **Existential types in constructors** | Hide internal types | Medium | Type checker | `MkBox : 'a -> box` hides `'a` |
-| **Local constraints** | Context-specific equalities | High | Constraint solver | Type equations within scope |
-
-**Implementation Notes:**
-- FunLang v6.0 has bidirectional type checking — good foundation
-- Requires extending unification with local type equations
-- Type refinement applied lazily during pattern matching
-- Need rigid/wobbly flag for type variables
-
-### Differentiators (Nice to Have)
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Type equality witnesses | Advanced type proofs | Very High | Research feature |
-| GADT-based DSL syntax sugar | Ergonomics | Medium | Post-v1 |
-| Phantom types | Zero-cost abstractions | Low | Falls out naturally |
-
-### Anti-Features (Explicitly NOT Building)
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| Unrestricted existentials | Type inference undecidable | Require explicit annotations |
-| Full dependent types | Out of scope | Indexed types only |
-| Type-level computation | Too complex for v1 | Fixed indices only |
-| Automatic GADT inference | Undecidable in general | Require GADT syntax markers |
-
-### Feature Dependencies
-
-```
-Bidirectional type checking (✓ FunLang v6.0 has this)
-         ↓
-Type refinement during pattern match
-         ↓
-Explicit constructor signatures → GADT syntax → Type-indexed evaluation
-         ↓
-Local constraint solving
-```
-
-### Minimal Complete Feature Set
-
-For MVP GADT:
-1. Explicit constructor type signatures
-2. Type refinement in pattern matching (extend existing bidirectional checking)
-3. Basic existential quantification
-4. Simple indexed types (no computation)
-
-Defer to post-MVP:
-- Complex constraint solving
-- Type equality witnesses
-- Advanced phantom type patterns
-
-### Critical Design Choice
-
-**F# vs OCaml vs Haskell GADT syntax:**
+In F#, inside `do`-blocks and function bodies, expressions at the same indentation level are implicitly sequenced — a newline at the same column acts as `;`. This allows:
 
 ```fsharp
-(* OCaml 4.00+ style - RECOMMENDED *)
-type _ expr =
-  | Int : int -> int expr
-  | Add : int expr * int expr -> int expr
-
-(* Haskell style - more verbose *)
-data Expr a where
-  Int :: Int -> Expr Int
-  Add :: Expr Int -> Expr Int -> Expr Int
-
-(* F# - no native GADT support, uses witness types *)
+// F# — works without semicolons
+let printThree () =
+    printfn "a"
+    printfn "b"
+    printfn "c"
 ```
 
-**Recommendation:** OCaml-style syntax — cleaner, well-established, easier to parse.
+Without this feature, LangThree currently requires explicit `;`:
+```
+let printThree () =
+    println "a"; println "b"; println "c"
+```
 
----
+With implicit newline sequencing, each line at the same indent level is treated as `e1; e2`:
+```
+let printThree () =
+    println "a"
+    println "b"
+    println "c"
+```
 
-## 4. Records
+### ML-Family Behavior
+
+| Language | Mechanism | Notes |
+|----------|-----------|-------|
+| F# | Offside rule: same-column continuations in `do`-blocks auto-sequence | Applies in do-blocks, function bodies, loop bodies |
+| OCaml | Explicit `;` required | No implicit newline sequencing — must write `e1; e2` |
+| Haskell | `do`-notation with layout rule | `do { stmt1; stmt2 }` desugars via layout |
+
+**F# specifics:**
+- In a function body after `=`, each line at the offside column is implicitly `;`-sequenced with the next
+- The indented block `INDENT SeqExpr DEDENT` already handles a single expression; the new feature extends `SeqExpr` to treat same-level newlines as sequence separators
+- This is the dominant pattern in real F# imperative code
+- Only applies in expression contexts (inside a function body, loop body, etc.) — NOT at module top level (where each line is a separate declaration)
+
+### Implementation Approach (IndentFilter-based)
+
+The IndentFilter currently emits INDENT/DEDENT for blocks. For newline sequencing, when the IndentFilter sees a NEWLINE at the same level as the current expression block (no INDENT/DEDENT emitted), it can inject a SEMICOLON token. This mirrors the existing mechanism that injects IN tokens for the offside rule.
+
+The SeqExpr grammar nonterminal already handles `Expr SEMICOLON SeqExpr`, so injected SEMICOLONs are transparent to the parser.
 
 ### Table Stakes (Must Have)
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Named field syntax** | Record definition | Low | Parser | `type Point = { x: float; y: float }` |
-| **Record expressions** | Value creation | Low | Type inference | `{ x = 1.0; y = 2.0 }` |
-| **Field access (dot notation)** | Standard syntax | Low | Type checker | `point.x` |
-| **Copy-and-update syntax** | Immutable updates | Medium | Type checker | `{ point with y = 3.0 }` |
-| **Structural equality** | F# semantics | Medium | Codegen | Auto-generated `=` operator |
-| **Nominal typing** | Type safety | Low | Type checker | Same structure ≠ same type |
-| **Pattern matching** | Deconstruction | Medium | Existing PM | `match p with { x = 0; y = _ } -> ...` |
-| **Type inference from labels** | Ergonomics | Medium | Type checker | Infer type from field names |
-
-**Implementation Notes:**
-- Records are **nominal** (named types), not structural
-- Fields auto-exposed as accessors
-- Immutable by default, mutable fields optional with `mutable` keyword
-- Copy-and-update creates new record, doesn't mutate
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Newline-as-semicolon in function bodies | F# convention, ergonomic imperative code | Medium | IndentFilter injects SEMICOLON at same-level newlines in expression contexts |
+| Newline-as-semicolon in loop bodies | While/for bodies need multiple statements | Low | Follows same mechanism as function bodies |
+| Newline-as-semicolon in match arms | Multi-statement match branches | Low | Match arm body is already an expression context |
+| Newline-as-semicolon in if/then/else branches | Multi-statement branches | Low | Same mechanism |
+| Module-level declarations NOT affected | Module top-level uses declarations, not sequencing | Critical | Must not inject SEMICOLON between top-level `let` bindings |
 
 ### Differentiators (Nice to Have)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Mutable fields | Limited mutability | Low | `mutable odometer: int` |
-| Anonymous records | Lightweight data | Medium | F# has `{| x = 1 |}` — defer to post-v1 |
-| Record members | Methods on records | Medium | F# allows this — defer to post-v1 |
-| Nested update syntax | Deep updates | Medium | Ergonomic but complex |
+| Mixing explicit `;` and newline sequencing | Flexibility — single-line and multi-line styles both work | Low | SeqExpr already handles `e1; e2` — newlines add to this |
+| Newline sequencing in let-rec bodies | Recursive function bodies with side effects | Low | Same mechanism |
 
 ### Anti-Features (Explicitly NOT Building)
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Structural record typing | Contradicts ML semantics | Use nominal only |
-| DefaultValue attribute | Error-prone | Explicit default values |
-| Optional fields | Complicates type system | Use Option type |
-| Record inheritance | Not in F# or OCaml | Use composition |
+| Module-level newline sequencing | Module top-level contains declarations, not expressions | Keep module context as declarations-only |
+| Newline sequencing inside `[...]` list literals | Would break list syntax — `[1\n2]` must not become `[1; 2]` | BracketDepth guard already in IndentFilter suppresses this |
+| Newline sequencing inside `{...}` record literals | Same — record field separators are `;`, not newlines | BracketDepth guard handles this |
+| Newline sequencing inside `(...)` | Parenthesized expressions should be single units | BracketDepth guard handles this |
+| Mandatory newline sequencing | Must remain opt-in via indentation level — explicit `;` still works | Keep both styles |
 
 ### Feature Dependencies
 
 ```
-Type inference → Label-based type resolution
-              ↓
-         Record expressions → Copy-and-update syntax
-                           ↓
-                    Pattern matching on records
+IndentFilter NEWLINE processing
+    → inject SEMICOLON when: same-level, expression context, NOT in brackets
+SeqExpr grammar already handles SEMICOLON
+    → zero parser changes needed
 ```
 
-### Structural vs Nominal Typing
+### Critical Behavior: Context Discrimination
 
-**LangThree choice: NOMINAL**
+The key challenge is knowing when a same-level NEWLINE should become SEMICOLON vs. an implicit IN. The existing system already handles this for InLetDecl contexts (emits IN). The new feature adds: in InExprBlock contexts, same-level NEWLINE emits SEMICOLON.
 
-```fsharp
-(* These are DIFFERENT types even with same structure *)
-type Point = { x: float; y: float }
-type Vector = { x: float; y: float }
-
-let p: Point = { x = 1.0; y = 2.0 }
-let v: Vector = p  (* TYPE ERROR - incompatible types *)
 ```
+// Module level — no injection (InModule context)
+let x = 1      // declaration 1
+let y = 2      // declaration 2
 
-**Why nominal:**
-- Type safety: prevents accidental mixing
-- F# semantics (our syntax model)
-- Better error messages
-- Aligns with ML family
-
-**Equality:** Structural equality (values compared), but types must match first.
-
-### Minimal Complete Feature Set
-
-For MVP Records:
-1. Type declarations with named fields
-2. Record expressions `{ label = value }`
-3. Field access `record.field`
-4. Copy-and-update `{ record with field = value }`
-5. Pattern matching on records
-6. Structural equality (within same type)
-
-Defer to post-MVP:
-- Mutable fields (add when needed)
-- Record members (OOP features later)
-- Anonymous records (syntactic sugar)
+// Inside function — SEMICOLON injected (InExprBlock context)
+let f () =
+    println "a"   // implicit ; before next line
+    println "b"   // implicit ; before next line
+    42            // final expression value
+```
 
 ---
 
-## 5. F# Style Modules
+## Feature 2: for-in Collection Loop
 
-### What "F# Style" Means
+### What It Is
 
-- **Namespace declarations** - logical organization, no code
-- **Module declarations** - contain values, types, functions
-- **No functors** - unlike OCaml, F# avoids parameterized modules
-- **Simple scoping** - modules are static, not first-class
+A loop that iterates over any collection (list, array) directly, binding each element to a variable:
+
+```fsharp
+// F# for-in loop
+for x in [1; 2; 3] do
+    printfn "%d" x
+
+// With arrays
+for item in myArray do
+    processItem item
+
+// With pattern destructuring (advanced)
+for (k, v) in pairs do
+    printfn "%s = %d" k v
+```
+
+The existing `for i = s to e do` only handles integer ranges. `for x in collection do` handles any list or array.
+
+### ML-Family Behavior
+
+| Language | Syntax | What It Iterates | Pattern Support |
+|----------|--------|-----------------|-----------------|
+| F# | `for x in expr do body` | IEnumerable (list, array, seq, set, map, ranges, any .NET collection) | Full pattern matching in binding position |
+| OCaml | No for-in; use `List.iter f xs` | N/A | N/A |
+| Haskell | `forM_ xs (\x -> ...)` or list comprehension | Monadic only; no imperative for-in | N/A |
+
+**F# specifics:**
+- `for x in expr do body` where `expr` is any enumerable collection
+- Body must return `unit` — this is a statement loop, not a map/comprehension
+- Loop variable `x` is immutable (read-only) inside body
+- Supports tuple/pattern destructuring in loop variable: `for (a, b) in pairs do`
+- The `..` range operator works too: `for i in 1..10 do` (already covered by existing for-to)
+- Returns `unit` — same as existing `for i = s to e do`
+
+**LangThree scope:** Lists and Arrays are the two collection types. The feature needs to handle:
+1. `for x in list do body` — iterate list elements
+2. `for x in array do body` — iterate array elements
+3. Ranges via `..` are already handled by existing `for i = s to e do`; `for i in 1..5 do` should desugar to the existing form or be a separate path
 
 ### Table Stakes (Must Have)
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Top-level module declaration** | File organization | Low | Parser | `module MyModule` |
-| **Namespace declarations** | Hierarchical naming | Low | Parser | `namespace Company.Project` |
-| **Module = static class** | Simple semantics | Low | Codegen | No runtime overhead |
-| **Nested modules** | Sub-organization | Medium | Parser | Indentation-based |
-| **`open` keyword** | Import declarations | Low | Scope resolution | Unqualified names |
-| **Qualified names** | Explicit references | Low | Name resolution | `Module.function` |
-| **Module-level let bindings** | Top-level definitions | Low | Existing | Values in module scope |
-| **Implicit module from filename** | Convenience | Low | Parser | `program.fs` → `module Program` |
-| **Recursive modules** | Mutual recursion | Medium | Type checker | `module rec M = ...` |
-
-**Implementation Notes:**
-- Module = namespace + static container
-- No runtime module values (not first-class)
-- Simple name resolution: qualified or open
-- Indentation determines nesting
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| `for x in list do body` | Primary use case — iterate list | Medium | New AST node or desugar to List.iter |
+| `for x in array do body` | Arrays are a first-class collection | Medium | Same mechanism, iterate ArrayValue |
+| Loop body returns unit | Consistent with existing for/while | Low | Body type checked as unit |
+| Loop variable is immutable | F# semantics, prevents confusion | Low | Excluded from mutableVars set (existing pattern from Phase 42) |
+| Returns unit | Consistent with while/for-to | Low | Already established pattern |
 
 ### Differentiators (Nice to Have)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| `open type` for static members | F# 5.0+ feature | Medium | Sugar for member access |
-| Module aliases | Convenience | Low | `module M = Long.Path.Module` |
-| Module signatures | Interface specs | High | Separate `.fsi` files — defer |
+| `for (a, b) in pairs do` — tuple pattern destructuring in loop var | Ergonomic for list of tuples | Medium | Pattern binding in loop position |
+| `for x in 1..10 do` — range via `..` | Sugar — unifies for-in and for-to syntax | Low | Could desugar to existing ForExpr |
+| `for _ in collection do` — wildcard iteration | When count matters but value doesn't | Low | Already works via VarPat/WildcardPat |
 
 ### Anti-Features (Explicitly NOT Building)
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Functors (parameterized modules) | OCaml complexity | Simple modules only |
-| First-class modules | Runtime overhead | Static modules |
-| Include directive | Increases complexity | Use `open` |
-| Module shadowing | Confusing | Disallow redefinition |
+| `for x in seq do` — lazy sequence iteration | Seq type not in LangThree | Out of scope — only list/array |
+| `for x in map do` — hashtable iteration | Hashtable iteration is `for k in ht.keys` pattern | Provide `Hashtable.keys` and iterate that list |
+| List comprehensions (`[for x in xs -> f x]`) | Different construct — not imperative loop | Use `List.map` |
+| `yield` inside for-in body | Sequence expressions not in scope | Not building computation expressions |
+| Break/continue | Not in F# for-in | F# uses exceptions or boolean mutable for early exit; document pattern |
+| Nested for-in with automatic cartesian product | Too complex | Use explicit nesting |
 
 ### Feature Dependencies
 
 ```
-Namespace declarations
-        ↓
-Top-level modules → Nested modules → Module nesting via indentation
-                 ↓
-            open declarations → Name resolution
-                             ↓
-                  Qualified names (Module.value)
+ForInExpr AST node (or desugar to existing pattern)
+    → Eval: extract ListValue/ArrayValue, bind var, eval body per element
+    → TypeCheck: collection must be 'a list or 'a array; body must be unit
+    → Parser: FOR IDENT IN Expr DO body
 ```
 
-### Namespace vs Module
-
-| Aspect | Namespace | Module |
-|--------|-----------|--------|
-| Contains | Modules, types | Values, functions, types |
-| Code | No | Yes |
-| Nesting | Dot notation | Indentation |
-| Syntax | `namespace X.Y` | `module M = ...` |
-
-**Key difference:** Namespaces cannot directly contain values/functions — must wrap in module.
-
-### Module Scoping Rules
-
-1. **Top-level module:** No indentation required for declarations
-2. **Nested module:** Must indent declarations under module
-3. **Sibling modules:** Same indentation level
-4. **Open scope:** From `open` to end of file/module
-5. **Shadowing:** Later `open` can shadow earlier names (warn on conflict)
-
-### Minimal Complete Feature Set
-
-For MVP Modules:
-1. Top-level module declarations
-2. Namespace declarations
-3. Nested modules (indentation-based)
-4. `open` keyword
-5. Qualified name access
-6. Module-level let bindings
-7. Implicit module from filename
-
-Defer to post-MVP:
-- Module signatures (`.fsi` files)
-- `open type` syntax
-- Module aliases (convenient but not critical)
-- Recursive modules (add when needed)
+Alternative approach — desugar to `List.iter`:
+```
+for x in xs do body
+→ List.iter (fun x -> body) xs
+```
+This has zero eval/typecheck changes but requires `List.iter` in scope and loses array support (needs Array.iter path). The AST-node approach is cleaner and more robust.
 
 ---
 
-## 6. Exceptions
+## Feature 3: Option/Result Utility Functions
+
+### Current State
+
+The Prelude already defines:
+
+**Option module (Prelude/Option.fun):**
+- `optionMap f opt` — apply f to Some value
+- `optionBind f opt` — flatMap (f returns option)
+- `optionDefault def opt` — extract with fallback
+- `isSome opt`, `isNone opt` — predicates
+- `(<|>)` operator — alternative (first Some wins)
+
+**Result module (Prelude/Result.fun):**
+- `resultMap f r` — apply f to Ok value
+- `resultBind f r` — flatMap (f returns result)
+- `resultMapError f r` — transform Error value
+- `resultDefault def r` — extract with fallback
+- `isOk r`, `isError r` — predicates
+
+### What F# Option Module Provides (Standard Reference)
+
+The full F# `Option` module has 28 functions. The most commonly used in practical ML code:
+
+| Function | Signature | Purpose |
+|----------|-----------|---------|
+| `Option.map` | `('a -> 'b) -> 'a option -> 'b option` | Transform Some value |
+| `Option.bind` | `('a -> 'b option) -> 'a option -> 'b option` | Flatmap / chain |
+| `Option.defaultValue` | `'a -> 'a option -> 'a` | Extract or default |
+| `Option.defaultWith` | `(unit -> 'a) -> 'a option -> 'a` | Lazy default (thunk) |
+| `Option.orElse` | `'a option -> 'a option -> 'a option` | First Some wins |
+| `Option.orElseWith` | `(unit -> 'a option) -> 'a option -> 'a option` | Lazy alternative |
+| `Option.iter` | `('a -> unit) -> 'a option -> unit` | Side effect on Some |
+| `Option.filter` | `('a -> bool) -> 'a option -> 'a option` | Conditional Some/None |
+| `Option.get` | `'a option -> 'a` | Unsafe extract (throws on None) |
+| `Option.isSome` | `'a option -> bool` | Test predicate |
+| `Option.isNone` | `'a option -> bool` | Test predicate |
+| `Option.toList` | `'a option -> 'a list` | `[]` or `[x]` |
+| `Option.count` | `'a option -> int` | 0 or 1 |
+| `Option.exists` | `('a -> bool) -> 'a option -> bool` | Test value with predicate |
+| `Option.forall` | `('a -> bool) -> 'a option -> bool` | True if None, else apply predicate |
+
+### What F# Result Module Provides (Standard Reference)
+
+The F# `Result` module has 18 functions. Most commonly used:
+
+| Function | Signature | Purpose |
+|----------|-----------|---------|
+| `Result.map` | `('a -> 'b) -> Result<'a,'e> -> Result<'b,'e>` | Transform Ok value |
+| `Result.bind` | `('a -> Result<'b,'e>) -> Result<'a,'e> -> Result<'b,'e>` | Chain fallible operations |
+| `Result.mapError` | `('e -> 'f) -> Result<'a,'e> -> Result<'a,'f>` | Transform Error value |
+| `Result.defaultValue` | `'a -> Result<'a,'e> -> 'a` | Extract or default |
+| `Result.defaultWith` | `('e -> 'a) -> Result<'a,'e> -> 'a` | Compute default from error |
+| `Result.isOk` | `Result<'a,'e> -> bool` | Test predicate |
+| `Result.isError` | `Result<'a,'e> -> bool` | Test predicate |
+| `Result.toOption` | `Result<'a,'e> -> 'a option` | Convert to Option (Ok → Some, Error → None) |
+| `Result.iter` | `('a -> unit) -> Result<'a,'e> -> unit` | Side effect on Ok |
+| `Result.exists` | `('a -> bool) -> Result<'a,'e> -> bool` | Test Ok value |
+| `Result.forall` | `('a -> bool) -> Result<'a,'e> -> bool` | True if Error, else apply predicate |
+| `Result.count` | `Result<'a,'e> -> int` | 1 for Ok, 0 for Error |
+| `Result.toList` | `Result<'a,'e> -> 'a list` | `[]` or `[x]` |
+
+### Gap Analysis: What LangThree Prelude Is Missing
+
+**Option — missing from current Prelude:**
+
+| Function | Priority | Why |
+|----------|----------|-----|
+| `Option.iter` (`optionIter`) | High | Side effects on optional values — very common in imperative code |
+| `Option.filter` (`optionFilter`) | High | `if pred x then Some x else None` — common validation pattern |
+| `Option.get` (`optionGet`) | Medium | Unsafe extract; useful when caller knows value exists |
+| `Option.orElse` (`optionOrElse`) | Medium | Already has `<|>` operator but named function needed for piping |
+| `Option.toList` (`optionToList`) | Low | Infrequently needed |
+| `Option.count` (`optionCount`) | Low | Rarely needed directly |
+| `Option.exists` (`optionExists`) | Low | `Option.map + isSome` equivalent |
+| `Option.forall` (`optionForall`) | Low | Infrequently used |
+
+**Result — missing from current Prelude:**
+
+| Function | Priority | Why |
+|----------|----------|-----|
+| `Result.iter` (`resultIter`) | High | Side effects on successful results |
+| `Result.toOption` (`resultToOption`) | High | Convert between error-handling styles — very common interop |
+| `Result.mapBoth` / `bimap` | Medium | Map both Ok and Error simultaneously |
+| `Result.toList` (`resultToList`) | Low | Rarely needed |
+| `Result.count` (`resultCount`) | Low | Rarely needed |
+| `Result.exists` (`resultExists`) | Low | Uncommon |
+| `Result.forall` (`resultForall`) | Low | Uncommon |
+
+### Naming Convention: Conflict with F# Standard
+
+The current Prelude uses camelCase full-names (`optionMap`, `resultBind`). F# standard uses module-qualified dot notation (`Option.map`, `Result.bind`). LangThree uses `open Option` and `open Result`, so names land directly in scope without module prefix.
+
+**Current pattern:** `optionMap f opt` (curried, function-first)
+**F# standard:** `Option.map f opt` (same curried order after `open`)
+
+The current naming is consistent with the rest of the Prelude and works well with pipe:
+```
+Some 5 |> optionMap double |> optionMap inc
+```
+
+This is equivalent to F#'s:
+```fsharp
+Some 5 |> Option.map double |> Option.map inc
+```
+
+**Recommendation:** Keep existing `optionXxx` / `resultXxx` naming convention for consistency with existing tests. Do NOT rename existing functions.
 
 ### Table Stakes (Must Have)
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **Exception declaration** | Custom exception types | Low | Type system | `exception MyError of string` |
-| **`raise` function** | Throw exceptions | Low | Runtime | `raise (MyError "fail")` |
-| **`try...with` expression** | Catch exceptions | Medium | Pattern matching | Pattern match on exception type |
-| **Pattern matching in `with`** | Multiple handlers | Medium | Existing PM | `with \| Error1 -> ... \| Error2 -> ...` |
-| **`when` guards** | Conditional catch | Low | Existing guards | `with \| e when condition -> ...` |
-| **.NET exception interop** | F# on .NET | Medium | Runtime | Match on `System.Exception` |
-| **Exception as values** | First-class exceptions | Low | Type system | Exception constructors are values |
-
-**Implementation Notes:**
-- Exceptions are special variant types
-- `raise` has type `'a -> 'b` (never returns)
-- `try...with` is an expression (has type)
-- Pattern matching uses existing PM infrastructure
-- `:?` operator for .NET exception type tests (if targeting .NET)
+| Feature | Priority | Complexity | Notes |
+|---------|----------|------------|-------|
+| `optionIter` — side effect on Some | High | Low | `fun f opt -> match opt with Some x -> f x \| None -> ()` |
+| `optionFilter` — conditional Some/None | High | Low | `fun pred opt -> match opt with Some x -> if pred x then Some x else None \| None -> None` |
+| `resultIter` — side effect on Ok | High | Low | `fun f r -> match r with Ok x -> f x \| Error _ -> ()` |
+| `resultToOption` — convert Result to Option | High | Low | `fun r -> match r with Ok x -> Some x \| Error _ -> None` |
+| Curried, pipeline-friendly signatures | Required | Low | All functions follow `f -> collection -> result` curried order |
 
 ### Differentiators (Nice to Have)
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| `try...finally` | Resource cleanup | Medium | Defer to v2 — use explicit cleanup |
-| `failwith` / `failwithf` | Convenience functions | Low | Sugar over `raise` |
-| Exception payload | Structured error info | Low | Already supported via `of` |
-| Reraising exceptions | Preserve stack trace | Medium | `reraise()` function |
+| `optionGet` — unsafe unwrap | Useful when caller guarantees Some | Low | Should raise exception on None with clear message |
+| `optionOrElse` — named alternative function | Complement to `<|>` operator, better for piping | Low | Thin wrapper over existing `<|>` |
+| `resultMapBoth` — bimap | Transform both Ok and Error | Low | `fun fOk fErr r -> ...` |
+| `optionToList` / `resultToList` | Collection interop | Low | Rarely needed in practice |
+| `optionExists` / `optionForall` | Predicate combinators | Low | Equivalent to `optionMap + isSome` |
 
 ### Anti-Features (Explicitly NOT Building)
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Checked exceptions | Java-style, rejected by ML community | Dynamic exceptions |
-| Exception specifications | Not in F#/OCaml | Document in comments |
-| Automatic exception conversion | Error-prone | Explicit handling |
-| Exception hierarchies | Complexity | Flat exception types |
+| Computation expressions (`option { ... }`) | Requires computation expression infrastructure not yet built | Use explicit `optionBind` piping |
+| `Option.zip` / `Option.map2` | Rarely needed, adds cognitive load | Use explicit pattern matching |
+| `Result.combine` / `Result.traverseList` | Complex, belongs in FsToolkit not stdlib | Document for user implementation |
+| Renaming existing functions | Would break all existing tests | Additive only: new functions, no renames |
+| `optionTry` wrapping exceptions | Mixes exception and option models | Document pattern in tutorial instead |
+| Haskell-style `<$>`, `<*>`, `>>=` operators | Unfamiliar to Korean tutorial audience | Use named functions, keep `|>` pipeline |
+| `ValueOption` / unboxed option | Performance optimization not needed | Reference semantics sufficient for interpreter |
 
 ### Feature Dependencies
 
 ```
-ADT system → Exception declarations
-          ↓
-Pattern matching → try...with handlers
-                ↓
-       Type system (exn type)
+Option/Result types already defined in Prelude
+    → New utility functions are pure .fun additions to Option.fun / Result.fun
+    → No changes to Eval.fs, TypeCheck.fs, or Ast.fs needed
+    → Zero risk of breaking existing code (additive only)
 ```
-
-### Exception Declaration Syntax
-
-```fsharp
-(* Basic exception *)
-exception NotFound
-
-(* Exception with payload *)
-exception InvalidInput of string
-
-(* Exception with multiple fields *)
-exception ParseError of line: int * column: int * message: string
-```
-
-### Try-With-Expression Semantics
-
-```fsharp
-(* Expression form - has a type *)
-let result =
-  try
-    riskyOperation()
-  with
-  | NotFound -> 0
-  | InvalidInput msg ->
-      printfn "Error: %s" msg
-      -1
-
-(* Pattern matching on exception type *)
-try
-  ...
-with
-| :? System.ArgumentException as e -> handleArg e
-| :? System.InvalidOperationException -> handleInvalid()
-| e -> reraise()  (* catch-all with reraise *)
-```
-
-**Key property:** `try...with` is an **expression**, not a statement. All branches must return same type.
-
-### Minimal Complete Feature Set
-
-For MVP Exceptions:
-1. Exception declarations (`exception E of T`)
-2. `raise` function
-3. `try...with` expressions
-4. Pattern matching on exception types
-5. `when` guards in exception handlers
-
-Defer to post-MVP:
-- `try...finally` (resource management)
-- `failwith` convenience functions (trivial sugar)
-- Reraise functionality
-- Stack trace utilities
 
 ---
 
-## Cross-Cutting Concerns
+## Feature Interaction Matrix
 
-### Feature Interaction Matrix
+| Feature | Interacts With | Notes |
+|---------|---------------|-------|
+| Newline sequencing | for-in loops | Loop bodies with multiple lines need sequencing to work |
+| Newline sequencing | while loop bodies | Same — multi-line while bodies use newline sequencing |
+| Newline sequencing | Option.iter / Result.iter | `optionIter` called on separate lines only works with sequencing |
+| for-in loops | Lists/Arrays | Requires existing ListValue/ArrayValue in evaluator |
+| Option.iter | for-in loops | Common pattern: `for x in options do optionIter process x` |
+| Result.toOption | Option functions | Bridge between error-handling styles |
 
-| Feature | Depends On | Enables | Conflicts With |
-|---------|-----------|---------|----------------|
-| Indentation syntax | Lexer preprocessing | All language constructs | Mixed tabs/spaces |
-| ADT | Type inference, Pattern matching | GADT, Records | None |
-| GADT | ADT, Bidirectional checking | Type-safe DSLs | None |
-| Records | Type inference | Pattern matching | None |
-| Modules | Indentation syntax | Namespace organization | None |
-| Exceptions | ADT, Pattern matching | Error handling | None |
+---
 
-### Implementation Order Recommendation
+## MVP Priority Order
 
-**Phase 1: Foundation**
-1. Indentation syntax (affects all parsing)
-2. Basic ADT (extends FunLang pattern matching)
+**Phase 1 — Foundation (blocks everything else):**
+1. Newline implicit sequencing (IndentFilter change) — enables multi-line loop/function bodies without explicit `;`
 
-**Phase 2: Type System**
-3. Records (uses type inference)
-4. GADT (extends ADT + bidirectional checking)
+**Phase 2 — New loop construct:**
+2. `for x in collection do body` — for-in loop over list/array
 
-**Phase 3: Organization**
-5. Modules (uses indentation + name resolution)
-6. Exceptions (uses ADT + pattern matching)
+**Phase 3 — Library expansion (pure Prelude additions):**
+3. `optionIter`, `optionFilter` (most-needed Option additions)
+4. `resultIter`, `resultToOption` (most-needed Result additions)
+5. Lower-priority additions: `optionGet`, `optionOrElse`, `resultMapBoth`
 
-**Rationale:**
-- Indentation affects parser for everything else
-- ADT/Records build on existing type system
-- GADT requires ADT foundation
-- Modules independent but needs indentation rules
-- Exceptions are simplest, uses existing infrastructure
-
-### Shared Infrastructure
-
-**Parser:**
-- Indentation token preprocessing (used by: all features)
-- Pattern matching syntax (used by: ADT, GADT, Records, Exceptions)
-
-**Type Checker:**
-- Hindley-Milner inference (used by: ADT, Records, Modules)
-- Bidirectional checking (used by: GADT, existing)
-- Exhaustiveness checker (used by: ADT, GADT, Exceptions)
-
-**Runtime:**
-- Exception mechanism (used by: Exceptions)
-- Equality primitives (used by: Records, ADT)
+**Rationale for order:**
+- Newline sequencing first: every test for the new features will likely use multi-line bodies; writing those tests is painful without newline sequencing
+- for-in second: it is a standalone language change (parser + eval + typecheck)
+- Prelude additions last: pure .fun changes, zero risk, can be done in parallel
 
 ---
 
 ## Complexity Assessment
 
-| Capability | Overall Complexity | Reason |
-|-----------|-------------------|--------|
-| Indentation syntax | **High** | Requires lexer preprocessing, affects all parsing |
-| ADT | **Medium** | Extends existing pattern matching, adds exhaustiveness |
-| GADT | **High** | Requires bidirectional checking extensions, type refinement |
-| Records | **Medium** | Type inference + copy-update, but straightforward |
-| Modules | **Low-Medium** | Simple semantics (no functors), indentation nesting |
-| Exceptions | **Low** | Uses existing ADT + pattern matching infrastructure |
-
-### Risk Factors
-
-**High Risk:**
-- Indentation syntax: Many subtle edge cases, error messages
-- GADT: Type system extension, potential inference issues
-
-**Medium Risk:**
-- Records: Copy-update with nested types can be tricky
-- ADT: Exhaustiveness checking algorithm
-
-**Low Risk:**
-- Modules: Simple static semantics
-- Exceptions: Straightforward extension
-
----
-
-## Quality Gates
-
-### Feature Completeness Checklist
-
-**Indentation Syntax:**
-- [ ] Let-binding indentation works
-- [ ] Match expression alignment works
-- [ ] Nested modules indent correctly
-- [ ] Tab characters rejected
-- [ ] Clear error messages for indentation errors
-
-**ADT:**
-- [ ] Sum types with multiple constructors
-- [ ] Pattern matching on constructors
-- [ ] Exhaustiveness warnings
-- [ ] Type parameters work
-- [ ] Recursive types allowed
-- [ ] Mutually recursive types with `and`
-
-**GADT:**
-- [ ] Explicit constructor return types parsed
-- [ ] Type refinement in pattern matching
-- [ ] Existential types work
-- [ ] Type-indexed evaluation example works
-
-**Records:**
-- [ ] Record type declarations
-- [ ] Record expressions
-- [ ] Field access via dot notation
-- [ ] Copy-and-update syntax
-- [ ] Pattern matching on records
-- [ ] Structural equality within same type
-
-**Modules:**
-- [ ] Top-level module declarations
-- [ ] Namespace declarations
-- [ ] Nested modules
-- [ ] `open` keyword
-- [ ] Qualified name access
-- [ ] Implicit module from filename
-
-**Exceptions:**
-- [ ] Exception declarations
-- [ ] `raise` works
-- [ ] `try...with` expressions
-- [ ] Pattern matching on exception types
-- [ ] `when` guards in handlers
+| Feature | Complexity | Primary Challenge |
+|---------|------------|-------------------|
+| Newline implicit sequencing | **Medium** | IndentFilter context discrimination: when to inject SEMICOLON vs IN vs nothing. Must not inject at module level. |
+| for-in loop | **Medium** | New parser rule + AST node + eval cases for ListValue/ArrayValue dispatch. Type checking the collection type. |
+| Option/Result utilities | **Low** | Pure `.fun` Prelude additions. No interpreter changes. |
 
 ---
 
 ## Sources
 
-### Indentation Syntax
-- [F# code formatting guidelines - Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/style-guide/formatting)
-- [F# syntax: indentation and verbosity | F# for fun and profit](https://fsharpforfunandprofit.com/posts/fsharp-syntax/)
-- [Principled Parsing for Indentation-Sensitive Languages](https://www.researchgate.net/publication/262389112_Principled_Parsing_for_Indentation-Sensitive_Languages_Revisiting_Landin's_Offside_Rule)
-- [Off-side rule - Wikipedia](https://en.wikipedia.org/wiki/Off-side_rule)
-- [Indentation-based syntax considered troublesome](https://yinwang0.wordpress.com/2011/05/08/layout/)
-- [Python TabError: inconsistent use of tabs and spaces](https://www.geeksforgeeks.org/python/python-taberror-inconsistent-use-of-tabs-and-spaces-in-indentation/)
-
-### Algebraic Data Types
-- [Algebraic data type - Wikipedia](https://en.wikipedia.org/wiki/Algebraic_data_type)
-- [CS 242: Algebraic data types - Stanford](https://stanford-cs242.github.io/f19/lectures/03-2-algebraic-data-types.html)
-- [Algebraic Data Types | Scala 3 Documentation](https://docs.scala-lang.org/scala3/book/types-adts-gadts.html)
-- [Exhaustiveness checking and algebraic data types](https://github.com/josefs/Gradualizer/wiki/Exhaustiveness-checking-and-algebraic-data-types)
-- [Algebraic data types and pattern matching — OCaml From the Ground Up](https://ocamlbook.org/algebraic-types/)
-
-### GADTs
-- [Generalized algebraic data type - Wikipedia](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)
-- [Generalised algebraic datatype - HaskellWiki](https://wiki.haskell.org/Generalised_algebraic_datatype)
-- [GADTs — GHC User's Guide](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/gadt.html)
-- [GADTs - Real World OCaml](https://dev.realworldocaml.org/gadts.html)
-- [Sound and Complete Bidirectional Typechecking for GADTs](https://www.cl.cam.ac.uk/~nk480/gadt.pdf)
-- [Simple unification-based type inference for GADTs - Microsoft Research](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gadt-pldi.pdf)
-
-### Records
-- [Records in F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/records)
-- [Records | F# for fun and profit](https://fsharpforfunandprofit.com/posts/records/)
-- [Copy and Update Record Expressions - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/copy-and-update-record-expressions)
-- [Immutable object - Wikipedia](https://en.wikipedia.org/wiki/Immutable_object)
-- [Functional Optics for Modern Java - 2026](https://blog.scottlogic.com/2026/01/09/java-the-immutability-gap.html)
-
-### Modules
-- [Modules - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules)
-- [Namespaces in F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/namespaces)
-- [open Declarations - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/import-declarations-the-open-keyword)
-- [First-Class Modules - Real World OCaml](https://dev.realworldocaml.org/first-class-modules.html)
-- [ML Dialects and Haskell - Hyperpolyglot](https://hyperpolyglot.org/ml)
-
-### Exceptions
-- [Exceptions: The try...with Expression - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/exception-handling/the-try-with-expression)
-- [Exceptions | F# for fun and profit](https://fsharpforfunandprofit.com/posts/exceptions/)
-- [Exception Handling - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/exception-handling/)
-- [Exceptions: raise and reraise functions - F# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/exception-handling/the-raise-function)
-
-### Language Comparisons
-- [How does OCaml compare to F#](https://discuss.ocaml.org/t/how-does-ocaml-compare-to-f-in-the-family-of-ml-languages/11665)
-- [Comparing OCAML to F#](https://jkone27-3876.medium.com/comparing-ocaml-to-f-f75e4ab27769)
-- [F# vs Haskell comparison](https://www.educba.com/f-sharp-vs-haskell/)
+- [F# for...in Expression - Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/loops-for-in-expression)
+- [F# Option Module - FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html)
+- [F# Result Module - FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html)
+- [Options - F# Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/options)
+- [OCaml Mutability and Imperative Control Flow](https://ocaml.org/docs/mutability-imperative-control-flow)
+- [F# syntax: indentation and verbosity - F# for fun and profit](https://fsharpforfunandprofit.com/posts/fsharp-syntax/)
 
 ---
 
-**Document Status:** Research complete, ready for requirements definition
-**Confidence Level:** HIGH (based on official documentation and established patterns)
+**Document Status:** Research complete for v6.0 milestone
+**Confidence Level:** HIGH — all three features have clear precedents in F# standard library and language specification
 **Next Step:** Use this feature catalog to define requirements and roadmap phases

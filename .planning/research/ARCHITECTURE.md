@@ -1,859 +1,477 @@
 # Architecture Patterns for LangThree
 
 **Domain:** Programming Language Interpreter (ML-style functional language)
-**Researched:** 2026-02-25
+**Researched:** 2026-03-28 (updated for expression-sequencing milestone)
 **Confidence:** HIGH
 
-## Executive Summary
+---
 
-LangThree extends FunLang's existing interpreter pipeline (Lexer → Parser → Type Checker → Evaluator) with five new features. Each feature primarily impacts specific components while maintaining the pipeline architecture. The key architectural insight is that features can be implemented with minimal cross-component coupling by respecting the pipeline boundaries.
+## Scope of This Document
 
-**Critical path:** Indentation-based syntax requires lexer changes first, as it affects the token stream that all downstream components depend on. Type system features (ADT/GADT, Records) can be developed in parallel after AST/type checker infrastructure is ready. Modules require coordination across all components but build on type system work. Exceptions require runtime support but are largely orthogonal to type system features.
+This document covers the integration architecture for three features being added to the existing
+LangThree v4.0+ interpreter:
 
-## Recommended Architecture
+1. **Newline implicit sequencing** — emit SEMICOLON-like behavior on newlines at statement level
+2. **For-in collection loops** — `for x in collection do body` iterating over lists/arrays/ranges
+3. **Option/Result Prelude utilities** — additional combinators in `Prelude/Option.fun` and `Prelude/Result.fun`
 
-### Overall Pipeline (Unchanged)
-
-```
-Source Text
-    ↓
-[Lexer.fsl] → Token Stream
-    ↓
-[Parser.fsy] → AST (Ast.fs)
-    ↓
-[Type Checker] → Typed AST
-    ├─ Infer.fs (Hindley-Milner)
-    └─ Bidir.fs (Bidirectional)
-    ↓
-[Evaluator] → Result
-    └─ Eval.fs
-```
-
-This pipeline remains the foundation. Each new feature extends specific stages without breaking the overall flow.
-
-### Component Boundaries
-
-| Component | Responsibility | Input | Output | Files Affected |
-|-----------|---------------|-------|--------|----------------|
-| **Lexer** | Tokenization + layout rules | Source text | Token stream with INDENT/DEDENT | Lexer.fsl (new: indentation stack) |
-| **Parser** | Syntax analysis | Token stream | Untyped AST | Parser.fsy, Ast.fs (new: ADT, Records, Modules, Exceptions) |
-| **Type System** | Type inference/checking | Untyped AST | Typed AST or type errors | Type.fs (new types), Infer.fs (ADT/GADT), Bidir.fs (GADT refinement) |
-| **Module System** | Name resolution | Typed AST | Symbol table + resolved AST | New: Modules.fs, Env.fs extensions |
-| **Evaluator** | Execution | Typed/resolved AST | Runtime values or exceptions | Eval.fs (new: record ops, exceptions) |
-| **Runtime Support** | Exception handling | N/A | Exception propagation | New: Exceptions.fs (exception values, unwinding) |
-
-### Data Flow
-
-#### 1. Indentation-Based Syntax Flow
+The underlying pipeline is unchanged:
 
 ```
-Source text with indentation
+Source text
     ↓
-Lexer: Track indentation stack
-    ├─ On newline: compare current vs. previous indent
-    ├─ Deeper indent → emit INDENT token
-    └─ Shallower indent → emit DEDENT token(s)
+[Lexer.fsl]  →  raw tokens (NEWLINE carries column position)
     ↓
-Token stream: [..., NEWLINE, INDENT, ..., DEDENT, ...]
+[IndentFilter.fs]  →  filtered token stream (INDENT/DEDENT + implicit SEMICOLON)
     ↓
-Parser: INDENT/DEDENT tokens replace braces in grammar
+[Parser.fsy]  →  Ast.Module
     ↓
-AST (unchanged structure)
+[Elaborate.fs]  →  desugared Ast.Module
+    ↓
+[Bidir.fs / TypeCheck.fs]  →  type-checked module
+    ↓
+[Eval.fs]  →  Value
 ```
 
-**Key insight:** Indentation is resolved at lexer stage. Parser sees INDENT/DEDENT as ordinary tokens, making grammar changes minimal.
+---
 
-#### 2. ADT/GADT Flow
+## Feature 1: Newline Implicit Sequencing
 
-```
-Source: type expr = Lit of int | Add of expr * expr
-    ↓
-Parser: Parse type definition → AST
-    └─ Ast.fs: New node types (TypeDef, DataConstructor)
-    ↓
-Type Checker: Register constructors in environment
-    ├─ Infer.fs: Extend unification for ADT types
-    └─ Bidir.fs: Use GADT refinements (equational constraints)
-    ↓
-Typed AST: Constructors have known types
-    ↓
-Evaluator: Pattern matching with constructors
-    └─ Eval.fs: Match on tagged values
-```
+### What the feature does
 
-**Key insight:** GADTs need bidirectional checking. Hindley-Milner alone cannot handle GADT refinements. Use Bidir.fs for expressions requiring type annotations.
-
-#### 3. Records Flow
+Today, sequencing requires an explicit semicolon: `e1; e2`. The goal is to allow:
 
 ```
-Source: { name = "Alice"; age = 30 }
-    ↓
-Parser: Parse record expression → AST
-    └─ Ast.fs: New node RecordExpr(fields)
-    ↓
-Type Checker: Structural typing
-    ├─ Type.fs: New TRecord(row) type
-    ├─ Infer.fs: Unify record types by field names/types
-    └─ Row polymorphism (optional, for extensibility)
-    ↓
-Typed AST: Record has known field types
-    ↓
-Evaluator: Runtime representation
-    └─ Eval.fs: Records as maps (string → value)
+e1
+e2
 ```
 
-**Key insight:** Records can use structural typing (no declaration needed) or nominal typing (requires explicit type). Structural is simpler for MVP. Runtime representation as dictionary/map is sufficient.
+...at statement positions to desugar to the same `LetPat(WildcardPat, e1, e2)` that `e1; e2` produces.
 
-#### 4. Modules Flow
+### Where the work lives
+
+**IndentFilter.fs is the only file that changes.** The parser already accepts `SeqExpr` via the
+`SEMICOLON` token. Implicit sequencing means emitting a synthetic SEMICOLON token when a newline
+at statement level separates two expressions.
+
+### Existing mechanism to build on
+
+The `filter` function in `IndentFilter.fs` already:
+
+- Tracks `BracketDepth` and suppresses all NEWLINE processing inside `[]`, `()`, `{}`
+- Tracks `PrevToken` for detecting when to enter `InFunctionApp` context
+- Emits `INDENT`/`DEDENT` based on column changes
+- Has `InExprBlock of baseColumn` in `SyntaxContext` — pushed when `INDENT` follows `=`, `->`, `in`, or `do`
+- Has `InModule` context where no implicit IN is generated
+
+The key insight: `InExprBlock` already identifies statement-level positions. A newline at the same
+indent level inside an `InExprBlock` with no INDENT/DEDENT emitted is a candidate for implicit SEMICOLON.
+
+### Integration design
+
+**Where to inject:** In the `filter` function, in the NEWLINE branch, after `processNewlineWithContext`
+returns with an empty `emitted` list (same-level, no INDENT/DEDENT):
 
 ```
-Source: module Math = ... | open Math
-    ↓
-Parser: Parse module definitions → AST
-    └─ Ast.fs: New node ModuleDef(name, decls)
-    ↓
-Module System: Build environment
-    ├─ Modules.fs: Track module namespaces
-    ├─ Phase 1: Collect all module signatures
-    ├─ Phase 2: Resolve names (qualified paths)
-    └─ Dependency ordering (topological sort)
-    ↓
-Type Checker: Type check with qualified names
-    └─ Env extended with module paths (Math.add)
-    ↓
-Evaluator: Evaluate in module scope
-    └─ Eval.fs: Nested environments
+if isAtSameLevel && emitted = [] then
+    // existing offside IN-insertion check ...
+    // NEW: check if inside InExprBlock and next token is a statement-starting token
+    // → emit SEMICOLON
 ```
 
-**Key insight:** Modules require separate compilation support. Must process module signatures before bodies. Namespace resolution happens before type checking.
+**Context check:** Only emit implicit SEMICOLON when:
+- Context stack top is `InExprBlock` (we are in a block body: let RHS, lambda body, do body, etc.)
+- No INDENT/DEDENT was emitted (same column — this is a peer statement, not a deeper block)
+- No pending offside IN to emit (existing offside logic takes priority)
+- Next token is not `IN`, `ELSE`, `WITH`, `|`, or `DEDENT` (those tokens close the current context;
+  emitting SEMICOLON before them would create a dangling expression)
+- `BracketDepth = 0` (already guaranteed by the outer NEWLINE handler)
 
-#### 5. Exceptions Flow
+**What "statement-starting token" means:** Rather than a positive allowlist, the safer formulation
+is a negative blocklist of tokens that should NOT receive a preceding SEMICOLON:
+`IN`, `ELSE`, `WITH`, `|` (PIPE), `THEN`, `AND_KW`, `DEDENT`, `EOF`.
 
-```
-Source: try ... with | E -> ... | raise E
-    ↓
-Parser: Parse exception constructs → AST
-    └─ Ast.fs: New nodes (TryWith, Raise, ExceptionDef)
-    ↓
-Type Checker: Track exception types
-    ├─ Type.fs: Exn type (extensible sum)
-    └─ Infer.fs: Raise has type 'a, try has handler type
-    ↓
-Evaluator: Runtime exception handling
-    ├─ Eval.fs: Evaluate try/raise
-    └─ Exceptions.fs: Stack unwinding (search for handlers)
-```
+**PrevToken constraint:** Do not emit if the previous non-whitespace token already ends a non-expression
+context (e.g., a `TYPE` declaration, an `EXCEPTION` declaration). Since those currently exist only at
+module level (not inside `InExprBlock`), this is less of a concern in practice, but should be tracked.
 
-**Key insight:** Exceptions are "zero-cost" in happy path (no overhead when not raised). Unwinding is reverse execution order. F# style exceptions are simpler than OCaml (no effects).
+### Parser impact
 
-## Feature-Specific Architecture Patterns
+None. `SeqExpr` already handles `Expr SEMICOLON SeqExpr` and `Expr SEMICOLON`. Adding an implicit
+SEMICOLON from IndentFilter produces exactly the same token stream the parser already processes.
 
-### Pattern 1: Indentation-Based Syntax (Lexer Post-Processing)
+### Bidir / Eval impact
 
-**What:** Token injection technique. Lexer maintains indentation stack and injects INDENT/DEDENT tokens.
+None. Implicit sequencing desugars to `LetPat(WildcardPat, e1, e2)`, which is already typed and
+evaluated correctly.
 
-**When:** Processing newlines that start logical lines.
+### Component boundary summary
 
-**Implementation approach:**
+| Component | Change | Rationale |
+|-----------|--------|-----------|
+| IndentFilter.fs | Emit SEMICOLON in NEWLINE handler when context = InExprBlock and same indent level | Only place that knows layout context and column |
+| Parser.fsy | None | SeqExpr already handles SEMICOLON |
+| Ast.fs | None | LetPat(WildcardPat) is the existing desugar target |
+| Bidir.fs | None | LetPat already typed |
+| Eval.fs | None | LetPat already evaluated |
+
+### Critical integration point: DO token
+
+The `DO` token already triggers `InExprBlock` push (line 317 of IndentFilter.fs):
 
 ```fsharp
-// Lexer.fsl
-let indentStack = ref [0]  // Track indentation levels
-
-let handleNewline column =
-    let current = List.head !indentStack
-    match compare column current with
-    | x when x > 0 ->
-        // Deeper: push and emit INDENT
-        indentStack := column :: !indentStack
-        [NEWLINE; INDENT]
-    | 0 ->
-        // Same: just newline
-        [NEWLINE]
-    | _ ->
-        // Shallower: pop and emit DEDENTs
-        let rec unwind acc stack =
-            match stack with
-            | [] -> failwith "Indentation error"
-            | top :: rest when top > column ->
-                unwind (DEDENT :: acc) rest
-            | top :: rest when top = column ->
-                (NEWLINE :: acc, top :: rest)
-            | _ -> failwith "Indentation error"
-        let (tokens, newStack) = unwind [] !indentStack
-        indentStack := newStack
-        tokens
+| Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO ->
+    state <- { state with Context = InExprBlock(baseCol) :: state.Context }
 ```
 
-**Parser changes:**
+This means `while cond do\n  e1\n  e2` already enters `InExprBlock` after the `do`'s INDENT. The
+implicit SEMICOLON will fire between `e1` and `e2` at the same column inside that block. This is
+the primary motivation for the feature and should work automatically once the SEMICOLON injection
+is in place.
+
+---
+
+## Feature 2: For-In Collection Loops
+
+### What the feature does
+
+Add `for x in collection do body` syntax. Collection can be a list, array, or range.
+
+```
+for x in [1; 2; 3] do
+  printfn "%d" x
+```
+
+This is distinct from the existing `for i = start to stop do body` (range-index loop). Both coexist.
+
+### AST change
+
+Add a new variant to `Expr` in `Ast.fs`:
 
 ```fsharp
-// Parser.fsy - Replace braces with INDENT/DEDENT
-block:
-    | INDENT declarations DEDENT { $2 }
-
-// Was: LBRACE declarations RBRACE { $2 }
+// Phase 45+ (For-In Loop): for var in collection do body
+| ForInExpr of var: string * collection: Expr * body: Expr * span: Span
 ```
 
-**Pitfalls:**
+Update `spanOf` to include `ForInExpr`.
 
-- Mixing tabs and spaces causes issues. Normalize to spaces.
-- Comment-only lines should not affect indentation.
-- EOF requires emitting remaining DEDENT tokens.
+**Design decision:** Do NOT reuse `ForExpr`. `ForExpr` is hardwired to integer bounds and an
+`isTo: bool` flag. `ForInExpr` iterates over arbitrary `Value` collections. Keeping them separate
+avoids a union type hack and makes Bidir/Eval cases cleaner.
 
-**Sources:**
-- [Python Lexical Analysis](https://docs.python.org/3/reference/lexical_analysis.html) - Official Python indentation algorithm
-- [Principled Parsing for Indentation-Sensitive Languages](https://michaeldadams.org/papers/layout_parsing/LayoutParsing.pdf) - Formal layout rule specification
-- [antlr-denter](https://github.com/yshavit/antlr-denter) - Token injection implementation pattern
+### Lexer change
 
-### Pattern 2: ADT/GADT with Bidirectional Typing
+No new tokens needed. `FOR`, `IN`, and `DO` already exist. The lexer already emits `IN` for the
+keyword `in`. Verify there is no collision with the existing `IN` token used for `let...in` — there
+is none because the parser grammar rule position disambiguates (FOR is followed by IDENT, then IN).
 
-**What:** Extend AST with type definitions. Use bidirectional type checking for GADT refinements.
+### Parser change
 
-**When:** Type definitions introduce new type constructors. Pattern matching uses constructors.
-
-**AST extensions:**
+Add two rules to `Expr` in `Parser.fsy`, alongside the existing `FOR IDENT EQUALS ... TO ...` rules:
 
 ```fsharp
-// Ast.fs
-type TypeDef =
-    | SimpleADT of string * DataConstructor list  // type option = None | Some of 'a
-    | GADT of string * GADTConstructor list       // type expr : * -> * = ...
+// FOR-IN-01: for x in collection do body (inline body)
+| FOR IDENT IN Expr DO SeqExpr
+    { ForInExpr($2, $4, $6, ruleSpan parseState 1 6) }
 
-and DataConstructor = string * Type option       // None | Some of 'a
-
-and GADTConstructor = string * Type * Type       // Lit : int -> expr int
+// FOR-IN-02: for x in collection do (indented body)
+| FOR IDENT IN Expr DO INDENT SeqExpr DEDENT
+    { ForInExpr($2, $4, $7, ruleSpan parseState 1 8) }
 ```
 
-**Type checker strategy:**
+**Precedence/conflict risk:** `IN` is also used in `let x = e IN body`. The parser context makes
+this unambiguous: `FOR IDENT IN` is a distinct prefix. FsLexYacc LALR(1) can resolve this without
+precedence declarations. Verify no shift/reduce conflict by running `dotnet build` and checking
+parser output.
 
-For simple ADTs, use Hindley-Milner (Infer.fs):
-- Constructors are functions: `Some : 'a -> 'a option`
-- Pattern matching generates unification constraints
+**IndentFilter impact for `in` keyword:** `IN` is already in IndentFilter's offside rule logic. When
+`IN` appears after `FOR IDENT`, IndentFilter's `IN` handler pops `InLetDecl` contexts. Since `FOR`
+does not push `InLetDecl`, the `IN` handler's `popLetDecl` traversal will find nothing to pop and
+exit harmlessly. No IndentFilter change needed.
 
-For GADTs, use bidirectional checking (Bidir.fs):
-- Constructors have refined return types
-- Pattern matching branches have type refinements
-- Requires explicit type annotations on GADT expressions
+### Bidir / TypeCheck change
 
-**Type representation:**
+Add a case to `synth` in `Bidir.fs`:
 
 ```fsharp
-// Type.fs
-type Type =
-    | ... // existing types
-    | TData of string * Type list         // option<int>
-    | TGADTInstance of string * Type      // expr int (indexed by type)
+// === ForInExpr (For-in loop) ===
+| ForInExpr (var, collExpr, body, span) ->
+    let s1, collTy = synth ctorEnv recEnv ctx env collExpr
+    // collTy must be 'a list, 'a array, or a range (int list).
+    // Introduce fresh element type variable.
+    let elemTy = freshVar()
+    let s2 = unifyWithContext ctx [] span (apply s1 collTy) (TList elemTy)
+    // ... also accept TArray elemTy via separate unify attempt or union
+    let s12 = compose s2 s1
+    let loopEnv = Map.add var (Scheme([], apply s12 elemTy)) (applyEnv s12 env)
+    let s3, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
+    (compose s3 s12, TTuple [])  // for-in always returns unit
 ```
 
-**Unification extensions:**
+**Collection type handling:** Lists are `TList elemTy`. Arrays are `TArray elemTy`. Ranges desugar
+to `TList TInt` in the existing `Range` evaluator. The type checker should accept at minimum `TList`
+and `TArray`. If unification of both is needed, attempt `TList` first, then `TArray` on failure, or
+introduce a `TIterable` type class (deferred — not needed for MVP).
+
+**MVP choice:** Constrain to `TList elemTy` only for the first pass. Arrays can be added as a
+follow-on. Range literals already evaluate to `ListValue`, so they work automatically.
+
+### Eval change
+
+Add a case to `eval` in `Eval.fs`:
 
 ```fsharp
-// Unify.fs
-let rec unify t1 t2 =
-    match t1, t2 with
-    | TData(n1, args1), TData(n2, args2) when n1 = n2 ->
-        List.iter2 unify args1 args2
-    | TGADTInstance(n1, idx1), TGADTInstance(n2, idx2) when n1 = n2 ->
-        unify idx1 idx2  // Equational constraint from GADT
-    | ...
+// For-in loop: iterate over list or array
+| ForInExpr (var, collExpr, body, _) ->
+    let collVal = eval recEnv moduleEnv env false collExpr
+    match collVal with
+    | ListValue items ->
+        for item in items do
+            let loopEnv = Map.add var item env
+            eval recEnv moduleEnv loopEnv false body |> ignore
+        TupleValue []
+    | ArrayValue arr ->
+        for item in arr do
+            let loopEnv = Map.add var item env
+            eval recEnv moduleEnv loopEnv false body |> ignore
+        TupleValue []
+    | _ -> failwith "for-in: collection must be a list or array"
 ```
 
-**Pitfalls:**
+### Component boundary summary
 
-- GADT type inference is undecidable. Require annotations.
-- Pattern matching exhaustiveness is harder with GADTs.
-- FunLang has both Infer.fs and Bidir.fs. Use appropriate one per expression.
+| Component | Change | Rationale |
+|-----------|--------|-----------|
+| Ast.fs | Add `ForInExpr` variant + `spanOf` case | New AST node required |
+| Lexer.fsl | None | `FOR`, `IN`, `DO` already tokenized |
+| Parser.fsy | Add 2 grammar rules for `FOR IDENT IN Expr DO` | Syntax |
+| IndentFilter.fs | None | `DO` already triggers InExprBlock; `IN` handling already correct |
+| Bidir.fs | Add `ForInExpr` synth case | Type checking |
+| Eval.fs | Add `ForInExpr` eval case | Execution |
+| Prelude/*.fun | None | No Prelude changes needed for this feature |
 
-**Sources:**
-- [Simple unification-based type inference for GADTs](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gadt-pldi.pdf) - Simon Peyton Jones' GADT inference approach
-- [Bidirectional Typing](https://arxiv.org/pdf/1908.05839) - Jana Dunfield's comprehensive survey
-- [How to Choose Between Hindley-Milner and Bidirectional Typing](https://thunderseethe.dev/posts/how-to-choose-between-hm-and-bidir/) - When to use each approach
+### Conflict with existing `IN` handling in IndentFilter
 
-### Pattern 3: Records with Structural Typing
+The IndentFilter `IN` handler pops `InLetDecl` contexts. The `for x in collection` construct does
+not push `InLetDecl`, so the handler is a no-op in this context. However, if the collection
+expression itself contains `let...in`, the offside logic fires for the inner `let`. This is correct
+and requires no special handling.
 
-**What:** Records as first-class values with structural typing (compatible if field names/types match).
+---
 
-**When:** Record creation, field access, record patterns.
+## Feature 3: Option/Result Prelude Utilities
 
-**AST extensions:**
+### What the feature does
+
+Expand `Prelude/Option.fun` and `Prelude/Result.fun` with additional combinators that are missing
+or differently named compared to idiomatic F# usage.
+
+Current state of `Option.fun`:
+- `optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone`, `(<|>)`
+
+Current state of `Result.fun`:
+- `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `isOk`, `isError`
+
+Likely additions (common in F# Option/Result usage):
+- `Option.map` alias (or rename) using standard F# naming convention
+- `Option.orElse` (lazy version of `(<|>)`)
+- `Option.filter` — `optionFilter pred opt` returns `None` if pred fails
+- `Option.toList` — `Some x -> [x]`, `None -> []`
+- `Option.ofBool` — `if b then Some () else None`
+- `Result.toOption` — `Ok x -> Some x`, `Error _ -> None`
+- `Result.ofOption` — `Some x -> Ok x`, `None -> Error msg`
+- `Result.mapBoth` — map both Ok and Error branches
+
+### Architecture: Prelude-only, no interpreter changes
+
+**This feature touches only `.fun` files.** The LangThree language already supports everything
+needed to implement these functions: match expressions, ADT constructors (`Some`, `None`, `Ok`,
+`Error`), lambdas, and the module/open system.
+
+The Prelude loader (`Prelude.fs`) loads `*.fun` files alphabetically. `List.fun` loads before
+`Option.fun` (L < O), which loads before `Result.fun` (O < R). Dependencies flow in this order:
+- `Core.fun` (C) — basic operations
+- `List.fun` (L) — list operations
+- `Option.fun` (O) — can use List utilities if needed
+- `Result.fun` (R) — can use Option utilities
+
+If `Result.fun` needs `Option` types, they are already available because `Option.fun` loaded first
+and `open Option` is at the bottom of that file, making `Option` type and constructors available.
+
+### Type system impact
+
+None. The `Option 'a` and `Result 'a 'b` types are already declared in the existing Prelude files.
+Adding functions to these modules does not require any type system changes — the existing HM
+inference handles polymorphic functions over ADTs correctly.
+
+### Naming convention decision
+
+The existing functions use `optionMap`, `resultBind` style (prefixed, not dot-notation). New
+functions should follow the same convention for consistency within the existing codebase. Do not
+introduce a separate `Option.map` alongside `optionMap` — pick one name and use it.
+
+Alternatively, if the milestone wants to move toward F#-idiomatic `Option.map`, this is the right
+time to rename existing functions and add aliases. That is a naming decision for the roadmap, not
+an architecture concern.
+
+### Load order guarantee
+
+The Prelude loader sorts files alphabetically:
 
 ```fsharp
-// Ast.fs
-type Expr =
-    | ... // existing
-    | RecordCreate of (string * Expr) list          // { x = 1; y = 2 }
-    | FieldAccess of Expr * string                  // record.field
-    | RecordUpdate of Expr * (string * Expr) list   // { record with x = 3 }
-
-type Pattern =
-    | ... // existing
-    | RecordPat of (string * Pattern) list          // { x = px; y = py }
+let files = Directory.GetFiles(preludeDir, "*.fun") |> Array.sort
 ```
 
-**Type representation:**
+Current files: `Array.fun`, `Core.fun`, `Hashtable.fun`, `List.fun`, `Option.fun`, `Result.fun`.
+This alphabetical order means each file can depend on all earlier files. No changes to the loading
+mechanism are needed.
 
-```fsharp
-// Type.fs
-type Type =
-    | ... // existing
-    | TRecord of (string * Type) list  // { x: int; y: string }
-```
+### Component boundary summary
 
-**Unification:**
+| Component | Change | Rationale |
+|-----------|--------|-----------|
+| Prelude/Option.fun | Add new combinator functions | Pure language-level implementation |
+| Prelude/Result.fun | Add new combinator functions | Pure language-level implementation |
+| Prelude.fs | None | Loader already handles *.fun alphabetically |
+| Lexer, Parser, Bidir, Eval | None | No new syntax or semantics required |
 
-```fsharp
-// Unify.fs
-| TRecord(fields1), TRecord(fields2) ->
-    // Must have same field names (order independent)
-    let sorted1 = fields1 |> List.sortBy fst
-    let sorted2 = fields2 |> List.sortBy fst
-    if List.map fst sorted1 <> List.map fst sorted2 then
-        failwith "Record field mismatch"
-    List.iter2 unify (List.map snd sorted1) (List.map snd sorted2)
-```
+---
 
-**Runtime representation:**
+## Integration Order and Build Sequence
 
-```fsharp
-// Eval.fs
-type Value =
-    | ... // existing
-    | VRecord of Map<string, Value>  // Field name → value mapping
-```
+The three features are largely independent. Suggested order:
 
-**Field access:**
+### Phase 1: Option/Result Prelude utilities
 
-```fsharp
-// Eval.fs
-| FieldAccess(record, field) ->
-    match eval env record with
-    | VRecord(fields) ->
-        match Map.tryFind field fields with
-        | Some v -> v
-        | None -> failwith $"Field {field} not found"
-    | _ -> failwith "Not a record"
-```
+**Why first:** Purely additive, zero risk of breaking existing behavior, no interpreter changes.
+Provides immediate value and can be tested in isolation by running flt tests on Prelude-dependent
+programs.
 
-**Pitfalls:**
+**Files:** `Prelude/Option.fun`, `Prelude/Result.fun`
 
-- Row polymorphism (extensible records) is complex. Defer to post-MVP.
-- Structural typing can have large types. Consider type aliases.
-- Record update syntax requires copying unchanged fields.
+**Tests:** New `.flt` files exercising each new combinator.
 
-**Sources:**
-- [Standard ML Programming/Types](https://en.wikibooks.org/wiki/Standard_ML_Programming/Types) - ML record semantics
-- [Tagged union Wikipedia](https://en.wikipedia.org/wiki/Tagged_union) - Runtime representation patterns
+### Phase 2: Newline implicit sequencing
 
-### Pattern 4: Module System (Namespace Resolution)
+**Why second:** IndentFilter change is self-contained but has the highest risk of breaking existing
+tests (anything with multi-line expression blocks). Do this before adding new AST nodes to keep the
+diff focused. Run the full flt suite after each IndentFilter change.
 
-**What:** Two-phase compilation: (1) collect module signatures, (2) resolve names and type check.
+**Files:** `IndentFilter.fs`
 
-**When:** Multiple files with module dependencies.
+**Tests:** New `.flt` files with newline-sequenced do-blocks, lambda bodies, let-RHS blocks.
+Regression: all existing flt tests must still pass.
 
-**AST extensions:**
+### Phase 3: For-in collection loops
 
-```fsharp
-// Ast.fs
-type Decl =
-    | ... // existing
-    | ModuleDef of string * Decl list         // module Math = ...
-    | ModuleOpen of string                     // open Math
+**Why third:** Requires AST change (ForInExpr), Parser change, Bidir change, and Eval change — the
+most invasive set. Building on a stable newline-sequencing implementation first means that
+`for x in xs do\n  e1\n  e2` bodies work correctly through the already-tested implicit SEMICOLON.
 
-type QualifiedName = string list              // ["Math"; "add"]
-```
+**Files:** `Ast.fs`, `Parser.fsy`, `Bidir.fs`, `Eval.fs`
 
-**Module system components:**
+**Tests:** New `.flt` files with for-in over lists, arrays, ranges, and multi-statement bodies.
 
-```fsharp
-// New: Modules.fs
-type ModuleSignature = {
-    name: string
-    types: Map<string, Type>       // Exported types
-    values: Map<string, Type>      // Exported values
-}
+---
 
-type ModuleEnv = Map<string, ModuleSignature>
-
-// Phase 1: Extract signatures
-let rec collectSignature (decls: Decl list) : ModuleSignature = ...
-
-// Phase 2: Resolve qualified names
-let resolveName (env: ModuleEnv) (qname: QualifiedName) : Type = ...
-```
-
-**Environment extensions:**
-
-```fsharp
-// Env.fs (extended)
-type Env = {
-    locals: Map<string, Type>           // Local bindings
-    modules: Map<string, ModuleSignature>  // Available modules
-    opens: string list                   // Currently open modules
-}
-
-// Lookup with fallback through open modules
-let lookup (env: Env) (name: string) : Type =
-    match Map.tryFind name env.locals with
-    | Some t -> t
-    | None ->
-        env.opens
-        |> List.tryPick (fun modName ->
-            env.modules
-            |> Map.tryFind modName
-            |> Option.bind (fun m -> Map.tryFind name m.values))
-        |> Option.defaultWith (fun () -> failwith $"Unbound: {name}")
-```
-
-**Compilation order:**
-
-```fsharp
-// New: Modules.fs
-let sortModules (modules: (string * Decl list) list) : (string * Decl list) list =
-    // Build dependency graph
-    let deps = modules |> List.map (fun (name, decls) ->
-        let uses = decls |> collectModuleReferences
-        (name, uses))
-    // Topological sort
-    topoSort deps
-```
-
-**Pitfalls:**
-
-- Circular module dependencies are an error. Detect with cycle detection.
-- Recursive modules (F# `and`) are advanced. Defer to post-MVP.
-- Separate compilation requires `.mli` style interface files. Start with single-file.
-
-**Sources:**
-- [OCaml Module System](https://ocaml.org/manual/5.3/moduleexamples.html) - Compilation units and modules
-- [F# Modules](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules) - F# module semantics
-- [Separate module compilation in OCaml](https://discuss.ocaml.org/t/separate-module-compilation-in-ocaml/3689) - Dependency management
-
-### Pattern 5: Exceptions (Runtime Unwinding)
-
-**What:** Stack-based exception handling. Evaluator maintains handler stack, unwinds on `raise`.
-
-**When:** `try...with` blocks establish handlers. `raise` triggers unwinding.
-
-**AST extensions:**
-
-```fsharp
-// Ast.fs
-type Expr =
-    | ... // existing
-    | TryWith of Expr * (Pattern * Expr) list   // try expr with | p1 -> e1 | p2 -> e2
-    | Raise of Expr                              // raise E
-
-type Decl =
-    | ... // existing
-    | ExceptionDef of string * Type option      // exception E of int
-```
-
-**Type checker:**
-
-```fsharp
-// Type.fs
-type Type =
-    | ... // existing
-    | TExn  // Built-in exception type (extensible)
-
-// Infer.fs
-| Raise(e) ->
-    let te = infer env e
-    // Constraint: e must be exception type
-    unify te TExn
-    // Raise has type 'a (can appear anywhere)
-    freshTyVar()
-
-| TryWith(body, handlers) ->
-    let tbody = infer env body
-    // Each handler: pattern must be TExn, body must match tbody
-    handlers |> List.iter (fun (pat, expr) ->
-        let env' = inferPattern env pat TExn
-        let texpr = infer env' expr
-        unify tbody texpr)
-    tbody
-```
-
-**Runtime support:**
-
-```fsharp
-// New: Exceptions.fs
-type ExceptionValue =
-    | ExnConstructor of string * Value option  // E(42)
-
-exception LangException of ExceptionValue  // F# exception for unwinding
-
-type Handler = {
-    patterns: (Pattern * Expr) list
-    env: Env
-}
-
-type EvalEnv = {
-    bindings: Map<string, Value>
-    handlers: Handler list  // Stack of handlers
-}
-```
-
-**Evaluator changes:**
-
-```fsharp
-// Eval.fs
-let rec eval (env: EvalEnv) (expr: Expr) : Value =
-    match expr with
-    | TryWith(body, handlers) ->
-        let handler = { patterns = handlers; env = env }
-        let env' = { env with handlers = handler :: env.handlers }
-        try
-            eval env' body
-        with LangException(exn) ->
-            // Search for matching handler
-            tryHandle env.handlers exn
-
-    | Raise(e) ->
-        match eval env e with
-        | VException(exn) ->
-            raise (LangException(exn))  // Unwind
-        | _ -> failwith "Raise expects exception"
-
-    | ... // Other cases may raise exceptions
-
-let tryHandle (handlers: Handler list) (exn: ExceptionValue) : Value =
-    match handlers with
-    | [] -> raise (LangException(exn))  // Uncaught
-    | h :: rest ->
-        match tryPatterns h.patterns exn h.env with
-        | Some value -> value
-        | None -> tryHandle rest exn  // Try next handler
-```
-
-**Pitfalls:**
-
-- Exception types are extensible. Must allow runtime registration.
-- Stack traces require source location tracking. Can be added later.
-- Exceptions break Hindley-Milner principal types (raise has type 'a).
-
-**Sources:**
-- [Exception Handling Flow-of-control](https://runestone.academy/ns/books/published/thinkcspy/Exceptions/01_intro_exceptions.html) - Control flow fundamentals
-- [Stack Unwinding](https://www.zyma.me/post/stack-unwind-intro/) - Unwinding algorithm explanation
-- [Exceptions in Cranelift and Wasmtime](https://cfallin.org/blog/2025/11/06/exceptions/) - Zero-cost exception handling
-
-## Component Interaction Summary
-
-### What Depends on What
+## Component Interaction Map
 
 ```
-Indentation (Lexer)
-    ↓ (Token stream affects all)
-Parser (uses tokens)
-    ↓ (AST is input to all)
-ADT/GADT + Records (AST nodes)
-    ↓ (New types affect type checker)
-Type Checker (handles new types)
-    ↓ (Module resolution uses types)
-Modules (namespace resolution)
-    ↓ (Environment passed to evaluator)
-Evaluator
-    ↓ (Runtime values can be exceptions)
-Exceptions (runtime support)
+IndentFilter.fs
+  ├─ emits SEMICOLON (new) on newline at InExprBlock level
+  └─ emits INDENT/DEDENT as before
+        ↓
+Parser.fsy
+  ├─ SeqExpr handles SEMICOLON (existing, no change)
+  └─ new ForInExpr rules: FOR IDENT IN Expr DO SeqExpr
+        ↓
+Ast.fs
+  └─ ForInExpr variant (new)
+        ↓
+Bidir.fs
+  └─ ForInExpr case: unify collection as TList elemTy, bind var, return unit
+        ↓
+Eval.fs
+  └─ ForInExpr case: iterate ListValue/ArrayValue, bind var per iteration
+
+Prelude/Option.fun  ← independent, loaded by Prelude.fs
+Prelude/Result.fun  ← independent, loaded by Prelude.fs
 ```
 
-### Feature Independence
-
-| Feature | Independent Of | Depends On | Impacts |
-|---------|---------------|------------|---------|
-| **Indentation** | All features | None | Lexer, Parser (minimal) |
-| **ADT** | Records, Modules, Exceptions | AST, Type system | Type.fs, Infer.fs, Eval.fs |
-| **GADT** | Records, Modules, Exceptions | ADT, Bidir.fs | Bidir.fs (primarily) |
-| **Records** | ADT, Modules, Exceptions | AST, Type system | Type.fs, Unify.fs, Eval.fs |
-| **Modules** | ADT, Records, Exceptions | Type system (must exist) | All files (namespace resolution) |
-| **Exceptions** | ADT, Records, Modules | AST, Eval.fs | Eval.fs, new Exceptions.fs |
-
-### Parallel Development Opportunities
-
-1. **After Indentation:** ADT, GADT, Records can be developed in parallel (different AST nodes, different type checker rules).
-
-2. **After Type System Features:** Modules and Exceptions can be developed in parallel (one affects compile-time, other affects runtime).
-
-3. **Testing Isolation:** Each feature can be tested independently with dedicated test suites.
-
-## Suggested Build Order
-
-### Phase-by-Phase Approach
-
-**Phase 1: Indentation Syntax** (Foundation)
-- **Why first:** All code will use indentation. Must be stable before other features.
-- **Components:** Lexer.fsl (add indentation stack), Parser.fsy (INDENT/DEDENT tokens)
-- **Risk:** Low (well-understood problem, Python-style algorithm proven)
-- **Deliverable:** Parser accepts indentation-based syntax, existing tests pass
-
-**Phase 2: ADT Support** (Type System Core)
-- **Why second:** Simplest type system extension. Foundation for GADT.
-- **Components:** Ast.fs (TypeDef), Type.fs (TData), Infer.fs (constructor typing), Eval.fs (pattern match)
-- **Risk:** Low (standard Hindley-Milner extension)
-- **Dependencies:** Indentation (for syntax)
-- **Deliverable:** Can define and use simple ADTs (option, list, tree)
-
-**Phase 3: GADT Support** (Type System Advanced)
-- **Why third:** Builds on ADT infrastructure. Needs bidirectional checking.
-- **Components:** Bidir.fs (refinement typing), Unify.fs (equational constraints)
-- **Risk:** Medium (type inference is tricky, requires annotations)
-- **Dependencies:** ADT (shares infrastructure)
-- **Deliverable:** Can define and use GADTs with type indices
-
-**Phase 4: Records** (Type System Parallel Track)
-- **Why fourth:** Independent of ADT/GADT. Can be parallel with Phase 3.
-- **Components:** Ast.fs (RecordExpr), Type.fs (TRecord), Unify.fs (field unification), Eval.fs (map representation)
-- **Risk:** Low (structural typing is straightforward)
-- **Dependencies:** Indentation (for syntax), Type system (basic)
-- **Deliverable:** Can create, access, pattern match on records
-
-**Phase 5: Module System** (Namespace Resolution)
-- **Why fifth:** Requires complete type system. Affects all components.
-- **Components:** New Modules.fs, Env.fs (extensions), all files (qualified names)
-- **Risk:** Medium (topological sort, dependency cycles)
-- **Dependencies:** ADT/GADT/Records (to organize into modules)
-- **Deliverable:** Can define modules, open modules, use qualified names
-
-**Phase 6: Exceptions** (Runtime Support)
-- **Why last:** Most isolated. Primarily runtime concern.
-- **Components:** New Exceptions.fs, Eval.fs (handler stack), Type.fs (TExn)
-- **Risk:** Low (F# provides exception mechanism to build on)
-- **Dependencies:** ADT (exception constructors), Modules (exception definitions in modules)
-- **Deliverable:** Can define, raise, catch exceptions
-
-### Dependency Rationale
-
-1. **Indentation first:** Lexer is foundation. Unstable lexer breaks everything.
-
-2. **ADT before GADT:** GADT is superset of ADT. Share parsing and AST representation.
-
-3. **Records parallel to GADT:** Records don't interact with ADT/GADT. Can develop simultaneously.
-
-4. **Modules after type system:** Module signatures contain types. Must type check module contents.
-
-5. **Exceptions last:** Uses ADT for exception values. Uses modules for exception definitions. Mostly runtime concern.
-
-### Build Order for Parallel Work
-
-If multiple developers:
-
-```
-Week 1-2: Indentation (sequential, blocks other work)
-    ↓
-Week 3-4: ADT (sequential, foundation for GADT)
-    ↓
-Week 5-6: GADT (Developer A) || Records (Developer B) (parallel)
-    ↓
-Week 7-8: Modules (sequential, touches all files)
-    ↓
-Week 9-10: Exceptions (independent)
-```
-
-### Testing Strategy per Phase
-
-- **Indentation:** Lexer unit tests (INDENT/DEDENT injection), parser integration tests
-- **ADT:** Type inference tests, pattern matching tests, evaluator tests
-- **GADT:** Bidirectional typing tests, refinement tests, negative tests (should reject)
-- **Records:** Structural typing tests, field access tests, pattern tests
-- **Modules:** Multi-file tests, dependency order tests, namespace tests
-- **Exceptions:** Control flow tests, unwinding tests, handler matching tests
+---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Mixing Indentation and Braces
+### Anti-Pattern 1: Emitting SEMICOLON at module level
 
-**What:** Allowing both `{ }` and indentation-based blocks.
+IndentFilter must only emit implicit SEMICOLON when `Context` stack top is `InExprBlock`. At module
+level the context is `InModule`, which explicitly does NOT generate implicit IN tokens. The same
+guard must block implicit SEMICOLON at module level, otherwise top-level declarations would be
+separated with semicolons and break the `Decls` grammar rule which uses no SEMICOLON separator.
 
-**Why bad:** Ambiguous syntax. Parser complexity explodes.
+**Detection:** If `let x = 1` followed by `let y = 2` at column 0 suddenly fails to parse, the
+guard is missing.
 
-**Instead:** Commit to indentation-only. Remove brace tokens from lexer.
+### Anti-Pattern 2: Emitting SEMICOLON before IN/ELSE/WITH/PIPE
 
-**Detection:** If `LBRACE` token still exists in Lexer.fsl, you have this anti-pattern.
+These tokens close the current expression context. Emitting SEMICOLON before `in`, `else`, `with`,
+or `|` would produce `e1 ; in ...` which is a parse error. The negative blocklist in the
+`processNewlineWithContext` lookahead logic must include these tokens.
 
-### Anti-Pattern 2: Type Inference for All GADTs
+**Detection:** `let x = e1\nin e2` (indented `in`) suddenly fails; or `if b then e1\nelse e2` fails.
 
-**What:** Attempting to infer types for GADT pattern matches without annotations.
+### Anti-Pattern 3: Reusing ForExpr for for-in
 
-**Why bad:** GADT type inference is undecidable. Will hit unsolvable cases.
+Trying to express `for x in xs do body` by detecting a list in `ForExpr` at eval time (checking
+whether startVal/stopVal are lists) creates a false unification between integer-range loops and
+collection iteration. The type checker would need special-case logic for the same AST node. Two
+separate AST variants with separate typing rules is the clean approach.
 
-**Instead:** Require type annotations on GADT expressions. Use bidirectional checking.
+**Detection:** `ForExpr` gains a new branch like `| ListValue items -> ...` in Eval.fs.
 
-**Detection:** If Bidir.fs is not used for GADT matches, you have this anti-pattern.
+### Anti-Pattern 4: Introducing TIterable or type class for for-in
 
-### Anti-Pattern 3: Nominal Records with Global Registry
+Unifying lists and arrays through a new type constructor (e.g., `TIterable 'a`) requires unification
+changes, new Type.fs cases, and printer updates. For MVP, constraining for-in to `TList` (which also
+covers Range results) is sufficient. Arrays can be added later by trying `TArray` unification as a
+second attempt. Do not introduce a new polymorphic collection type until the need is concrete.
 
-**What:** Creating a global mutable map of record type names.
+### Anti-Pattern 5: Adding Option/Result functions as builtins in Eval.fs
 
-**Why bad:** Breaks modularity. Makes parallelism hard.
+The existing `optionMap`, `isSome` etc. are implemented in `.fun` files, not as builtins in Eval.fs.
+New combinators must follow the same pattern. Adding them as F# builtins (like `BuiltinValue`) would
+create asymmetry: they would work without loading Prelude, would bypass type checking, and would be
+harder to test and audit.
 
-**Instead:** Use structural typing (no global state) or pass type environment explicitly.
+---
 
-**Detection:** If you see `mutable recordTypes: Map<string, ...>` at module level, you have this anti-pattern.
+## Confidence Assessment
 
-### Anti-Pattern 4: Recursive Module Support in MVP
+| Area | Confidence | Notes |
+|------|------------|-------|
+| IndentFilter newline sequencing | HIGH | Mechanism is well-understood; InExprBlock context is the right hook |
+| ForInExpr AST/Parser | HIGH | Parallel to existing ForExpr pattern; no new tokens needed |
+| ForInExpr type checking | HIGH | Fresh element TVar + TList unification is standard |
+| ForInExpr IN token disambiguation | HIGH | LALR(1) context makes FOR IDENT IN unambiguous from let...in |
+| Option/Result Prelude | HIGH | Pure .fun implementation, no interpreter changes |
+| Implicit SEMICOLON edge cases | MEDIUM | Needs careful testing of all context-exiting tokens (IN, ELSE, WITH, PIPE) |
 
-**What:** Allowing modules to reference each other circularly.
+---
 
-**Why bad:** Requires complex two-pass compilation, lazy evaluation.
+## Files Modified Per Feature
 
-**Instead:** Require acyclic module dependencies. Use topological sort.
+### Newline Implicit Sequencing
 
-**Detection:** If module dependency checker allows cycles, you have this anti-pattern.
+- `src/LangThree/IndentFilter.fs` — emit SEMICOLON in NEWLINE handler for `InExprBlock` + same-level
 
-### Anti-Pattern 5: Exceptions in Type Signatures
+### For-In Collection Loops
 
-**What:** Adding exception specifications to function types (Java-style `throws`).
+- `src/LangThree/Ast.fs` — add `ForInExpr` variant, update `spanOf`
+- `src/LangThree/Parser.fsy` — add `FOR IDENT IN Expr DO SeqExpr` rules
+- `src/LangThree/Bidir.fs` — add `ForInExpr` synth case
+- `src/LangThree/Eval.fs` — add `ForInExpr` eval case
 
-**Why bad:** Breaks Hindley-Milner. Complicates type inference massively.
+### Option/Result Prelude Utilities
 
-**Instead:** Exceptions are implicit (F# style). Type is independent of exceptions.
-
-**Detection:** If `Type` has a case like `TFun(arg, result, exceptions)`, you have this anti-pattern.
-
-### Anti-Pattern 6: Mutable AST
-
-**What:** Modifying AST nodes in place during type checking or evaluation.
-
-**Why bad:** Makes debugging hard. Breaks referential transparency.
-
-**Instead:** AST is immutable. Type checker produces typed AST (separate structure).
-
-**Detection:** If `Ast.fs` types have `mutable` fields, you have this anti-pattern.
-
-### Anti-Pattern 7: String-Based Module Resolution
-
-**What:** Resolving module names with string concatenation and lookups.
-
-**Why bad:** Error-prone. Hard to track qualified names.
-
-**Instead:** Use `QualifiedName = string list` type. Pattern match on structure.
-
-**Detection:** If module resolution uses `String.Split` or `String.concat`, you have this anti-pattern.
-
-## Scalability Considerations
-
-| Concern | Current (MVP) | At 1K LOC | At 10K LOC | At 100K LOC |
-|---------|---------------|-----------|------------|-------------|
-| **Parsing** | Single-pass | Single-pass | Single-pass | Single-pass (parser is O(n)) |
-| **Type Checking** | Whole program | Whole program | Per-module | Per-module + caching |
-| **Module Compilation** | Single-file | Single-file | Multi-file | Incremental compilation |
-| **Name Resolution** | Linear search | Linear search | Hash maps | Hash maps + namespaces |
-| **Error Messages** | Basic | Basic | Spans with files | Spans with suggestions |
-
-### When to Optimize
-
-- **Now (MVP):** None. Correctness over performance.
-- **At 1K LOC:** Add source locations to errors.
-- **At 10K LOC:** Module-level caching for type inference.
-- **At 100K LOC:** Incremental compilation, parallel type checking.
-
-### Performance Notes
-
-1. **Indentation:** Lexer overhead is minimal (stack operations are O(1)).
-2. **ADT/GADT:** Type checking cost is dominated by unification (no worse than base Hindley-Milner).
-3. **Records:** Structural typing can produce large types. Type aliases help.
-4. **Modules:** Two-pass compilation doubles type checking time (still acceptable for MVP).
-5. **Exceptions:** Zero-cost in happy path. Unwinding is expensive but rare.
-
-## Files Modified by Feature
-
-### Indentation
-- **Lexer.fsl:** Add indentation stack, emit INDENT/DEDENT
-- **Parser.fsy:** Replace `LBRACE`/`RBRACE` with `INDENT`/`DEDENT` in grammar
-
-### ADT
-- **Ast.fs:** Add `TypeDef`, `DataConstructor` nodes
-- **Type.fs:** Add `TData` type constructor
-- **Infer.fs:** Add constructor typing rules
-- **Eval.fs:** Add pattern matching for constructors
-
-### GADT
-- **Ast.fs:** Add `GADTConstructor` (extends ADT)
-- **Type.fs:** Add `TGADTInstance` with type indices
-- **Bidir.fs:** Add refinement rules for GADT patterns
-- **Unify.fs:** Add equational constraint handling
-
-### Records
-- **Ast.fs:** Add `RecordExpr`, `FieldAccess`, `RecordUpdate`
-- **Type.fs:** Add `TRecord` type
-- **Unify.fs:** Add field-based unification
-- **Eval.fs:** Add `VRecord` value, field access evaluation
-
-### Modules
-- **Ast.fs:** Add `ModuleDef`, `ModuleOpen`, `QualifiedName`
-- **Modules.fs:** (NEW) Module signature extraction, name resolution
-- **Env.fs:** Extend with module-aware lookup
-- **All files:** Support qualified names in expressions
-
-### Exceptions
-- **Ast.fs:** Add `TryWith`, `Raise`, `ExceptionDef`
-- **Type.fs:** Add `TExn` type
-- **Exceptions.fs:** (NEW) Exception values, handler matching
-- **Eval.fs:** Add handler stack, unwinding logic
-
-## Summary for Roadmap Planning
-
-### Critical Path
-
-1. **Indentation** (1-2 weeks) - Blocks all other work
-2. **ADT** (1-2 weeks) - Foundation for GADT
-3. **GADT + Records** (2-3 weeks) - Parallel development possible
-4. **Modules** (2-3 weeks) - Coordinates all components
-5. **Exceptions** (1-2 weeks) - Independent, can be done anytime after ADT
-
-**Total estimate:** 7-12 weeks sequential, 6-9 weeks with parallel work
-
-### Research Flags
-
-- **Phase 1 (Indentation):** LOW - Well-documented problem
-- **Phase 2 (ADT):** LOW - Standard Hindley-Milner extension
-- **Phase 3 (GADT):** MEDIUM - May need deeper research on refinement typing
-- **Phase 4 (Records):** LOW - Structural typing is straightforward
-- **Phase 5 (Modules):** MEDIUM - Two-phase compilation needs careful design
-- **Phase 6 (Exceptions):** LOW - Can leverage F# exception mechanism
-
-### Key Risks
-
-1. **GADT type inference:** May be more complex than anticipated. Mitigation: Require explicit annotations.
-2. **Module circular dependencies:** Hard to debug. Mitigation: Good error messages, cycle detection.
-3. **Exception stack traces:** Debugging without them is hard. Mitigation: Add source spans to AST nodes.
-
-## Sources
-
-**Indentation & Parsing:**
-- [Python Lexical Analysis](https://docs.python.org/3/reference/lexical_analysis.html) - Official indentation algorithm
-- [Principled Parsing for Indentation-Sensitive Languages](https://michaeldadams.org/papers/layout_parsing/LayoutParsing.pdf) - Formal offside rule
-- [antlr-denter](https://github.com/yshavit/antlr-denter) - Token injection pattern
-- [FsLexYacc Documentation](https://github.com/fsprojects/FsLexYacc) - F# lexer/parser tools
-- [Parsing Indentation Sensitive Languages](https://rahul.gopinath.org/post/2022/06/04/parsing-indentation/)
-
-**Type Systems (ADT/GADT):**
-- [Simple unification-based type inference for GADTs](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/gadt-pldi.pdf) - Simon Peyton Jones
-- [Bidirectional Typing](https://arxiv.org/pdf/1908.05839) - Jana Dunfield comprehensive survey
-- [How to Choose Between Hindley-Milner and Bidirectional Typing](https://thunderseethe.dev/posts/how-to-choose-between-hm-and-bidir/)
-- [Omnidirectional type inference for ML](https://inria.hal.science/hal-05438544v1/document) - 2025 research on ML extensions
-- [Typed AST with GADT in Haskell](https://gist.github.com/nebuta/6096345)
-
-**Records & Runtime:**
-- [Standard ML Programming/Types](https://en.wikibooks.org/wiki/Standard_ML_Programming/Types) - ML record semantics
-- [Tagged Union Wikipedia](https://en.wikipedia.org/wiki/Tagged_union) - Runtime representation
-- [C# Discriminated Unions](https://blog.ndepend.com/csharp-discriminated-union/) - Modern implementation approaches
-
-**Modules:**
-- [OCaml Module System](https://ocaml.org/manual/5.3/moduleexamples.html) - Compilation units
-- [F# Modules](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/modules) - F# module semantics
-- [Separate module compilation in OCaml](https://discuss.ocaml.org/t/separate-module-compilation-in-ocaml/3689)
-- [OCaml Namespaces Proposal](https://github.com/lpw25/namespaces)
-
-**Exceptions:**
-- [Exception Handling Flow-of-control](https://runestone.academy/ns/books/published/thinkcspy/Exceptions/01_intro_exceptions.html)
-- [Stack Unwinding Introduction](https://www.zyma.me/post/stack-unwind-intro/)
-- [Exceptions in Cranelift and Wasmtime](https://cfallin.org/blog/2025/11/06/exceptions/) - Zero-cost exception handling
-- [LLVM Exception Handling](https://llvm.org/docs/ExceptionHandling.html)
-
-**Architecture & Pipelines:**
-- [PyPy Architecture](https://doc.pypy.org/en/latest/architecture.html) - Interpreter pipeline example
-- [Project 2: Scheme Lexer and Parser](https://eecs390.github.io/project-scheme-parser/) - Winter 2025 course materials
-- [Crafting Interpreters: Representing Code](https://craftinginterpreters.com/representing-code.html)
-- [Visitor as a sum type](https://blog.ploeh.dk/2018/06/25/visitor-as-a-sum-type/) - F# pattern matching vs OOP visitors
+- `Prelude/Option.fun` — new combinator functions
+- `Prelude/Result.fun` — new combinator functions
