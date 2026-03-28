@@ -32,7 +32,7 @@ See MILESTONES.md for full history of completed phases.
 **Milestone Goal:** 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, Option/Result 유틸리티로 실용적 프로그래밍 완성
 
 - [x] **Phase 50: Newline Implicit Sequencing** — IndentFilter auto-inserts SEMICOLON at same-indent newlines inside expression blocks
-- [ ] **Phase 51: For-In Collection Loops** — `for x in collection do body` iterates lists and arrays
+- [x] **Phase 51: For-In Collection Loops** — `for x in collection do body` iterates lists and arrays
 - [ ] **Phase 52: Option/Result Prelude Utilities** — map, bind, defaultValue, iter, filter and Result bridging functions in Prelude
 - [ ] **Phase 53: Tests and Documentation** — flt integration tests + tutorial chapter 22 for all v6.0 features
 
@@ -69,7 +69,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 51-01-PLAN.md — ForInExpr AST node, parser rules, Bidir/Eval/Infer/Format/TypeCheck, 4 flt tests
+- [x] 51-01-PLAN.md — ForInExpr AST node, parser rules, Bidir/Eval/Infer/Format/TypeCheck, 4 flt tests
 
 ---
 
@@ -83,10 +83,10 @@ Plans:
   2. `optionIter`, `optionFilter`, `optionIsSome`, `optionIsNone` cover side-effect and predicate use cases
   3. `resultMap`, `resultBind`, `resultMapError` transform Result values in all three slots
   4. `resultDefaultValue` and `resultToOption` convert Results to simpler types for downstream use
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 52-01: Prelude/Option.fun and Prelude/Result.fun utility functions
+- [ ] 52-01-PLAN.md — Add optionIter/optionFilter/optionDefaultValue/optionIsSome/optionIsNone to Option.fun and resultIter/resultToOption/resultDefaultValue to Result.fun with 7 flt tests
 
 ---
 
@@ -116,6 +116,6 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1-49. Prior milestones | v1.0-v5.0 | 108/108 | Complete | 2026-03-28 |
 | 50. Newline Implicit Sequencing | v6.0 | 1/1 | Complete | 2026-03-28 |
-| 51. For-In Collection Loops | v6.0 | 0/1 | Not started | - |
-| 52. Option/Result Prelude Utilities | v6.0 | 0/TBD | Not started | - |
+| 51. For-In Collection Loops | v6.0 | 1/1 | Complete | 2026-03-28 |
+| 52. Option/Result Prelude Utilities | v6.0 | 0/1 | Not started | - |
 | 53. Tests and Documentation | v6.0 | 0/TBD | Not started | - |
