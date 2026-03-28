@@ -53,6 +53,8 @@ Source Code
 - 키워드는 식별자보다 먼저 매칭 (longest match rule)
 - 사용자 정의 연산자(INFIXOP)는 선두 문자로 우선순위 분류
 - `mut`과 `mutable` 모두 `MUTABLE` 토큰으로 매핑 (v4.0)
+- `.[` → `DOTLBRACKET` 단일 토큰 (v5.0, `.IDENT` 필드접근과 LALR 충돌 회피)
+- `while`, `for`, `to`, `downto`, `do` 키워드 추가 (v5.0)
 
 **중요 패턴:**
 - `NEWLINE(col)`: 줄바꿈 후 다음 줄의 첫 비공백 문자 column
@@ -106,7 +108,8 @@ type SyntaxContext =
 Expr → Term → Factor → AppExpr → Atom
 ```
 
-- `Expr`: let, if, fun, match, try, 이항 연산자
+- `SeqExpr`: Expr + `e1; e2` 시퀀싱 (문장 위치에서만 허용, v5.0)
+- `Expr`: let, if, fun, match, try, while, for, 이항 연산자
 - `Term`: `*`, `/`, `%`
 - `Factor`: 단항 `-`, `raise`
 - `AppExpr`: 함수 적용 (좌결합)
@@ -197,6 +200,7 @@ type Value =
     | DataValue of constructorName * Value option
     | RecordValue of typeName * Map<string, Value ref>
     | TailCall of func * arg  // TCO trampoline
+    | RefValue of Value ref   // Mutable variable (v4.0)
 ```
 
 **Prelude 로딩:**

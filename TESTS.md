@@ -10,7 +10,7 @@ Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 # F# unit tests (224 tests)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (551 tests)
+# fslit integration tests (573 tests)
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)

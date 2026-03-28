@@ -126,6 +126,15 @@ expr ::= -- 바인딩 형식
 
          -- 제어 흐름
        | 'if' expr 'then' expr 'else' expr
+       | 'if' expr 'then' expr                        -- else 없는 if (unit 반환)
+
+         -- 시퀀싱 (v5.0)
+       | expr ';' expr                                 -- e1; e2 (let _ = e1 in e2로 디슈거)
+
+         -- 루프 (v5.0)
+       | 'while' expr 'do' expr                        -- while 루프 (unit 반환)
+       | 'for' IDENT '=' expr 'to' expr 'do' expr     -- 오름차순 for 루프
+       | 'for' IDENT '=' expr 'downto' expr 'do' expr -- 내림차순 for 루프
 
          -- 파이프 및 합성 (좌에서 우 우선순위)
        | expr '|>' expr                             -- 파이프 오른쪽
@@ -164,6 +173,9 @@ expr ::= -- 바인딩 형식
          -- 뮤터블 필드 대입
        | atom '.' IDENT '<-' expr
 
+         -- 인덱싱 (v5.0)
+       | atom '.[' expr ']' '<-' expr                  -- 인덱스 쓰기 (배열/해시테이블)
+
          -- 함수 적용 (좌결합, 최고 우선순위)
        | expr atom+
 
@@ -190,6 +202,7 @@ atom ::= '(' ')'                                   -- unit
        | '[' expr '..' expr '..' expr ']'           -- 스텝 범위 [start..step..stop]
        | '(' INFIXOP ')'                            -- 연산자를 값으로 사용
        | atom '.' IDENT                             -- 필드 접근 (좌결합)
+       | atom '.[' expr ']'                          -- 인덱스 읽기 (좌결합, v5.0)
        | '{' field_binding (';' field_binding)* ';'? '}'          -- 레코드 생성
        | '{' expr 'with' field_binding (';' field_binding)* ';'? '}'  -- 레코드 갱신
 ```

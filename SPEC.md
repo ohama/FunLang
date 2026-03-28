@@ -17,7 +17,7 @@ type_var    = '\'' letter (letter | digit | '_')*
 op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '~']
 ```
 
-### 1.2 Keywords (22)
+### 1.2 Keywords (27)
 
 | Token | Keyword | Token | Keyword |
 |-------|---------|-------|---------|
@@ -33,6 +33,9 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | RAISE | `raise` | TRY | `try` |
 | WHEN | `when` | MUTABLE | `mutable` |
 | CHAR | `char` | MUT | `mut` |
+| WHILE | `while` | FOR | `for` |
+| TO | `to` | DOWNTO | `downto` |
+| DO | `do` | | |
 
 ### 1.3 Type Keywords (6)
 
@@ -70,7 +73,8 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | NE | `<>` | AND | `&&` |
 | OR | `\|\|` | CONS | `::` |
 | ARROW | `->` | LARROW | `<-` |
-| DOTDOT | `..` | PIPE_RIGHT | `\|>` |
+| DOTDOT | `..` | DOTLBRACKET | `.[` |
+| PIPE_RIGHT | `\|>` | | |
 | COMPOSE_RIGHT | `>>` | COMPOSE_LEFT | `<<` |
 
 ### 1.5 Literals
