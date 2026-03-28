@@ -25,7 +25,7 @@ v5.0 adds four imperative syntax constructs that complement v4.0's mutable varia
 
 - [x] **Phase 45: Expression Sequencing** — `e1; e2` desugars to `let _ = e1 in e2`, enabling multi-step imperative blocks
 - [x] **Phase 46: Loop Constructs** — `while cond do body` and `for i = start to end do body` with immutable loop variable
-- [ ] **Phase 47: Array and Hashtable Indexing Syntax** — `arr.[i]` / `arr.[i] <- v` / `ht.[key]` / `ht.[key] <- v` with chained indexing
+- [x] **Phase 47: Array and Hashtable Indexing Syntax** — `arr.[i]` / `arr.[i] <- v` / `ht.[key]` / `ht.[key] <- v` with chained indexing
 - [ ] **Phase 48: If-Then Without Else** — `if cond then expr` accepted when expr is unit, type error otherwise
 - [ ] **Phase 49: Tests and Documentation** — flt test suites for all v5.0 features and tutorial chapter update
 
@@ -70,7 +70,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 47-01-PLAN.md — DOTLBRACKET token, IndexGet/IndexSet AST nodes, Bidir type check (TArray/THashtable dispatch), Infer stub, Eval bounds-checked runtime, Format cases, TypeCheck 4 helpers, IndentFilter bracket tracking, 7 flt tests
+- [x] 47-01-PLAN.md — DOTLBRACKET token, IndexGet/IndexSet AST nodes, Bidir type check (TArray/THashtable dispatch), Infer stub, Eval bounds-checked runtime, Format cases, TypeCheck 4 helpers, IndentFilter bracket tracking, 7 flt tests
 
 ### Phase 48: If-Then Without Else
 **Goal**: Users can write `if cond then expr` when the then-branch returns unit, with a clear type error when it does not
@@ -112,7 +112,7 @@ Plans:
 | 44. Tests and Documentation | v4.0 | 2/2 | Complete | 2026-03-27 |
 | 45. Expression Sequencing | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 46. Loop Constructs | v5.0 | 1/1 | Complete | 2026-03-28 |
-| 47. Array and Hashtable Indexing Syntax | v5.0 | 0/1 | Not started | - |
+| 47. Array and Hashtable Indexing Syntax | v5.0 | 1/1 | Complete | 2026-03-28 |
 | 48. If-Then Without Else | v5.0 | 0/TBD | Not started | - |
 | 49. Tests and Documentation | v5.0 | 0/TBD | Not started | - |
 

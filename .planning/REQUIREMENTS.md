@@ -60,11 +60,11 @@
 | LOOP-02 | Phase 46 | Complete |
 | LOOP-03 | Phase 46 | Complete |
 | LOOP-04 | Phase 46 | Complete |
-| IDX-01 | Phase 47 | Pending |
-| IDX-02 | Phase 47 | Pending |
-| IDX-03 | Phase 47 | Pending |
-| IDX-04 | Phase 47 | Pending |
-| IDX-05 | Phase 47 | Pending |
+| IDX-01 | Phase 47 | Complete |
+| IDX-02 | Phase 47 | Complete |
+| IDX-03 | Phase 47 | Complete |
+| IDX-04 | Phase 47 | Complete |
+| IDX-05 | Phase 47 | Complete |
 | IFTHEN-01 | Phase 48 | Pending |
 | IFTHEN-02 | Phase 48 | Pending |
 | TST-28 | Phase 49 | Pending |
