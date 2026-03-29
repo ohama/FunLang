@@ -1,9 +1,9 @@
 // Test: Trim() string method (STR-01)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let trimmed = " hi ".Trim ()
+let trimmed = String.trim " hi "
 let _ = println trimmed
-let _ = println ("  spaces  ".Trim ())
+let _ = println (String.trim "  spaces  ")
 // --- Output:
 hi
 spaces

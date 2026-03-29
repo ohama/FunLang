@@ -2,11 +2,11 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let s = "hello world"
-let found = s.Contains("world")
+let found = String.contains s "world"
 let _ = println (to_string found)
-let notFound = s.Contains("xyz")
+let notFound = String.contains s "xyz"
 let _ = println (to_string notFound)
-let _ = println (to_string ("hello".Contains("lo")))
+let _ = println (to_string (String.contains "hello" "lo"))
 // --- Stdout:
 true
 false

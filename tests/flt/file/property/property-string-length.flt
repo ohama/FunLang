@@ -2,11 +2,11 @@
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let s = "hello"
-let n = s.Length
+let n = String.length s
 let _ = println (to_string n)
-let m = "hello".Length
+let m = String.length "hello"
 let _ = println (to_string m)
-let empty = "".Length
+let empty = String.length ""
 let _ = println (to_string empty)
 // --- Stdout:
 5
