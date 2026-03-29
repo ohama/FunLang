@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.0 Native Collections & Built-in Library
 Phase: 58 - Language Constructs (In Progress)
-Plan: 1/3 complete
-Status: Phase 58 Plan 01 complete (AST + Parser), Plan 02 next
-Last activity: 2026-03-29 -- Phase 58 Plan 01 complete (StringSliceExpr + ListCompExpr AST nodes, 4 parser rules)
+Plan: 2/3 complete
+Status: Phase 58 Plan 02 complete (Eval + Bidir), Plan 03 next
+Last activity: 2026-03-29 -- Phase 58 Plan 02 complete (Eval+Bidir for StringSliceExpr, ListCompExpr, ForInExpr native collections)
 
-Progress: [█████████████░░░░░░░] 67% -- Phases 54-57 done, Phase 58 in progress
+Progress: [█████████████░░░░░░░] 67% -- Phases 54-57 done, Phase 58 2/3 complete
 
 ## Performance Metrics
 
@@ -75,9 +75,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 58 Plan 01 complete -- StringSliceExpr + ListCompExpr AST nodes + 4 parser grammar rules
+Stopped at: Phase 58 Plan 02 complete -- Eval+Bidir for StringSliceExpr, ListCompExpr, extended ForInExpr
 Resume file: None
-Next action: Phase 58 Plan 02 -- Eval.fs + Bidir.fs implementation for string slicing and list comprehension
+Next action: Phase 58 Plan 03 -- flt integration tests for all four constructs
 
 ---
 *State initialized: 2026-02-25*
