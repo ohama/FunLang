@@ -60,6 +60,11 @@ Plans:
 2. `Queue()` creates a queue, `.Enqueue(v)` adds to back, `.Dequeue()` removes from front, `.Count` returns size
 3. flt tests verify both types with integers, strings, and edge cases (empty dequeue error)
 
+**Plans:** 2 plans
+Plans:
+- [ ] 56-01-PLAN.md — Add HashSetValue/QueueValue DU cases, constructor interception, and FieldAccess dispatch in Ast.fs/Eval.fs/Bidir.fs
+- [ ] 56-02-PLAN.md — Add Prelude/HashSet.fun and Prelude/Queue.fun modules; write flt tests for both types
+
 ---
 
 ### Phase 57: MutableList & Hashtable Enhancement
@@ -116,7 +121,7 @@ Plans:
 |-------|------|--------|-------|
 | 54 | Property & Method Dispatch | ✓ Complete | 1/1 |
 | 55 | StringBuilder & String Utilities | ✓ Complete | 3/3 |
-| 56 | HashSet & Queue | Not Started | — |
+| 56 | HashSet & Queue | Not Started | 2 plans |
 | 57 | MutableList & Hashtable Enhancement | Not Started | — |
 | 58 | Language Constructs | Not Started | — |
 | 59 | Prelude Extensions | Not Started | — |
