@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 57 - MutableList & Hashtable Enhancement ✓ COMPLETE
-Plan: 2/2 complete
-Status: Phase 57 verified, Phase 58 next
-Last activity: 2026-03-29 -- Phase 57 complete (4/4 must-haves, 608 flt tests)
+Phase: 58 - Language Constructs (In Progress)
+Plan: 1/3 complete
+Status: Phase 58 Plan 01 complete (AST + Parser), Plan 02 next
+Last activity: 2026-03-29 -- Phase 58 Plan 01 complete (StringSliceExpr + ListCompExpr AST nodes, 4 parser rules)
 
-Progress: [█████████████░░░░░░░] 67% -- Phases 54-57 done, Phase 58 next
+Progress: [█████████████░░░░░░░] 67% -- Phases 54-57 done, Phase 58 in progress
 
 ## Performance Metrics
 
@@ -51,6 +51,8 @@ Key cross-milestone context:
 - to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
 - HashtableValue wraps Dictionary<Value,Value> -- Phase 57-02 added .TryGetValue, .Count, .Keys via FieldAccess; THashtable(keyTy,valTy) arm in Bidir.fs (NOT TData)
 - MutableListValue wraps System.Collections.Generic.List<Value> (Phase 57-01): Constructor("MutableList") intercepted; Add/Count via FieldAccess; IndexGet/IndexSet bounds-checked; raw builtins mutablelist_* in Eval.fs/TypeCheck.fs; Prelude/MutableList.fun uses raw builtins (same pattern as HashSet/Queue)
+- StringSliceExpr AST node: str * start * stop option * span -- Phase 58 s.[start..stop] and s.[start..] syntax
+- ListCompExpr AST node: var * collection * body * span -- Phase 58 [for x in coll -> body] syntax; range desugared to Range(...) in parser
 - callValueRef forward reference pattern used for builtins that invoke user closures
 - StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
 - sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
@@ -73,9 +75,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 57 Plan 02 complete -- Hashtable FieldAccess dispatch + MutableList/Hashtable flt tests
+Stopped at: Phase 58 Plan 01 complete -- StringSliceExpr + ListCompExpr AST nodes + 4 parser grammar rules
 Resume file: None
-Next action: Phase 57 complete; next milestone phase TBD
+Next action: Phase 58 Plan 02 -- Eval.fs + Bidir.fs implementation for string slicing and list comprehension
 
 ---
 *State initialized: 2026-02-25*
