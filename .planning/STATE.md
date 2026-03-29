@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v7.0 Native Collections & Built-in Library
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v7.0 Native Collections & Built-in Library
-Phase: 59 - Prelude Extensions ✓ COMPLETE — ALL PHASES DONE
-Plan: 3/3 complete
-Status: v7.0 milestone complete — all 6 phases verified
-Last activity: 2026-03-29 -- Phase 59 complete (5/5 must-haves, 619 flt tests)
+Milestone: v7.0 Native Collections & Built-in Library — SHIPPED 2026-03-29
+Phase: Ready for next milestone
+Plan: Not started
+Status: Between milestones
+Last activity: 2026-03-29 — v7.0 milestone archived
 
-Progress: [████████████████████] 100% -- All 6 phases (54-59) complete
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl)
 
 ## Performance Metrics
 

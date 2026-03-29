@@ -1,5 +1,31 @@
 # Project Milestones: LangThree
 
+## v7.0 Native Collections & Built-in Library (Shipped: 2026-03-29)
+
+**Delivered:** 네이티브 컬렉션 타입(StringBuilder, HashSet, Queue, MutableList) + Hashtable 확장 API + 프로퍼티/메서드 디스패치 + 문자열 슬라이싱 + 리스트 컴프리헨션 + Prelude 확장 — FunLexYacc가 .NET interop 없이 동작하기 위한 기반
+
+**Phases completed:** 54-59 (14 plans total)
+
+**Key accomplishments:**
+- FieldAccess 기반 프로퍼티/메서드 디스패치 (.Length, .Contains, .Add, .TryGetValue 등)
+- 4개 네이티브 컬렉션 타입: StringBuilderValue, HashSetValue, QueueValue, MutableListValue
+- Hashtable 확장: .TryGetValue (bool*value 튜플), .Count, .Keys
+- StringSliceExpr (`s.[1..3]`, `s.[2..]`) + ListCompExpr (`[for x in coll -> expr]`)
+- 네이티브 컬렉션 for-in 반복 + KeyValuePair .Key/.Value 접근
+- Prelude 확장: List.sort/sortBy/tryFind/choose/distinctBy/mapi + Array.sort/ofSeq
+- Char/String 모듈, eprintfn, .EndsWith/.StartsWith/.Trim
+
+**Stats:**
+- 90 files changed, +9,857 LOC
+- 60 commits
+- 6 phases, 14 plans
+- 1 day (2026-03-29)
+- 619 flt tests
+
+**Git range:** `feat(54-01)` → `docs(59): complete`
+
+---
+
 ## v6.0 Practical Programming (Shipped: 2026-03-29)
 
 **Delivered:** 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, Option/Result 유틸리티로 실용적 프로그래밍 완성 — `;` 없이 멀티라인 본문, `for x in list do body`, 8개 새 Prelude 함수
