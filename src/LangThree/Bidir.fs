@@ -520,6 +520,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             match fieldName with
             | "Length" -> (s1, TInt)
             | "Contains" -> (s1, TArrow(TString, TBool))
+            | "EndsWith" -> (s1, TArrow(TString, TBool))
+            | "StartsWith" -> (s1, TArrow(TString, TBool))
+            | "Trim" -> (s1, TArrow(TTuple [], TString))
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         // Phase 54: Array property types

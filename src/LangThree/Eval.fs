@@ -1098,6 +1098,21 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         match arg with
                         | StringValue needle -> BoolValue (s.Contains(needle))
                         | _ -> failwith "String.Contains: expected string argument")
+                | "EndsWith" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | StringValue suffix -> BoolValue (s.EndsWith(suffix))
+                        | _ -> failwith "String.EndsWith: expected string argument")
+                | "StartsWith" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | StringValue prefix -> BoolValue (s.StartsWith(prefix))
+                        | _ -> failwith "String.StartsWith: expected string argument")
+                | "Trim" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | TupleValue [] -> StringValue (s.Trim())
+                        | _ -> failwith "String.Trim: takes no arguments (call as .Trim())")
                 | _ -> failwithf "String has no property or method '%s'" fieldName
             // Phase 54: Array properties
             | ArrayValue arr ->
