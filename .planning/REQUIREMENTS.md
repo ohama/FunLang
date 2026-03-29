@@ -82,11 +82,11 @@
 | LANG-02 | Phase 58 | Complete |
 | LANG-03 | Phase 58 | Complete |
 | PROP-05 | Phase 58 | Complete |
-| PRE-01 | Phase 59 | Pending |
-| PRE-02 | Phase 59 | Pending |
-| PRE-03 | Phase 59 | Pending |
-| PRE-04 | Phase 59 | Pending |
-| PRE-05 | Phase 59 | Pending |
+| PRE-01 | Phase 59 | Complete |
+| PRE-02 | Phase 59 | Complete |
+| PRE-03 | Phase 59 | Complete |
+| PRE-04 | Phase 59 | Complete |
+| PRE-05 | Phase 59 | Complete |
 
 **Coverage:**
 - v7.0 requirements: 22 total

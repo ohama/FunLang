@@ -128,9 +128,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 59-01-PLAN.md — Add list_sort_by, list_of_seq, array_sort, array_of_seq builtins to Eval.fs
-- [ ] 59-02-PLAN.md — Extend Prelude/List.fun and Prelude/Array.fun with all new functions
-- [ ] 59-03-PLAN.md — Write flt tests for all Phase 59 functions and verify full suite
+- [x] 59-01-PLAN.md — Add list_sort_by, list_of_seq, array_sort, array_of_seq builtins to Eval.fs
+- [x] 59-02-PLAN.md — Extend Prelude/List.fun and Prelude/Array.fun with all new functions
+- [x] 59-03-PLAN.md — Write flt tests for all Phase 59 functions and verify full suite
 
 ## Progress
 
@@ -141,7 +141,7 @@ Plans:
 | 56 | HashSet & Queue | ✓ Complete | 2/2 |
 | 57 | MutableList & Hashtable Enhancement | ✓ Complete | 2/2 |
 | 58 | Language Constructs | ✓ Complete | 3/3 |
-| 59 | Prelude Extensions | Not Started | 0/3 |
+| 59 | Prelude Extensions | ✓ Complete | 3/3 |
 
 ## Coverage
 
