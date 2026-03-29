@@ -5,28 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** Planning next milestone
+**Current focus:** v7.1 Remove Dot Notation
 
 ## Current Position
 
-Milestone: v7.0 Native Collections & Built-in Library — SHIPPED 2026-03-29
-Phase: Ready for next milestone
-Plan: Not started
-Status: Between milestones
-Last activity: 2026-03-29 — v7.0 milestone archived
+Milestone: v7.1 Remove Dot Notation — DEFINING
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-29 — Milestone v7.1 started
 
 Progress: [████████████████████] v1.0-v7.0 done (59p/126pl)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 112
+- Total plans completed: 126
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day
 - v4.0: 5 plans across 3 phases in 1 day
 - v5.0: 5 plans across 5 phases in 1 day
 - v6.0: 5 plans across 4 phases in 2 days
-- v7.0: 1 plan across 1/6 phases (Phase 54 complete)
+- v7.0: 14 plans across 6 phases in 1 day
 
 ## Accumulated Context
 
@@ -39,36 +39,16 @@ Key cross-milestone context:
 - while loops require `let _ = ...` wrapper at module level -- not a top-level declaration
 - String concatenation in LangThree is `^^` (not `^`)
 - [|...|] array literals not supported (use Array.ofList)
-- FieldAccess now dispatches on value types (Phase 54): TString/TArray in Bidir.fs, StringValue/ArrayValue in Eval.fs
-- .Contains returns BuiltinValue so App(FieldAccess(...), arg) dispatch works via existing applyFunc
-- Value-type dispatch in FieldAccess must come BEFORE RecordValue match in Eval.fs | _ -> branch
-- .Trim() must return BuiltinValue(TupleValue [] -> ...) NOT StringValue directly (App parse requires function in position)
-- FsLit only supports // --- Output: not // --- Stdout: for stdout sections; Stdout: silently ignored
-- eprintfn mirrors applyPrintfnArgs but writes to stderr; type scheme Scheme([0], TArrow(TString, TVar 0))
-- IndexGet/IndexSet AST nodes exist for arr.[i] syntax -- Phase 58 extends for string slicing
-- Char module in Prelude/Char.fun: IsDigit, ToUpper, IsLetter, IsUpper, IsLower, ToLower (qualified-only)
-- String.concat in Prelude/String.fun wraps string_concat_list (NOT string_concat) to avoid type collision
-- to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
-- HashtableValue wraps Dictionary<Value,Value> -- Phase 57-02 added .TryGetValue, .Count, .Keys via FieldAccess; THashtable(keyTy,valTy) arm in Bidir.fs (NOT TData)
-- MutableListValue wraps System.Collections.Generic.List<Value> (Phase 57-01): Constructor("MutableList") intercepted; Add/Count via FieldAccess; IndexGet/IndexSet bounds-checked; raw builtins mutablelist_* in Eval.fs/TypeCheck.fs; Prelude/MutableList.fun uses raw builtins (same pattern as HashSet/Queue)
-- StringSliceExpr AST node: str * start * stop option * span -- Phase 58 s.[start..stop] and s.[start..] syntax
-- ListCompExpr AST node: var * collection * body * span -- Phase 58 [for x in coll -> body] syntax; range desugared to Range(...) in parser
-- callValueRef forward reference pattern used for builtins that invoke user closures
 - Blank lines inside .fun module bodies cause parse errors (NEWLINE(0) = DEDENT out of module) -- never use blank lines in Prelude .fun files
 - Option.fun renamed to A_Option.fun so Some/None are available when List.fun type-checks (A_ prefix sorts first in Prelude load order)
 - Builtins in Eval.fs also need type schemes in TypeCheck.fs initialTypeEnv or .fun files using them will get type errors
-- StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
-- sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
-- HashSetValue wraps System.Collections.Generic.HashSet<Value> (Phase 56-01): Constructor("HashSet") intercepted; Add/Contains/Count dispatch
-- QueueValue wraps System.Collections.Generic.Queue<Value> (Phase 56-01): Constructor("Queue") intercepted; Enqueue/Dequeue/Count dispatch; empty Dequeue raises LangThreeException
-- AppExpr DOT IDENT grammar rule added to Parser.fsy for method chaining; inline sb.Append("a").Append("b") still has LALR conflict, use intermediate bindings
-- Prelude/StringBuilder.fun: uses stringbuilder_create/append/tostring builtins (not method dispatch -- TVar FieldAccess not supported)
-- Prelude/HashSet.fun and Prelude/Queue.fun: same pattern -- use raw builtins hashset_*/queue_* not dot-dispatch (TVar FieldAccess not supported)
-- Unit pattern () in module let binding params (let f x () = ...) does not parse in .fun files -- use named param instead
+- FsLit only supports // --- Output: not // --- Stdout: for stdout sections; Stdout: silently ignored
 - flt tests: expected output must include () for final let _ = println expr
 - Multi-arg lambdas (fun i x -> ...) fail to parse -- use curried form (fun i -> fun x -> ...)
 - mod is not a LangThree keyword -- use % for integer modulo
-- list_of_seq and array_of_seq type schemes use TVar 0 input (unconstrained) to accept HashSet/Queue/MutableList -- not TList
+- Unit pattern () in module let binding params (let f x () = ...) does not parse in .fun files -- use named param instead
+- StringBuilder.append Prelude function conflicts with List.append due to `open List` scope pollution — discovered during v7.1 analysis
+- to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
 
 ### Pending Todos
 
@@ -81,10 +61,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 59 Plan 03 complete -- 5 flt tests (PRE-01 through PRE-05), TypeCheck.fs ofSeq type fix
+Stopped at: Milestone v7.1 initialization
 Resume file: None
-Next action: Phase 59 complete. Proceed to next milestone phase.
+Next action: Define requirements and roadmap
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (Phase 54 Plan 01 complete)*
+*Last updated: 2026-03-29 (v7.1 milestone start)*
