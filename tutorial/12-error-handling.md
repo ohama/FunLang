@@ -267,19 +267,25 @@ $ langthree exception_use.l3
 
 ```
 -- Option 함수
-optionMap    : ('a -> 'b) -> Option<'a> -> Option<'b>
-optionBind   : ('a -> Option<'b>) -> Option<'a> -> Option<'b>
-optionDefault: 'a -> Option<'a> -> 'a
-isSome       : Option<'a> -> bool
-isNone       : Option<'a> -> bool
+optionMap         : ('a -> 'b) -> Option<'a> -> Option<'b>
+optionBind        : ('a -> Option<'b>) -> Option<'a> -> Option<'b>
+optionDefault     : 'a -> Option<'a> -> 'a
+optionDefaultValue: 'a -> Option<'a> -> 'a      -- optionDefault와 동일
+optionFilter      : ('a -> bool) -> Option<'a> -> Option<'a>
+optionIter        : ('a -> unit) -> Option<'a> -> unit
+isSome            : Option<'a> -> bool
+isNone            : Option<'a> -> bool
 
 -- Result 함수
-resultMap     : ('a -> 'b) -> Result<'a, 'e> -> Result<'b, 'e>
-resultBind    : ('a -> Result<'b, 'e>) -> Result<'a, 'e> -> Result<'b, 'e>
-resultMapError: ('e -> 'f) -> Result<'a, 'e> -> Result<'a, 'f>
-resultDefault : 'a -> Result<'a, 'e> -> 'a
-isOk          : Result<'a, 'e> -> bool
-isError       : Result<'a, 'e> -> bool
+resultMap         : ('a -> 'b) -> Result<'a, 'e> -> Result<'b, 'e>
+resultBind        : ('a -> Result<'b, 'e>) -> Result<'a, 'e> -> Result<'b, 'e>
+resultMapError    : ('e -> 'f) -> Result<'a, 'e> -> Result<'a, 'f>
+resultDefault     : 'a -> Result<'a, 'e> -> 'a
+resultDefaultValue: 'a -> Result<'a, 'e> -> 'a  -- resultDefault와 동일
+resultIter        : ('a -> unit) -> Result<'a, 'e> -> unit
+resultToOption    : Result<'a, 'e> -> Option<'a>
+isOk              : Result<'a, 'e> -> bool
+isError           : Result<'a, 'e> -> bool
 ```
 
 ## 권장 가이드라인

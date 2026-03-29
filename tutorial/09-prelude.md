@@ -6,15 +6,24 @@ LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다.
 
 ## Prelude의 동작 방식
 
-Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에 있는 `.fun` 파일로 구성됩니다. 시작 시 이 파일들은 알파벳순으로 정렬된 후, 각각 모듈로 파싱되고 타입 검사를 거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.
+Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에 있는 `.fun` 파일로 구성됩니다. 시작 시 이 파일들은 의존성 분석을 거쳐 올바른 순서로 로드된 후, 각각 모듈로 파싱되고 타입 검사를 거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.
 
-알파벳순 정렬에는 중요한 이유가 있습니다. `List.fun`이 `Option.fun`보다 먼저 로드되어야 한다면 파일 이름을 `A_` 같은 접두사로 조정할 수 있고, 반대로 의존성이 없다면 이름만 잘 지으면 됩니다. 순서가 중요한 경우에만 이름을 신경 쓰면 됩니다.
+로드 순서는 자동으로 결정됩니다. 각 파일이 선언하는 타입 생성자와 다른 파일에서 참조하는 생성자를 분석하여 의존성 그래프를 구축하고, 토폴로지 정렬로 순서를 정합니다. 예를 들어 `List.fun`이 `Some`과 `None`을 사용하면, 이를 선언한 `Option.fun`이 자동으로 먼저 로드됩니다. 의존성이 없는 파일 간에는 알파벳순으로 정렬됩니다.
 
 현재 Prelude에는 다음 파일들이 포함되어 있습니다:
 
+- `Prelude/Option.fun` -- Option 타입과 함수 (`optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone` 등)
+- `Prelude/Array.fun` -- 배열 모듈 (`Array.create`, `Array.get`, `Array.set`, `Array.sort`, `Array.ofSeq` 등)
+- `Prelude/Char.fun` -- 문자 모듈 (`Char.IsDigit`, `Char.IsLetter`, `Char.ToUpper`, `Char.ToLower` 등)
 - `Prelude/Core.fun` -- 핵심 고차 함수 (`id`, `const`, `compose`)
-- `Prelude/List.fun` -- 리스트 처리 함수 (`map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`)
-- `Prelude/Option.fun` -- Option 타입 정의
+- `Prelude/HashSet.fun` -- HashSet 모듈 (`HashSet.create`, `HashSet.add`, `HashSet.contains`, `HashSet.count`)
+- `Prelude/Hashtable.fun` -- Hashtable 모듈
+- `Prelude/List.fun` -- 리스트 처리 함수 (`map`, `filter`, `fold`, `sort`, `tryFind`, `choose` 등)
+- `Prelude/MutableList.fun` -- MutableList 모듈
+- `Prelude/Queue.fun` -- Queue 모듈
+- `Prelude/Result.fun` -- Result 타입과 함수 (`resultMap`, `resultBind`, `resultDefault` 등)
+- `Prelude/String.fun` -- String 모듈 (`String.endsWith`, `String.startsWith`, `String.trim` 등)
+- `Prelude/StringBuilder.fun` -- StringBuilder 모듈
 
 **Prelude/Option.fun:**
 ```
@@ -161,7 +170,7 @@ $ langthree option_pipe.l3
 
 Prelude가 `.fun` 파일로 구성되어 있다는 것은 단순히 구현 방식의 이야기가 아닙니다. 여러분이 직접 Prelude를 확장할 수 있다는 뜻입니다. 프로젝트에서 공통으로 쓰는 타입이나 함수를 Prelude에 추가하면, 모든 파일에서 import 없이 사용할 수 있습니다.
 
-`Prelude/` 디렉토리에 새 `.fun` 파일을 생성하여 자신만의 타입을 Prelude에 추가할 수 있습니다. 파일은 알파벳순으로 정렬되므로, 파일 이름이 로드 순서에 영향을 줍니다.
+`Prelude/` 디렉토리에 새 `.fun` 파일을 생성하여 자신만의 타입을 Prelude에 추가할 수 있습니다. 로드 순서는 의존성 분석으로 자동 결정되므로, 파일 이름을 신경 쓸 필요가 없습니다.
 
 예를 들어, `Prelude/Result.fun`을 생성하면:
 
@@ -280,6 +289,99 @@ funlang> append [1; 2] [3; 4]
 ```
 
 `reverse`의 첫 번째 인자가 빈 리스트인 점이 눈에 띕니다. 이것은 누산기 패턴의 흔적입니다. 내부적으로 빈 리스트를 누산기 초기값으로 사용하면서 반전을 수행하는 방식이 인터페이스에 드러난 것입니다. 대부분의 경우 `reverse [] myList` 형태로 호출하면 됩니다.
+
+### 리스트 정렬: sort, sortBy
+
+`List.sort`는 리스트를 오름차순으로 정렬합니다. `List.sortBy`는 키 함수를 적용한 결과로 정렬합니다:
+
+```
+$ cat list_sort.l3
+let r1 = List.sort [3; 1; 2]
+let r2 = List.sortBy (fun x -> 0 - x) [1; 2; 3]
+let _ = println (to_string r1)
+let _ = println (to_string r2)
+
+$ langthree list_sort.l3
+[1; 2; 3]
+[3; 2; 1]
+()
+```
+
+`List.sortBy (fun x -> 0 - x)`는 키를 부호 반전하여 내림차순 정렬을 구현합니다.
+
+### 리스트 검색: exists, tryFind, choose, distinctBy
+
+```
+$ cat list_search.l3
+let _ = println (to_string (List.exists (fun x -> x > 2) [1; 2; 3]))
+let _ = println (to_string (List.tryFind (fun x -> x > 2) [1; 2; 3]))
+let _ = println (to_string (List.tryFind (fun x -> x > 10) [1; 2; 3]))
+let r = List.choose (fun x -> if x > 1 then Some (x * 10) else None) [1; 2; 3]
+let _ = println (to_string r)
+let d = List.distinctBy (fun x -> x % 2) [1; 2; 3; 4; 5]
+let _ = println (to_string d)
+
+$ langthree list_search.l3
+true
+Some 3
+None
+[20; 30]
+[1; 2]
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `List.exists pred xs` | 조건을 만족하는 원소가 하나라도 있으면 `true` |
+| `List.tryFind pred xs` | 조건을 만족하는 첫 번째 원소를 `Option`으로 반환 |
+| `List.choose f xs` | `f`가 `Some`을 반환한 값만 모은 리스트 (filter + map) |
+| `List.distinctBy f xs` | 키 함수 `f`의 결과가 중복되지 않는 첫 번째 원소만 남김 |
+
+### 리스트 변환 확장: mapi, item, isEmpty
+
+```
+$ cat list_transform.l3
+let r1 = List.mapi (fun i -> fun x -> i + x) [10; 20; 30]
+let _ = println (to_string r1)
+let _ = println (to_string (List.item 1 [10; 20; 30]))
+let _ = println (to_string (List.isEmpty []))
+let _ = println (to_string (List.isEmpty [1]))
+
+$ langthree list_transform.l3
+[10; 21; 32]
+20
+true
+false
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `List.mapi f xs` | 인덱스와 원소를 받는 함수로 매핑 (`f i x`) |
+| `List.item n xs` | n번째 원소 반환 (0-based) |
+| `List.isEmpty xs` | 빈 리스트인지 확인 |
+| `List.head xs` | 첫 번째 원소 (`hd`의 별칭) |
+| `List.tail xs` | 나머지 원소 (`tl`의 별칭) |
+
+### 컬렉션 변환: List.ofSeq
+
+`List.ofSeq`는 배열, HashSet, Queue, MutableList 등 임의의 컬렉션을 불변 리스트로 변환합니다:
+
+```
+$ cat list_ofseq.l3
+let hs = HashSet.create ()
+let _ = HashSet.add hs 3
+let _ = HashSet.add hs 1
+let _ = HashSet.add hs 2
+let sorted = List.sort (List.ofSeq hs)
+let _ = println (to_string sorted)
+
+$ langthree list_ofseq.l3
+[1; 2; 3]
+()
+```
+
+가변 컬렉션을 불변 리스트로 변환한 뒤 `map`, `filter`, `sort` 등 리스트 함수를 적용하는 패턴이 자주 쓰입니다. `Array.ofSeq`도 동일한 방식으로 배열로 변환합니다.
 
 ## Prelude 핵심 함수
 
@@ -476,7 +578,8 @@ funlang> to_string (Some [1; 2; 3])
 
 | 분류 | 출처 | 예제 |
 |----------|--------|---------|
-| Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `map`, `filter`, `fold`, `id`, `compose`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore` 등 |
+| Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `Result`, `map`, `filter`, `fold`, `sort`, `tryFind`, `choose`, `id`, `compose`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore` 등 |
+| Prelude 모듈 | `Prelude/*.fun` 파일 | `String.trim`, `Char.IsDigit`, `Array.sort`, `HashSet.create`, `Queue.create`, `MutableList.create`, `StringBuilder.create` 등 |
 | Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
 | 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
 | 산술 연산자 | 내장 | `+`, `-`, `*`, `/`, `%` (모듈로) |
@@ -485,7 +588,7 @@ funlang> to_string (Some [1; 2; 3])
 
 ## 참고 사항
 
-- **Prelude 파일**은 `Prelude/` 디렉토리에서 알파벳순으로 로드되는 `.fun` 파일입니다
+- **Prelude 파일**은 `Prelude/` 디렉토리에서 의존성 순서로 자동 로드되는 `.fun` 파일입니다
 - **Prelude 생성자** (`None`, `Some`)와 **Prelude 함수** (`map`, `filter` 등)는 `open` 없이 사용 가능합니다
 - **Prelude 함수**는 모두 실제 런타임 함수로, 호출하면 정상적으로 결과를 반환합니다
 - **런타임 내장 함수** (`print`, `string_length` 등)는 어디서든 동작합니다

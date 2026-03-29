@@ -197,6 +197,10 @@ type Value =
     | ListValue of Value list
     | ArrayValue of Value array
     | HashtableValue of Dictionary<Value, Value>
+    | StringBuilderValue of StringBuilder  // Mutable string builder (v7.0)
+    | HashSetValue of HashSet<Value>       // Mutable unique-element set (v7.0)
+    | QueueValue of Queue<Value>           // Mutable FIFO queue (v7.0)
+    | MutableListValue of List<Value>      // Mutable resizable list (v7.0)
     | DataValue of constructorName * Value option
     | RecordValue of typeName * Map<string, Value ref>
     | TailCall of func * arg  // TCO trampoline
@@ -204,7 +208,7 @@ type Value =
 ```
 
 **Prelude 로딩:**
-1. `Prelude/` 디렉토리의 `.fun` 파일을 알파벳순 로드
+1. `Prelude/` 디렉토리의 `.fun` 파일을 의존성 분석 후 토폴로지 정렬 순서로 로드
 2. 각 파일을 `module <Stem> = ...` 블록으로 래핑 후 `open <Stem>` 삽입 → 비정규화 접근 가능
 3. 각 파일을 파싱 → 타입 체크 → 평가
 4. `PreludeResult`는 `Modules`(타입 모듈 맵)와 `ModuleValueEnv`(값 모듈 맵) 필드를 포함
@@ -263,6 +267,7 @@ src/LangThree/
 - `TList of Type` — 동종 리스트
 - `TArray of Type` — 뮤터블 배열
 - `THashtable of Type * Type` — 해시 테이블 (키 타입, 값 타입)
+- 네이티브 컬렉션 (v7.0): StringBuilder, HashSet, Queue, MutableList (타입 시스템에서는 opaque)
 - `TTuple of Type list` — 튜플
 - `TArrow of Type * Type` — 함수 타입
 - `TData of name * Type list` — 사용자 정의 ADT / GADT

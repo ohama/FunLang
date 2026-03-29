@@ -226,6 +226,70 @@ funlang> let rec go xs = match xs with | [] -> [] | x :: rest -> x * 10 :: go re
 
 `sum`은 `fold (fun acc -> fun x -> acc + x) 0`으로, `go`는 `map (fun x -> x * 10)`으로 표현할 수 있습니다. 그렇다면 언제 직접 재귀를 써야 할까요? Prelude에 없는 복잡한 변환이 필요하거나, 여러 상태를 동시에 추적해야 하거나, 특수한 종료 조건이 있을 때입니다. 먼저 `map`/`filter`/`fold`로 해결할 수 있는지 확인하고, 안 되면 직접 작성하는 것이 좋은 순서입니다.
 
+## 리스트 컴프리헨션 (List Comprehensions)
+
+리스트를 변환하거나 생성할 때, `map`을 호출하는 대신 컴프리헨션 구문으로 더 직관적으로 표현할 수 있습니다. Python의 리스트 컴프리헨션과 비슷한 개념입니다.
+
+### 컬렉션에서 생성
+
+`[for x in collection -> expr]` 구문으로 컬렉션의 각 원소를 변환한 새 리스트를 만듭니다:
+
+```
+$ cat comp_basic.l3
+let doubled = [for x in [1;2;3] -> x * 2]
+let _ = println (to_string doubled)
+let strs = [for s in ["a";"b";"c"] -> s ^^ "!"]
+let _ = println (to_string strs)
+
+$ langthree comp_basic.l3
+[2; 4; 6]
+["a!"; "b!"; "c!"]
+()
+```
+
+`[for x in [1;2;3] -> x * 2]`는 `map (fun x -> x * 2) [1;2;3]`와 같은 결과를 반환합니다. 어떤 것을 쓸지는 취향이지만, 변환 표현식이 복잡할 때는 컴프리헨션이 더 읽기 쉬운 경우가 많습니다.
+
+### 범위에서 생성
+
+`[for i in start..stop -> expr]` 구문으로 정수 범위를 순회하며 리스트를 생성합니다:
+
+```
+$ cat comp_range.l3
+let squares = [for i in 0..4 -> i * i]
+let _ = println (to_string squares)
+let tens = [for i in 1..3 -> i * 10]
+let _ = println (to_string tens)
+
+$ langthree comp_range.l3
+[0; 1; 4; 9; 16]
+[10; 20; 30]
+()
+```
+
+`0..4`는 0, 1, 2, 3, 4를 순서대로 생성합니다. 리스트 범위 `[0..4]`와 동일한 범위이지만, 컴프리헨션에서는 각 값에 표현식을 적용하여 새 리스트를 만듭니다.
+
+### 엣지 케이스
+
+빈 컬렉션이나 단일 원소 컬렉션도 정상 동작합니다:
+
+```
+$ cat comp_edge.l3
+let empty = [for x in [] -> x * 2]
+let _ = println (to_string empty)
+let single = [for x in [42] -> x + 1]
+let _ = println (to_string single)
+let nested = [for x in [1;2;3] -> to_string (x * x)]
+let _ = println (to_string nested)
+
+$ langthree comp_edge.l3
+[]
+[43]
+["1"; "4"; "9"]
+()
+```
+
+화살표 `->` 오른쪽에는 임의의 표현식을 쓸 수 있으므로, `to_string`이나 다른 함수를 호출하는 것도 자연스럽습니다.
+
 ## 리스트 패턴 매칭 (Pattern Matching on Lists)
 
 4장 미리보기 -- 리스트 패턴을 사용한 `match`:

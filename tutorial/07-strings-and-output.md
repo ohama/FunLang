@@ -254,6 +254,113 @@ $ langthree sprintf_vs.l3
 
 두 방법의 결과는 같지만, `sprintf`가 형식을 한눈에 파악하기 좋습니다. 특히 여러 값을 조합할 때 차이가 뚜렷합니다 — `"name=" + to_string name + ", age=" + to_string age`보다 `sprintf "name=%s, age=%d" name age`가 훨씬 읽기 좋습니다.
 
+## 문자열 슬라이싱 (String Slicing)
+
+`string_sub`보다 간결한 슬라이싱 구문을 제공합니다. `s.[start..stop]`은 인덱스 `start`부터 `stop`까지(양쪽 포함)의 부분 문자열을 반환합니다:
+
+```
+$ cat str_slice.l3
+let s = "hello"
+let _ = println (s.[1..3])
+let _ = println (s.[0..0])
+let t = "abcdef"
+let _ = println (t.[0..2])
+let _ = println (t.[3..5])
+
+$ langthree str_slice.l3
+ell
+h
+abc
+def
+()
+```
+
+`s.[start..]` 형태로 끝 인덱스를 생략하면, `start`부터 문자열 끝까지를 반환합니다:
+
+```
+$ cat str_slice_open.l3
+let s = "hello"
+let _ = println (s.[2..])
+let _ = println ("hello world".[6..])
+
+$ langthree str_slice_open.l3
+llo
+world
+()
+```
+
+`string_sub`가 시작+길이를 사용하는 반면, 슬라이싱은 시작+끝 인덱스를 사용합니다. Python의 `s[1:4]`와 비슷하지만 끝 인덱스가 포함(inclusive)된다는 차이가 있습니다.
+
+## String 모듈 함수
+
+Prelude의 `String` 모듈은 문자열 검사 및 변환 함수를 제공합니다:
+
+```
+$ cat str_module.l3
+let _ = println (to_string (String.endsWith "hello.txt" ".txt"))
+let _ = println (to_string (String.endsWith "hello.txt" ".csv"))
+let _ = println (to_string (String.startsWith "hello" "he"))
+let _ = println (to_string (String.startsWith "hello" "wo"))
+let _ = println (String.trim "  spaces  ")
+
+$ langthree str_module.l3
+true
+false
+true
+false
+spaces
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `String.endsWith s suffix` | 문자열이 suffix로 끝나는지 확인 |
+| `String.startsWith s prefix` | 문자열이 prefix로 시작하는지 확인 |
+| `String.trim s` | 양쪽 공백 제거 |
+| `String.length s` | 문자열 길이 (`string_length`와 동일) |
+| `String.contains s needle` | 부분 문자열 포함 여부 (`string_contains`와 동일) |
+| `String.concat sep lst` | 구분자로 문자열 리스트를 연결 |
+
+## StringBuilder
+
+문자열을 여러 번 `+`나 `^^`로 연결하면 매번 새 문자열이 생성되어 비효율적입니다. `StringBuilder`는 문자열 조각들을 모아두었다가 한 번에 합치는 가변 버퍼입니다:
+
+```
+$ cat sb_basic.l3
+let sb = StringBuilder.create ()
+let _ = StringBuilder.add sb "hello"
+let _ = StringBuilder.add sb " "
+let _ = StringBuilder.add sb "world"
+let _ = println (StringBuilder.toString sb)
+
+$ langthree sb_basic.l3
+hello world
+()
+```
+
+`StringBuilder.add`는 문자열과 문자(`char`) 모두 받을 수 있습니다:
+
+```
+$ cat sb_char.l3
+let sb = StringBuilder.create ()
+let _ = StringBuilder.add sb "hi"
+let _ = StringBuilder.add sb ' '
+let _ = StringBuilder.add sb '!'
+let _ = println (StringBuilder.toString sb)
+
+$ langthree sb_char.l3
+hi !
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `StringBuilder.create ()` | 빈 StringBuilder 생성 |
+| `StringBuilder.add sb s` | 문자열 또는 문자를 추가 |
+| `StringBuilder.toString sb` | 축적된 내용을 문자열로 반환 |
+
+루프 안에서 문자열을 반복적으로 조립할 때, `+`보다 `StringBuilder`가 훨씬 효율적입니다.
+
 ## 부수 효과 순서 지정
 
 함수형 언어에서 출력은 "부수 효과(side effect)"입니다 — 값을 계산하는 것이 아니라 세계에 변화를 가져다줍니다. LangThree에서 unit을 반환하는 연산을 순서대로 실행하려면 `let _ =`를 사용합니다:

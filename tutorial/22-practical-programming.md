@@ -1,10 +1,10 @@
 # 22장: 실용 프로그래밍 (Practical Programming)
 
-v6.0에서 LangThree는 일상적인 프로그래밍을 더 편리하게 만드는 세 가지 기능을 추가했습니다. 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, 그리고 Option/Result 유틸리티 함수입니다. 이 장에서는 각 기능을 코드 예제와 함께 살펴봅니다.
+LangThree는 일상적인 프로그래밍을 더 편리하게 만드는 세 가지 기능을 제공합니다. 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, 그리고 Option/Result 유틸리티 함수입니다. 이 장에서는 각 기능을 코드 예제와 함께 살펴봅니다.
 
 ## 뉴라인 암묵적 시퀀싱 (Newline Implicit Sequencing)
 
-v5.0에서 `;` 연산자로 표현식을 순서대로 실행할 수 있게 되었습니다. v6.0에서는 들여쓰기 블록 안에서 줄 바꿈만으로도 동일한 효과를 낼 수 있습니다. 같은 들여쓰기 수준의 줄은 자동으로 `;`으로 연결됩니다.
+`;` 연산자로 표현식을 순서대로 실행할 수 있지만, 들여쓰기 블록 안에서는 줄 바꿈만으로도 동일한 효과를 낼 수 있습니다. 같은 들여쓰기 수준의 줄은 자동으로 `;`으로 연결됩니다.
 
 ### 함수 본체에서의 뉴라인 시퀀싱
 
@@ -51,7 +51,7 @@ positive
 
 ## 컬렉션 for-in 루프 (For-In Collection Loops)
 
-v6.0에서는 리스트와 배열의 원소를 순서대로 순회하는 `for x in collection do` 문법이 추가되었습니다. 인덱스가 필요 없을 때 `for i = 0 to n do arr.[i]`보다 훨씬 간결하게 컬렉션을 처리할 수 있습니다.
+컬렉션의 원소를 순서대로 순회하는 `for x in collection do` 문법을 제공합니다. 리스트, 배열은 물론 Hashtable, HashSet, Queue, MutableList 등 모든 가변 컬렉션도 지원합니다. 인덱스가 필요 없을 때 `for i = 0 to n do arr.[i]`보다 훨씬 간결하게 컬렉션을 처리할 수 있습니다.
 
 ### 리스트 순회
 
@@ -92,13 +92,33 @@ $ langthree arr_iter.l3
 
 배열도 동일한 문법으로 순회합니다. 원소는 인덱스 순서(0, 1, 2, ...)로 처리됩니다.
 
+### Hashtable 순회와 패턴 분해
+
+Hashtable을 `for-in`으로 순회할 때 튜플 패턴으로 키와 값을 동시에 바인딩할 수 있습니다:
+
+```
+$ cat ht_forin.l3
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "name" "Alice"
+let _ = for (k, v) in ht do
+  let _ = println k
+  println v
+
+$ langthree ht_forin.l3
+name
+Alice
+()
+```
+
+HashSet, Queue, MutableList도 동일한 `for x in coll do` 구문으로 순회할 수 있습니다.
+
 ### 루프 변수의 불변성
 
 for-in 루프 변수는 for 범위 루프와 마찬가지로 불변입니다. 루프 본체 안에서 대입을 시도하면 E0320 에러가 발생합니다. 루프 안에서 집계가 필요하다면 외부에 `let mut` 변수를 선언하세요.
 
 ## Option/Result 유틸리티 (Option/Result Utilities)
 
-v6.0 Prelude에 Option 타입과 Result 타입을 다루는 유틸리티 함수가 추가되었습니다. 패턴 매칭 없이 간결하게 Option/Result 값을 변환하고 조합할 수 있습니다.
+Prelude는 Option 타입과 Result 타입을 다루는 유틸리티 함수를 제공합니다. 패턴 매칭 없이 간결하게 Option/Result 값을 변환하고 조합할 수 있습니다.
 
 ### optionMap과 optionBind
 
@@ -215,6 +235,8 @@ Some 6
 | 뉴라인 시퀀싱 | 들여쓰기 블록 내 줄 바꿈 | 암묵적 `;` 삽입 |
 | `for x in list do` | `for n in nums do println (to_string n)` | 리스트 원소 순회 |
 | `for x in arr do` | `for x in arr do println (to_string x)` | 배열 원소 순회 |
+| `for (k, v) in ht do` | `for (k, v) in ht do println k` | Hashtable 키-값 순회 |
+| `for x in coll do` | `for x in hs do println (to_string x)` | HashSet/Queue/MutableList 순회 |
 | `optionMap f opt` | `optionMap (fun x -> x * 2) (Some 21)` | Option 변환 |
 | `optionBind f opt` | `optionBind f (Some x)` | Option 체이닝 |
 | `optionDefaultValue d opt` | `optionDefaultValue 0 None` | 기본값 추출 |

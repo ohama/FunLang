@@ -144,11 +144,79 @@ do
     TypeCheck.fileImportTypeChecker <- loadAndTypeCheckFileImpl
     Eval.fileImportEvaluator <- loadAndEvalFileImpl
 
+// === Dependency-based load ordering (OCaml ocamldep style) ===
+
+/// Extract constructor names declared in type declarations within module body
+let rec private collectCtors (decls: Decl list) : Set<string> =
+    (Set.empty, decls) ||> List.fold (fun acc d ->
+        match d with
+        | Decl.TypeDecl(Ast.TypeDecl(_, _, ctors, _)) ->
+            (acc, ctors) ||> List.fold (fun a ct ->
+                match ct with
+                | ConstructorDecl(name, _, _) | GadtConstructorDecl(name, _, _, _) -> Set.add name a)
+        | Decl.ModuleDecl(_, inner, _) -> Set.union acc (collectCtors inner)
+        | _ -> acc)
+
+/// Topological sort: repeatedly extract nodes whose dependencies are all resolved.
+/// Uses alphabetical order as tie-breaker for deterministic output.
+let private topoSort (nodes: string list) (deps: Map<string, Set<string>>) : string list =
+    let mutable remaining = Set.ofList nodes
+    let mutable result = []
+    let mutable progress = true
+    while progress && not remaining.IsEmpty do
+        let ready = remaining |> Set.filter (fun f ->
+            match Map.tryFind f deps with
+            | None -> true
+            | Some s -> (Set.intersect s remaining).IsEmpty)
+        progress <- not ready.IsEmpty
+        result <- result @ (ready |> Set.toList |> List.sort)
+        remaining <- remaining - ready
+    result @ (remaining |> Set.toList |> List.sort)
+
+/// Determine load order for Prelude files by scanning constructor dependencies.
+/// Each file is parsed to extract its declared constructors, then source text is
+/// scanned for references to constructors declared in other files.
+/// The resulting dependency DAG is topologically sorted.
+let private resolveLoadOrder (files: string array) : string array =
+    if files.Length <= 1 then files
+    else
+    let re = System.Text.RegularExpressions.Regex(@"\b([A-Z][a-zA-Z0-9_]*)\b")
+    // 1. Parse all files, extract declared constructors
+    let fileInfos =
+        files |> Array.map (fun f ->
+            try
+                let src = File.ReadAllText f
+                let m = parseModuleFromString src f
+                (f, src, collectCtors (getDecls m))
+            with _ -> (f, "", Set.empty))
+    // 2. Map each constructor name to its declaring file
+    let ctorToFile =
+        fileInfos |> Array.collect (fun (f, _, ctors) ->
+            ctors |> Set.toArray |> Array.map (fun c -> (c, f)))
+        |> Map.ofArray
+    // 3. For each file, find dependencies by scanning for constructor references
+    let fileDeps =
+        fileInfos |> Array.map (fun (f, src, ownCtors) ->
+            let deps =
+                if src = "" then Set.empty
+                else
+                    re.Matches(src)
+                    |> Seq.cast<System.Text.RegularExpressions.Match>
+                    |> Seq.map (fun m -> m.Groups.[1].Value)
+                    |> Seq.choose (fun ident ->
+                        if Set.contains ident ownCtors then None
+                        else Map.tryFind ident ctorToFile)
+                    |> Seq.filter (fun dep -> dep <> f)
+                    |> Set.ofSeq
+            (f, deps)) |> Map.ofArray
+    // 4. Topological sort
+    topoSort (Array.toList files) fileDeps |> List.toArray
+
 /// Load all Prelude/*.fun files and return accumulated environments
 let loadPrelude () : PreludeResult =
     let preludeDir = findPreludeDir ()
     if preludeDir <> "" then
-        let files = Directory.GetFiles(preludeDir, "*.fun") |> Array.sort
+        let files = Directory.GetFiles(preludeDir, "*.fun") |> resolveLoadOrder
         if files.Length = 0 then
             emptyPrelude
         else

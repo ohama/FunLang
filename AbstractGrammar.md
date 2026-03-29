@@ -136,6 +136,10 @@ expr ::= -- 바인딩 형식
        | 'for' IDENT '=' expr 'to' expr 'do' expr     -- 오름차순 for 루프
        | 'for' IDENT '=' expr 'downto' expr 'do' expr -- 내림차순 for 루프
 
+         -- 컬렉션 for-in 루프 (v6.0)
+       | 'for' IDENT 'in' expr 'do' expr               -- 컬렉션 순회 (var: Pattern)
+       | 'for' tuple_pattern 'in' expr 'do' expr       -- 튜플 분해 순회 (v7.1)
+
          -- 파이프 및 합성 (좌에서 우 우선순위)
        | expr '|>' expr                             -- 파이프 오른쪽
        | expr '>>' expr                             -- 함수 합성 오른쪽
@@ -200,9 +204,13 @@ atom ::= '(' ')'                                   -- unit
        | '[' expr (';' expr)* ';'? ']'             -- 리스트 리터럴
        | '[' expr '..' expr ']'                     -- 범위 [start..stop]
        | '[' expr '..' expr '..' expr ']'           -- 스텝 범위 [start..step..stop]
+       | '[' 'for' IDENT 'in' expr '->' expr ']'   -- 리스트 컴프리헨션 (v7.0)
+       | '[' 'for' IDENT 'in' expr '..' expr '->' expr ']'  -- 범위 리스트 컴프리헨션 (v7.0)
        | '(' INFIXOP ')'                            -- 연산자를 값으로 사용
        | atom '.' IDENT                             -- 필드 접근 (좌결합)
        | atom '.[' expr ']'                          -- 인덱스 읽기 (좌결합, v5.0)
+       | atom '.[' expr '..' expr ']'               -- 문자열 슬라이싱 s.[start..stop] (v7.0)
+       | atom '.[' expr '..' ']'                    -- 문자열 슬라이싱 s.[start..] (v7.0)
        | '{' field_binding (';' field_binding)* ';'? '}'          -- 레코드 생성
        | '{' expr 'with' field_binding (';' field_binding)* ';'? '}'  -- 레코드 갱신
 ```
@@ -285,6 +293,10 @@ unit                         -- 단위 타입; 유일한 값은 ()
 'a list                      -- 불변 단일 연결 리스트
 'a array                     -- 가변 고정 크기 배열
 ('k, 'v) hashtable           -- 가변 해시 테이블 (Dictionary 기반)
+stringbuilder                -- 가변 문자열 빌더 (v7.0)
+hashset                      -- 가변 유일 원소 집합 (v7.0)
+queue                        -- 가변 FIFO 큐 (v7.0)
+mutablelist                  -- 가변 동적 리스트 (v7.0)
 
 -- 함수 타입
 'a -> 'b                     -- 단일 인자 함수 (커링으로 다인자 표현)
@@ -384,6 +396,8 @@ type ('a, 'b) Result = Ok of 'a | Error of 'b
 | `array_iter` | `('a -> unit) -> 'a array -> unit` | 각 원소에 함수 적용 |
 | `array_map` | `('a -> 'b) -> 'a array -> 'b array` | 각 원소를 변환한 새 배열 |
 | `array_fold` | `('acc -> 'a -> 'acc) -> 'acc -> 'a array -> 'acc` | 배열 좌측 fold |
+| `array_sort` | `'a array -> 'a array` | 배열 정렬 (새 배열 반환) |
+| `array_of_seq` | `'a seq -> 'a array` | 컬렉션을 배열로 변환 |
 
 ### 7.8 해시 테이블 연산 (Hashtable Operations)
 
@@ -395,6 +409,60 @@ type ('a, 'b) Result = Ok of 'a | Error of 'b
 | `hashtable_containsKey` | `('k, 'v) hashtable -> 'k -> bool` | 키 존재 여부 확인 |
 | `hashtable_keys` | `('k, 'v) hashtable -> 'k list` | 모든 키 목록 |
 | `hashtable_remove` | `('k, 'v) hashtable -> 'k -> unit` | 키-값 삭제 |
+
+### 7.9 StringBuilder 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `stringbuilder_create` | `unit -> stringbuilder` | 빈 StringBuilder 생성 |
+| `stringbuilder_add` | `stringbuilder -> string -> unit` | 문자열 또는 문자 추가 |
+| `stringbuilder_tostring` | `stringbuilder -> string` | 축적된 내용을 문자열로 반환 |
+
+### 7.10 HashSet 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `hashset_create` | `unit -> hashset` | 빈 HashSet 생성 |
+| `hashset_add` | `hashset -> 'a -> bool` | 값 추가 (새로우면 true, 중복이면 false) |
+| `hashset_contains` | `hashset -> 'a -> bool` | 값 존재 여부 |
+| `hashset_count` | `hashset -> int` | 원소 개수 |
+
+### 7.11 Queue 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `queue_create` | `unit -> queue` | 빈 Queue 생성 |
+| `queue_enqueue` | `queue -> 'a -> unit` | 값을 큐의 뒤에 추가 |
+| `queue_dequeue` | `queue -> unit -> 'a` | 앞에서 값을 꺼내 반환 |
+| `queue_count` | `queue -> int` | 원소 개수 |
+
+### 7.12 MutableList 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `mutablelist_create` | `unit -> mutablelist` | 빈 MutableList 생성 |
+| `mutablelist_add` | `mutablelist -> 'a -> unit` | 뒤에 값 추가 |
+| `mutablelist_count` | `mutablelist -> int` | 원소 개수 |
+
+### 7.13 문자열 확장 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `string_endswith` | `string -> string -> bool` | suffix 검사 |
+| `string_startswith` | `string -> string -> bool` | prefix 검사 |
+| `string_trim` | `string -> string` | 양쪽 공백 제거 |
+| `string_concat_list` | `string -> string list -> string` | 구분자로 문자열 리스트 연결 |
+
+### 7.14 문자 확장 연산 (v7.0)
+
+| 함수 | 타입 | 설명 |
+|------|------|------|
+| `char_is_digit` | `char -> bool` | 숫자 문자 여부 |
+| `char_is_letter` | `char -> bool` | 알파벳 문자 여부 |
+| `char_is_upper` | `char -> bool` | 대문자 여부 |
+| `char_is_lower` | `char -> bool` | 소문자 여부 |
+| `char_to_upper` | `char -> char` | 대문자로 변환 |
+| `char_to_lower` | `char -> char` | 소문자로 변환 |
 
 ---
 

@@ -192,6 +192,192 @@ $ langthree ht_keys.l3
 
 **모듈 한정 이름:** `open Hashtable`을 사용하지 않습니다. 항상 `Hashtable.create`, `Hashtable.set` 등 모듈 한정 이름으로 호출합니다.
 
+## 해시테이블 순회 (for-in)
+
+해시테이블의 모든 키-값 쌍을 순회하려면 `for (k, v) in ht do` 구문을 사용합니다. 튜플 패턴으로 키와 값을 동시에 바인딩할 수 있습니다:
+
+```
+$ cat ht_forin.l3
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "name" "Alice"
+let _ = for (k, v) in ht do
+  let _ = println k
+  println v
+
+$ langthree ht_forin.l3
+name
+Alice
+()
+```
+
+`Hashtable.keys`로 키 리스트를 얻어 순회하는 것보다 간결합니다. 순회 순서는 비결정적입니다.
+
+## HashSet
+
+HashSet은 중복 없는 값의 집합입니다. `HashSet.add`는 이미 있는 값을 추가하면 `false`를 반환하고, 새로운 값이면 `true`를 반환합니다:
+
+```
+$ cat hashset_basic.l3
+let hs = HashSet.create ()
+let _ = println (to_string (HashSet.add hs 1))
+let _ = println (to_string (HashSet.add hs 2))
+let _ = println (to_string (HashSet.add hs 1))
+let _ = println (to_string (HashSet.contains hs 1))
+let _ = println (to_string (HashSet.contains hs 9))
+let _ = println (to_string (HashSet.count hs))
+
+$ langthree hashset_basic.l3
+true
+true
+false
+true
+false
+2
+()
+```
+
+`for x in hs do` 구문으로 순회할 수 있습니다:
+
+```
+$ cat hashset_forin.l3
+let hs = HashSet.create ()
+let _ = HashSet.add hs 42
+let _ = for x in hs do println (to_string x)
+
+$ langthree hashset_forin.l3
+42
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `HashSet.create ()` | 빈 HashSet 생성 |
+| `HashSet.add hs v` | 값 추가 (새로우면 `true`, 중복이면 `false`) |
+| `HashSet.contains hs v` | 값 존재 여부 |
+| `HashSet.count hs` | 원소 개수 |
+
+중복 검사, 멤버십 테스트, 집합 연산이 필요할 때 유용합니다.
+
+## Queue
+
+Queue는 FIFO(선입선출) 자료구조입니다. `enqueue`로 넣고 `dequeue`로 꺼냅니다:
+
+```
+$ cat queue_basic.l3
+let q = Queue.create ()
+let _ = Queue.enqueue q 10
+let _ = Queue.enqueue q 20
+let _ = Queue.enqueue q 30
+let _ = println (to_string (Queue.count q))
+let v1 = Queue.dequeue q ()
+let _ = println (to_string v1)
+let v2 = Queue.dequeue q ()
+let _ = println (to_string v2)
+let _ = println (to_string (Queue.count q))
+
+$ langthree queue_basic.l3
+3
+10
+20
+1
+()
+```
+
+`Queue.dequeue q ()`는 가장 먼저 넣은 값을 꺼내 반환합니다. 빈 큐에서 `dequeue`하면 예외가 발생합니다.
+
+`for x in q do` 구문으로 순회할 수 있습니다 (큐의 내용은 유지됩니다):
+
+```
+$ cat queue_forin.l3
+let q = Queue.create ()
+let _ = Queue.enqueue q 1
+let _ = Queue.enqueue q 2
+let _ = Queue.enqueue q 3
+let _ = for x in q do println (to_string x)
+
+$ langthree queue_forin.l3
+1
+2
+3
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `Queue.create ()` | 빈 Queue 생성 |
+| `Queue.enqueue q v` | 값을 큐의 뒤에 추가 |
+| `Queue.dequeue q ()` | 앞에서 값을 꺼내 반환 (비어 있으면 예외) |
+| `Queue.count q` | 큐의 원소 개수 |
+
+BFS(너비 우선 탐색) 등 FIFO가 필요한 알고리즘에 적합합니다.
+
+## MutableList
+
+MutableList는 동적으로 크기가 변하는 가변 리스트입니다. 배열과 달리 크기가 고정되지 않고, 불변 리스트와 달리 제자리 수정이 가능합니다:
+
+```
+$ cat ml_basic.l3
+let ml = MutableList.create ()
+let _ = MutableList.add ml 10
+let _ = MutableList.add ml 20
+let _ = MutableList.add ml 30
+let _ = println (to_string (MutableList.count ml))
+let _ = println (to_string ml.[0])
+let _ = println (to_string ml.[1])
+let _ = println (to_string ml.[2])
+
+$ langthree ml_basic.l3
+3
+10
+20
+30
+()
+```
+
+`.[i]`로 읽고, `.[i] <- v`로 인덱스 위치의 값을 수정할 수 있습니다:
+
+```
+$ cat ml_index.l3
+let ml = MutableList.create ()
+let _ = MutableList.add ml 100
+let _ = MutableList.add ml 200
+let _ = println (to_string ml.[0])
+let _ = ml.[0] <- 999
+let _ = println (to_string ml.[0])
+
+$ langthree ml_index.l3
+100
+999
+()
+```
+
+`for x in ml do` 구문으로 순회할 수 있습니다:
+
+```
+$ cat ml_forin.l3
+let ml = MutableList.create ()
+let _ = MutableList.add ml 5
+let _ = MutableList.add ml 10
+let _ = MutableList.add ml 15
+let _ = for x in ml do println (to_string x)
+
+$ langthree ml_forin.l3
+5
+10
+15
+()
+```
+
+| 함수 | 설명 |
+|------|------|
+| `MutableList.create ()` | 빈 MutableList 생성 |
+| `MutableList.add ml v` | 뒤에 값 추가 (크기 자동 증가) |
+| `MutableList.count ml` | 원소 개수 |
+| `ml.[i]` | 인덱스 읽기 |
+| `ml.[i] <- v` | 인덱스 쓰기 |
+
+배열보다 유연한 가변 컬렉션이 필요할 때 사용합니다. C#의 `List<T>`나 Python의 `list`에 해당합니다.
+
 ## 언제 사용할까?
 
 대부분의 LangThree 코드는 불변 리스트와 재귀 함수만으로 충분합니다. 가변 데이터 구조는 특정 상황에서 진가를 발휘합니다:
@@ -199,8 +385,11 @@ $ langthree ht_keys.l3
 | 상황 | 권장 |
 |------|------|
 | 순차 처리, 변환, 필터링 | 리스트 + `map`/`filter`/`fold` |
-| 인덱스로 O(1) 접근, 제자리 수정 | Array |
+| 인덱스로 O(1) 접근, 고정 크기 수정 | Array |
+| 동적 크기, 인덱스 접근 + 추가 | MutableList |
 | 동적 키-값 저장, 빈도 계산, 캐시 | Hashtable |
+| 중복 없는 값 집합, 멤버십 테스트 | HashSet |
+| FIFO 순서 처리 (BFS 등) | Queue |
 
 예를 들어 정렬이나 수열 생성은 리스트로 충분하지만, 행렬 연산처럼 특정 위치를 반복적으로 읽고 쓰는 경우는 배열이 적합합니다. 단어 빈도를 집계하거나 결과를 메모이제이션(memoize)할 때는 해시테이블이 자연스럽습니다.
 
@@ -220,6 +409,8 @@ $ langthree ht_keys.l3
 | `Array.map f arr` | 각 원소에 `f`를 적용한 새 배열 반환 |
 | `Array.fold f init arr` | 배열을 하나의 값으로 축약 (커링 콜백 필요) |
 | `Array.init n f` | `f i`로 인덱스 `i`를 초기화한 길이 `n` 배열 생성 |
+| `Array.sort arr` | 배열을 제자리 정렬 |
+| `Array.ofSeq coll` | 임의의 컬렉션을 배열로 변환 |
 
 ### Hashtable
 
@@ -231,3 +422,39 @@ $ langthree ht_keys.l3
 | `Hashtable.containsKey ht k` | 키 `k` 존재 여부 반환 |
 | `Hashtable.keys ht` | 모든 키의 리스트 반환 (순서 비보장) |
 | `Hashtable.remove ht k` | 키 `k`와 해당 값 제거 |
+
+### HashSet
+
+| 함수 | 설명 |
+|------|------|
+| `HashSet.create ()` | 빈 HashSet 생성 |
+| `HashSet.add hs v` | 값 추가 (새로우면 `true`, 중복이면 `false`) |
+| `HashSet.contains hs v` | 값 존재 여부 |
+| `HashSet.count hs` | 원소 개수 |
+
+### Queue
+
+| 함수 | 설명 |
+|------|------|
+| `Queue.create ()` | 빈 Queue 생성 |
+| `Queue.enqueue q v` | 값을 큐의 뒤에 추가 |
+| `Queue.dequeue q ()` | 앞에서 값을 꺼내 반환 (비어 있으면 예외) |
+| `Queue.count q` | 큐의 원소 개수 |
+
+### MutableList
+
+| 함수 | 설명 |
+|------|------|
+| `MutableList.create ()` | 빈 MutableList 생성 |
+| `MutableList.add ml v` | 뒤에 값 추가 |
+| `MutableList.count ml` | 원소 개수 |
+| `ml.[i]` | 인덱스 읽기 |
+| `ml.[i] <- v` | 인덱스 쓰기 |
+
+### StringBuilder
+
+| 함수 | 설명 |
+|------|------|
+| `StringBuilder.create ()` | 빈 StringBuilder 생성 |
+| `StringBuilder.add sb s` | 문자열 또는 문자를 추가 |
+| `StringBuilder.toString sb` | 축적된 내용을 문자열로 반환 |

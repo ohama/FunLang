@@ -10,7 +10,7 @@ Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 # F# unit tests (224 tests)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (573 tests)
+# fslit integration tests (637 tests)
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)
@@ -45,7 +45,7 @@ let result = 1 + 2
 
 ```
 tests/flt/
-├── expr/           # 표현식 모드 테스트 (83 tests, 16 subdirs)
+├── expr/           # 표현식 모드 테스트 (119 tests, 16 subdirs)
 │   ├── arithmetic/ # 산술 연산
 │   ├── boolean/    # 불리언 연산
 │   ├── comparison/ # 비교 연산
@@ -62,29 +62,37 @@ tests/flt/
 │   ├── tuple/      # 튜플
 │   ├── type-annot/ # 타입 주석
 │   └── unit/       # 유닛 타입
-├── file/           # 파일 모드 테스트 (361 tests, 28 subdirs)
-│   ├── adt/        # ADT + GADT (17 tests)
+├── file/           # 파일 모드 테스트 (414 tests, 33 subdirs)
+│   ├── adt/        # ADT + GADT (20 tests)
 │   ├── algorithm/  # 알고리즘 (27 tests)
+│   ├── alias/      # 타입 별칭 (4 tests)
 │   ├── array/      # mutable array (18 tests)
-│   ├── char/       # char type (6 tests)
-│   ├── exception/  # 예외 처리 (9 tests)
+│   ├── char/       # char type (8 tests)
+│   ├── compose/    # 함수 합성 (4 tests)
+│   ├── exception/  # 예외 처리 (11 tests)
 │   ├── fileio/     # file I/O (8 tests)
 │   ├── function/   # 함수 (12 tests)
-│   ├── hashtable/  # hashtable (10 tests)
+│   ├── hashset/    # HashSet (4 tests)
+│   ├── hashtable/  # hashtable (14 tests)
 │   ├── implicit-in/# implicit in (8 tests)
 │   ├── import/     # file import (3 tests)
-│   ├── match/      # 패턴 매칭 (38 tests)
+│   ├── let/        # let 바인딩 (9 tests)
+│   ├── list/       # 리스트 + 컴프리헨션 (4 tests)
+│   ├── match/      # 패턴 매칭 (39 tests)
 │   ├── module/     # 모듈 (11 tests)
 │   ├── mutable/    # 가변 변수 let mut (30 tests)
+│   ├── mutablelist/# MutableList (5 tests)
 │   ├── offside/    # offside rule (34 tests)
 │   ├── operator/   # 사용자 정의 연산자 (16 tests)
 │   ├── option/     # Option 타입 (6 tests)
 │   ├── pipe/       # 파이프 (7 tests)
-│   ├── prelude/    # Prelude (39 tests)
-│   ├── print/      # 출력 (9 tests)
+│   ├── prelude/    # Prelude (54 tests)
+│   ├── print/      # 출력 (10 tests)
+│   ├── property/   # 프로퍼티 디스패치 (4 tests)
+│   ├── queue/      # Queue (4 tests)
 │   ├── range/      # 리스트 범위 (4 tests)
 │   ├── record/     # 레코드 (11 tests)
-│   ├── string/     # 문자열 (5 tests)
+│   ├── string/     # 문자열 + StringBuilder + 슬라이싱 (18 tests)
 │   ├── tco/        # 꼬리 호출 최적화 (4 tests)
 │   └── unit/       # 유닛 (3 tests)
 ├── emit/           # AST/타입 출력 테스트 (100 tests)

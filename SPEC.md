@@ -35,7 +35,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | CHAR | `char` | MUT | `mut` |
 | WHILE | `while` | FOR | `for` |
 | TO | `to` | DOWNTO | `downto` |
-| DO | `do` | | |
+| DO | `do` | IN_KW | `in` |
 
 ### 1.3 Type Keywords (6)
 
@@ -223,6 +223,10 @@ Expr    ::= 'let' IDENT '=' Expr 'in' Expr
           | 'match' Expr 'with' MatchClauses
           | 'try' Expr 'with' MatchClauses
           | 'try' Expr 'with' IDENT '->' Expr   // inline try-with without pipe (v2.2)
+          -- Collection for-in loop (v6.0)
+          | 'for' IDENT 'in' Expr 'do' Expr
+          | 'for' '(' Pattern ',' Pattern ')' 'in' Expr 'do' Expr   // tuple destructuring (v7.1)
+
           | Expr '|>' Expr
           | Expr '>>' Expr
           | Expr '<<' Expr
@@ -256,8 +260,12 @@ Atom    ::= '(' ')'                    // unit
           | '[' Expr ';' SemiExprList ']'  // list
           | '[' Expr '..' Expr ']'     // range
           | '[' Expr '..' Expr '..' Expr ']'  // range with step
+          | '[' 'for' IDENT 'in' Expr '->' Expr ']'       // list comprehension (v7.0)
+          | '[' 'for' IDENT 'in' Expr '..' Expr '->' Expr ']'  // list comprehension with range (v7.0)
           | '(' INFIXOP ')'           // operator as function
           | Atom '.' IDENT            // field access
+          | Atom '.[' Expr '..' Expr ']'     // string slicing s.[start..stop] (v7.0)
+          | Atom '.[' Expr '..' ']'          // string slicing s.[start..] (v7.0)
           | '{' RecordExprInner '}'   // record
 ```
 
@@ -502,12 +510,28 @@ let eval e =
 
 **Types:** `Option 'a = None | Some of 'a`, `Result 'a 'b = Ok of 'a | Error of 'b`
 
-**List functions:** `map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`, `zip`, `take`, `drop`, `any`, `all`, `flatten`, `nth`
+**List functions:** `map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`, `zip`, `take`, `drop`, `any`, `all`, `flatten`, `nth`, `head`, `tail`, `exists`, `item`, `isEmpty`, `sort`, `sortBy`, `mapi`, `tryFind`, `choose`, `distinctBy`, `ofSeq`
 
 **Core functions:** `id`, `const`, `compose`, `flip`, `apply`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore`
 
+**Option functions:** `optionMap`, `optionBind`, `optionDefault`, `optionDefaultValue`, `optionFilter`, `optionIter`, `isSome`, `isNone`
+
+**Result functions:** `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `resultDefaultValue`, `resultIter`, `resultToOption`, `isOk`, `isError`
+
 **Operators:** `++` (list append), `<|>` (Option fallback), `^^` (string concat)
 
-**Array functions (qualified):** `Array.create`, `Array.get`, `Array.set`, `Array.length`, `Array.ofList`, `Array.toList`, `Array.iter`, `Array.map`, `Array.fold`, `Array.init`
+**Array functions (qualified):** `Array.create`, `Array.get`, `Array.set`, `Array.length`, `Array.ofList`, `Array.toList`, `Array.iter`, `Array.map`, `Array.fold`, `Array.init`, `Array.sort`, `Array.ofSeq`
 
 **Hashtable functions (qualified):** `Hashtable.create`, `Hashtable.get`, `Hashtable.set`, `Hashtable.containsKey`, `Hashtable.keys`, `Hashtable.remove`
+
+**String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`
+
+**Char functions (qualified):** `Char.IsDigit`, `Char.IsLetter`, `Char.IsUpper`, `Char.IsLower`, `Char.ToUpper`, `Char.ToLower`
+
+**HashSet functions (qualified):** `HashSet.create`, `HashSet.add`, `HashSet.contains`, `HashSet.count`
+
+**Queue functions (qualified):** `Queue.create`, `Queue.enqueue`, `Queue.dequeue`, `Queue.count`
+
+**MutableList functions (qualified):** `MutableList.create`, `MutableList.add`, `MutableList.count`
+
+**StringBuilder functions (qualified):** `StringBuilder.create`, `StringBuilder.add`, `StringBuilder.toString`
