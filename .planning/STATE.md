@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.1 Remove Dot Notation — IN PROGRESS
-Phase: 60 of 62 (Builtins & Prelude Modules) — COMPLETE
-Plan: 02 of 02 complete
-Status: Phase complete — verified ✓
-Last activity: 2026-03-29 — Phase 60 verified (8/8 must-haves passed)
+Phase: 61 of 62 (Hashtable Tuple & Test Conversion) — IN PROGRESS
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-03-29 — Completed 61-01-PLAN.md (ForInExpr Pattern support + TupleValue hashtable iteration)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [██░░░░░░░░] 20%
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
@@ -52,6 +52,8 @@ Key cross-milestone context:
 - Module export builder in TypeCheck.fs filtered out shadow bindings — fixed: now includes binding when type differs from outer env (v <> outerV)
 - Module value env in Eval.fs filtered out shadow closures — fixed: uses obj.ReferenceEquals to detect new closures vs inherited
 - Module functions CAN shadow globally open'd names (e.g. String.length coexists with List.length) after the TypeCheck+Eval fix
+- ForInExpr var is now Pattern (not string) — for-in supports tuple destructuring `for (k, v) in ht do ...`
+- Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair) — KeyValuePair field access arm in Bidir.fs retained until Plan 02 removes it
 
 ### Pending Todos
 
@@ -59,15 +61,16 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- hashtable-forin.flt test failing (planned regression) — uses kv.Key/kv.Value, will be rewritten in Plan 02
+- KeyValuePair field access arm in Bidir.fs retained until Plan 02 test conversion complete
 
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 60-02-PLAN.md (Phase 60 complete)
+Stopped at: Completed 61-01-PLAN.md (ForInExpr Pattern + TupleValue hashtable iteration)
 Resume file: None
-Next action: Execute Phase 61
+Next action: Execute Phase 61 Plan 02 (test conversion)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (60-02 complete: Prelude modules + flt tests)*
+*Last updated: 2026-03-29 (61-01 complete: ForInExpr Pattern support)*
