@@ -1,5 +1,29 @@
 # Project Milestones: LangThree
 
+## v6.0 Practical Programming (Shipped: 2026-03-29)
+
+**Delivered:** 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, Option/Result 유틸리티로 실용적 프로그래밍 완성 — `;` 없이 멀티라인 본문, `for x in list do body`, 8개 새 Prelude 함수
+
+**Phases completed:** 50-53 (5 plans total)
+
+**Key accomplishments:**
+- IndentFilter SEMICOLON injection으로 같은 들여쓰기 줄이 자동 시퀀싱 (isContinuationStart + isStructuralTerminator 가드)
+- ForInExpr AST 노드로 `for x in collection do body` — 리스트/배열 직접 반복, 루프 변수 불변
+- 8개 Option/Result 프리루드 조합자 (optionIter/Filter/DefaultValue/IsSome/IsNone + resultIter/ToOption/DefaultValue)
+- 한국어 튜토리얼 챕터 22 (실용 프로그래밍, 223줄) — 바이너리 검증된 예제
+- 17/17 요구사항 전량 충족, 591 flt 테스트 통과
+
+**Stats:**
+- 30 files changed, +502 LOC
+- ~12,577 lines of F# source
+- 4 phases, 5 plans
+- 2 days (2026-03-28 → 2026-03-29)
+- 224 F# unit tests + 591 flt tests, all passing
+
+**Git range:** `feat(50-01)` → `docs(53-02)`
+
+---
+
 ## v5.0 Imperative Ergonomics (Shipped: 2026-03-28)
 
 **Delivered:** 표현식 시퀀싱(`e1; e2`), while/for 루프, 배열/해시테이블 인덱싱 구문(`arr.[i]`), else 없는 if — v4.0 가변 변수 위에 명령형 에르고노믹스 레이어 완성
