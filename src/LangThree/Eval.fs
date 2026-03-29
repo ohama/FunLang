@@ -753,6 +753,46 @@ let initialBuiltinEnv : Env =
             match mlVal with
             | MutableListValue ml -> IntValue ml.Count
             | _ -> failwith "mutablelist_count: expected MutableList")
+
+        // Phase 59: List/Array seq primitives
+
+        // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
+        "list_sort_by", BuiltinValue (fun fVal ->
+            BuiltinValue (fun listVal ->
+                match listVal with
+                | ListValue xs ->
+                    let keyed = xs |> List.map (fun x -> (callValue fVal x, x))
+                    let sorted = keyed |> List.sortWith (fun (k1, _) (k2, _) -> Value.valueCompare k1 k2)
+                    ListValue (sorted |> List.map snd)
+                | _ -> failwith "list_sort_by: expected list"))
+
+        // list_of_seq : seq<'a> -> 'a list
+        "list_of_seq", BuiltinValue (fun v ->
+            match v with
+            | ListValue xs        -> ListValue xs
+            | ArrayValue arr      -> ListValue (Array.toList arr)
+            | HashSetValue hs     -> ListValue (hs |> Seq.toList)
+            | QueueValue q        -> ListValue (q |> Seq.toList)
+            | MutableListValue ml -> ListValue (ml |> Seq.toList)
+            | _ -> failwith "list_of_seq: expected a collection (list, array, HashSet, Queue, or MutableList)")
+
+        // array_sort : 'a array -> unit
+        "array_sort", BuiltinValue (fun arrVal ->
+            match arrVal with
+            | ArrayValue arr ->
+                System.Array.Sort(arr, fun x y -> Value.valueCompare x y)
+                TupleValue []
+            | _ -> failwith "array_sort: expected array")
+
+        // array_of_seq : seq<'a> -> 'a array
+        "array_of_seq", BuiltinValue (fun v ->
+            match v with
+            | ListValue xs        -> ArrayValue (List.toArray xs)
+            | ArrayValue arr      -> ArrayValue (Array.copy arr)
+            | HashSetValue hs     -> ArrayValue (hs |> Seq.toArray)
+            | QueueValue q        -> ArrayValue (q |> Seq.toArray)
+            | MutableListValue ml -> ArrayValue (ml |> Seq.toArray)
+            | _ -> failwith "array_of_seq: expected a collection")
     ]
 
 /// Module value environment for runtime qualified access
