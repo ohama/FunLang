@@ -1,0 +1,13 @@
+// Test: .Contains method on strings
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let s = "hello world"
+let found = s.Contains("world")
+let _ = println (to_string found)
+let notFound = s.Contains("xyz")
+let _ = println (to_string notFound)
+let _ = println (to_string ("hello".Contains("lo")))
+// --- Stdout:
+true
+false
+true

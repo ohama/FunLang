@@ -1087,8 +1087,23 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                     | None -> failwithf "Field not found: %s" fieldName
                 | _ -> failwithf "Field access on non-record value: %s" (formatValue v)
         | _ ->
-            // Regular record field access
+            // Regular record field access (with Phase 54 value-type dispatch)
             match eval recEnv moduleEnv env false expr with
+            // Phase 54: String properties and methods
+            | StringValue s ->
+                match fieldName with
+                | "Length" -> IntValue s.Length
+                | "Contains" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | StringValue needle -> BoolValue (s.Contains(needle))
+                        | _ -> failwith "String.Contains: expected string argument")
+                | _ -> failwithf "String has no property or method '%s'" fieldName
+            // Phase 54: Array properties
+            | ArrayValue arr ->
+                match fieldName with
+                | "Length" -> IntValue arr.Length
+                | _ -> failwithf "Array has no property or method '%s'" fieldName
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef

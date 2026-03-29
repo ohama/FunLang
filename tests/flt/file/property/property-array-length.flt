@@ -1,0 +1,11 @@
+// Test: .Length property on arrays
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let arr = Array.create 3 0
+let n = arr.Length
+let _ = println (to_string n)
+let arr2 = Array.create 5 "x"
+let _ = println (to_string arr2.Length)
+// --- Stdout:
+3
+5

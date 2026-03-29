@@ -515,6 +515,19 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s1, exprTy = synth ctorEnv recEnv ctx env accessExpr
         let resolvedTy = apply s1 exprTy
         match resolvedTy with
+        // Phase 54: String property/method types
+        | TString ->
+            match fieldName with
+            | "Length" -> (s1, TInt)
+            | "Contains" -> (s1, TArrow(TString, TBool))
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 54: Array property types
+        | TArray _ ->
+            match fieldName with
+            | "Length" -> (s1, TInt)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
             match Map.tryFind typeName recEnv with
             | Some recInfo ->
