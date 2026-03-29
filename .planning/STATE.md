@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 58 - Language Constructs ✓ COMPLETE
-Plan: 3/3 complete
-Status: Phase 58 verified, Phase 59 next
-Last activity: 2026-03-29 -- Phase 58 complete (5/5 must-haves, 614 flt tests)
+Phase: 59 - Prelude Extensions (in progress)
+Plan: 1/3 complete
+Status: In progress
+Last activity: 2026-03-29 -- Completed 59-01-PLAN.md (4 new builtins: list_sort_by, list_of_seq, array_sort, array_of_seq)
 
-Progress: [████████████████░░░░] 83% -- Phases 54-58 done, Phase 59 next
+Progress: [████████████████░░░░] 85% -- Phases 54-58 done, Phase 59 in progress (1/3)
 
 ## Performance Metrics
 
@@ -75,9 +75,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 58 Plan 03 complete -- 6 flt integration tests, 614/614 suite green
+Stopped at: Phase 59 Plan 01 complete -- 4 new builtins in Eval.fs, build clean
 Resume file: None
-Next action: None -- Phase 58 complete, v7.0 language constructs milestone done
+Next action: Execute 59-02-PLAN.md (List.fun wrapper) and 59-03-PLAN.md (Array.fun wrapper)
 
 ---
 *State initialized: 2026-02-25*
