@@ -1,0 +1,21 @@
+// Test: HashSet basic usage with integers (COLL-02)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let hs = HashSet ()
+let r1 = hs.Add(1)
+let r2 = hs.Add(2)
+let r3 = hs.Add(1)
+let _ = println (to_string r1)
+let _ = println (to_string r2)
+let _ = println (to_string r3)
+let _ = println (to_string (hs.Contains(1)))
+let _ = println (to_string (hs.Contains(9)))
+let _ = println (to_string hs.Count)
+// --- Output:
+true
+true
+false
+true
+false
+2
+()

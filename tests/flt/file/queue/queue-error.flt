@@ -1,0 +1,14 @@
+// Test: Queue.Dequeue on empty queue raises exception (COLL-03)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let q = Queue ()
+let result =
+    try
+        let _ = q.Dequeue ()
+        "no error"
+    with
+    | e -> "caught: " ^^ e
+let _ = println result
+// --- Output:
+caught: Queue.Dequeue: queue is empty
+()

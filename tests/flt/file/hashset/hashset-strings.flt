@@ -1,0 +1,15 @@
+// Test: HashSet with string elements (COLL-02)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let hs = HashSet ()
+let _ = hs.Add("apple")
+let _ = hs.Add("banana")
+let _ = hs.Add("apple")
+let _ = println (to_string hs.Count)
+let _ = println (to_string (hs.Contains("apple")))
+let _ = println (to_string (hs.Contains("cherry")))
+// --- Output:
+2
+true
+false
+()
