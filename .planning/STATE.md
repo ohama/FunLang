@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 59 - Prelude Extensions (in progress)
-Plan: 2/3 complete
-Status: In progress
-Last activity: 2026-03-29 -- Completed 59-02-PLAN.md (12 new List.* + 2 Array.* functions in Prelude)
+Phase: 59 - Prelude Extensions (complete)
+Plan: 3/3 complete
+Status: Phase complete
+Last activity: 2026-03-29 -- Completed 59-03-PLAN.md (5 flt integration tests for PRE-01 through PRE-05)
 
-Progress: [████████████████░░░░] 85% -- Phases 54-58 done, Phase 59 in progress (1/3)
+Progress: [████████████████████] 90% -- Phases 54-59 done
 
 ## Performance Metrics
 
@@ -66,6 +66,9 @@ Key cross-milestone context:
 - Prelude/HashSet.fun and Prelude/Queue.fun: same pattern -- use raw builtins hashset_*/queue_* not dot-dispatch (TVar FieldAccess not supported)
 - Unit pattern () in module let binding params (let f x () = ...) does not parse in .fun files -- use named param instead
 - flt tests: expected output must include () for final let _ = println expr
+- Multi-arg lambdas (fun i x -> ...) fail to parse -- use curried form (fun i -> fun x -> ...)
+- mod is not a LangThree keyword -- use % for integer modulo
+- list_of_seq and array_of_seq type schemes use TVar 0 input (unconstrained) to accept HashSet/Queue/MutableList -- not TList
 
 ### Pending Todos
 
@@ -78,9 +81,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 59 Plan 02 complete -- 14 new Prelude functions (12 List + 2 Array), Option.fun renamed to A_Option.fun
+Stopped at: Phase 59 Plan 03 complete -- 5 flt tests (PRE-01 through PRE-05), TypeCheck.fs ofSeq type fix
 Resume file: None
-Next action: Execute 59-03-PLAN.md (tests for new List/Array functions)
+Next action: Phase 59 complete. Proceed to next milestone phase.
 
 ---
 *State initialized: 2026-02-25*
