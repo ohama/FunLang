@@ -1,0 +1,17 @@
+// Test: MutableList index read and write (COLL-04, .[i] indexing)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ml = MutableList ()
+let _ = ml.Add(100)
+let _ = ml.Add(200)
+let _ = println (to_string ml.[0])
+let _ = ml.[0] <- 999
+let _ = println (to_string ml.[0])
+let _ = println (to_string ml.[1])
+let _ = println (to_string ml.Count)
+// --- Output:
+100
+999
+200
+2
+()
