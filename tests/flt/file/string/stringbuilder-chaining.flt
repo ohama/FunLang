@@ -1,5 +1,5 @@
 // Test: StringBuilder method chaining (COLL-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let sb = StringBuilder ()
 let r1 = sb.Append "a"
