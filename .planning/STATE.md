@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.1 Remove Dot Notation — IN PROGRESS
-Phase: 61 of 62 (Hashtable Tuple & Test Conversion) — IN PROGRESS
-Plan: 01 of 02 complete
-Status: In progress
-Last activity: 2026-03-29 — Completed 61-01-PLAN.md (ForInExpr Pattern support + TupleValue hashtable iteration)
+Phase: 61 of 62 (Hashtable Tuple & Test Conversion) — COMPLETE
+Plan: 02 of 02 complete
+Status: Phase complete
+Last activity: 2026-03-29 — Completed 61-02-PLAN.md (fix stale paths + convert hashtable tests to module functions)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [███░░░░░░░] 30%
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -53,7 +53,8 @@ Key cross-milestone context:
 - Module value env in Eval.fs filtered out shadow closures — fixed: uses obj.ReferenceEquals to detect new closures vs inherited
 - Module functions CAN shadow globally open'd names (e.g. String.length coexists with List.length) after the TypeCheck+Eval fix
 - ForInExpr var is now Pattern (not string) — for-in supports tuple destructuring `for (k, v) in ht do ...`
-- Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair) — KeyValuePair field access arm in Bidir.fs retained until Plan 02 removes it
+- Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair)
+- Hashtable module API: Hashtable.tryGetValue/count/keys — no dot-notation anywhere in flt tests
 
 ### Pending Todos
 
@@ -61,15 +62,14 @@ None.
 
 ### Blockers/Concerns
 
-- hashtable-forin.flt test failing (planned regression) — uses kv.Key/kv.Value, will be rewritten in Plan 02
-- KeyValuePair field access arm in Bidir.fs retained until Plan 02 test conversion complete
+None.
 
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 61-01-PLAN.md (ForInExpr Pattern + TupleValue hashtable iteration)
+Stopped at: Completed 61-02-PLAN.md (stale path fix + hashtable test conversion)
 Resume file: None
-Next action: Execute Phase 61 Plan 02 (test conversion)
+Next action: Execute Phase 62 (final v7.1 cleanup or milestone close)
 
 ---
 *State initialized: 2026-02-25*
