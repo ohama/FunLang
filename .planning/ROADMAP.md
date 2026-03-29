@@ -41,9 +41,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 55-01-PLAN.md — Add string methods (EndsWith/StartsWith/Trim) and eprintfn builtin
-- [ ] 55-02-PLAN.md — Add Char and String.concat modules via Prelude files and builtins
-- [ ] 55-03-PLAN.md — Add StringBuilder type (new Value DU case, constructor interception, dispatch, Prelude module)
+- [x] 55-01-PLAN.md — Add string methods (EndsWith/StartsWith/Trim) and eprintfn builtin
+- [x] 55-02-PLAN.md — Add Char and String.concat modules via Prelude files and builtins
+- [x] 55-03-PLAN.md — Add StringBuilder type (new Value DU case, constructor interception, dispatch, Prelude module)
 
 ---
 
@@ -115,7 +115,7 @@ Plans:
 | Phase | Name | Status | Plans |
 |-------|------|--------|-------|
 | 54 | Property & Method Dispatch | ✓ Complete | 1/1 |
-| 55 | StringBuilder & String Utilities | Planned | 0/3 |
+| 55 | StringBuilder & String Utilities | ✓ Complete | 3/3 |
 | 56 | HashSet & Queue | Not Started | — |
 | 57 | MutableList & Hashtable Enhancement | Not Started | — |
 | 58 | Language Constructs | Not Started | — |

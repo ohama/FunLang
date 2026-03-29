@@ -67,11 +67,11 @@
 |-------------|-------|--------|
 | PROP-01 | Phase 54 | Complete |
 | PROP-04 | Phase 54 | Complete |
-| COLL-01 | Phase 55 | Pending |
-| STR-01 | Phase 55 | Pending |
-| STR-02 | Phase 55 | Pending |
-| STR-03 | Phase 55 | Pending |
-| STR-04 | Phase 55 | Pending |
+| COLL-01 | Phase 55 | Complete |
+| STR-01 | Phase 55 | Complete |
+| STR-02 | Phase 55 | Complete |
+| STR-03 | Phase 55 | Complete |
+| STR-04 | Phase 55 | Complete |
 | COLL-02 | Phase 56 | Pending |
 | COLL-03 | Phase 56 | Pending |
 | COLL-04 | Phase 57 | Pending |
