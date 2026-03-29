@@ -213,7 +213,38 @@ $ langthree main.l3
 11
 ```
 
-경로는 현재 파일의 위치를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.
+경로는 현재 작업 디렉토리(CWD, 프로젝트 루트)를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.
+
+### 하위 디렉토리의 파일 임포트
+
+프로젝트가 여러 디렉토리로 구성되어 있어도, 경로는 항상 CWD 기준입니다. 파일이 어디에 있든 프로젝트 루트에서의 경로를 쓰면 됩니다:
+
+```
+project/          ← CWD (여기서 langthree 실행)
+├── main.l3
+├── lib/
+│   └── math.fun
+└── utils/
+    └── format.fun
+```
+
+```
+$ cat lib/math.fun
+let square x = x * x
+
+$ cat utils/format.fun
+open "lib/math.fun"
+let formatSquare x = to_string (square x)
+
+$ cat main.l3
+open "utils/format.fun"
+let result = formatSquare 7
+
+$ langthree main.l3
+"49"
+```
+
+`utils/format.fun` 안에서도 `open "lib/math.fun"`이 CWD(`project/`) 기준으로 해석됩니다. `open "../lib/math.fun"` 같은 상대 경로가 필요 없어, 파일을 이동해도 경로가 깨지지 않습니다.
 
 ### 임포트된 모듈의 한정된 접근
 

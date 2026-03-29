@@ -248,7 +248,7 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
             let libPath = System.IO.Path.Combine(tmpDir, "lib.fun")
             let mainPath = System.IO.Path.Combine(tmpDir, "main.fun")
             System.IO.File.WriteAllText(libPath, "let greeting = \"hello\"\nlet add x y = x + y\n")
-            System.IO.File.WriteAllText(mainPath, "open \"lib.fun\"\nlet result = add 3 4\n")
+            System.IO.File.WriteAllText(mainPath, sprintf "open \"%s\"\nlet result = add 3 4\n" libPath)
             let result = evalFileModule mainPath
             Expect.equal result (Ast.IntValue 7) "imported add function returns 7"
         finally
@@ -263,7 +263,7 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
             let utilsPath = System.IO.Path.Combine(tmpDir, "utils.fun")
             let progPath = System.IO.Path.Combine(tmpDir, "prog.fun")
             System.IO.File.WriteAllText(utilsPath, "let double x = x * 2\n")
-            System.IO.File.WriteAllText(progPath, "open \"utils.fun\"\nlet result = double 5\n")
+            System.IO.File.WriteAllText(progPath, sprintf "open \"%s\"\nlet result = double 5\n" utilsPath)
             let result = evalFileModule progPath
             Expect.equal result (Ast.IntValue 10) "imported double function returns 10"
         finally
