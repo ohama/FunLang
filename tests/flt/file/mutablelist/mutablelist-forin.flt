@@ -1,0 +1,13 @@
+// Test: for-in iteration over MutableList (LANG-03)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ml = MutableList ()
+let _ = ml.Add(5)
+let _ = ml.Add(10)
+let _ = ml.Add(15)
+let _ = for x in ml do println (to_string x)
+// --- Output:
+5
+10
+15
+()
