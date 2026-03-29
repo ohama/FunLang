@@ -103,6 +103,12 @@ Plans:
 4. `for kv in hashtable do kv.Key ... kv.Value` iterates over key-value pairs with `.Key`/`.Value` access
 5. flt tests verify all three constructs including edge cases (empty collections, range slicing boundaries)
 
+**Plans:** 3 plans
+Plans:
+- [ ] 58-01-PLAN.md — Add StringSliceExpr and ListCompExpr AST nodes to Ast.fs; add parser grammar rules to Parser.fsy
+- [ ] 58-02-PLAN.md — Implement eval and type-checking in Eval.fs and Bidir.fs; extend ForInExpr for native collections
+- [ ] 58-03-PLAN.md — Write flt tests for string slicing, list comprehension, and native for-in iteration
+
 ---
 
 ### Phase 59: Prelude Extensions
@@ -128,7 +134,7 @@ Plans:
 | 55 | StringBuilder & String Utilities | ✓ Complete | 3/3 |
 | 56 | HashSet & Queue | ✓ Complete | 2/2 |
 | 57 | MutableList & Hashtable Enhancement | ✓ Complete | 2/2 |
-| 58 | Language Constructs | Not Started | — |
+| 58 | Language Constructs | In Progress | 0/3 |
 | 59 | Prelude Extensions | Not Started | — |
 
 ## Coverage
