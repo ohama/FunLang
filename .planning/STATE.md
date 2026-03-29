@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.0 Native Collections & Built-in Library
 Phase: 55 - StringBuilder & String Utilities (in progress)
-Plan: 2/? complete
-Status: Phase 55 Plan 02 complete, more plans may follow
-Last activity: 2026-03-29 -- Phase 55 Plan 02 complete (Char module, String.concat)
+Plan: 3/? complete
+Status: Phase 55 Plan 03 complete, more plans may follow
+Last activity: 2026-03-29 -- Phase 55 Plan 03 complete (StringBuilder type with Append/ToString)
 
-Progress: [████░░░░░░░░░░░░░░░░] 20% -- Phase 55 Plans 01-02 done
+Progress: [████░░░░░░░░░░░░░░░░] 20% -- Phase 55 Plans 01-03 done
 
 ## Performance Metrics
 
@@ -51,6 +51,11 @@ Key cross-milestone context:
 - to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
 - HashtableValue wraps Dictionary<Value,Value> -- Phase 57 adds .TryGetValue, .Count, .Keys
 - callValueRef forward reference pattern used for builtins that invoke user closures
+- StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
+- sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
+- AppExpr DOT IDENT grammar rule added to Parser.fsy for method chaining; inline sb.Append("a").Append("b") still has LALR conflict, use intermediate bindings
+- Prelude/StringBuilder.fun: uses stringbuilder_create/append/tostring builtins (not method dispatch -- TVar FieldAccess not supported)
+- flt tests: expected output must include () for final let _ = println expr
 
 ### Pending Todos
 
@@ -63,7 +68,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 55 Plan 02 complete -- Char module (IsDigit/ToUpper/etc.) + String.concat via Prelude modules
+Stopped at: Phase 55 Plan 03 complete -- StringBuilder type (Append/ToString/chaining) + Prelude module + flt tests
 Resume file: None
 Next action: Continue Phase 55 or plan next phase
 
