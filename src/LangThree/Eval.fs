@@ -966,7 +966,14 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             match collVal with
             | ListValue xs -> xs
             | ArrayValue arr -> arr |> Array.toList
-            | _ -> failwith "for-in: collection must be a list or array"
+            | HashSetValue hs -> hs |> Seq.toList
+            | QueueValue q -> q |> Seq.toList
+            | MutableListValue ml -> ml |> Seq.toList
+            | HashtableValue ht ->
+                ht |> Seq.map (fun kv ->
+                    let fields = Map.ofList [("Key", ref kv.Key); ("Value", ref kv.Value)]
+                    RecordValue("KeyValuePair", fields)) |> Seq.toList
+            | _ -> failwith "for-in: collection must be a list, array, or native collection"
         for elemVal in elements do
             let loopEnv = Map.add var elemVal env
             eval recEnv moduleEnv loopEnv false body |> ignore
@@ -1011,6 +1018,39 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             ml.[i] <- newVal
             TupleValue []
         | _ -> failwith "IndexSet: expected array, hashtable, or MutableList"
+
+    // Phase 58: String slicing s.[start..stop] and s.[start..]
+    | StringSliceExpr (strExpr, startExpr, stopOpt, _) ->
+        let strVal   = eval recEnv moduleEnv env false strExpr
+        let startVal = eval recEnv moduleEnv env false startExpr
+        match strVal, startVal with
+        | StringValue s, IntValue start ->
+            let stop =
+                match stopOpt with
+                | Some stopExpr ->
+                    match eval recEnv moduleEnv env false stopExpr with
+                    | IntValue i -> i
+                    | _ -> failwith "String slice: end index must be int"
+                | None -> s.Length - 1
+            StringValue (s.[start .. stop])
+        | _ -> failwith "String slice: expected string and int index"
+
+    // Phase 58: List comprehension [for x in coll -> body]
+    | ListCompExpr (var, collExpr, bodyExpr, _) ->
+        let collVal = eval recEnv moduleEnv env false collExpr
+        let elements =
+            match collVal with
+            | ListValue xs -> xs
+            | ArrayValue arr -> arr |> Array.toList
+            | HashSetValue hs -> hs |> Seq.toList
+            | QueueValue q -> q |> Seq.toList
+            | MutableListValue ml -> ml |> Seq.toList
+            | _ -> failwith "List comprehension: collection must be a list, array, or native collection"
+        let results =
+            elements |> List.map (fun elemVal ->
+                let loopEnv = Map.add var elemVal env
+                eval recEnv moduleEnv loopEnv false bodyExpr)
+        ListValue results
 
     // Phase 42: Mutable variable assignment
     | Assign (name, valueExpr, _) ->
