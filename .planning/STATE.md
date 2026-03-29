@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 54 - Property & Method Dispatch ✓ COMPLETE
-Plan: 1/1 complete
-Status: Phase 54 verified, Phase 55 next
-Last activity: 2026-03-29 -- Phase 54 complete (7/7 must-haves verified)
+Phase: 55 - StringBuilder & String Utilities (in progress)
+Plan: 1/? complete
+Status: Phase 55 Plan 01 complete, more plans may follow
+Last activity: 2026-03-29 -- Phase 55 Plan 01 complete (EndsWith/StartsWith/Trim/eprintfn)
 
-Progress: [███░░░░░░░░░░░░░░░░░] 17% -- Phase 54 done, Phase 55 next
+Progress: [████░░░░░░░░░░░░░░░░] 20% -- Phase 55 Plan 01 done
 
 ## Performance Metrics
 
@@ -42,6 +42,9 @@ Key cross-milestone context:
 - FieldAccess now dispatches on value types (Phase 54): TString/TArray in Bidir.fs, StringValue/ArrayValue in Eval.fs
 - .Contains returns BuiltinValue so App(FieldAccess(...), arg) dispatch works via existing applyFunc
 - Value-type dispatch in FieldAccess must come BEFORE RecordValue match in Eval.fs | _ -> branch
+- .Trim() must return BuiltinValue(TupleValue [] -> ...) NOT StringValue directly (App parse requires function in position)
+- FsLit only supports // --- Output: not // --- Stdout: for stdout sections; Stdout: silently ignored
+- eprintfn mirrors applyPrintfnArgs but writes to stderr; type scheme Scheme([0], TArrow(TString, TVar 0))
 - IndexGet/IndexSet AST nodes exist for arr.[i] syntax -- Phase 58 extends for string slicing
 - HashtableValue wraps Dictionary<Value,Value> -- Phase 57 adds .TryGetValue, .Count, .Keys
 - callValueRef forward reference pattern used for builtins that invoke user closures
@@ -57,9 +60,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 54 complete -- .Length (strings/arrays) and .Contains (strings) via FieldAccess dispatch, 594 flt tests
+Stopped at: Phase 55 Plan 01 complete -- EndsWith/StartsWith/Trim string methods + eprintfn, 17 string/print flt tests
 Resume file: None
-Next action: `/gsd:plan-phase 55` (StringBuilder & String Utilities)
+Next action: Continue Phase 55 or plan next phase
 
 ---
 *State initialized: 2026-02-25*
