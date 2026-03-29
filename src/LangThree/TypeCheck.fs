@@ -199,6 +199,14 @@ let initialTypeEnv: TypeEnv =
         "mutablelist_set",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TInt, TArrow(TVar 0, TTuple []))))
         // mutablelist_count : MutableList -> int
         "mutablelist_count",   Scheme([], TArrow(TData("MutableList", []), TInt))
+        // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
+        "list_sort_by",        Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
+        // list_of_seq : 'a list -> 'a list  (accepts any seq-like; typed as list->list for checker)
+        "list_of_seq",         Scheme([0], TArrow(TList (TVar 0), TList (TVar 0)))
+        // array_sort : 'a array -> unit
+        "array_sort",          Scheme([0], TArrow(TArray (TVar 0), TTuple []))
+        // array_of_seq : 'a list -> 'a array  (accepts any seq-like; typed as list->array for checker)
+        "array_of_seq",        Scheme([0], TArrow(TList (TVar 0), TArray (TVar 0)))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
