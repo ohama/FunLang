@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 57 - MutableList & Hashtable Enhancement (in progress)
-Plan: 1/2 complete
-Status: Phase 57 Plan 01 complete, Plan 02 next
-Last activity: 2026-03-29 -- Completed 57-01-PLAN.md (MutableList native collection)
+Phase: 57 - MutableList & Hashtable Enhancement (complete)
+Plan: 2/2 complete
+Status: Phase 57 complete
+Last activity: 2026-03-29 -- Completed 57-02-PLAN.md (Hashtable FieldAccess + flt tests)
 
-Progress: [██████████░░░░░░░░░░] 50% -- Phases 54-56 done, Phase 57 in progress
+Progress: [████████████████████] 100% -- Phases 54-57 done, Phase 57 complete
 
 ## Performance Metrics
 
@@ -49,7 +49,7 @@ Key cross-milestone context:
 - Char module in Prelude/Char.fun: IsDigit, ToUpper, IsLetter, IsUpper, IsLower, ToLower (qualified-only)
 - String.concat in Prelude/String.fun wraps string_concat_list (NOT string_concat) to avoid type collision
 - to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
-- HashtableValue wraps Dictionary<Value,Value> -- Phase 57 adds .TryGetValue, .Count, .Keys
+- HashtableValue wraps Dictionary<Value,Value> -- Phase 57-02 added .TryGetValue, .Count, .Keys via FieldAccess; THashtable(keyTy,valTy) arm in Bidir.fs (NOT TData)
 - MutableListValue wraps System.Collections.Generic.List<Value> (Phase 57-01): Constructor("MutableList") intercepted; Add/Count via FieldAccess; IndexGet/IndexSet bounds-checked; raw builtins mutablelist_* in Eval.fs/TypeCheck.fs; Prelude/MutableList.fun uses raw builtins (same pattern as HashSet/Queue)
 - callValueRef forward reference pattern used for builtins that invoke user closures
 - StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
@@ -73,9 +73,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 57 Plan 01 complete -- MutableList native collection (Ast/Eval/Bidir/TypeCheck + Prelude)
+Stopped at: Phase 57 Plan 02 complete -- Hashtable FieldAccess dispatch + MutableList/Hashtable flt tests
 Resume file: None
-Next action: Phase 57 Plan 02 (Hashtable enhancements)
+Next action: Phase 57 complete; next milestone phase TBD
 
 ---
 *State initialized: 2026-02-25*
