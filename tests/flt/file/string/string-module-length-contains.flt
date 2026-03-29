@@ -1,0 +1,12 @@
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = println (to_string (String.length "abc"))
+let _ = println (to_string (String.length ""))
+let _ = println (to_string (String.contains "hello" "ell"))
+let _ = println (to_string (String.contains "hello" "xyz"))
+// --- Output:
+3
+0
+true
+false
+()

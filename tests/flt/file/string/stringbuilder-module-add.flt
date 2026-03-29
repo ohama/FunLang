@@ -1,0 +1,9 @@
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let sb = StringBuilder.create ()
+let _ = StringBuilder.add sb "hello"
+let _ = StringBuilder.add sb " world"
+let _ = println (StringBuilder.toString sb)
+// --- Output:
+hello world
+()
