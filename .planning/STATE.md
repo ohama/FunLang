@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.0 Native Collections & Built-in Library
 Phase: 56 - HashSet & Queue
-Plan: 1/2 complete
-Status: In progress
-Last activity: 2026-03-29 -- Completed 56-01-PLAN.md (HashSet/Queue core types)
+Plan: 2/2 complete
+Status: Phase complete
+Last activity: 2026-03-29 -- Completed 56-02-PLAN.md (HashSet/Queue Prelude modules + flt tests)
 
 Progress: [██████░░░░░░░░░░░░░░] 33% -- Phases 54-55 done, Phase 56 next
 
@@ -57,6 +57,8 @@ Key cross-milestone context:
 - QueueValue wraps System.Collections.Generic.Queue<Value> (Phase 56-01): Constructor("Queue") intercepted; Enqueue/Dequeue/Count dispatch; empty Dequeue raises LangThreeException
 - AppExpr DOT IDENT grammar rule added to Parser.fsy for method chaining; inline sb.Append("a").Append("b") still has LALR conflict, use intermediate bindings
 - Prelude/StringBuilder.fun: uses stringbuilder_create/append/tostring builtins (not method dispatch -- TVar FieldAccess not supported)
+- Prelude/HashSet.fun and Prelude/Queue.fun: same pattern -- use raw builtins hashset_*/queue_* not dot-dispatch (TVar FieldAccess not supported)
+- Unit pattern () in module let binding params (let f x () = ...) does not parse in .fun files -- use named param instead
 - flt tests: expected output must include () for final let _ = println expr
 
 ### Pending Todos
@@ -70,9 +72,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 56 Plan 01 complete -- HashSet/Queue core types (constructor interception + FieldAccess dispatch)
+Stopped at: Phase 56 Plan 02 complete -- HashSet/Queue Prelude modules + flt integration tests (Phase 56 complete)
 Resume file: None
-Next action: Phase 56 Plan 02 (flt integration tests for HashSet and Queue)
+Next action: Phase 57 (Hashtable enhancements)
 
 ---
 *State initialized: 2026-02-25*
