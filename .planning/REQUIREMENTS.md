@@ -74,10 +74,10 @@
 | STR-04 | Phase 55 | Complete |
 | COLL-02 | Phase 56 | Complete |
 | COLL-03 | Phase 56 | Complete |
-| COLL-04 | Phase 57 | Pending |
-| COLL-05 | Phase 57 | Pending |
-| PROP-02 | Phase 57 | Pending |
-| PROP-03 | Phase 57 | Pending |
+| COLL-04 | Phase 57 | Complete |
+| COLL-05 | Phase 57 | Complete |
+| PROP-02 | Phase 57 | Complete |
+| PROP-03 | Phase 57 | Complete |
 | LANG-01 | Phase 58 | Pending |
 | LANG-02 | Phase 58 | Pending |
 | LANG-03 | Phase 58 | Pending |

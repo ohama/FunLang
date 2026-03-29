@@ -83,8 +83,8 @@ Plans:
 
 **Plans:** 2 plans
 Plans:
-- [ ] 57-01-PLAN.md — Add MutableListValue DU case, constructor interception, FieldAccess dispatch, IndexGet/IndexSet in Ast.fs/Eval.fs/Bidir.fs + Prelude/MutableList.fun
-- [ ] 57-02-PLAN.md — Add HashtableValue FieldAccess (TryGetValue/Count/Keys) in Eval.fs/Bidir.fs + flt tests for MutableList and Hashtable dot API
+- [x] 57-01-PLAN.md — Add MutableListValue DU case, constructor interception, FieldAccess dispatch, IndexGet/IndexSet in Ast.fs/Eval.fs/Bidir.fs + Prelude/MutableList.fun
+- [x] 57-02-PLAN.md — Add HashtableValue FieldAccess (TryGetValue/Count/Keys) in Eval.fs/Bidir.fs + flt tests for MutableList and Hashtable dot API
 
 ---
 
@@ -127,7 +127,7 @@ Plans:
 | 54 | Property & Method Dispatch | ✓ Complete | 1/1 |
 | 55 | StringBuilder & String Utilities | ✓ Complete | 3/3 |
 | 56 | HashSet & Queue | ✓ Complete | 2/2 |
-| 57 | MutableList & Hashtable Enhancement | In Progress | 0/2 |
+| 57 | MutableList & Hashtable Enhancement | ✓ Complete | 2/2 |
 | 58 | Language Constructs | Not Started | — |
 | 59 | Prelude Extensions | Not Started | — |
 
