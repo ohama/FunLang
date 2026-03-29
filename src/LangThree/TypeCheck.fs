@@ -187,6 +187,18 @@ let initialTypeEnv: TypeEnv =
         "queue_dequeue",   Scheme([0], TArrow(TData("Queue", []), TArrow(TTuple [], TVar 0)))
         // queue_count : Queue -> int
         "queue_count",     Scheme([], TArrow(TData("Queue", []), TInt))
+
+        // Phase 57: MutableList builtins
+        // mutablelist_create : unit -> MutableList
+        "mutablelist_create",  Scheme([], TArrow(TTuple [], TData("MutableList", [])))
+        // mutablelist_add : MutableList -> 'a -> unit
+        "mutablelist_add",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TVar 0, TTuple [])))
+        // mutablelist_get : MutableList -> int -> 'a
+        "mutablelist_get",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TInt, TVar 0)))
+        // mutablelist_set : MutableList -> int -> 'a -> unit
+        "mutablelist_set",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TInt, TArrow(TVar 0, TTuple []))))
+        // mutablelist_count : MutableList -> int
+        "mutablelist_count",   Scheme([], TArrow(TData("MutableList", []), TInt))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

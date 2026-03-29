@@ -713,6 +713,46 @@ let initialBuiltinEnv : Env =
             match qVal with
             | QueueValue q -> IntValue q.Count
             | _ -> failwith "queue_count: expected Queue")
+
+        // Phase 57: MutableList builtins
+        // mutablelist_create : unit -> MutableList
+        "mutablelist_create", BuiltinValue (fun _ ->
+            MutableListValue (System.Collections.Generic.List<Value>()))
+
+        // mutablelist_add : MutableList -> 'a -> unit
+        "mutablelist_add", BuiltinValue (fun mlVal ->
+            BuiltinValue (fun v ->
+                match mlVal with
+                | MutableListValue ml -> ml.Add v; TupleValue []
+                | _ -> failwith "mutablelist_add: expected MutableList"))
+
+        // mutablelist_get : MutableList -> int -> 'a
+        "mutablelist_get", BuiltinValue (fun mlVal ->
+            BuiltinValue (fun idxVal ->
+                match mlVal, idxVal with
+                | MutableListValue ml, IntValue i ->
+                    if i < 0 || i >= ml.Count then
+                        raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                    ml.[i]
+                | _ -> failwith "mutablelist_get: expected MutableList and int"))
+
+        // mutablelist_set : MutableList -> int -> 'a -> unit
+        "mutablelist_set", BuiltinValue (fun mlVal ->
+            BuiltinValue (fun idxVal ->
+                BuiltinValue (fun newVal ->
+                    match mlVal, idxVal with
+                    | MutableListValue ml, IntValue i ->
+                        if i < 0 || i >= ml.Count then
+                            raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                        ml.[i] <- newVal
+                        TupleValue []
+                    | _ -> failwith "mutablelist_set: expected MutableList and int")))
+
+        // mutablelist_count : MutableList -> int
+        "mutablelist_count", BuiltinValue (fun mlVal ->
+            match mlVal with
+            | MutableListValue ml -> IntValue ml.Count
+            | _ -> failwith "mutablelist_count: expected MutableList")
     ]
 
 /// Module value environment for runtime qualified access

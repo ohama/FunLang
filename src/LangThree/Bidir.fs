@@ -88,6 +88,14 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 (compose s2 s, TData("Queue", []))
             | None ->
                 (empty, TData("Queue", []))
+        | "MutableList" ->
+            match argOpt with
+            | Some argExpr ->
+                let s, argTy = synth ctorEnv recEnv ctx env argExpr
+                let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
+                (compose s2 s, TData("MutableList", []))
+            | None ->
+                (empty, TData("MutableList", []))
         | _ ->
         match Map.tryFind name ctorEnv with
         | None ->
@@ -592,6 +600,15 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             | "Count" -> (s1, TInt)
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 57: MutableList field access types
+        | TData("MutableList", []) ->
+            match fieldName with
+            | "Add" ->
+                let tv = freshVar()
+                (s1, TArrow(tv, TTuple []))
+            | "Count" -> (s1, TInt)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
             match Map.tryFind typeName recEnv with
             | Some recInfo ->
@@ -669,6 +686,11 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) keyTy
             (compose s3 (compose s2 s1), apply s3 valTy)
+        | TData("MutableList", []) ->
+            let tv = freshVar()
+            let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            (compose s3 (compose s2 s1), tv)
         | ty ->
             raise (TypeException {
                 Kind = IndexOnNonCollection ty
@@ -696,6 +718,11 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s4, valTy' = synth ctorEnv recEnv ctx env2 valExpr
             let s5 = unifyWithContext ctx [] span (apply s4 valTy') (apply (compose s4 s3) valTy)
             (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
+        | TData("MutableList", []) ->
+            let env1 = applyEnv s1 env
+            let s2, idxTy = synth ctorEnv recEnv ctx env1 idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            (compose s3 (compose s2 s1), TTuple [])
         | ty ->
             raise (TypeException {
                 Kind = IndexOnNonCollection ty
