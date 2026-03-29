@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 55 - StringBuilder & String Utilities ✓ COMPLETE
-Plan: 3/3 complete
-Status: Phase 55 verified, Phase 56 next
-Last activity: 2026-03-29 -- Phase 55 complete (5/5 requirements satisfied)
+Phase: 56 - HashSet & Queue
+Plan: 1/2 complete
+Status: In progress
+Last activity: 2026-03-29 -- Completed 56-01-PLAN.md (HashSet/Queue core types)
 
 Progress: [██████░░░░░░░░░░░░░░] 33% -- Phases 54-55 done, Phase 56 next
 
@@ -53,6 +53,8 @@ Key cross-milestone context:
 - callValueRef forward reference pattern used for builtins that invoke user closures
 - StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
 - sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
+- HashSetValue wraps System.Collections.Generic.HashSet<Value> (Phase 56-01): Constructor("HashSet") intercepted; Add/Contains/Count dispatch
+- QueueValue wraps System.Collections.Generic.Queue<Value> (Phase 56-01): Constructor("Queue") intercepted; Enqueue/Dequeue/Count dispatch; empty Dequeue raises LangThreeException
 - AppExpr DOT IDENT grammar rule added to Parser.fsy for method chaining; inline sb.Append("a").Append("b") still has LALR conflict, use intermediate bindings
 - Prelude/StringBuilder.fun: uses stringbuilder_create/append/tostring builtins (not method dispatch -- TVar FieldAccess not supported)
 - flt tests: expected output must include () for final let _ = println expr
@@ -68,9 +70,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 55 Plan 03 complete -- StringBuilder type (Append/ToString/chaining) + Prelude module + flt tests
+Stopped at: Phase 56 Plan 01 complete -- HashSet/Queue core types (constructor interception + FieldAccess dispatch)
 Resume file: None
-Next action: Continue Phase 55 or plan next phase
+Next action: Phase 56 Plan 02 (flt integration tests for HashSet and Queue)
 
 ---
 *State initialized: 2026-02-25*
