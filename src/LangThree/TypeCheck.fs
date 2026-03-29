@@ -65,6 +65,17 @@ let initialTypeEnv: TypeEnv =
         // int_to_char : int -> char
         "int_to_char", Scheme([], TArrow(TInt, TChar))
 
+        // Phase 55: Char module builtins (STR-02)
+        "char_is_digit",  Scheme([], TArrow(TChar, TBool))
+        "char_to_upper",  Scheme([], TArrow(TChar, TChar))
+        "char_is_letter", Scheme([], TArrow(TChar, TBool))
+        "char_is_upper",  Scheme([], TArrow(TChar, TBool))
+        "char_is_lower",  Scheme([], TArrow(TChar, TBool))
+        "char_to_lower",  Scheme([], TArrow(TChar, TChar))
+
+        // Phase 55: String.concat builtin (STR-03)
+        "string_concat_list", Scheme([], TArrow(TString, TArrow(TList TString, TString)))
+
         // Phase 32: File I/O builtins (STD-02 through STD-09)
         // STD-02: read_file : string -> string
         "read_file", Scheme([], TArrow(TString, TString))

@@ -313,6 +313,44 @@ let initialBuiltinEnv : Env =
                     CharValue (char n)
             | _ -> failwith "int_to_char: expected int argument")
 
+        // Phase 55: Char module builtins (STR-02)
+        "char_is_digit", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> BoolValue (System.Char.IsDigit(c))
+            | _ -> failwith "Char.IsDigit: expected char argument")
+        "char_to_upper", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> CharValue (System.Char.ToUpper(c))
+            | _ -> failwith "Char.ToUpper: expected char argument")
+        "char_is_letter", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> BoolValue (System.Char.IsLetter(c))
+            | _ -> failwith "Char.IsLetter: expected char argument")
+        "char_is_upper", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> BoolValue (System.Char.IsUpper(c))
+            | _ -> failwith "Char.IsUpper: expected char argument")
+        "char_is_lower", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> BoolValue (System.Char.IsLower(c))
+            | _ -> failwith "Char.IsLower: expected char argument")
+        "char_to_lower", BuiltinValue (fun v ->
+            match v with
+            | CharValue c -> CharValue (System.Char.ToLower(c))
+            | _ -> failwith "Char.ToLower: expected char argument")
+
+        // Phase 55: String.concat builtin (STR-03)
+        // Named string_concat_list to avoid collision with existing string_concat (string -> string -> string)
+        "string_concat_list", BuiltinValue (fun sepVal ->
+            BuiltinValue (fun listVal ->
+                match sepVal, listVal with
+                | StringValue sep, ListValue strs ->
+                    let strings = strs |> List.map (function
+                        | StringValue s -> s
+                        | _ -> failwith "String.concat: list must contain strings")
+                    StringValue (System.String.Join(sep, strings))
+                | _ -> failwith "String.concat: expected (string, string list)"))
+
         // Phase 32: File I/O builtins (STD-02 through STD-09)
 
         // STD-02: read_file : string -> string
