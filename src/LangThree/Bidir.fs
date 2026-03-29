@@ -228,23 +228,38 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s5, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
         (compose s5 s1234, TTuple [])  // for always returns unit
 
-    // === ForInExpr (Phase 51 - for-in collection loop) ===
+    // === ForInExpr (Phase 51/58 - for-in collection loop) ===
     | ForInExpr (var, collExpr, body, span) ->
         let s1, collTy = synth ctorEnv recEnv ctx env collExpr
-        // Try to unify collection type with TList(elemTv); if that fails, try TArray(elemTv)
-        let elemTv = freshVar ()
-        let s2 =
-            try unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
-            with _ ->
-                let elemTv2 = freshVar ()
-                unifyWithContext ctx [] span (apply s1 collTy) (TArray elemTv2)
-        let s12 = compose s2 s1
-        let collTyResolved = apply s12 collTy
-        let elemTy =
-            match collTyResolved with
-            | TList t -> t
-            | TArray t -> t
-            | _ -> freshVar ()
+        let resolvedCollTy = apply s1 collTy
+        let s12, elemTy =
+            match resolvedCollTy with
+            | TList t ->
+                (s1, t)
+            | TArray t ->
+                (s1, t)
+            | TData("HashSet", []) ->
+                (s1, freshVar())
+            | TData("Queue", []) ->
+                (s1, freshVar())
+            | TData("MutableList", []) ->
+                (s1, freshVar())
+            | THashtable (keyTy, valTy) ->
+                (s1, TData("KeyValuePair", [keyTy; valTy]))
+            | _ ->
+                let elemTv = freshVar()
+                let s2 =
+                    try unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
+                    with _ ->
+                        let elemTv2 = freshVar()
+                        unifyWithContext ctx [] span (apply s1 collTy) (TArray elemTv2)
+                let s12 = compose s2 s1
+                let elemTy =
+                    match apply s12 collTy with
+                    | TList t -> t
+                    | TArray t -> t
+                    | _ -> freshVar()
+                (s12, elemTy)
         let env2 = applyEnv s12 env
         // Bind loop variable as immutable — NOT in mutableVars (FORIN-03)
         let loopEnv = Map.add var (Scheme([], elemTy)) env2
@@ -618,6 +633,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             | "Keys"  -> (s1, TList keyTy)
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 58: KeyValuePair field access (for hashtable for-in iteration)
+        | TData("KeyValuePair", [keyTy; valTy]) ->
+            match fieldName with
+            | "Key"   -> (s1, keyTy)
+            | "Value" -> (s1, valTy)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
             match Map.tryFind typeName recEnv with
             | Some recInfo ->
@@ -737,6 +759,43 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Kind = IndexOnNonCollection ty
                 Span = span; Term = Some expr; ContextStack = ctx; Trace = []
             })
+
+    // === Phase 58: String slice type checking ===
+    | StringSliceExpr (strExpr, startExpr, stopOpt, span) ->
+        let s1, strTy  = synth ctorEnv recEnv ctx env strExpr
+        let s2 = unifyWithContext ctx [] span (apply s1 strTy) TString
+        let s12 = compose s2 s1
+        let s3, startTy = synth ctorEnv recEnv ctx (applyEnv s12 env) startExpr
+        let s4 = unifyWithContext ctx [] span (apply s3 startTy) TInt
+        let s123 = compose s4 (compose s3 s12)
+        let sFinal =
+            match stopOpt with
+            | None -> s123
+            | Some stopExpr ->
+                let s5, stopTy = synth ctorEnv recEnv ctx (applyEnv s123 env) stopExpr
+                let s6 = unifyWithContext ctx [] span (apply s5 stopTy) TInt
+                compose s6 (compose s5 s123)
+        (sFinal, TString)
+
+    // === Phase 58: List comprehension type checking ===
+    | ListCompExpr (var, collExpr, bodyExpr, span) ->
+        let s1, collTy = synth ctorEnv recEnv ctx env collExpr
+        let resolvedCollTy = apply s1 collTy
+        let s12, elemTy =
+            match resolvedCollTy with
+            | TList t   -> (s1, t)
+            | TArray t  -> (s1, t)
+            | TData("HashSet", [])     -> (s1, freshVar())
+            | TData("Queue", [])       -> (s1, freshVar())
+            | TData("MutableList", []) -> (s1, freshVar())
+            | _ ->
+                let elemTv = freshVar()
+                let s2 = unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
+                let s12 = compose s2 s1
+                (s12, apply s12 elemTv)
+        let loopEnv = Map.add var (Scheme([], elemTy)) (applyEnv s12 env)
+        let s3, bodyTy = synth ctorEnv recEnv ctx loopEnv bodyExpr
+        (compose s3 s12, TList (apply s3 bodyTy))
 
     // === Phase 18: Range expression ===
     // [start..stop] or [start..step..stop] — all components must be int, result is int list

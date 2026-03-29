@@ -373,6 +373,12 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | IndexGet _ | IndexSet _ ->
         (empty, freshVar())
 
+    // === Phase 58: String slice and list comprehension stubs (primary implementation in Bidir) ===
+    | StringSliceExpr _ ->
+        (empty, TString)
+    | ListCompExpr (_, _, _, _) ->
+        (empty, freshVar())
+
     // === Phase 6: Exception stubs (primary implementation in Bidir) ===
     | Raise _ | TryWith _ ->
         (empty, freshVar())

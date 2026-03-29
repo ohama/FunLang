@@ -220,6 +220,12 @@ let rec formatAst (expr: Ast.Expr) : string =
         sprintf "IndexGet (%s, %s)" (formatAst coll) (formatAst idx)
     | Ast.IndexSet (coll, idx, v, _) ->
         sprintf "IndexSet (%s, %s, %s)" (formatAst coll) (formatAst idx) (formatAst v)
+    // Phase 58
+    | Ast.StringSliceExpr (str, start, stopOpt, _) ->
+        let stopStr = stopOpt |> Option.map (fun e -> sprintf " .. %s" (formatAst e)) |> Option.defaultValue ""
+        sprintf "StringSliceExpr (%s.[%s%s])" (formatAst str) (formatAst start) stopStr
+    | Ast.ListCompExpr (var, coll, body, _) ->
+        sprintf "ListCompExpr ([for %s in %s -> %s])" var (formatAst coll) (formatAst body)
 
 /// Format TypeExpr as string
 and formatTypeExpr (te: Ast.TypeExpr) : string =

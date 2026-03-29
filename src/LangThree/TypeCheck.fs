@@ -364,6 +364,10 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     // Phase 47 (Array/Hashtable Indexing)
     | IndexGet(coll, idx, _) -> collectMatches coll @ collectMatches idx
     | IndexSet(coll, idx, v, _) -> collectMatches coll @ collectMatches idx @ collectMatches v
+    // Phase 58 (String slicing / list comprehension)
+    | StringSliceExpr(str, start, stopOpt, _) ->
+        collectMatches str @ collectMatches start @ (stopOpt |> Option.map collectMatches |> Option.defaultValue [])
+    | ListCompExpr(_, coll, body, _) -> collectMatches coll @ collectMatches body
     | Number _ | Bool _ | String _ | Char _ | Var _ | EmptyList _ | Constructor(_, None, _) -> []
 
 /// Check exhaustiveness and redundancy warnings for match expressions in a body
@@ -477,6 +481,10 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             // Phase 47 (Array/Hashtable Indexing)
             | IndexGet(coll, idx, _) -> collectTryWiths coll @ collectTryWiths idx
             | IndexSet(coll, idx, v, _) -> collectTryWiths coll @ collectTryWiths idx @ collectTryWiths v
+            // Phase 58 (String slicing / list comprehension)
+            | StringSliceExpr(str, start, stopOpt, _) ->
+                collectTryWiths str @ collectTryWiths start @ (stopOpt |> Option.map collectTryWiths |> Option.defaultValue [])
+            | ListCompExpr(_, coll, body, _) -> collectTryWiths coll @ collectTryWiths body
             | LetMut(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | Assign(_, value, _) -> collectTryWiths value
             | Raise(e, _) -> collectTryWiths e
@@ -574,6 +582,10 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | Range(start, stop, stepOpt, _) ->
         Set.unionMany [collectModuleRefs modules start; collectModuleRefs modules stop; stepOpt |> Option.map (collectModuleRefs modules) |> Option.defaultValue Set.empty]
     | ForInExpr(_, coll, body, _) -> Set.union (collectModuleRefs modules coll) (collectModuleRefs modules body)
+    // Phase 58 (String slicing / list comprehension)
+    | StringSliceExpr(str, start, stopOpt, _) ->
+        Set.unionMany [collectModuleRefs modules str; collectModuleRefs modules start; stopOpt |> Option.map (collectModuleRefs modules) |> Option.defaultValue Set.empty]
+    | ListCompExpr(_, coll, body, _) -> Set.union (collectModuleRefs modules coll) (collectModuleRefs modules body)
     | _ -> Set.empty
 
 /// Rewrite qualified module access in an expression tree.
@@ -652,6 +664,11 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     | IndexSet(coll, idx, v, s) -> IndexSet(rewriteModuleAccess modules coll, rewriteModuleAccess modules idx, rewriteModuleAccess modules v, s)
     | LetMut(n, rhs, body, s) -> LetMut(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
     | ForInExpr(var, coll, body, s) -> ForInExpr(var, rewriteModuleAccess modules coll, rewriteModuleAccess modules body, s)
+    // Phase 58 (String slicing / list comprehension)
+    | StringSliceExpr(str, start, stopOpt, s) ->
+        StringSliceExpr(rewriteModuleAccess modules str, rewriteModuleAccess modules start, stopOpt |> Option.map (rewriteModuleAccess modules), s)
+    | ListCompExpr(var, coll, body, s) ->
+        ListCompExpr(var, rewriteModuleAccess modules coll, rewriteModuleAccess modules body, s)
     | Assign(n, value, s) -> Assign(n, rewriteModuleAccess modules value, s)
     | Raise(e, s) -> Raise(rewriteModuleAccess modules e, s)
     | TryWith(body, clauses, s) ->
