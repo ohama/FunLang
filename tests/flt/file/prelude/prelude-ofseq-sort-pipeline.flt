@@ -1,0 +1,23 @@
+// Test: Collection -> ofSeq -> sort pipeline (PRE-04, PRE-05, PRE-01)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ml = MutableList.create ()
+let _ = MutableList.add ml 30
+let _ = MutableList.add ml 10
+let _ = MutableList.add ml 20
+let sorted = List.sort (List.ofSeq ml)
+let _ = println (to_string sorted)
+let arr = Array.ofSeq ml
+let _ = Array.sort arr
+let _ = println (to_string (Array.toList arr))
+let q = Queue.create ()
+let _ = Queue.enqueue q 5
+let _ = Queue.enqueue q 3
+let _ = Queue.enqueue q 1
+let qs = List.sort (List.ofSeq q)
+let _ = println (to_string qs)
+// --- Output:
+[10; 20; 30]
+[10; 20; 30]
+[1; 3; 5]
+()

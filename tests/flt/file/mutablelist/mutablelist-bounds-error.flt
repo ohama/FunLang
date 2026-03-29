@@ -1,0 +1,25 @@
+// Test: MutableList out-of-bounds error and empty count (COLL-04)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let ml = MutableList.create ()
+let _ = println (to_string (MutableList.count ml))
+let _ = MutableList.add ml 1
+let result =
+    try
+        let _ = ml.[5]
+        "no error"
+    with
+    | e -> "caught: " ^^ e
+let _ = println result
+let result2 =
+    try
+        let _ = ml.[5] <- 99
+        "no error"
+    with
+    | e -> "caught: " ^^ e
+let _ = println result2
+// --- Output:
+0
+caught: MutableList index 5 out of bounds (length 1)
+caught: MutableList index 5 out of bounds (length 1)
+()

@@ -4,10 +4,10 @@
 let arr = Array.ofList [3; 1; 2]
 let _ = Array.sort arr
 let r1 = Array.toList arr
-let q = Queue ()
-let _ = q.Enqueue(5)
-let _ = q.Enqueue(3)
-let _ = q.Enqueue(4)
+let q = Queue.create ()
+let _ = Queue.enqueue q 5
+let _ = Queue.enqueue q 3
+let _ = Queue.enqueue q 4
 let arr2 = Array.ofSeq q
 let r2 = Array.length arr2
 let _ = println (to_string r1)

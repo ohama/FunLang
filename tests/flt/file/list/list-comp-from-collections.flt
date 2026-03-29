@@ -1,0 +1,19 @@
+// Test: List comprehension from native collections + ofSeq pipeline (LANG-02, PRE-04)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let hs = HashSet.create ()
+let _ = HashSet.add hs 3
+let _ = HashSet.add hs 1
+let _ = HashSet.add hs 2
+let sorted = List.sort (List.ofSeq hs)
+let doubled = [for x in sorted -> x * 2]
+let _ = println (to_string doubled)
+let q = Queue.create ()
+let _ = Queue.enqueue q "x"
+let _ = Queue.enqueue q "y"
+let upper = [for s in (List.ofSeq q) -> s ^^ "!"]
+let _ = println (to_string upper)
+// --- Output:
+[2; 4; 6]
+["x!"; "y!"]
+()
