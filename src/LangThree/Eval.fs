@@ -158,6 +158,12 @@ let rec formatValue (v: Value) : string =
         sprintf "{ %s }" (String.concat "; " fieldStrs)
     | RefValue r -> formatValue !r  // Phase 42: Transparent - show dereferenced value
     | StringBuilderValue sb -> sprintf "StringBuilder(\"%s\")" (sb.ToString())
+    | HashSetValue hs ->
+        let elements = hs |> Seq.map formatValue |> String.concat "; "
+        sprintf "HashSet{%s}" elements
+    | QueueValue q ->
+        let elements = q |> Seq.map formatValue |> String.concat "; "
+        sprintf "Queue[%s]" elements
     | BuiltinValue _ -> "<builtin>"
     | TailCall _ -> "<tailcall>"
 

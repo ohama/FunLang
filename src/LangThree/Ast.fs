@@ -207,6 +207,8 @@ and [<CustomEquality; CustomComparison>] Value =
     | HashtableValue of System.Collections.Generic.Dictionary<Value, Value>  // Phase 39: Mutable key-value hashtable
     | RefValue of Value ref  // Phase 42: Mutable variable ref cell (transparent to user code)
     | StringBuilderValue of System.Text.StringBuilder  // Phase 55: Mutable string builder
+    | HashSetValue of System.Collections.Generic.HashSet<Value>  // Phase 56: Mutable unique-element set
+    | QueueValue of System.Collections.Generic.Queue<Value>       // Phase 56: Mutable FIFO queue
 
     override x.Equals(obj) =
         match obj with
@@ -230,6 +232,8 @@ and [<CustomEquality; CustomComparison>] Value =
         | HashtableValue ht -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(ht)
         | RefValue r -> hash (!r)
         | StringBuilderValue sb -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(sb)
+        | HashSetValue hs -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(hs)
+        | QueueValue q    -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(q)
 
     interface System.IEquatable<Value> with
         member x.Equals(y: Value) = Value.valueEqual x y
@@ -256,6 +260,8 @@ and [<CustomEquality; CustomComparison>] Value =
         | ArrayValue r1, ArrayValue r2 -> System.Object.ReferenceEquals(r1, r2)
         | HashtableValue h1, HashtableValue h2 -> System.Object.ReferenceEquals(h1, h2)
         | StringBuilderValue sb1, StringBuilderValue sb2 -> System.Object.ReferenceEquals(sb1, sb2)
+        | HashSetValue h1, HashSetValue h2 -> System.Object.ReferenceEquals(h1, h2)
+        | QueueValue q1,   QueueValue q2   -> System.Object.ReferenceEquals(q1, q2)
         | RefValue r1, RefValue r2 -> Value.valueEqual !r1 !r2
         | _ -> false
 
@@ -269,6 +275,8 @@ and [<CustomEquality; CustomComparison>] Value =
         | ArrayValue _, _ | _, ArrayValue _ -> 0
         | HashtableValue _, _ | _, HashtableValue _ -> 0
         | StringBuilderValue _, _ | _, StringBuilderValue _ -> 0
+        | HashSetValue _, _ | _, HashSetValue _ -> 0
+        | QueueValue _,   _ | _, QueueValue _   -> 0
         | RefValue r1, RefValue r2 -> Value.valueCompare !r1 !r2
         | _ -> 0
 
