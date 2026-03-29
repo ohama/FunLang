@@ -349,6 +349,11 @@ Atom:
         { Range($2, $4, None, ruleSpan parseState 1 5) }
     | LBRACKET Expr DOTDOT Expr DOTDOT Expr RBRACKET
         { Range($2, $6, Some $4, ruleSpan parseState 1 7) }
+    // Phase 58 (List Comprehension): [for x in coll -> body] and [for i in start..stop -> body]
+    | LBRACKET FOR IDENT IN Expr ARROW Expr RBRACKET
+        { ListCompExpr($3, $5, $7, ruleSpan parseState 1 8) }
+    | LBRACKET FOR IDENT IN Expr DOTDOT Expr ARROW Expr RBRACKET
+        { ListCompExpr($3, Range($5, $7, None, ruleSpan parseState 5 7), $9, ruleSpan parseState 1 10) }
     // Phase 19 (User-Defined Operators): Operator as function value - (++) etc.
     | LPAREN INFIXOP0 RPAREN                 { Var($2, ruleSpan parseState 1 3) }
     | LPAREN INFIXOP1 RPAREN                 { Var($2, ruleSpan parseState 1 3) }
@@ -360,6 +365,11 @@ Atom:
     // Phase 47 (Array/Hashtable Indexing): IDX-01 / IDX-03: arr.[i] reads array/hashtable element
     | Atom DOTLBRACKET Expr RBRACKET
         { IndexGet($1, $3, ruleSpan parseState 1 4) }
+    // Phase 58 (String Slicing): s.[start..stop] and s.[start..] (open-ended)
+    | Atom DOTLBRACKET Expr DOTDOT Expr RBRACKET
+        { StringSliceExpr($1, $3, Some $5, ruleSpan parseState 1 6) }
+    | Atom DOTLBRACKET Expr DOTDOT RBRACKET
+        { StringSliceExpr($1, $3, None, ruleSpan parseState 1 5) }
     // Phase 3 (Records): Record creation and copy-and-update
     | LBRACE RecordExprInner RBRACE          { $2 (ruleSpan parseState 1 3) }
 
