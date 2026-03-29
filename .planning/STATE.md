@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 ## Current Position
 
-Milestone: v7.1 Remove Dot Notation — ROADMAP CREATED
-Phase: 60 of 62 (Builtins & Prelude Modules) — Not started
-Plan: —
-Status: Ready to plan
-Last activity: 2026-03-29 — Roadmap created (3 phases, 12 requirements)
+Milestone: v7.1 Remove Dot Notation — IN PROGRESS
+Phase: 60 of 62 (Builtins & Prelude Modules) — In progress
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-03-29 — Completed 60-01-PLAN.md (5 builtins added to Eval.fs + TypeCheck.fs)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [░░░░░░░░░░] 0%
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -61,10 +61,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Roadmap created for v7.1
+Stopped at: Completed 60-01-PLAN.md
 Resume file: None
-Next action: Plan phase 60
+Next action: Execute 60-02-PLAN.md (Prelude .fun module wrappers)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (v7.1 roadmap created)*
+*Last updated: 2026-03-29 (60-01 complete: 5 builtins added)*
