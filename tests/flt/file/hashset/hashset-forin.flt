@@ -1,8 +1,8 @@
 // Test: for-in iteration over HashSet (LANG-03)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let hs = HashSet ()
-let _ = hs.Add(42)
+let hs = HashSet.create ()
+let _ = HashSet.add hs 42
 let _ = for x in hs do println (to_string x)
 // --- Output:
 42

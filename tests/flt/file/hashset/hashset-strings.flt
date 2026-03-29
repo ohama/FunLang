@@ -1,13 +1,13 @@
 // Test: HashSet with string elements (COLL-02)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let hs = HashSet ()
-let _ = hs.Add("apple")
-let _ = hs.Add("banana")
-let _ = hs.Add("apple")
-let _ = println (to_string hs.Count)
-let _ = println (to_string (hs.Contains("apple")))
-let _ = println (to_string (hs.Contains("cherry")))
+let hs = HashSet.create ()
+let _ = HashSet.add hs "apple"
+let _ = HashSet.add hs "banana"
+let _ = HashSet.add hs "apple"
+let _ = println (to_string (HashSet.count hs))
+let _ = println (to_string (HashSet.contains hs "apple"))
+let _ = println (to_string (HashSet.contains hs "cherry"))
 // --- Output:
 2
 true

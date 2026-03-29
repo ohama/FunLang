@@ -1,10 +1,10 @@
 // Test: for-in iteration over Queue (LANG-03)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let q = Queue ()
-let _ = q.Enqueue(1)
-let _ = q.Enqueue(2)
-let _ = q.Enqueue(3)
+let q = Queue.create ()
+let _ = Queue.enqueue q 1
+let _ = Queue.enqueue q 2
+let _ = Queue.enqueue q 3
 let _ = for x in q do println (to_string x)
 // --- Output:
 1

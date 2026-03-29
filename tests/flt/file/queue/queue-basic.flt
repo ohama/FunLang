@@ -1,16 +1,16 @@
 // Test: Queue basic FIFO usage with integers (COLL-03)
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
-let q = Queue ()
-let _ = q.Enqueue(10)
-let _ = q.Enqueue(20)
-let _ = q.Enqueue(30)
-let _ = println (to_string q.Count)
-let v1 = q.Dequeue ()
+let q = Queue.create ()
+let _ = Queue.enqueue q 10
+let _ = Queue.enqueue q 20
+let _ = Queue.enqueue q 30
+let _ = println (to_string (Queue.count q))
+let v1 = Queue.dequeue q ()
 let _ = println (to_string v1)
-let v2 = q.Dequeue ()
+let v2 = Queue.dequeue q ()
 let _ = println (to_string v2)
-let _ = println (to_string q.Count)
+let _ = println (to_string (Queue.count q))
 // --- Output:
 3
 10
