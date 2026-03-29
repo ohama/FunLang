@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.1 Remove Dot Notation — IN PROGRESS
 Phase: 62 of 62 (Remove Dot Dispatch) — IN PROGRESS
-Plan: 01 of ? complete
-Status: Plan 01 complete ✓
-Last activity: 2026-03-29 — Completed 62-01 (String/Array/StringBuilder flt migration, 10 files)
+Plan: 02 of ? complete
+Status: Plan 02 complete ✓
+Last activity: 2026-03-29 — Completed 62-02 (HashSet/Queue/MutableList flt migration, 15 files)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [███████░░░] 70%
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -67,10 +67,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 62-01-PLAN.md (String/Array/StringBuilder flt test migration)
+Stopped at: Completed 62-02-PLAN.md (HashSet/Queue/MutableList + cross-type flt test migration)
 Resume file: None
-Next action: Execute Phase 62 Plan 02 (remaining dot-notation flt test migration)
+Next action: Execute Phase 62 Plan 03 or close v7.1 milestone
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (Phase 62 Plan 01 complete)*
+*Last updated: 2026-03-29 (Phase 62 Plan 02 complete)*
