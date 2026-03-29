@@ -926,11 +926,16 @@ let rec typeCheckDecls
                 // Recurse into inner declarations
                 let (innerTypeEnv, innerCtorEnv, innerRecEnv, innerMods, innerWarns) =
                     typeCheckDecls innerDecls env cEnv rEnv mods
-                // Build module exports (only bindings defined in this module, not inherited)
+                // Build module exports (only bindings defined in this module, not inherited).
+                // Include a binding if it's new OR if it shadows an outer binding with a different type.
+                // This allows e.g. String.length (string -> int) to be exported even though
+                // List.length ('a list -> int) already exists in the outer env with the same name.
                 let moduleTypeEnv =
                     Map.fold (fun acc k v ->
-                        if Map.containsKey k env then acc
-                        else Map.add k v acc) Map.empty innerTypeEnv
+                        match Map.tryFind k env with
+                        | None -> Map.add k v acc          // new binding
+                        | Some outerV when outerV <> v -> Map.add k v acc  // shadow with different type
+                        | _ -> acc) Map.empty innerTypeEnv
                 let moduleCtorEnv =
                     Map.fold (fun acc k v ->
                         if Map.containsKey k cEnv then acc

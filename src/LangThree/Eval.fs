@@ -1679,10 +1679,14 @@ let rec evalModuleDecls
                 failwith "Pattern match failed in module-level let pattern"
         | ModuleDecl(name, innerDecls, _) ->
             let innerEnv, innerModEnv = evalModuleDecls recEnv modEnv env innerDecls
-            // Extract only the bindings added by this module (not inherited from parent)
-            let moduleValues =
-                innerEnv
-                |> Map.filter (fun k _ -> not (Map.containsKey k env))
+            // Extract only the bindings added or overridden by this module (not inherited from parent).
+            // Include a binding if it's new, or if it's a different object than the parent binding
+            // (meaning the module defined a new function that shadows a parent, e.g. String.length).
+            let isModuleOwned k v =
+                match Map.tryFind k env with
+                | None -> true
+                | Some parentV -> not (obj.ReferenceEquals(v, parentV))
+            let moduleValues = innerEnv |> Map.filter isModuleOwned
             // Collect constructors from TypeDecl and ExceptionDecl siblings inside this module
             let ctorNames =
                 innerDecls |> List.collect (fun d ->
