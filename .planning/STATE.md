@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.0 Native Collections & Built-in Library
 Phase: 59 - Prelude Extensions (in progress)
-Plan: 1/3 complete
+Plan: 2/3 complete
 Status: In progress
-Last activity: 2026-03-29 -- Completed 59-01-PLAN.md (4 new builtins: list_sort_by, list_of_seq, array_sort, array_of_seq)
+Last activity: 2026-03-29 -- Completed 59-02-PLAN.md (12 new List.* + 2 Array.* functions in Prelude)
 
 Progress: [████████████████░░░░] 85% -- Phases 54-58 done, Phase 59 in progress (1/3)
 
@@ -54,6 +54,9 @@ Key cross-milestone context:
 - StringSliceExpr AST node: str * start * stop option * span -- Phase 58 s.[start..stop] and s.[start..] syntax
 - ListCompExpr AST node: var * collection * body * span -- Phase 58 [for x in coll -> body] syntax; range desugared to Range(...) in parser
 - callValueRef forward reference pattern used for builtins that invoke user closures
+- Blank lines inside .fun module bodies cause parse errors (NEWLINE(0) = DEDENT out of module) -- never use blank lines in Prelude .fun files
+- Option.fun renamed to A_Option.fun so Some/None are available when List.fun type-checks (A_ prefix sorts first in Prelude load order)
+- Builtins in Eval.fs also need type schemes in TypeCheck.fs initialTypeEnv or .fun files using them will get type errors
 - StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
 - sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
 - HashSetValue wraps System.Collections.Generic.HashSet<Value> (Phase 56-01): Constructor("HashSet") intercepted; Add/Contains/Count dispatch
@@ -75,9 +78,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 59 Plan 01 complete -- 4 new builtins in Eval.fs, build clean
+Stopped at: Phase 59 Plan 02 complete -- 14 new Prelude functions (12 List + 2 Array), Option.fun renamed to A_Option.fun
 Resume file: None
-Next action: Execute 59-02-PLAN.md (List.fun wrapper) and 59-03-PLAN.md (Array.fun wrapper)
+Next action: Execute 59-03-PLAN.md (tests for new List/Array functions)
 
 ---
 *State initialized: 2026-02-25*
