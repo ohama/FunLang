@@ -53,6 +53,9 @@ let initialTypeEnv: TypeEnv =
         // sprintf : string -> 'a  (like printf but returns string; runtime enforces arity)
         "sprintf", Scheme([0], TArrow(TString, TVar 0))
 
+        // eprintfn : string -> 'a  (like printfn but writes to stderr)
+        "eprintfn", Scheme([0], TArrow(TString, TVar 0))
+
         // failwith : string -> 'a  (polymorphic return — unifies with any expected type, like raise)
         "failwith", Scheme([0], TArrow(TString, TVar 0))
 

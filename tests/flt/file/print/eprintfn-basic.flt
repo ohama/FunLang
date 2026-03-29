@@ -1,0 +1,12 @@
+// Test: eprintfn writes formatted output to stderr (STR-04)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = eprintfn "done"
+let _ = eprintfn "error: %s" "oops"
+let _ = println "stdout line"
+// --- Output:
+stdout line
+()
+// --- Stderr:
+done
+error: oops

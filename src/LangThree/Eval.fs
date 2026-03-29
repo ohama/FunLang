@@ -101,6 +101,19 @@ let rec applyPrintfnArgs (fmt: string) (remaining: string list) (collected: Valu
         BuiltinValue (fun argVal ->
             applyPrintfnArgs fmt rest (argVal :: collected))
 
+/// Build a curried BuiltinValue chain for eprintfn (like applyPrintfnArgs but writes to stderr).
+let rec applyEprintfnArgs (fmt: string) (remaining: string list) (collected: Value list) : Value =
+    match remaining with
+    | [] ->
+        let result = substitutePrintfArgs fmt (List.rev collected)
+        stderr.Write(result)
+        stderr.Write("\n")
+        stderr.Flush()
+        TupleValue []
+    | _ :: rest ->
+        BuiltinValue (fun argVal ->
+            applyEprintfnArgs fmt rest (argVal :: collected))
+
 /// Build a curried BuiltinValue chain for sprintf (returns StringValue instead of writing).
 let rec applySprintfArgs (fmt: string) (remaining: string list) (collected: Value list) : Value =
     match remaining with
@@ -269,6 +282,14 @@ let initialBuiltinEnv : Env =
                 let specifiers = parsePrintfSpecifiers fmt
                 applySprintfArgs fmt specifiers []
             | _ -> failwith "sprintf: first argument must be a format string")
+
+        // eprintfn : string -> ...  (like printfn but writes to stderr)
+        "eprintfn", BuiltinValue (fun fmtVal ->
+            match fmtVal with
+            | StringValue fmt ->
+                let specifiers = parsePrintfSpecifiers fmt
+                applyEprintfnArgs fmt specifiers []
+            | _ -> failwith "eprintfn: first argument must be a format string")
 
         // failwith : string -> 'a  (raises LangThreeException so try-with can catch it)
         "failwith", BuiltinValue (fun v ->
