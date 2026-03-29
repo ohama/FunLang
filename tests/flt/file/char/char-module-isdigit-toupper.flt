@@ -1,5 +1,5 @@
 // Test: Char.IsDigit and Char.ToUpper module functions (STR-02)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let _ = println (to_string (Char.IsDigit '3'))
 let _ = println (to_string (Char.IsDigit 'a'))

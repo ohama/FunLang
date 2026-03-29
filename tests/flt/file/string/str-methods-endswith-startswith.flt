@@ -1,5 +1,5 @@
 // Test: EndsWith and StartsWith string methods (STR-01)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let _ = println (to_string ("hello.txt".EndsWith(".txt")))
 let _ = println (to_string ("hello.txt".EndsWith(".csv")))

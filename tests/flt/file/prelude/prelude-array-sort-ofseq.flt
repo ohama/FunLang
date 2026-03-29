@@ -1,5 +1,5 @@
 // Test: Array.sort (in-place) and Array.ofSeq (PRE-05)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let arr = Array.ofList [3; 1; 2]
 let _ = Array.sort arr

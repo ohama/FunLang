@@ -1,5 +1,5 @@
 // Test: MutableList basic usage — Add, Count, read indexing (COLL-04)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let ml = MutableList ()
 let _ = ml.Add(10)

@@ -1,5 +1,5 @@
 // Test: String slicing s.[start..stop] and s.[start..] (LANG-01)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let s = "hello"
 let _ = println (s.[1..3])

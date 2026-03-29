@@ -1,5 +1,5 @@
 // Test: String.concat module function (STR-03)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
 // --- Input:
 let result = String.concat ", " ["a"; "b"; "c"]
 let _ = println result
