@@ -4,18 +4,18 @@
 
 See: .planning/PROJECT.md (updated 2026-03-29)
 
-**Core value:** 실용적인 함수형 프로그래밍 언어 — 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v7.0 Native Collections & Built-in Library
+**Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v7.0 Native Collections & Built-in Library
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-29 — Milestone v7.0 started
+Milestone: v6.0 Practical Programming — SHIPPED 2026-03-29
+Phase: Ready for next milestone
+Plan: Not started
+Status: Between milestones
+Last activity: 2026-03-29 — v6.0 milestone archived
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% — v7.0 starting
+Progress: [████████████████████] v1.0-v6.0 done (53p/112pl)
 
 ## Performance Metrics
 
@@ -50,9 +50,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: v7.0 milestone started — defining requirements
+Stopped at: v6.0 milestone archived — ready for next milestone
 Resume file: None
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (v7.0 milestone started)*
+*Last updated: 2026-03-29 (v6.0 milestone archived)*
