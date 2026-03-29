@@ -1396,6 +1396,17 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         TupleValue [])
                 | "Count" -> IntValue ml.Count
                 | _ -> failwithf "MutableList has no property or method '%s'" fieldName
+            // Phase 57: HashtableValue method dispatch
+            | HashtableValue ht ->
+                match fieldName with
+                | "TryGetValue" ->
+                    BuiltinValue (fun keyArg ->
+                        match ht.TryGetValue(keyArg) with
+                        | true, v  -> TupleValue [BoolValue true;  v]
+                        | false, _ -> TupleValue [BoolValue false; TupleValue []])
+                | "Count" -> IntValue ht.Count
+                | "Keys"  -> ListValue (ht.Keys |> Seq.toList)
+                | _ -> failwithf "Hashtable has no property or method '%s'" fieldName
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef

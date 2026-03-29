@@ -609,6 +609,15 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             | "Count" -> (s1, TInt)
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 57: Hashtable field access types (THashtable is the type for Hashtable.create())
+        | THashtable (keyTy, valTy) ->
+            match fieldName with
+            | "TryGetValue" ->
+                (s1, TArrow(keyTy, TTuple [TBool; valTy]))
+            | "Count" -> (s1, TInt)
+            | "Keys"  -> (s1, TList keyTy)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
             match Map.tryFind typeName recEnv with
             | Some recInfo ->
