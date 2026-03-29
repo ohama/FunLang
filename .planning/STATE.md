@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 58 - Language Constructs (Complete)
+Phase: 58 - Language Constructs ✓ COMPLETE
 Plan: 3/3 complete
-Status: Phase 58 complete (all flt tests passing, 614/614 suite green)
-Last activity: 2026-03-29 -- Phase 58 Plan 03 complete (6 flt integration tests for LANG-01, LANG-02, LANG-03, PROP-05)
+Status: Phase 58 verified, Phase 59 next
+Last activity: 2026-03-29 -- Phase 58 complete (5/5 must-haves, 614 flt tests)
 
-Progress: [████████████████████] 100% -- Phases 54-58 done, Phase 58 3/3 complete
+Progress: [████████████████░░░░] 83% -- Phases 54-58 done, Phase 59 next
 
 ## Performance Metrics
 

@@ -78,10 +78,10 @@
 | COLL-05 | Phase 57 | Complete |
 | PROP-02 | Phase 57 | Complete |
 | PROP-03 | Phase 57 | Complete |
-| LANG-01 | Phase 58 | Pending |
-| LANG-02 | Phase 58 | Pending |
-| LANG-03 | Phase 58 | Pending |
-| PROP-05 | Phase 58 | Pending |
+| LANG-01 | Phase 58 | Complete |
+| LANG-02 | Phase 58 | Complete |
+| LANG-03 | Phase 58 | Complete |
+| PROP-05 | Phase 58 | Complete |
 | PRE-01 | Phase 59 | Pending |
 | PRE-02 | Phase 59 | Pending |
 | PRE-03 | Phase 59 | Pending |

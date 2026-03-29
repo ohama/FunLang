@@ -105,9 +105,9 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
-- [ ] 58-01-PLAN.md — Add StringSliceExpr and ListCompExpr AST nodes to Ast.fs; add parser grammar rules to Parser.fsy
-- [ ] 58-02-PLAN.md — Implement eval and type-checking in Eval.fs and Bidir.fs; extend ForInExpr for native collections
-- [ ] 58-03-PLAN.md — Write flt tests for string slicing, list comprehension, and native for-in iteration
+- [x] 58-01-PLAN.md — Add StringSliceExpr and ListCompExpr AST nodes to Ast.fs; add parser grammar rules to Parser.fsy
+- [x] 58-02-PLAN.md — Implement eval and type-checking in Eval.fs and Bidir.fs; extend ForInExpr for native collections
+- [x] 58-03-PLAN.md — Write flt tests for string slicing, list comprehension, and native for-in iteration
 
 ---
 
@@ -134,7 +134,7 @@ Plans:
 | 55 | StringBuilder & String Utilities | ✓ Complete | 3/3 |
 | 56 | HashSet & Queue | ✓ Complete | 2/2 |
 | 57 | MutableList & Hashtable Enhancement | ✓ Complete | 2/2 |
-| 58 | Language Constructs | In Progress | 0/3 |
+| 58 | Language Constructs | ✓ Complete | 3/3 |
 | 59 | Prelude Extensions | Not Started | — |
 
 ## Coverage
