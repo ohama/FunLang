@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 58 - Language Constructs (In Progress)
-Plan: 2/3 complete
-Status: Phase 58 Plan 02 complete (Eval + Bidir), Plan 03 next
-Last activity: 2026-03-29 -- Phase 58 Plan 02 complete (Eval+Bidir for StringSliceExpr, ListCompExpr, ForInExpr native collections)
+Phase: 58 - Language Constructs (Complete)
+Plan: 3/3 complete
+Status: Phase 58 complete (all flt tests passing, 614/614 suite green)
+Last activity: 2026-03-29 -- Phase 58 Plan 03 complete (6 flt integration tests for LANG-01, LANG-02, LANG-03, PROP-05)
 
-Progress: [█████████████░░░░░░░] 67% -- Phases 54-57 done, Phase 58 2/3 complete
+Progress: [████████████████████] 100% -- Phases 54-58 done, Phase 58 3/3 complete
 
 ## Performance Metrics
 
@@ -75,9 +75,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 58 Plan 02 complete -- Eval+Bidir for StringSliceExpr, ListCompExpr, extended ForInExpr
+Stopped at: Phase 58 Plan 03 complete -- 6 flt integration tests, 614/614 suite green
 Resume file: None
-Next action: Phase 58 Plan 03 -- flt integration tests for all four constructs
+Next action: None -- Phase 58 complete, v7.0 language constructs milestone done
 
 ---
 *State initialized: 2026-02-25*
