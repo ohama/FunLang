@@ -234,6 +234,32 @@ let initialBuiltinEnv : Env =
                     | _ -> failwith "string_contains: second argument must be string")
             | _ -> failwith "string_contains: first argument must be string")
 
+        // Phase 60: string_endswith : string -> string -> bool  (BLT-01)
+        "string_endswith", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue suffix -> BoolValue (s.EndsWith(suffix))
+                    | _ -> failwith "string_endswith: second argument must be string")
+            | _ -> failwith "string_endswith: first argument must be string")
+
+        // Phase 60: string_startswith : string -> string -> bool  (BLT-02)
+        "string_startswith", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s ->
+                BuiltinValue (fun v2 ->
+                    match v2 with
+                    | StringValue prefix -> BoolValue (s.StartsWith(prefix))
+                    | _ -> failwith "string_startswith: second argument must be string")
+            | _ -> failwith "string_startswith: first argument must be string")
+
+        // Phase 60: string_trim : string -> string  (BLT-03)
+        "string_trim", BuiltinValue (fun v ->
+            match v with
+            | StringValue s -> StringValue (s.Trim())
+            | _ -> failwith "string_trim: expected string argument")
+
         // to_string : 'a -> string  (polymorphic; F#-style: no quotes on strings)
         "to_string", BuiltinValue (fun v ->
             match v with
@@ -638,6 +664,22 @@ let initialBuiltinEnv : Env =
                     ht.Remove(keyVal) |> ignore
                     TupleValue []
                 | _ -> failwith "Hashtable.remove: expected hashtable"))
+
+        // Phase 60: hashtable_trygetvalue : hashtable<'k, 'v> -> 'k -> (bool * 'v)  (BLT-04)
+        "hashtable_trygetvalue", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    match ht.TryGetValue(keyVal) with
+                    | true, v  -> TupleValue [BoolValue true;  v]
+                    | false, _ -> TupleValue [BoolValue false; TupleValue []]
+                | _ -> failwith "hashtable_trygetvalue: expected hashtable"))
+
+        // Phase 60: hashtable_count : hashtable<'k, 'v> -> int  (BLT-05)
+        "hashtable_count", BuiltinValue (fun htVal ->
+            match htVal with
+            | HashtableValue ht -> IntValue ht.Count
+            | _ -> failwith "hashtable_count: expected hashtable")
 
         // Phase 55: StringBuilder builtins
         // stringbuilder_create : unit -> StringBuilder
