@@ -12,15 +12,15 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 Milestone: v7.1 Remove Dot Notation — IN PROGRESS
 Phase: 61 of 62 (Hashtable Tuple & Test Conversion) — COMPLETE
 Plan: 02 of 02 complete
-Status: Phase complete
-Last activity: 2026-03-29 — Completed 61-02-PLAN.md (fix stale paths + convert hashtable tests to module functions)
+Status: Phase complete — verified ✓
+Last activity: 2026-03-29 — Phase 61 verified (6/6 must-haves passed)
 
 Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 128
+- Total plans completed: 130
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day
 - v4.0: 5 plans across 3 phases in 1 day
@@ -73,4 +73,4 @@ Next action: Execute Phase 62 (final v7.1 cleanup or milestone close)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (61-01 complete: ForInExpr Pattern support)*
+*Last updated: 2026-03-29 (Phase 61 complete — verified)*
