@@ -72,8 +72,8 @@
 | STR-02 | Phase 55 | Complete |
 | STR-03 | Phase 55 | Complete |
 | STR-04 | Phase 55 | Complete |
-| COLL-02 | Phase 56 | Pending |
-| COLL-03 | Phase 56 | Pending |
+| COLL-02 | Phase 56 | Complete |
+| COLL-03 | Phase 56 | Complete |
 | COLL-04 | Phase 57 | Pending |
 | COLL-05 | Phase 57 | Pending |
 | PROP-02 | Phase 57 | Pending |
