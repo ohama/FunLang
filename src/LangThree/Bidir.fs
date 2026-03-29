@@ -229,7 +229,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         (compose s5 s1234, TTuple [])  // for always returns unit
 
     // === ForInExpr (Phase 51/58 - for-in collection loop) ===
-    | ForInExpr (var, collExpr, body, span) ->
+    | ForInExpr (pat, collExpr, body, span) ->
         let s1, collTy = synth ctorEnv recEnv ctx env collExpr
         let resolvedCollTy = apply s1 collTy
         let s12, elemTy =
@@ -245,7 +245,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             | TData("MutableList", []) ->
                 (s1, freshVar())
             | THashtable (keyTy, valTy) ->
-                (s1, TData("KeyValuePair", [keyTy; valTy]))
+                (s1, TTuple [keyTy; valTy])
             | _ ->
                 let elemTv = freshVar()
                 let s2 =
@@ -261,10 +261,17 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     | _ -> freshVar()
                 (s12, elemTy)
         let env2 = applyEnv s12 env
-        // Bind loop variable as immutable — NOT in mutableVars (FORIN-03)
-        let loopEnv = Map.add var (Scheme([], elemTy)) env2
+        // Bind loop pattern as immutable — NOT in mutableVars (FORIN-03)
+        let patEnv, patTy = inferPattern ctorEnv pat
+        let s13 = compose (unifyWithContext ctx [] span (apply s12 elemTy) patTy) s12
+        let generalizedPatEnv =
+            patEnv
+            |> Map.map (fun _ (Scheme (_, ty)) ->
+                let ty' = apply s13 ty
+                generalize (applyEnv s13 env2) ty')
+        let loopEnv = Map.fold (fun acc k v -> Map.add k v acc) (applyEnv s13 env2) generalizedPatEnv
         let s3, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
-        (compose s3 s12, TTuple [])  // for-in always returns unit
+        (compose s3 s13, TTuple [])  // for-in always returns unit
 
     // === Assign (Phase 42 - mutable variable assignment) ===
     | Assign (name, value, span) ->

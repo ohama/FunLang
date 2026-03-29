@@ -1042,7 +1042,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | _ -> failwith "for: start and end must be integers"
 
     // Phase 51: for-in collection loop
-    | ForInExpr (var, collExpr, body, _) ->
+    | ForInExpr (pat, collExpr, body, _) ->
         let collVal = eval recEnv moduleEnv env false collExpr
         let elements =
             match collVal with
@@ -1052,12 +1052,13 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             | QueueValue q -> q |> Seq.toList
             | MutableListValue ml -> ml |> Seq.toList
             | HashtableValue ht ->
-                ht |> Seq.map (fun kv ->
-                    let fields = Map.ofList [("Key", ref kv.Key); ("Value", ref kv.Value)]
-                    RecordValue("KeyValuePair", fields)) |> Seq.toList
+                ht |> Seq.map (fun kv -> TupleValue [kv.Key; kv.Value]) |> Seq.toList
             | _ -> failwith "for-in: collection must be a list, array, or native collection"
         for elemVal in elements do
-            let loopEnv = Map.add var elemVal env
+            let loopEnv =
+                match matchPattern pat elemVal with
+                | Some bindings -> List.fold (fun e (n, v) -> Map.add n v e) env bindings
+                | None -> failwith "for-in: pattern match failed"
             eval recEnv moduleEnv loopEnv false body |> ignore
         TupleValue []
 
