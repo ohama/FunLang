@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v7.0 Native Collections & Built-in Library
 Phase: 55 - StringBuilder & String Utilities (in progress)
-Plan: 1/? complete
-Status: Phase 55 Plan 01 complete, more plans may follow
-Last activity: 2026-03-29 -- Phase 55 Plan 01 complete (EndsWith/StartsWith/Trim/eprintfn)
+Plan: 2/? complete
+Status: Phase 55 Plan 02 complete, more plans may follow
+Last activity: 2026-03-29 -- Phase 55 Plan 02 complete (Char module, String.concat)
 
-Progress: [████░░░░░░░░░░░░░░░░] 20% -- Phase 55 Plan 01 done
+Progress: [████░░░░░░░░░░░░░░░░] 20% -- Phase 55 Plans 01-02 done
 
 ## Performance Metrics
 
@@ -46,6 +46,9 @@ Key cross-milestone context:
 - FsLit only supports // --- Output: not // --- Stdout: for stdout sections; Stdout: silently ignored
 - eprintfn mirrors applyPrintfnArgs but writes to stderr; type scheme Scheme([0], TArrow(TString, TVar 0))
 - IndexGet/IndexSet AST nodes exist for arr.[i] syntax -- Phase 58 extends for string slicing
+- Char module in Prelude/Char.fun: IsDigit, ToUpper, IsLetter, IsUpper, IsLower, ToLower (qualified-only)
+- String.concat in Prelude/String.fun wraps string_concat_list (NOT string_concat) to avoid type collision
+- to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
 - HashtableValue wraps Dictionary<Value,Value> -- Phase 57 adds .TryGetValue, .Count, .Keys
 - callValueRef forward reference pattern used for builtins that invoke user closures
 
@@ -60,7 +63,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 55 Plan 01 complete -- EndsWith/StartsWith/Trim string methods + eprintfn, 17 string/print flt tests
+Stopped at: Phase 55 Plan 02 complete -- Char module (IsDigit/ToUpper/etc.) + String.concat via Prelude modules
 Resume file: None
 Next action: Continue Phase 55 or plan next phase
 
