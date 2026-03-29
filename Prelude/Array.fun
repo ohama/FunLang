@@ -9,3 +9,5 @@ module Array =
     let map f arr        = array_map f arr
     let fold f init arr  = array_fold f init arr
     let init n f         = array_init n f
+    let sort arr         = array_sort arr
+    let ofSeq coll       = array_of_seq coll
