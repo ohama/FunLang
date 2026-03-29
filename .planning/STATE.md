@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.0 Native Collections & Built-in Library
-Phase: 56 - HashSet & Queue ✓ COMPLETE
-Plan: 2/2 complete
-Status: Phase 56 verified, Phase 57 next
-Last activity: 2026-03-29 -- Phase 56 complete (9/9 must-haves, 605 flt tests)
+Phase: 57 - MutableList & Hashtable Enhancement (in progress)
+Plan: 1/2 complete
+Status: Phase 57 Plan 01 complete, Plan 02 next
+Last activity: 2026-03-29 -- Completed 57-01-PLAN.md (MutableList native collection)
 
-Progress: [██████████░░░░░░░░░░] 50% -- Phases 54-56 done, Phase 57 next
+Progress: [██████████░░░░░░░░░░] 50% -- Phases 54-56 done, Phase 57 in progress
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Key cross-milestone context:
 - String.concat in Prelude/String.fun wraps string_concat_list (NOT string_concat) to avoid type collision
 - to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
 - HashtableValue wraps Dictionary<Value,Value> -- Phase 57 adds .TryGetValue, .Count, .Keys
+- MutableListValue wraps System.Collections.Generic.List<Value> (Phase 57-01): Constructor("MutableList") intercepted; Add/Count via FieldAccess; IndexGet/IndexSet bounds-checked; raw builtins mutablelist_* in Eval.fs/TypeCheck.fs; Prelude/MutableList.fun uses raw builtins (same pattern as HashSet/Queue)
 - callValueRef forward reference pattern used for builtins that invoke user closures
 - StringBuilderValue wraps System.Text.StringBuilder (Phase 55-03): Constructor("StringBuilder") intercepted in Eval.fs/Bidir.fs
 - sb.Append/ToString dispatched via FieldAccess StringBuilderValue arm in Eval.fs; TData("StringBuilder",[]) arm in Bidir.fs
@@ -72,9 +73,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Phase 56 Plan 02 complete -- HashSet/Queue Prelude modules + flt integration tests (Phase 56 complete)
+Stopped at: Phase 57 Plan 01 complete -- MutableList native collection (Ast/Eval/Bidir/TypeCheck + Prelude)
 Resume file: None
-Next action: Phase 57 (Hashtable enhancements)
+Next action: Phase 57 Plan 02 (Hashtable enhancements)
 
 ---
 *State initialized: 2026-02-25*
