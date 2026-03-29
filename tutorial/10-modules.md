@@ -213,27 +213,33 @@ $ langthree main.l3
 11
 ```
 
-경로는 현재 작업 디렉토리(CWD, 프로젝트 루트)를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.
+경로는 임포트하는 파일의 디렉토리를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.
 
 ### 하위 디렉토리의 파일 임포트
 
-프로젝트가 여러 디렉토리로 구성되어 있어도, 경로는 항상 CWD 기준입니다. 파일이 어디에 있든 프로젝트 루트에서의 경로를 쓰면 됩니다:
+상대 경로는 항상 **임포트하는 파일의 위치**를 기준으로 해석됩니다. 같은 디렉토리의 파일은 이름만으로, 다른 디렉토리의 파일은 상대 경로로 참조합니다:
 
 ```
-project/          ← CWD (여기서 langthree 실행)
+project/
 ├── main.l3
 ├── lib/
-│   └── math.fun
+│   ├── math.fun
+│   └── helpers.fun
 └── utils/
     └── format.fun
 ```
 
 ```
+$ cat lib/helpers.fun
+let double x = x * 2
+
 $ cat lib/math.fun
+open "helpers.fun"
 let square x = x * x
+let squareDouble x = square (double x)
 
 $ cat utils/format.fun
-open "lib/math.fun"
+open "../lib/math.fun"
 let formatSquare x = to_string (square x)
 
 $ cat main.l3
@@ -244,7 +250,7 @@ $ langthree main.l3
 "49"
 ```
 
-`utils/format.fun` 안에서도 `open "lib/math.fun"`이 CWD(`project/`) 기준으로 해석됩니다. `open "../lib/math.fun"` 같은 상대 경로가 필요 없어, 파일을 이동해도 경로가 깨지지 않습니다.
+`lib/math.fun` 안의 `open "helpers.fun"`은 `lib/` 디렉토리에서 `helpers.fun`을 찾습니다. `utils/format.fun` 안의 `open "../lib/math.fun"`은 `utils/`에서 한 단계 올라가 `lib/math.fun`을 찾습니다. 이 방식은 Rust의 모듈 해석과 동일한 원칙으로, 실행 디렉토리에 무관하게 일관된 결과를 보장합니다.
 
 ### 임포트된 모듈의 한정된 접근
 
@@ -282,6 +288,6 @@ Error: Circular module dependency: a.fun → b.fun → a.fun
 - **위에서 아래 순서:** 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)
 - **`module M =`** 은 중첩 모듈에 `=`을 사용; 최상위 `namespace`는 `=`이 없음
 - **한정된 접근**은 값, 함수, 생성자에 대해 동작함
-- **`open "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능
+- **`open "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능 (경로는 임포트하는 파일 기준)
 
 코드를 모듈로 구조화하고 외부 파일을 임포트할 수 있게 되었으니, 다음으로는 파일 시스템과 운영체제와 상호작용하는 방법을 알아봅니다.

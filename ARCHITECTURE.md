@@ -144,6 +144,7 @@ let f x y z = body
 - `typeCheckModuleWithPrelude`는 `initialModules` 파라미터를 받아 파일 임포트 시 이미 로드된 모듈 맵을 전달
 - 파일 임포트(`fileImportTypeChecker` 델리게이트)가 반환한 모듈 맵이 타입 체크 환경에 병합
 - `Program.fs`가 prelude 모듈 맵을 타입 체크와 평가 단계로 스레딩
+- `resolveImportPath`는 상대 경로를 임포트하는 파일의 디렉토리 기준으로 해석 (Rust 모듈 해석과 동일 원칙)
 
 **Bidirectional Type Checking:**
 

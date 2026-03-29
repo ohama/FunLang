@@ -1,0 +1,7 @@
+// Test: nested import resolves relative to importing file, not CWD
+// --- Command: bash -c 'mkdir -p /tmp/flt-nested/subdir && printf "let innerVal = 42\n" > /tmp/flt-nested/subdir/inner.fun && printf "open \x22inner.fun\x22\n" > /tmp/flt-nested/subdir/middle.fun && /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input'
+// --- Input:
+open "/tmp/flt-nested/subdir/middle.fun"
+let result = innerVal
+// --- Output:
+42

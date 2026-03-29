@@ -723,12 +723,13 @@ let mergeModuleExportsForTypeCheck
 
 /// Resolve an import path relative to the importing file's directory.
 /// Absolute paths are returned as-is. Relative paths are resolved relative to
-/// the importing file's directory, or CWD if the importing file is a synthetic name.
-let resolveImportPath (importPath: string) (_importingFile: string) : string =
+/// the importing file's directory.
+let resolveImportPath (importPath: string) (importingFile: string) : string =
     if Path.IsPathRooted importPath then
         importPath
     else
-        Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), importPath))
+        let dir = Path.GetDirectoryName(Path.GetFullPath(importingFile))
+        Path.GetFullPath(Path.Combine(dir, importPath))
 
 /// Tracks the path of the file currently being type-checked.
 /// Set by the file loading pipeline before calling typeCheckModuleWithPrelude.

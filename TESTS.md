@@ -75,7 +75,7 @@ tests/flt/
 │   ├── hashset/    # HashSet (4 tests)
 │   ├── hashtable/  # hashtable (14 tests)
 │   ├── implicit-in/# implicit in (8 tests)
-│   ├── import/     # file import (3 tests)
+│   ├── import/     # file import (4 tests)
 │   ├── let/        # let 바인딩 (9 tests)
 │   ├── list/       # 리스트 + 컴프리헨션 (4 tests)
 │   ├── match/      # 패턴 매칭 (39 tests)
