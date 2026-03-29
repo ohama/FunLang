@@ -31,6 +31,11 @@ let initialTypeEnv: TypeEnv =
         // string_contains: string -> string -> bool
         "string_contains", Scheme([], TArrow(TString, TArrow(TString, TBool)))
 
+        // Phase 60: String operation builtins (BLT-01, BLT-02, BLT-03)
+        "string_endswith",   Scheme([], TArrow(TString, TArrow(TString, TBool)))
+        "string_startswith", Scheme([], TArrow(TString, TArrow(TString, TBool)))
+        "string_trim",       Scheme([], TArrow(TString, TString))
+
         // to_string: 'a -> string  (permissively polymorphic; runtime enforces int/bool/string)
         "to_string", Scheme([0], TArrow(TVar 0, TString))
 
@@ -159,6 +164,10 @@ let initialTypeEnv: TypeEnv =
         "hashtable_keys",      Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TList (TVar 0)))
         // hashtable_remove : hashtable<'k, 'v> -> 'k -> unit
         "hashtable_remove",    Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [])))
+
+        // Phase 60: Hashtable operation builtins (BLT-04, BLT-05)
+        "hashtable_trygetvalue", Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [TBool; TVar 1])))
+        "hashtable_count",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TInt))
 
         // Phase 55: StringBuilder builtins
         // stringbuilder_create : unit -> StringBuilder
