@@ -5,3 +5,5 @@ module Hashtable =
     let containsKey ht key  = hashtable_containsKey ht key
     let keys ht             = hashtable_keys ht
     let remove ht key       = hashtable_remove ht key
+    let tryGetValue ht key  = hashtable_trygetvalue ht key
+    let count ht            = hashtable_count ht
