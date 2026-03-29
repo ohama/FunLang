@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 ## Current Position
 
-Milestone: v7.1 Remove Dot Notation — DEFINING
-Phase: Not started (defining requirements)
+Milestone: v7.1 Remove Dot Notation — ROADMAP CREATED
+Phase: 60 of 62 (Builtins & Prelude Modules) — Not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-29 — Milestone v7.1 started
+Status: Ready to plan
+Last activity: 2026-03-29 — Roadmap created (3 phases, 12 requirements)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl)
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -41,7 +41,7 @@ Key cross-milestone context:
 - [|...|] array literals not supported (use Array.ofList)
 - Blank lines inside .fun module bodies cause parse errors (NEWLINE(0) = DEDENT out of module) -- never use blank lines in Prelude .fun files
 - Option.fun renamed to A_Option.fun so Some/None are available when List.fun type-checks (A_ prefix sorts first in Prelude load order)
-- Builtins in Eval.fs also need type schemes in TypeCheck.fs initialTypeEnv or .fun files using them will get type errors
+- Builtins in Eval.fs also need type schemes in TypeCheck.ts initialTypeEnv or .fun files using them will get type errors
 - FsLit only supports // --- Output: not // --- Stdout: for stdout sections; Stdout: silently ignored
 - flt tests: expected output must include () for final let _ = println expr
 - Multi-arg lambdas (fun i x -> ...) fail to parse -- use curried form (fun i -> fun x -> ...)
@@ -61,10 +61,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Milestone v7.1 initialization
+Stopped at: Roadmap created for v7.1
 Resume file: None
-Next action: Define requirements and roadmap
+Next action: Plan phase 60
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (v7.1 milestone start)*
+*Last updated: 2026-03-29 (v7.1 roadmap created)*
