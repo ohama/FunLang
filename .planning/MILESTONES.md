@@ -1,5 +1,31 @@
 # Project Milestones: LangThree
 
+## v7.1 Remove Dot Notation (Shipped: 2026-03-29)
+
+**Delivered:** OOP 스타일 dot dispatch를 제거하고 순수 함수형 module function API로 통일 — Eval.fs/Bidir.fs에서 ~170줄 value-type FieldAccess dispatch 삭제
+
+**Phases completed:** 60-62 (7 plans total)
+
+**Key accomplishments:**
+- 5 new builtins (string_endswith/startswith/trim, hashtable_trygetvalue/count) + type schemes
+- String/Hashtable/StringBuilder Prelude 모듈 확장 (module function API 완성)
+- ForInExpr var: Pattern 지원 — `for (k, v) in ht do ...` tuple destructuring
+- Hashtable for-in → TupleValue [k; v] (KeyValuePair record 제거)
+- 25 flt 테스트 module function 방식 전환 + 39 stale 경로 수정
+- Eval.fs + Bidir.fs value-type FieldAccess dispatch 코드 완전 제거
+- Module export builder 버그 수정 (shadow binding 필터링 문제)
+
+**Stats:**
+- 69 files changed, +3,234 LOC
+- 30 commits
+- 3 phases, 7 plans
+- 1 day (2026-03-29)
+- 637 flt tests + 224 unit tests, all passing
+
+**Git range:** `feat(60-01)` → `docs(62): complete`
+
+---
+
 ## v7.0 Native Collections & Built-in Library (Shipped: 2026-03-29)
 
 **Delivered:** 네이티브 컬렉션 타입(StringBuilder, HashSet, Queue, MutableList) + Hashtable 확장 API + 프로퍼티/메서드 디스패치 + 문자열 슬라이싱 + 리스트 컴프리헨션 + Prelude 확장 — FunLexYacc가 .NET interop 없이 동작하기 위한 기반

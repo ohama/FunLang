@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v7.1 Remove Dot Notation — COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v7.1 Remove Dot Notation — COMPLETE
-Phase: 62 of 62 (Remove Dot Dispatch) — COMPLETE
-Plan: 03 of 03 complete
-Status: Phase complete, Milestone complete ✓
-Last activity: 2026-03-29 — Completed 62-03 (deleted ~170 lines dot dispatch from Eval.fs + Bidir.fs)
+Milestone: v7.1 Remove Dot Notation — ARCHIVED
+Phase: —
+Plan: —
+Status: Ready for next milestone
+Last activity: 2026-03-29 — v7.1 milestone archived
 
-Progress: [████████████████████] v1.0-v7.1 done (132 plans complete) | MILESTONE v7.1 COMPLETE
+Progress: [████████████████████] v1.0-v7.1 done (62 phases, 133 plans)
 
 ## Performance Metrics
 
@@ -69,9 +69,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 62-03-PLAN.md (deleted dot dispatch from Eval.fs+Bidir.fs, MILESTONE v7.1 COMPLETE)
+Stopped at: v7.1 milestone archived
 Resume file: None
-Next action: Define v8.0 milestone or next feature phase
+Next action: /gsd:new-milestone for next version
 
 ---
 *State initialized: 2026-02-25*
