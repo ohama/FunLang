@@ -167,6 +167,26 @@ let initialTypeEnv: TypeEnv =
         "stringbuilder_append",   Scheme([0], TArrow(TData("StringBuilder", []), TArrow(TVar 0, TData("StringBuilder", []))))
         // stringbuilder_tostring : StringBuilder -> string
         "stringbuilder_tostring", Scheme([], TArrow(TData("StringBuilder", []), TString))
+
+        // Phase 56: HashSet builtins
+        // hashset_create : unit -> HashSet
+        "hashset_create",    Scheme([], TArrow(TTuple [], TData("HashSet", [])))
+        // hashset_add : HashSet -> 'a -> bool
+        "hashset_add",       Scheme([0], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
+        // hashset_contains : HashSet -> 'a -> bool
+        "hashset_contains",  Scheme([0], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
+        // hashset_count : HashSet -> int
+        "hashset_count",     Scheme([], TArrow(TData("HashSet", []), TInt))
+
+        // Phase 56: Queue builtins
+        // queue_create : unit -> Queue
+        "queue_create",    Scheme([], TArrow(TTuple [], TData("Queue", [])))
+        // queue_enqueue : Queue -> 'a -> unit
+        "queue_enqueue",   Scheme([0], TArrow(TData("Queue", []), TArrow(TVar 0, TTuple [])))
+        // queue_dequeue : Queue -> unit -> 'a
+        "queue_dequeue",   Scheme([0], TArrow(TData("Queue", []), TArrow(TTuple [], TVar 0)))
+        // queue_count : Queue -> int
+        "queue_count",     Scheme([], TArrow(TData("Queue", []), TInt))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

@@ -657,6 +657,59 @@ let initialBuiltinEnv : Env =
             match sbVal with
             | StringBuilderValue sb -> StringValue (sb.ToString())
             | _ -> failwith "stringbuilder_tostring: expected StringBuilder")
+
+        // Phase 56: HashSet builtins
+        // hashset_create : unit -> HashSet
+        "hashset_create", BuiltinValue (fun _ ->
+            HashSetValue (System.Collections.Generic.HashSet<Value>()))
+
+        // hashset_add : HashSet -> 'a -> bool
+        "hashset_add", BuiltinValue (fun hsVal ->
+            BuiltinValue (fun v ->
+                match hsVal with
+                | HashSetValue hs -> BoolValue (hs.Add v)
+                | _ -> failwith "hashset_add: expected HashSet"))
+
+        // hashset_contains : HashSet -> 'a -> bool
+        "hashset_contains", BuiltinValue (fun hsVal ->
+            BuiltinValue (fun v ->
+                match hsVal with
+                | HashSetValue hs -> BoolValue (hs.Contains v)
+                | _ -> failwith "hashset_contains: expected HashSet"))
+
+        // hashset_count : HashSet -> int
+        "hashset_count", BuiltinValue (fun hsVal ->
+            match hsVal with
+            | HashSetValue hs -> IntValue hs.Count
+            | _ -> failwith "hashset_count: expected HashSet")
+
+        // Phase 56: Queue builtins
+        // queue_create : unit -> Queue
+        "queue_create", BuiltinValue (fun _ ->
+            QueueValue (System.Collections.Generic.Queue<Value>()))
+
+        // queue_enqueue : Queue -> 'a -> unit
+        "queue_enqueue", BuiltinValue (fun qVal ->
+            BuiltinValue (fun v ->
+                match qVal with
+                | QueueValue q -> q.Enqueue v; TupleValue []
+                | _ -> failwith "queue_enqueue: expected Queue"))
+
+        // queue_dequeue : Queue -> unit -> 'a
+        "queue_dequeue", BuiltinValue (fun qVal ->
+            BuiltinValue (fun _ ->
+                match qVal with
+                | QueueValue q ->
+                    if q.Count = 0 then
+                        raise (LangThreeException (StringValue "Queue.Dequeue: queue is empty"))
+                    else q.Dequeue()
+                | _ -> failwith "queue_dequeue: expected Queue"))
+
+        // queue_count : Queue -> int
+        "queue_count", BuiltinValue (fun qVal ->
+            match qVal with
+            | QueueValue q -> IntValue q.Count
+            | _ -> failwith "queue_count: expected Queue")
     ]
 
 /// Module value environment for runtime qualified access
