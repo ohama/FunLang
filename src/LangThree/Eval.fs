@@ -1069,6 +1069,20 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             | _ -> failwith "StringBuilder: expected () or string argument"
         | "StringBuilder", None ->
             StringBuilderValue (System.Text.StringBuilder())
+        // Phase 56: HashSet constructor interception
+        | "HashSet", Some argExpr ->
+            match eval recEnv moduleEnv env false argExpr with
+            | TupleValue [] -> HashSetValue (System.Collections.Generic.HashSet<Value>())
+            | _ -> failwith "HashSet: expected ()"
+        | "HashSet", None ->
+            HashSetValue (System.Collections.Generic.HashSet<Value>())
+        // Phase 56: Queue constructor interception
+        | "Queue", Some argExpr ->
+            match eval recEnv moduleEnv env false argExpr with
+            | TupleValue [] -> QueueValue (System.Collections.Generic.Queue<Value>())
+            | _ -> failwith "Queue: expected ()"
+        | "Queue", None ->
+            QueueValue (System.Collections.Generic.Queue<Value>())
         | _ ->
             let argValue = argOpt |> Option.map (eval recEnv moduleEnv env false)
             DataValue (name, argValue)
@@ -1232,6 +1246,35 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         | TupleValue [] -> StringValue (sb.ToString())
                         | _ -> failwith "StringBuilder.ToString: takes no arguments")
                 | _ -> failwithf "StringBuilder has no property or method '%s'" fieldName
+            // Phase 56: HashSet method dispatch
+            | HashSetValue hs ->
+                match fieldName with
+                | "Add" ->
+                    BuiltinValue (fun arg ->
+                        BoolValue (hs.Add(arg)))
+                | "Contains" ->
+                    BuiltinValue (fun arg ->
+                        BoolValue (hs.Contains(arg)))
+                | "Count" -> IntValue hs.Count
+                | _ -> failwithf "HashSet has no property or method '%s'" fieldName
+            // Phase 56: Queue method dispatch
+            | QueueValue q ->
+                match fieldName with
+                | "Enqueue" ->
+                    BuiltinValue (fun arg ->
+                        q.Enqueue(arg)
+                        TupleValue [])
+                | "Dequeue" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | TupleValue [] ->
+                            if q.Count = 0 then
+                                raise (LangThreeException (StringValue "Queue.Dequeue: queue is empty"))
+                            else
+                                q.Dequeue()
+                        | _ -> failwith "Queue.Dequeue: takes no arguments")
+                | "Count" -> IntValue q.Count
+                | _ -> failwithf "Queue has no property or method '%s'" fieldName
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef

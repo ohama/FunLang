@@ -72,6 +72,22 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 (compose s2 s, TData("StringBuilder", []))
             | None ->
                 (empty, TData("StringBuilder", []))
+        | "HashSet" ->
+            match argOpt with
+            | Some argExpr ->
+                let s, argTy = synth ctorEnv recEnv ctx env argExpr
+                let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
+                (compose s2 s, TData("HashSet", []))
+            | None ->
+                (empty, TData("HashSet", []))
+        | "Queue" ->
+            match argOpt with
+            | Some argExpr ->
+                let s, argTy = synth ctorEnv recEnv ctx env argExpr
+                let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
+                (compose s2 s, TData("Queue", []))
+            | None ->
+                (empty, TData("Queue", []))
         | _ ->
         match Map.tryFind name ctorEnv with
         | None ->
@@ -550,6 +566,30 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 (s1, TArrow(tv, TData("StringBuilder", [])))
             | "ToString" ->
                 (s1, TArrow(TTuple [], TString))
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 56: HashSet field access types
+        | TData("HashSet", []) ->
+            match fieldName with
+            | "Add" ->
+                let tv = freshVar()
+                (s1, TArrow(tv, TBool))
+            | "Contains" ->
+                let tv = freshVar()
+                (s1, TArrow(tv, TBool))
+            | "Count" -> (s1, TInt)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 56: Queue field access types
+        | TData("Queue", []) ->
+            match fieldName with
+            | "Enqueue" ->
+                let tv = freshVar()
+                (s1, TArrow(tv, TTuple []))
+            | "Dequeue" ->
+                let tv = freshVar()
+                (s1, TArrow(TTuple [], tv))
+            | "Count" -> (s1, TInt)
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
