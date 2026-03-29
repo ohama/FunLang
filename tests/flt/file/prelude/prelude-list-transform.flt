@@ -1,0 +1,23 @@
+// Test: List.mapi, List.item, List.isEmpty, List.head, List.tail (PRE-03)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = List.mapi (fun i -> fun x -> i + x) [10; 20; 30]
+let r2 = List.item 1 [10; 20; 30]
+let r3 = List.isEmpty []
+let r4 = List.isEmpty [1]
+let r5 = List.head [1; 2; 3]
+let r6 = List.tail [1; 2; 3]
+let _ = println (to_string r1)
+let _ = println (to_string r2)
+let _ = println (to_string r3)
+let _ = println (to_string r4)
+let _ = println (to_string r5)
+let _ = println (to_string r6)
+// --- Output:
+[10; 21; 32]
+20
+true
+false
+1
+[2; 3]
+()

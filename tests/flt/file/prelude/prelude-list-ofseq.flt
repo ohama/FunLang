@@ -1,0 +1,24 @@
+// Test: List.ofSeq from HashSet, Queue, MutableList (PRE-04)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let hs = HashSet ()
+let _ = hs.Add(1)
+let _ = hs.Add(2)
+let _ = hs.Add(3)
+let l1 = List.ofSeq hs
+let q = Queue ()
+let _ = q.Enqueue(10)
+let _ = q.Enqueue(20)
+let l2 = List.ofSeq q
+let ml = MutableList ()
+let _ = ml.Add(100)
+let _ = ml.Add(200)
+let l3 = List.ofSeq ml
+let _ = println (to_string (List.length l1))
+let _ = println (to_string (List.length l2))
+let _ = println (to_string (List.length l3))
+// --- Output:
+3
+2
+2
+()

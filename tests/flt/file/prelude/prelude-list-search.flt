@@ -1,0 +1,20 @@
+// Test: List.exists, List.tryFind, List.choose, List.distinctBy (PRE-02)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = List.exists (fun x -> x > 2) [1; 2; 3]
+let r2 = List.tryFind (fun x -> x > 2) [1; 2; 3]
+let r3 = List.tryFind (fun x -> x > 10) [1; 2; 3]
+let r4 = List.choose (fun x -> if x > 1 then Some (x * 10) else None) [1; 2; 3]
+let r5 = List.distinctBy (fun x -> x % 2) [1; 2; 3; 4; 5]
+let _ = println (to_string r1)
+let _ = println (to_string r2)
+let _ = println (to_string r3)
+let _ = println (to_string r4)
+let _ = println (to_string r5)
+// --- Output:
+true
+Some 3
+None
+[20; 30]
+[1; 2]
+()

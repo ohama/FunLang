@@ -201,12 +201,12 @@ let initialTypeEnv: TypeEnv =
         "mutablelist_count",   Scheme([], TArrow(TData("MutableList", []), TInt))
         // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
         "list_sort_by",        Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
-        // list_of_seq : 'a list -> 'a list  (accepts any seq-like; typed as list->list for checker)
-        "list_of_seq",         Scheme([0], TArrow(TList (TVar 0), TList (TVar 0)))
+        // list_of_seq : 'a -> 'b list  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)
+        "list_of_seq",         Scheme([0; 1], TArrow(TVar 0, TList (TVar 1)))
         // array_sort : 'a array -> unit
         "array_sort",          Scheme([0], TArrow(TArray (TVar 0), TTuple []))
-        // array_of_seq : 'a list -> 'a array  (accepts any seq-like; typed as list->array for checker)
-        "array_of_seq",        Scheme([0], TArrow(TList (TVar 0), TArray (TVar 0)))
+        // array_of_seq : 'a -> 'b array  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)
+        "array_of_seq",        Scheme([0; 1], TArrow(TVar 0, TArray (TVar 1)))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

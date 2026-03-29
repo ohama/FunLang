@@ -1,0 +1,11 @@
+// Test: List.sort and List.sortBy (PRE-01)
+// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let r1 = List.sort [3; 1; 2]
+let r2 = List.sortBy (fun x -> 0 - x) [1; 2; 3]
+let _ = println (to_string r1)
+let _ = println (to_string r2)
+// --- Output:
+[1; 2; 3]
+[3; 2; 1]
+()
