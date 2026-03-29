@@ -164,6 +164,9 @@ let rec formatValue (v: Value) : string =
     | QueueValue q ->
         let elements = q |> Seq.map formatValue |> String.concat "; "
         sprintf "Queue[%s]" elements
+    | MutableListValue ml ->
+        let elements = ml |> Seq.map formatValue |> String.concat "; "
+        sprintf "MutableList[%s]" elements
     | BuiltinValue _ -> "<builtin>"
     | TailCall _ -> "<tailcall>"
 
@@ -942,7 +945,11 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             match ht.TryGetValue(key) with
             | true, v -> v
             | false, _ -> raise (LangThreeException (StringValue "Hashtable key not found"))
-        | _ -> failwith "IndexGet: expected array or hashtable"
+        | MutableListValue ml, IntValue i ->
+            if i < 0 || i >= ml.Count then
+                raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+            ml.[i]
+        | _ -> failwith "IndexGet: expected array, hashtable, or MutableList"
 
     // Phase 47: Array/hashtable index write
     | IndexSet (collExpr, idxExpr, valExpr, _) ->
@@ -958,7 +965,12 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         | HashtableValue ht, key ->
             ht.[key] <- newVal
             TupleValue []
-        | _ -> failwith "IndexSet: expected array or hashtable"
+        | MutableListValue ml, IntValue i ->
+            if i < 0 || i >= ml.Count then
+                raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+            ml.[i] <- newVal
+            TupleValue []
+        | _ -> failwith "IndexSet: expected array, hashtable, or MutableList"
 
     // Phase 42: Mutable variable assignment
     | Assign (name, valueExpr, _) ->
@@ -1136,6 +1148,13 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             | _ -> failwith "Queue: expected ()"
         | "Queue", None ->
             QueueValue (System.Collections.Generic.Queue<Value>())
+        // Phase 57: MutableList constructor interception
+        | "MutableList", Some argExpr ->
+            match eval recEnv moduleEnv env false argExpr with
+            | TupleValue [] -> MutableListValue (System.Collections.Generic.List<Value>())
+            | _ -> failwith "MutableList: expected ()"
+        | "MutableList", None ->
+            MutableListValue (System.Collections.Generic.List<Value>())
         | _ ->
             let argValue = argOpt |> Option.map (eval recEnv moduleEnv env false)
             DataValue (name, argValue)
@@ -1328,6 +1347,15 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                         | _ -> failwith "Queue.Dequeue: takes no arguments")
                 | "Count" -> IntValue q.Count
                 | _ -> failwithf "Queue has no property or method '%s'" fieldName
+            // Phase 57: MutableList method dispatch
+            | MutableListValue ml ->
+                match fieldName with
+                | "Add" ->
+                    BuiltinValue (fun arg ->
+                        ml.Add(arg)
+                        TupleValue [])
+                | "Count" -> IntValue ml.Count
+                | _ -> failwithf "MutableList has no property or method '%s'" fieldName
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef

@@ -209,6 +209,7 @@ and [<CustomEquality; CustomComparison>] Value =
     | StringBuilderValue of System.Text.StringBuilder  // Phase 55: Mutable string builder
     | HashSetValue of System.Collections.Generic.HashSet<Value>  // Phase 56: Mutable unique-element set
     | QueueValue of System.Collections.Generic.Queue<Value>       // Phase 56: Mutable FIFO queue
+    | MutableListValue of System.Collections.Generic.List<Value>  // Phase 57: Mutable resizable list
 
     override x.Equals(obj) =
         match obj with
@@ -234,6 +235,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | StringBuilderValue sb -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(sb)
         | HashSetValue hs -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(hs)
         | QueueValue q    -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(q)
+        | MutableListValue ml -> System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(ml)
 
     interface System.IEquatable<Value> with
         member x.Equals(y: Value) = Value.valueEqual x y
@@ -262,6 +264,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | StringBuilderValue sb1, StringBuilderValue sb2 -> System.Object.ReferenceEquals(sb1, sb2)
         | HashSetValue h1, HashSetValue h2 -> System.Object.ReferenceEquals(h1, h2)
         | QueueValue q1,   QueueValue q2   -> System.Object.ReferenceEquals(q1, q2)
+        | MutableListValue ml1, MutableListValue ml2 -> System.Object.ReferenceEquals(ml1, ml2)
         | RefValue r1, RefValue r2 -> Value.valueEqual !r1 !r2
         | _ -> false
 
@@ -277,6 +280,7 @@ and [<CustomEquality; CustomComparison>] Value =
         | StringBuilderValue _, _ | _, StringBuilderValue _ -> 0
         | HashSetValue _, _ | _, HashSetValue _ -> 0
         | QueueValue _,   _ | _, QueueValue _   -> 0
+        | MutableListValue _, _ | _, MutableListValue _ -> 0
         | RefValue r1, RefValue r2 -> Value.valueCompare !r1 !r2
         | _ -> 0
 
