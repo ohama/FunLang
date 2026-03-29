@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v7.1 Remove Dot Notation
+**Current focus:** v7.1 Remove Dot Notation — COMPLETE
 
 ## Current Position
 
-Milestone: v7.1 Remove Dot Notation — IN PROGRESS
-Phase: 62 of 62 (Remove Dot Dispatch) — IN PROGRESS
-Plan: 02 of ? complete
-Status: Plan 02 complete ✓
-Last activity: 2026-03-29 — Completed 62-02 (HashSet/Queue/MutableList flt migration, 15 files)
+Milestone: v7.1 Remove Dot Notation — COMPLETE
+Phase: 62 of 62 (Remove Dot Dispatch) — COMPLETE
+Plan: 03 of 03 complete
+Status: Phase complete, Milestone complete ✓
+Last activity: 2026-03-29 — Completed 62-03 (deleted ~170 lines dot dispatch from Eval.fs + Bidir.fs)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [████████░░] 80%
+Progress: [████████████████████] v1.0-v7.1 done (132 plans complete) | MILESTONE v7.1 COMPLETE
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Key cross-milestone context:
 - ForInExpr var is now Pattern (not string) — for-in supports tuple destructuring `for (k, v) in ht do ...`
 - Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair)
 - Hashtable module API: Hashtable.tryGetValue/count/keys — no dot-notation anywhere in flt tests
+- v7.1 complete: FieldAccess in Eval.fs and Bidir.fs now only handles record access + module qualified access — all value-type dot dispatch removed
 
 ### Pending Todos
 
@@ -67,10 +68,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 62-02-PLAN.md (HashSet/Queue/MutableList + cross-type flt test migration)
+Stopped at: Completed 62-03-PLAN.md (deleted dot dispatch from Eval.fs+Bidir.fs, MILESTONE v7.1 COMPLETE)
 Resume file: None
-Next action: Execute Phase 62 Plan 03 or close v7.1 milestone
+Next action: Define v8.0 milestone or next feature phase
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (Phase 62 Plan 02 complete)*
+*Last updated: 2026-03-29 (Phase 62 Plan 03 complete — MILESTONE v7.1 COMPLETE)*
