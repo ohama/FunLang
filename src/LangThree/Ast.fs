@@ -120,6 +120,10 @@ type Expr =
     // Phase 47 (Array/Hashtable Indexing): index access
     | IndexGet of collection: Expr * index: Expr * span: Span
     | IndexSet of collection: Expr * index: Expr * value: Expr * span: Span
+    // Phase 58 (String Slicing): s.[start..stop] inclusive, s.[start..] to end
+    | StringSliceExpr of str: Expr * start: Expr * stop: Expr option * span: Span
+    // Phase 58 (List Comprehension): [for x in coll -> expr] or [for i in start..stop -> expr]
+    | ListCompExpr of var: string * collection: Expr * body: Expr * span: Span
 
 /// Pattern for destructuring bindings
 /// Phase 1 (v3.0): Tuple patterns
@@ -325,6 +329,8 @@ let spanOf (expr: Expr) : Span =
     | ForExpr(_, _, _, _, _, s) -> s
     | ForInExpr(_, _, _, s) -> s
     | IndexGet(_, _, s) | IndexSet(_, _, _, s) -> s
+    | StringSliceExpr(_, _, _, s) -> s
+    | ListCompExpr(_, _, _, s) -> s
 
 /// Extract span from any Pattern
 let patternSpanOf (pat: Pattern) : Span =
