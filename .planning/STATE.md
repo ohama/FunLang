@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v7.1 Remove Dot Notation — IN PROGRESS
-Phase: 60 of 62 (Builtins & Prelude Modules) — In progress
-Plan: 01 of 02 complete
-Status: In progress
-Last activity: 2026-03-29 — Completed 60-01-PLAN.md (5 builtins added to Eval.fs + TypeCheck.fs)
+Phase: 60 of 62 (Builtins & Prelude Modules) — COMPLETE
+Plan: 02 of 02 complete
+Status: Phase complete
+Last activity: 2026-03-29 — Completed 60-02-PLAN.md (Prelude module wrappers + flt tests)
 
-Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [█░░░░░░░░░] 10%
+Progress: [████████████████████] v1.0-v7.0 done (59p/126pl) | v7.1: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -47,8 +47,11 @@ Key cross-milestone context:
 - Multi-arg lambdas (fun i x -> ...) fail to parse -- use curried form (fun i -> fun x -> ...)
 - mod is not a LangThree keyword -- use % for integer modulo
 - Unit pattern () in module let binding params (let f x () = ...) does not parse in .fun files -- use named param instead
-- StringBuilder.append Prelude function conflicts with List.append due to `open List` scope pollution — discovered during v7.1 analysis
+- StringBuilder.append renamed to StringBuilder.add to avoid List.append scope conflict — implemented in 60-02
 - to_string on CharValue produces quoted output 'A' not A (formatValue behavior)
+- Module export builder in TypeCheck.fs filtered out shadow bindings — fixed: now includes binding when type differs from outer env (v <> outerV)
+- Module value env in Eval.fs filtered out shadow closures — fixed: uses obj.ReferenceEquals to detect new closures vs inherited
+- Module functions CAN shadow globally open'd names (e.g. String.length coexists with List.length) after the TypeCheck+Eval fix
 
 ### Pending Todos
 
@@ -61,10 +64,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-29
-Stopped at: Completed 60-01-PLAN.md
+Stopped at: Completed 60-02-PLAN.md (Phase 60 complete)
 Resume file: None
-Next action: Execute 60-02-PLAN.md (Prelude .fun module wrappers)
+Next action: Execute Phase 61
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (60-01 complete: 5 builtins added)*
+*Last updated: 2026-03-29 (60-02 complete: Prelude modules + flt tests)*
