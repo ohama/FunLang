@@ -65,34 +65,34 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| COLL-01 | TBD | Pending |
-| COLL-02 | TBD | Pending |
-| COLL-03 | TBD | Pending |
-| COLL-04 | TBD | Pending |
-| COLL-05 | TBD | Pending |
-| PROP-01 | TBD | Pending |
-| PROP-02 | TBD | Pending |
-| PROP-03 | TBD | Pending |
-| PROP-04 | TBD | Pending |
-| PROP-05 | TBD | Pending |
-| LANG-01 | TBD | Pending |
-| LANG-02 | TBD | Pending |
-| LANG-03 | TBD | Pending |
-| STR-01 | TBD | Pending |
-| STR-02 | TBD | Pending |
-| STR-03 | TBD | Pending |
-| STR-04 | TBD | Pending |
-| PRE-01 | TBD | Pending |
-| PRE-02 | TBD | Pending |
-| PRE-03 | TBD | Pending |
-| PRE-04 | TBD | Pending |
-| PRE-05 | TBD | Pending |
+| PROP-01 | Phase 54 | Pending |
+| PROP-04 | Phase 54 | Pending |
+| COLL-01 | Phase 55 | Pending |
+| STR-01 | Phase 55 | Pending |
+| STR-02 | Phase 55 | Pending |
+| STR-03 | Phase 55 | Pending |
+| STR-04 | Phase 55 | Pending |
+| COLL-02 | Phase 56 | Pending |
+| COLL-03 | Phase 56 | Pending |
+| COLL-04 | Phase 57 | Pending |
+| COLL-05 | Phase 57 | Pending |
+| PROP-02 | Phase 57 | Pending |
+| PROP-03 | Phase 57 | Pending |
+| LANG-01 | Phase 58 | Pending |
+| LANG-02 | Phase 58 | Pending |
+| LANG-03 | Phase 58 | Pending |
+| PROP-05 | Phase 58 | Pending |
+| PRE-01 | Phase 59 | Pending |
+| PRE-02 | Phase 59 | Pending |
+| PRE-03 | Phase 59 | Pending |
+| PRE-04 | Phase 59 | Pending |
+| PRE-05 | Phase 59 | Pending |
 
 **Coverage:**
 - v7.0 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 ⚠️
+- Mapped to phases: 22
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-29*
-*Last updated: 2026-03-29 after initial definition*
+*Last updated: 2026-03-29 after roadmap creation (traceability complete)*
