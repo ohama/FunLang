@@ -116,7 +116,7 @@ type Expr =
     | WhileExpr of cond: Expr * body: Expr * span: Span
     | ForExpr of var: string * start: Expr * isTo: bool * stop: Expr * body: Expr * span: Span
     // Phase 51 (For-In Collection Loops): for-in loop
-    | ForInExpr of var: string * collection: Expr * body: Expr * span: Span
+    | ForInExpr of var: Pattern * collection: Expr * body: Expr * span: Span
     // Phase 47 (Array/Hashtable Indexing): index access
     | IndexGet of collection: Expr * index: Expr * span: Span
     | IndexSet of collection: Expr * index: Expr * value: Expr * span: Span

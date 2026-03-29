@@ -251,8 +251,13 @@ Expr:
         { ForExpr($2, $4, false, $6, $9, ruleSpan parseState 1 10) }
     // Phase 51 (For-In Collection Loops): for x in collection do body
     | FOR IDENT IN Expr DO SeqExpr
-        { ForInExpr($2, $4, $6, ruleSpan parseState 1 6) }
+        { ForInExpr(VarPat($2, symSpan parseState 2), $4, $6, ruleSpan parseState 1 6) }
     | FOR IDENT IN Expr DO INDENT SeqExpr DEDENT
+        { ForInExpr(VarPat($2, symSpan parseState 2), $4, $7, ruleSpan parseState 1 8) }
+    // Phase 61 (Hashtable Tuple Iteration): for (k, v) in collection do body
+    | FOR TuplePattern IN Expr DO SeqExpr
+        { ForInExpr($2, $4, $6, ruleSpan parseState 1 6) }
+    | FOR TuplePattern IN Expr DO INDENT SeqExpr DEDENT
         { ForInExpr($2, $4, $7, ruleSpan parseState 1 8) }
     // Phase 3 (Records-06): Mutable field assignment
     | Atom DOT IDENT LARROW Expr     { SetField($1, $3, $5, ruleSpan parseState 1 5) }
