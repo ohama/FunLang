@@ -65,8 +65,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROP-01 | Phase 54 | Pending |
-| PROP-04 | Phase 54 | Pending |
+| PROP-01 | Phase 54 | Complete |
+| PROP-04 | Phase 54 | Complete |
 | COLL-01 | Phase 55 | Pending |
 | STR-01 | Phase 55 | Pending |
 | STR-02 | Phase 55 | Pending |

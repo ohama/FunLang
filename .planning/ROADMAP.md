@@ -18,6 +18,10 @@ FunLexYacc가 .NET interop 없이 동작하도록 네이티브 컬렉션 타입(
 3. Existing FieldAccess for records and modules continues to work unchanged
 4. flt tests verify property access and method dispatch on strings and arrays
 
+**Plans:** 1 plan
+Plans:
+- [x] 54-01-PLAN.md — Add .Length dispatch to Bidir.fs and Eval.fs, write flt tests
+
 ---
 
 ### Phase 55: StringBuilder & String Utilities
@@ -104,7 +108,7 @@ FunLexYacc가 .NET interop 없이 동작하도록 네이티브 컬렉션 타입(
 
 | Phase | Name | Status | Plans |
 |-------|------|--------|-------|
-| 54 | Property & Method Dispatch | Not Started | — |
+| 54 | Property & Method Dispatch | ✓ Complete | 1/1 |
 | 55 | StringBuilder & String Utilities | Not Started | — |
 | 56 | HashSet & Queue | Not Started | — |
 | 57 | MutableList & Hashtable Enhancement | Not Started | — |
