@@ -1,0 +1,18 @@
+// Test: StringBuilder combined with string methods (COLL-01, STR-01)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let sb = StringBuilder.create ()
+let _ = StringBuilder.add sb "  Hello, "
+let _ = StringBuilder.add sb "World!  "
+let result = StringBuilder.toString sb
+let trimmed = String.trim result
+let _ = println trimmed
+let _ = println (to_string (String.startsWith trimmed "Hello"))
+let _ = println (to_string (String.endsWith trimmed "!"))
+let _ = println (to_string (String.length trimmed))
+// --- Output:
+Hello, World!
+true
+true
+13
+()
