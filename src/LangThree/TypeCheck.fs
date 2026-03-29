@@ -159,6 +159,14 @@ let initialTypeEnv: TypeEnv =
         "hashtable_keys",      Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TList (TVar 0)))
         // hashtable_remove : hashtable<'k, 'v> -> 'k -> unit
         "hashtable_remove",    Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [])))
+
+        // Phase 55: StringBuilder builtins
+        // stringbuilder_create : unit -> StringBuilder
+        "stringbuilder_create",   Scheme([], TArrow(TTuple [], TData("StringBuilder", [])))
+        // stringbuilder_append : StringBuilder -> string -> StringBuilder
+        "stringbuilder_append",   Scheme([0], TArrow(TData("StringBuilder", []), TArrow(TVar 0, TData("StringBuilder", []))))
+        // stringbuilder_tostring : StringBuilder -> string
+        "stringbuilder_tostring", Scheme([], TArrow(TData("StringBuilder", []), TString))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module

@@ -157,6 +157,7 @@ let rec formatValue (v: Value) : string =
             |> List.map (fun (name, valueRef) -> sprintf "%s = %s" name (formatValue !valueRef))
         sprintf "{ %s }" (String.concat "; " fieldStrs)
     | RefValue r -> formatValue !r  // Phase 42: Transparent - show dereferenced value
+    | StringBuilderValue sb -> sprintf "StringBuilder(\"%s\")" (sb.ToString())
     | BuiltinValue _ -> "<builtin>"
     | TailCall _ -> "<tailcall>"
 
@@ -628,6 +629,28 @@ let initialBuiltinEnv : Env =
                     ht.Remove(keyVal) |> ignore
                     TupleValue []
                 | _ -> failwith "Hashtable.remove: expected hashtable"))
+
+        // Phase 55: StringBuilder builtins
+        // stringbuilder_create : unit -> StringBuilder
+        "stringbuilder_create", BuiltinValue (fun _ ->
+            StringBuilderValue (System.Text.StringBuilder()))
+
+        // stringbuilder_append : StringBuilder -> string -> StringBuilder
+        "stringbuilder_append", BuiltinValue (fun sbVal ->
+            BuiltinValue (fun strVal ->
+                match sbVal with
+                | StringBuilderValue sb ->
+                    match strVal with
+                    | StringValue s -> sb.Append(s) |> ignore; StringBuilderValue sb
+                    | CharValue c -> sb.Append(c) |> ignore; StringBuilderValue sb
+                    | _ -> failwith "stringbuilder_append: expected string or char"
+                | _ -> failwith "stringbuilder_append: expected StringBuilder"))
+
+        // stringbuilder_tostring : StringBuilder -> string
+        "stringbuilder_tostring", BuiltinValue (fun sbVal ->
+            match sbVal with
+            | StringBuilderValue sb -> StringValue (sb.ToString())
+            | _ -> failwith "stringbuilder_tostring: expected StringBuilder")
     ]
 
 /// Module value environment for runtime qualified access
@@ -1031,8 +1054,18 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
 
     // Phase 2 (ADT): Constructor evaluation
     | Constructor (name, argOpt, _) ->
-        let argValue = argOpt |> Option.map (eval recEnv moduleEnv env false)
-        DataValue (name, argValue)
+        // Phase 55: StringBuilder() constructor interception
+        match name, argOpt with
+        | "StringBuilder", Some argExpr ->
+            match eval recEnv moduleEnv env false argExpr with
+            | TupleValue [] -> StringBuilderValue (System.Text.StringBuilder())
+            | StringValue initial -> StringBuilderValue (System.Text.StringBuilder(initial))
+            | _ -> failwith "StringBuilder: expected () or string argument"
+        | "StringBuilder", None ->
+            StringBuilderValue (System.Text.StringBuilder())
+        | _ ->
+            let argValue = argOpt |> Option.map (eval recEnv moduleEnv env false)
+            DataValue (name, argValue)
 
     // v6.0: Type annotations - erased at runtime
     | Annot (expr, _, _) ->
@@ -1178,6 +1211,21 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                 match fieldName with
                 | "Length" -> IntValue arr.Length
                 | _ -> failwithf "Array has no property or method '%s'" fieldName
+            // Phase 55: StringBuilder method dispatch
+            | StringBuilderValue sb ->
+                match fieldName with
+                | "Append" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | StringValue s -> sb.Append(s) |> ignore; StringBuilderValue sb
+                        | CharValue c -> sb.Append(c) |> ignore; StringBuilderValue sb
+                        | _ -> failwith "StringBuilder.Append: expected string or char")
+                | "ToString" ->
+                    BuiltinValue (fun arg ->
+                        match arg with
+                        | TupleValue [] -> StringValue (sb.ToString())
+                        | _ -> failwith "StringBuilder.ToString: takes no arguments")
+                | _ -> failwithf "StringBuilder has no property or method '%s'" fieldName
             | RecordValue (_, fields) ->
                 match Map.tryFind fieldName fields with
                 | Some valueRef -> !valueRef

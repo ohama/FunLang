@@ -62,6 +62,17 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     // === Constructor expressions (ADT) ===
     | Constructor (name, argOpt, span) ->
+        // Phase 55: StringBuilder() type interception
+        match name with
+        | "StringBuilder" ->
+            match argOpt with
+            | Some argExpr ->
+                let s, argTy = synth ctorEnv recEnv ctx env argExpr
+                let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
+                (compose s2 s, TData("StringBuilder", []))
+            | None ->
+                (empty, TData("StringBuilder", []))
+        | _ ->
         match Map.tryFind name ctorEnv with
         | None ->
             // If not in ctorEnv, treat as unbound (may be used without type decl in eval-only tests)
@@ -529,6 +540,16 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | TArray _ ->
             match fieldName with
             | "Length" -> (s1, TInt)
+            | _ ->
+                raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        // Phase 55: StringBuilder field access types
+        | TData("StringBuilder", []) ->
+            match fieldName with
+            | "Append" ->
+                let tv = freshVar()
+                (s1, TArrow(tv, TData("StringBuilder", [])))
+            | "ToString" ->
+                (s1, TArrow(TTuple [], TString))
             | _ ->
                 raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | TData (typeName, typeArgs) ->
