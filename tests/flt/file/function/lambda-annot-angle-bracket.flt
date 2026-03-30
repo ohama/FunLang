@@ -1,0 +1,11 @@
+// Test: lambda annotation with angle bracket generic type (GEN-02)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Box<'a> = Box of 'a
+let unbox = fun (x : Box<int>) -> match x with | Box v -> v
+let unboxList = fun (x : Box<int> list) -> match x with | (Box v) :: _ -> v | [] -> 0
+let r1 = unbox (Box 42)
+let r2 = unboxList [Box 10; Box 20]
+let result = r1 + r2
+// --- Output:
+52
