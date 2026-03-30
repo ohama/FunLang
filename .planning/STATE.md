@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** Planning next milestone
+**Current focus:** v8.0 Declaration Type Annotations
 
 ## Current Position
 
-Milestone: v7.1 Remove Dot Notation — ARCHIVED
-Phase: —
+Milestone: v8.0 Declaration Type Annotations
+Phase: Not started (defining requirements)
 Plan: —
-Status: Ready for next milestone
-Last activity: 2026-03-29 — v7.1 milestone archived
+Status: Defining requirements
+Last activity: 2026-03-30 — Milestone v8.0 started
 
-Progress: [████████████████████] v1.0-v7.1 done (62 phases, 133 plans)
+Progress: [░░░░░░░░░░░░░░░░░░░░] v8.0 not started
 
 ## Performance Metrics
 
@@ -68,11 +68,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29
-Stopped at: v7.1 milestone archived
+Last session: 2026-03-30
+Stopped at: Defining v8.0 requirements
 Resume file: None
-Next action: /gsd:new-milestone for next version
+Next action: Define requirements → create roadmap
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-29 (Phase 62 Plan 03 complete — MILESTONE v7.1 COMPLETE)*
+*Last updated: 2026-03-30 (v8.0 milestone started)*
