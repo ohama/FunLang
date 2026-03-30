@@ -145,6 +145,18 @@ Expr:
     | LET IDENT MixedParamList EQUALS INDENT Expr DEDENT IN SeqExpr
         { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 9)
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
+    // Phase 64: expression let with mixed params + return type: let f x : int = e in e2
+    | LET IDENT MixedParamList COLON TypeExpr EQUALS Expr IN SeqExpr
+        { let body = Annot($7, $5, ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          Let($2, lambda, $9, ruleSpan parseState 1 9) }
+    | LET IDENT MixedParamList COLON TypeExpr EQUALS INDENT Expr DEDENT IN SeqExpr
+        { let body = Annot($8, $5, ruleSpan parseState 1 11)
+          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 11)
+          Let($2, lambda, $11, ruleSpan parseState 1 11) }
+    // Phase 64: expression let with return type only (no params): let x : int = 5 in ...
+    | LET IDENT COLON TypeExpr EQUALS Expr IN SeqExpr
+        { Let($2, Annot($6, $4, ruleSpan parseState 1 8), $8, ruleSpan parseState 1 8) }
     // SYN-07: Unit param shorthand in expression context: let f () = body in expr
     | LET IDENT LPAREN RPAREN EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 8
@@ -678,6 +690,20 @@ Decl:
     | LET IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT
         { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
+    // Phase 64: let with return type annotation (no params): let x : T = expr
+    | LET IDENT COLON TypeExpr EQUALS SeqExpr
+        { LetDecl($2, Annot($6, $4, ruleSpan parseState 1 6), ruleSpan parseState 1 6) }
+    | LET IDENT COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
+        { LetDecl($2, Annot($7, $4, ruleSpan parseState 1 8), ruleSpan parseState 1 8) }
+    // Phase 64: let with mixed params + return type: let f (x : int) y : bool = ...
+    | LET IDENT MixedParamList COLON TypeExpr EQUALS SeqExpr
+        { let body = Annot($7, $5, ruleSpan parseState 1 7)
+          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 7)
+          LetDecl($2, lambda, ruleSpan parseState 1 7) }
+    | LET IDENT MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
+        { let body = Annot($8, $5, ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          LetDecl($2, lambda, ruleSpan parseState 1 9) }
     // SYN-07: Unit param shorthand at module level: let f () = body
     | LET IDENT LPAREN RPAREN EQUALS SeqExpr
         { let span = ruleSpan parseState 1 6
