@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Milestone: v8.0 Declaration Type Annotations
-Phase: 63 of 64 (Angle Bracket Generics) — COMPLETE
-Plan: 2 of 2 complete
-Status: Phase complete — ready for Phase 64
-Last activity: 2026-03-30 — Completed 63-02-PLAN.md (flt integration tests for angle bracket generics)
+Phase: 64 of 64 (Declaration Type Annotations) — In progress
+Plan: 1 of ~3 complete
+Status: Plan 01 complete — parser foundation done (MixedParamList grammar)
+Last activity: 2026-03-30 — Completed 64-01-PLAN.md (MixedParamList grammar, desugarMixedParams helper)
 
-Progress: [████░░░░░░░░░░░░░░░░] 22% (2 plans complete, ~9 total plans estimated in v8.0)
+Progress: [█████░░░░░░░░░░░░░░░] 33% (3 plans complete, ~9 total plans estimated in v8.0)
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Key cross-milestone context:
 - Hashtable module API: Hashtable.tryGetValue/count/keys — no dot-notation anywhere in flt tests
 - v7.1 complete: FieldAccess in Eval.fs and Bidir.fs now only handles record access + module qualified access — all value-type dot dispatch removed
 - v8.0: LambdaAnnot and AnnotParam already exist in AST/Parser for fun (x : T) -> lambdas; reuse for let declarations
+- v8.0 Phase 64-01: MixedParamList subsumes ParamList — remove old ParamList productions to resolve reduce/reduce conflicts when both exist for same IDENT lookahead
+- v8.0 Phase 64-01: LetRecDecl first-param extraction must match both Lambda and LambdaAnnot branches when using MixedParamList
 
 ### Pending Todos
 
@@ -77,10 +79,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 63-02-PLAN.md — angle bracket generics flt tests (phase 63 complete)
+Stopped at: Completed 64-01-PLAN.md — MixedParamList parser foundation
 Resume file: None
-Next action: Execute Phase 64 (declaration type annotations)
+Next action: Execute Phase 64 Plan 02 (return type annotations)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (phase 63 complete — angle bracket generics)*
+*Last updated: 2026-03-30 (phase 64 plan 01 complete — MixedParamList parser foundation)*
