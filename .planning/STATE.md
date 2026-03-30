@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v8.0 Declaration Type Annotations
 Phase: 64 of 64 (Declaration Type Annotations) — In progress
-Plan: 1 of ~3 complete
-Status: Plan 01 complete — parser foundation done (MixedParamList grammar)
-Last activity: 2026-03-30 — Completed 64-01-PLAN.md (MixedParamList grammar, desugarMixedParams helper)
+Plan: 2 of ~3 complete
+Status: Plan 02 complete — return type annotation parsing done (COLON TypeExpr before EQUALS)
+Last activity: 2026-03-30 — Completed 64-02-PLAN.md (return type annotation productions for all let-forms)
 
-Progress: [█████░░░░░░░░░░░░░░░] 33% (3 plans complete, ~9 total plans estimated in v8.0)
+Progress: [███████░░░░░░░░░░░░░] 44% (4 plans complete, ~9 total plans estimated in v8.0)
 
 ## Performance Metrics
 
@@ -67,6 +67,8 @@ Key cross-milestone context:
 - v8.0: LambdaAnnot and AnnotParam already exist in AST/Parser for fun (x : T) -> lambdas; reuse for let declarations
 - v8.0 Phase 64-01: MixedParamList subsumes ParamList — remove old ParamList productions to resolve reduce/reduce conflicts when both exist for same IDENT lookahead
 - v8.0 Phase 64-01: LetRecDecl first-param extraction must match both Lambda and LambdaAnnot branches when using MixedParamList
+- v8.0 Phase 64-02: Return type annotation wraps body in Annot(body, typeExpr, span) — erased at runtime, used for type checking only
+- v8.0 Phase 64-02: Module-level `let x : T = ...` now parses (was out of scope for phase 63, implemented in 64-02)
 
 ### Pending Todos
 
@@ -79,10 +81,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 64-01-PLAN.md — MixedParamList parser foundation
+Stopped at: Completed 64-02-PLAN.md — return type annotation parsing for all let-forms
 Resume file: None
-Next action: Execute Phase 64 Plan 02 (return type annotations)
+Next action: Execute Phase 64 Plan 03 (type checking of annotated let declarations)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (phase 64 plan 01 complete — MixedParamList parser foundation)*
+*Last updated: 2026-03-30 (phase 64 plan 02 complete — return type annotation parsing)*
