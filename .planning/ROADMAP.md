@@ -18,11 +18,11 @@ FunLexYacc 호환성을 위해 module-level 함수 선언에 F# 스타일 타입
 3. 기존 후위 구문 `'a option`, `int list`, `'a list` 등이 그대로 동작한다
 4. 앵글 브래킷 구문과 후위 구문을 혼합한 타입 `Result<'a> list`가 파싱된다
 
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 63-01: Add LANGLE/RANGLE tokens to Lexer.fsl and angle bracket type rule to Parser.fsy
-- [ ] 63-02: Add flt integration tests for angle bracket generic type declarations and expressions
+- [ ] 63-01-PLAN.md — Add TypeArgList and angle bracket rules to Parser.fsy type grammar
+- [ ] 63-02-PLAN.md — Add flt integration tests for angle bracket generic syntax
 
 ---
 
@@ -54,7 +54,7 @@ Plans:
 
 | Phase | Name | Milestone | Plans Complete | Status | Completed |
 |-------|------|-----------|----------------|--------|-----------|
-| 63 | Angle Bracket Generics | v8.0 | 0/TBD | Not started | - |
+| 63 | Angle Bracket Generics | v8.0 | 0/2 | Not started | - |
 | 64 | Declaration Type Annotations | v8.0 | 0/TBD | Not started | - |
 
 ## Coverage
