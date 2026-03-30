@@ -1,0 +1,11 @@
+// Test: ADT with two angle bracket type params (GEN-01 multi-arg)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Either<'a, 'b> = Left of 'a | Right of 'b
+let getLeft e def = match e with | Left x -> x | Right _ -> def
+let getRight e def = match e with | Left _ -> def | Right x -> x
+let r1 = getLeft (Left 42) 0
+let r2 = getRight (Right 99) 0
+let result = r1 + r2
+// --- Output:
+141

@@ -1,0 +1,10 @@
+// Test: ADT declaration with angle bracket type params (GEN-01)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Result<'a> = Ok of 'a | Error of string
+let extract item = match item with | Ok v -> v | Error _ -> 0
+let items = [Ok 10; Ok 20; Error "bad"; Ok 5]
+let values = List.map extract items
+let result = List.fold (fun acc -> fun v -> acc + v) 0 values
+// --- Output:
+35

@@ -1,0 +1,11 @@
+// Test: type alias with angle bracket type params (GEN-01 bonus)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Pair<'a, 'b> = 'a * 'b
+let mkPair x y = (x, y)
+let result =
+    let p = mkPair 10 20
+    match p with
+    | (a, b) -> a + b
+// --- Output:
+30
