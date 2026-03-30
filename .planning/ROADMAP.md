@@ -41,12 +41,12 @@ Plans:
 4. `let rec f (x : int) = ... and g (y : bool) = ...` 상호 재귀 선언에서 파라미터 어노테이션이 동작한다
 5. 타입 어노테이션은 런타임에 소거되며 기존 타입 추론 동작이 유지된다
 
-**Plans:** TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 64-01: Add MixedParamList parser rule and desugar to Lambda/LambdaAnnot chain
-- [ ] 64-02: Add return type annotation syntax to let declarations and wrap body in Annot node
-- [ ] 64-03: Add flt integration tests for annotated declarations including mutual recursion
+- [ ] 64-01-PLAN.md — Add MixedParamList parser rule and desugar to Lambda/LambdaAnnot chain
+- [ ] 64-02-PLAN.md — Add return type annotation syntax to let declarations and wrap body in Annot node
+- [ ] 64-03-PLAN.md — Add flt integration tests for annotated declarations including mutual recursion
 
 ---
 
@@ -55,7 +55,7 @@ Plans:
 | Phase | Name | Milestone | Plans Complete | Status | Completed |
 |-------|------|-----------|----------------|--------|-----------|
 | 63 | Angle Bracket Generics | v8.0 | 2/2 | Complete | 2026-03-30 |
-| 64 | Declaration Type Annotations | v8.0 | 0/TBD | Not started | - |
+| 64 | Declaration Type Annotations | v8.0 | 0/3 | Not started | - |
 
 ## Coverage
 
