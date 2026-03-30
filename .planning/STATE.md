@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.0 Declaration Type Annotations
+**Current focus:** v8.0 Phase 63 — Angle Bracket Generics
 
 ## Current Position
 
 Milestone: v8.0 Declaration Type Annotations
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-30 — Milestone v8.0 started
+Phase: 63 of 64 (Angle Bracket Generics)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-30 — Roadmap created, v8.0 phases 63-64 defined
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] v8.0 not started
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/2 phases)
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Key cross-milestone context:
 - Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair)
 - Hashtable module API: Hashtable.tryGetValue/count/keys — no dot-notation anywhere in flt tests
 - v7.1 complete: FieldAccess in Eval.fs and Bidir.fs now only handles record access + module qualified access — all value-type dot dispatch removed
+- v8.0: LambdaAnnot and AnnotParam already exist in AST/Parser for fun (x : T) -> lambdas; reuse for let declarations
 
 ### Pending Todos
 
@@ -69,10 +70,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Defining v8.0 requirements
+Stopped at: Roadmap created — phases 63 and 64 defined
 Resume file: None
-Next action: Define requirements → create roadmap
+Next action: `/gsd:plan-phase 63`
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (v8.0 milestone started)*
+*Last updated: 2026-03-30 (v8.0 roadmap created)*

@@ -38,19 +38,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PARAM-01 | — | Pending |
-| PARAM-02 | — | Pending |
-| RET-01 | — | Pending |
-| RET-02 | — | Pending |
-| GEN-01 | — | Pending |
-| GEN-02 | — | Pending |
-| GEN-03 | — | Pending |
+| GEN-01 | Phase 63 | Pending |
+| GEN-02 | Phase 63 | Pending |
+| GEN-03 | Phase 63 | Pending |
+| PARAM-01 | Phase 64 | Pending |
+| PARAM-02 | Phase 64 | Pending |
+| RET-01 | Phase 64 | Pending |
+| RET-02 | Phase 64 | Pending |
 
 **Coverage:**
 - v8.0 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after initial definition*
+*Last updated: 2026-03-30 — traceability updated after roadmap creation*
