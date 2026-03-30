@@ -1,0 +1,13 @@
+// Test: PARAM-02 annotated params in let rec ... and ... mutual recursion
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec isEven (n : int) = if n = 0 then true else isOdd (n - 1)
+and isOdd (n : int) = if n = 0 then false else isEven (n - 1)
+let rec fmix (x : int) = if x <= 0 then 0 else x + gmix (x - 1)
+and gmix y = fmix (y - 1)
+let _ = println (to_string (isEven 4))
+let _ = println (to_string (fmix 3))
+// --- Output:
+true
+4
+()

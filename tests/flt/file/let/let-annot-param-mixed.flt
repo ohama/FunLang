@@ -1,0 +1,17 @@
+// Test: PARAM-01 mixed annotated and plain params in let declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let f (x : int) y (z : bool) = if z then x else y
+let g (a : string) (b : string) = a ^^ b
+let h x (y : int) = x + y
+let k (x : int) (y : int) = x * y
+let _ = println (to_string (f 10 20 true))
+let _ = println (g "hello" " world")
+let _ = println (to_string (h 3 4))
+let _ = println (to_string (k 6 7))
+// --- Output:
+10
+hello world
+7
+42
+()
