@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.0 Phase 63 — Angle Bracket Generics
+**Current focus:** v8.0 Phase 64 — Declaration Type Annotations
 
 ## Current Position
 
 Milestone: v8.0 Declaration Type Annotations
-Phase: 63 of 64 (Angle Bracket Generics)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-30 — Completed 63-01-PLAN.md (Parser angle bracket grammar)
+Phase: 63 of 64 (Angle Bracket Generics) — COMPLETE
+Plan: 2 of 2 complete
+Status: Phase complete — ready for Phase 64
+Last activity: 2026-03-30 — Completed 63-02-PLAN.md (flt integration tests for angle bracket generics)
 
-Progress: [██░░░░░░░░░░░░░░░░░░] 10% (1 plan complete, ~9 total plans estimated in v8.0)
+Progress: [████░░░░░░░░░░░░░░░░] 22% (2 plans complete, ~9 total plans estimated in v8.0)
 
 ## Performance Metrics
 
@@ -39,6 +39,8 @@ Key cross-milestone context (v8.0 additions):
 - Angle bracket generics reuse LT/GT tokens — LALR(1) disambiguates by parser state (no new tokens)
 - AngleBracketTypeParams (comma-separated: 'a, 'b) is distinct from TypeParams (space-separated: 'a 'b) — use AngleBracketTypeParams inside < > in declarations
 - TypeArgList (comma-separated TypeExpr) is for type expression positions like Map<string, int>
+- Angle bracket type annotations work in lambda params: fun (x : Box<int>) -> ...; mixed postfix composes: Box<int> list
+- Module-level let binding type annotations (let x : T = ...) do NOT parse — not yet implemented (out of scope for v8.0 phase 63)
 
 Key cross-milestone context:
 - flt runner strips trailing newline from extracted input -- last input line must be a complete parseable top-level declaration
@@ -75,10 +77,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 63-01-PLAN.md — angle bracket parser grammar
+Stopped at: Completed 63-02-PLAN.md — angle bracket generics flt tests (phase 63 complete)
 Resume file: None
-Next action: Execute 63-02 (type annotation syntax)
+Next action: Execute Phase 64 (declaration type annotations)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (v8.0 roadmap created)*
+*Last updated: 2026-03-30 (phase 63 complete — angle bracket generics)*
