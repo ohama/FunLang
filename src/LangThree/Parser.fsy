@@ -502,6 +502,13 @@ AtomicType:
     | AtomicType TYPE_LIST          { TEList($1) }
     | AtomicType IDENT              { Ast.TEData($2, [$1]) }  // Phase 4 (GADT): Type application (e.g., int expr)
     | LPAREN TypeExpr RPAREN        { $2 }
+    // Phase 63 (Angle Bracket Generics): IDENT<TypeArgList> syntax
+    | IDENT LT TypeArgList GT       { Ast.TEData($1, $3) }
+
+// Phase 63 (Angle Bracket Generics): Comma-separated type argument list
+TypeArgList:
+    | TypeExpr                      { [$1] }
+    | TypeExpr COMMA TypeArgList    { $1 :: $3 }
 
 // Phase 2 (ADT-01): Type declaration grammar rules
 // Supports: type T = C1 | C2 of ty
@@ -736,6 +743,8 @@ AliasAtomicType:
     | AliasAtomicType TYPE_LIST     { TEList($1) }
     | AliasAtomicType IDENT         { Ast.TEData($2, [$1]) }
     | LPAREN TypeExpr RPAREN        { $2 }
+    // Phase 63 (Angle Bracket Generics): IDENT<TypeArgList> syntax
+    | IDENT LT TypeArgList GT       { Ast.TEData($1, $3) }
 
 // Phase 18 (Mutual Recursion): Module-level let rec declaration
 // Produces a list containing a single LetRecDecl (possibly with multiple bindings via AND_KW)
