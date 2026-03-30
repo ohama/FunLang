@@ -138,12 +138,12 @@ Expr:
     | LET IDENT EQUALS INDENT Expr DEDENT  { Let($2, $5, Tuple([], symSpan parseState 6), ruleSpan parseState 1 6) }
     // Indentation-based let with continuation: let x = <indent>expr<dedent> in expr
     | LET IDENT EQUALS INDENT Expr DEDENT IN SeqExpr  { Let($2, $5, $8, ruleSpan parseState 1 8) }
-    // Multi-param let in expression: let f x y = body in expr (desugars to lambda)
-    | LET IDENT ParamList EQUALS Expr IN SeqExpr
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $5
+    // Phase 64: Multi-param let in expression with mixed annotated+plain params (subsumes plain ParamList)
+    | LET IDENT MixedParamList EQUALS Expr IN SeqExpr
+        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 7)
           Let($2, lambda, $7, ruleSpan parseState 1 7) }
-    | LET IDENT ParamList EQUALS INDENT Expr DEDENT IN SeqExpr
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 9)) $3 $6
+    | LET IDENT MixedParamList EQUALS INDENT Expr DEDENT IN SeqExpr
+        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 9)
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
     // SYN-07: Unit param shorthand in expression context: let f () = body in expr
     | LET IDENT LPAREN RPAREN EQUALS Expr IN SeqExpr
@@ -160,20 +160,21 @@ Expr:
     | IF Expr THEN SeqExpr ELSE SeqExpr    { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 48: If-then without else — desugar to If(cond, then, Tuple([], unit_span), full_span)
     | IF Expr THEN SeqExpr                 { If($2, $4, Tuple([], symSpan parseState 4), ruleSpan parseState 1 4) }
-    // Phase 5: Function definitions (SYN-01/SYN-06: multi-param let rec via ParamList)
-    | LET REC IDENT ParamList EQUALS Expr IN SeqExpr
+    // Phase 64: let rec with mixed annotated+plain params in expression
+    | LET REC IDENT MixedParamList EQUALS Expr IN SeqExpr
         { let span = ruleSpan parseState 1 8
-          let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $6
+          let lambda = desugarMixedParams $4 $6 span
           match lambda with
           | Lambda(p, b, _) -> LetRec($3, p, b, $8, span)
-          | _ -> failwith "impossible: ParamList must produce at least one param" }
-    // Indentation-based let rec with continuation: let rec f x = <indent>expr<dedent> in expr
-    | LET REC IDENT ParamList EQUALS INDENT Expr DEDENT IN SeqExpr
+          | LambdaAnnot(p, _, b, _) -> LetRec($3, p, b, $8, span)
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
+    | LET REC IDENT MixedParamList EQUALS INDENT Expr DEDENT IN SeqExpr
         { let span = ruleSpan parseState 1 10
-          let lambda = List.foldBack (fun param body -> Lambda(param, body, span)) $4 $7
+          let lambda = desugarMixedParams $4 $7 span
           match lambda with
           | Lambda(p, b, _) -> LetRec($3, p, b, $10, span)
-          | _ -> failwith "impossible: ParamList must produce at least one param" }
+          | LambdaAnnot(p, _, b, _) -> LetRec($3, p, b, $10, span)
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | FUN IDENT ARROW SeqExpr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
     | FUN IDENT ARROW INDENT SeqExpr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
     // v6.0: Annotated lambda - fun (x: T) -> e
@@ -670,12 +671,12 @@ Decl:
         { LetDecl($2, $4, ruleSpan parseState 1 4) }
     | LET IDENT EQUALS INDENT SeqExpr DEDENT
         { LetDecl($2, $5, ruleSpan parseState 1 6) }
-    // Function declaration: let f x = expr (desugar to lambda)
-    | LET IDENT ParamList EQUALS SeqExpr
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
+    // Phase 64: Function declaration with mixed annotated+plain params (subsumes plain ParamList)
+    | LET IDENT MixedParamList EQUALS SeqExpr
+        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
           LetDecl($2, lambda, ruleSpan parseState 1 5) }
-    | LET IDENT ParamList EQUALS INDENT SeqExpr DEDENT
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
+    | LET IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT
+        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     // SYN-07: Unit param shorthand at module level: let f () = body
     | LET IDENT LPAREN RPAREN EQUALS SeqExpr
@@ -798,16 +799,21 @@ AliasAtomicType:
 // Phase 18 (Mutual Recursion): Module-level let rec declaration
 // Produces a list containing a single LetRecDecl (possibly with multiple bindings via AND_KW)
 LetRecDeclaration:
-    | LET REC IDENT ParamList EQUALS SeqExpr LetRecContinuation
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 6)) $4 $6
+    // Phase 64: let rec with mixed annotated+plain params
+    | LET REC IDENT MixedParamList EQUALS SeqExpr LetRecContinuation
+        { let span = ruleSpan parseState 1 6
+          let lambda = desugarMixedParams $4 $6 span
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
-          | _ -> failwith "impossible: empty param list" }
-    | LET REC IDENT ParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 8)) $4 $7
+          | LambdaAnnot(p, _, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
+    | LET REC IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
+        { let span = ruleSpan parseState 1 8
+          let lambda = desugarMixedParams $4 $7 span
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
-          | _ -> failwith "impossible: empty param list" }
+          | LambdaAnnot(p, _, b, _) -> [LetRecDecl(($3, p, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     // Phase 19: let rec (op) params = body
     | LET REC OpName ParamList EQUALS SeqExpr LetRecContinuation
         { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 6)) $4 $6
@@ -823,16 +829,19 @@ LetRecDeclaration:
 // Continuation for mutual recursion: and g y = body2 [and h z = body3 ...]
 LetRecContinuation:
     |                                   { [] }
-    | AND_KW IDENT ParamList EQUALS SeqExpr LetRecContinuation
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
+    // Phase 64: and with mixed annotated+plain params
+    | AND_KW IDENT MixedParamList EQUALS SeqExpr LetRecContinuation
+        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
           match lambda with
           | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 5) :: $6
-          | _ -> failwith "impossible: empty param list" }
-    | AND_KW IDENT ParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
-        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
+          | LambdaAnnot(p, _, b, _) -> ($2, p, b, ruleSpan parseState 2 5) :: $6
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
+    | AND_KW IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
+        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
           match lambda with
           | Lambda(p, b, _) -> ($2, p, b, ruleSpan parseState 2 7) :: $8
-          | _ -> failwith "impossible: empty param list" }
+          | LambdaAnnot(p, _, b, _) -> ($2, p, b, ruleSpan parseState 2 7) :: $8
+          | _ -> failwith "impossible: MixedParamList must produce at least one param" }
 
 
 // Phase 19 (User-Defined Operators): Operator name in parentheses for definitions and as values
