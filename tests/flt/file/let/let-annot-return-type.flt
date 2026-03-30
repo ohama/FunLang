@@ -1,0 +1,14 @@
+// Test: RET-01 return type annotation in let declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add x : int = x + 1
+let f x y : int = x + y
+let x : int = 42
+let _ = println (to_string (add 41))
+let _ = println (to_string (f 10 20))
+let _ = println (to_string x)
+// --- Output:
+42
+30
+42
+()

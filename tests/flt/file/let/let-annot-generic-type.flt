@@ -1,0 +1,13 @@
+// Test: Generic type variables in let declaration annotations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let id (x : 'a) : 'a = x
+let const_ (x : 'a) (y : 'b) : 'a = x
+let _ = println (to_string (id 42))
+let _ = println (id "hello")
+let _ = println (to_string (const_ 99 "ignored"))
+// --- Output:
+42
+hello
+99
+()

@@ -1,0 +1,16 @@
+// Test: RET-02 combined param annotation and return type in let declarations
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let isPos (x : int) : bool = x > 0
+let fmixed (x : int) y (z : bool) : int = if z then x else y
+let rec fact (n : int) : int = if n <= 1 then 1 else n * fact (n - 1)
+let _ = println (to_string (isPos 5))
+let _ = println (to_string (isPos (-3)))
+let _ = println (to_string (fmixed 10 20 true))
+let _ = println (to_string (fact 5))
+// --- Output:
+true
+false
+10
+120
+()
