@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Milestone: v8.0 Declaration Type Annotations
 Phase: 63 of 64 (Angle Bracket Generics)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-30 — Roadmap created, v8.0 phases 63-64 defined
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-30 — Completed 63-01-PLAN.md (Parser angle bracket grammar)
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/2 phases)
+Progress: [██░░░░░░░░░░░░░░░░░░] 10% (1 plan complete, ~9 total plans estimated in v8.0)
 
 ## Performance Metrics
 
@@ -34,6 +34,11 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (0/2
 ### Decisions
 
 (Full log in PROJECT.md Key Decisions table)
+
+Key cross-milestone context (v8.0 additions):
+- Angle bracket generics reuse LT/GT tokens — LALR(1) disambiguates by parser state (no new tokens)
+- AngleBracketTypeParams (comma-separated: 'a, 'b) is distinct from TypeParams (space-separated: 'a 'b) — use AngleBracketTypeParams inside < > in declarations
+- TypeArgList (comma-separated TypeExpr) is for type expression positions like Map<string, int>
 
 Key cross-milestone context:
 - flt runner strips trailing newline from extracted input -- last input line must be a complete parseable top-level declaration
@@ -70,9 +75,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Roadmap created — phases 63 and 64 defined
+Stopped at: Completed 63-01-PLAN.md — angle bracket parser grammar
 Resume file: None
-Next action: `/gsd:plan-phase 63`
+Next action: Execute 63-02 (type annotation syntax)
 
 ---
 *State initialized: 2026-02-25*
