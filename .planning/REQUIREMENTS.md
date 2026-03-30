@@ -38,9 +38,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | Phase 63 | Pending |
-| GEN-02 | Phase 63 | Pending |
-| GEN-03 | Phase 63 | Pending |
+| GEN-01 | Phase 63 | Complete |
+| GEN-02 | Phase 63 | Complete |
+| GEN-03 | Phase 63 | Complete |
 | PARAM-01 | Phase 64 | Pending |
 | PARAM-02 | Phase 64 | Pending |
 | RET-01 | Phase 64 | Pending |

@@ -54,7 +54,7 @@ Plans:
 
 | Phase | Name | Milestone | Plans Complete | Status | Completed |
 |-------|------|-----------|----------------|--------|-----------|
-| 63 | Angle Bracket Generics | v8.0 | 0/2 | Not started | - |
+| 63 | Angle Bracket Generics | v8.0 | 2/2 | Complete | 2026-03-30 |
 | 64 | Declaration Type Annotations | v8.0 | 0/TBD | Not started | - |
 
 ## Coverage
