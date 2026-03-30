@@ -18,6 +18,15 @@ let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (s
     | [(name, ty)] -> LambdaAnnot(name, ty, body, span)
     | (name, ty) :: rest -> LambdaAnnot(name, ty, desugarAnnotParams rest body span, span)
 
+/// Desugar mixed parameter list (plain + annotated) into nested Lambda/LambdaAnnot chain
+let rec desugarMixedParams (paramList: Choice<string, string * TypeExpr> list) (body: Expr) (span: Span) : Expr =
+    match paramList with
+    | [] -> body
+    | Choice1Of2 name :: rest ->
+        Lambda(name, desugarMixedParams rest body span, span)
+    | Choice2Of2 (name, ty) :: rest ->
+        LambdaAnnot(name, ty, desugarMixedParams rest body span, span)
+
 /// Desugar list literal patterns [p1; p2; p3] into ConsPat/EmptyListPat chains
 let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
     match pats with
@@ -698,6 +707,15 @@ Decl:
 ParamList:
     | IDENT                         { [$1] }
     | IDENT ParamList               { $1 :: $2 }
+
+// Phase 64 (Declaration Type Annotations): Mixed plain and annotated parameter list
+MixedParamList:
+    | MixedParam                    { [$1] }
+    | MixedParam MixedParamList     { $1 :: $2 }
+
+MixedParam:
+    | IDENT                                     { Choice1Of2 $1 }
+    | LPAREN IDENT COLON TypeExpr RPAREN        { Choice2Of2 ($2, $4) }
 
 // Phase 3 (Records): Record type declaration
 RecordDeclaration:
