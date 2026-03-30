@@ -5,22 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.0 Phase 64 — Declaration Type Annotations
+**Current focus:** v8.0 MILESTONE COMPLETE
 
 ## Current Position
 
-Milestone: v8.0 Declaration Type Annotations
-Phase: 64 of 64 (Declaration Type Annotations) — In progress
-Plan: 2 of ~3 complete
-Status: Plan 02 complete — return type annotation parsing done (COLON TypeExpr before EQUALS)
-Last activity: 2026-03-30 — Completed 64-02-PLAN.md (return type annotation productions for all let-forms)
+Milestone: v8.0 Declaration Type Annotations — COMPLETE
+Phase: 64 of 64 (Declaration Type Annotations) — COMPLETE
+Plan: 3 of 3 complete
+Status: All phases complete, all requirements verified
+Last activity: 2026-03-30 — Phase 64 verified, milestone v8.0 complete
 
-Progress: [███████░░░░░░░░░░░░░] 44% (4 plans complete, ~9 total plans estimated in v8.0)
+Progress: [████████████████████] 100% (5 plans complete across 2 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 135
+- Total plans completed: 138
+- v8.0: 5 plans across 2 phases in 1 day
 - v7.1: 7 plans across 3 phases in 1 day
 - v1.0-v2.2: 92 plans across 37 phases
 - v3.0: 6 plans across 4 phases in 1 day

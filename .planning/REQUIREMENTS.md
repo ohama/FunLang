@@ -41,10 +41,10 @@
 | GEN-01 | Phase 63 | Complete |
 | GEN-02 | Phase 63 | Complete |
 | GEN-03 | Phase 63 | Complete |
-| PARAM-01 | Phase 64 | Pending |
-| PARAM-02 | Phase 64 | Pending |
-| RET-01 | Phase 64 | Pending |
-| RET-02 | Phase 64 | Pending |
+| PARAM-01 | Phase 64 | Complete |
+| PARAM-02 | Phase 64 | Complete |
+| RET-01 | Phase 64 | Complete |
+| RET-02 | Phase 64 | Complete |
 
 **Coverage:**
 - v8.0 requirements: 7 total
