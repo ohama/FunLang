@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-29)
+See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.0 MILESTONE COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v8.0 Declaration Type Annotations — COMPLETE
-Phase: 64 of 64 (Declaration Type Annotations) — COMPLETE
-Plan: 3 of 3 complete
-Status: All phases complete, all requirements verified
-Last activity: 2026-03-30 — Phase 64 verified, milestone v8.0 complete
+Milestone: v8.0 Declaration Type Annotations — ARCHIVED
+Phase: —
+Plan: —
+Status: Ready for next milestone
+Last activity: 2026-03-30 — v8.0 milestone archived
 
-Progress: [████████████████████] 100% (5 plans complete across 2 phases)
+Progress: [████████████████████] v1.0-v8.0 done (64 phases, 138 plans)
 
 ## Performance Metrics
 
@@ -35,13 +35,6 @@ Progress: [████████████████████] 100% (5
 ### Decisions
 
 (Full log in PROJECT.md Key Decisions table)
-
-Key cross-milestone context (v8.0 additions):
-- Angle bracket generics reuse LT/GT tokens — LALR(1) disambiguates by parser state (no new tokens)
-- AngleBracketTypeParams (comma-separated: 'a, 'b) is distinct from TypeParams (space-separated: 'a 'b) — use AngleBracketTypeParams inside < > in declarations
-- TypeArgList (comma-separated TypeExpr) is for type expression positions like Map<string, int>
-- Angle bracket type annotations work in lambda params: fun (x : Box<int>) -> ...; mixed postfix composes: Box<int> list
-- Module-level let binding type annotations (let x : T = ...) do NOT parse — not yet implemented (out of scope for v8.0 phase 63)
 
 Key cross-milestone context:
 - flt runner strips trailing newline from extracted input -- last input line must be a complete parseable top-level declaration
@@ -65,11 +58,9 @@ Key cross-milestone context:
 - Hashtable for-in iteration yields TupleValue [k; v] (not RecordValue KeyValuePair)
 - Hashtable module API: Hashtable.tryGetValue/count/keys — no dot-notation anywhere in flt tests
 - v7.1 complete: FieldAccess in Eval.fs and Bidir.fs now only handles record access + module qualified access — all value-type dot dispatch removed
-- v8.0: LambdaAnnot and AnnotParam already exist in AST/Parser for fun (x : T) -> lambdas; reuse for let declarations
-- v8.0 Phase 64-01: MixedParamList subsumes ParamList — remove old ParamList productions to resolve reduce/reduce conflicts when both exist for same IDENT lookahead
-- v8.0 Phase 64-01: LetRecDecl first-param extraction must match both Lambda and LambdaAnnot branches when using MixedParamList
-- v8.0 Phase 64-02: Return type annotation wraps body in Annot(body, typeExpr, span) — erased at runtime, used for type checking only
-- v8.0 Phase 64-02: Module-level `let x : T = ...` now parses (was out of scope for phase 63, implemented in 64-02)
+- v8.0: LT/GT tokens reused for angle bracket generics — LALR(1) disambiguates by parser state
+- v8.0: MixedParamList subsumes ParamList — remove old ParamList productions to resolve reduce/reduce conflicts
+- v8.0: Return type annotation wraps body in Annot(body, typeExpr, span) — erased at runtime
 
 ### Pending Todos
 
@@ -82,10 +73,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-30
-Stopped at: Completed 64-02-PLAN.md — return type annotation parsing for all let-forms
+Stopped at: v8.0 milestone archived
 Resume file: None
-Next action: Execute Phase 64 Plan 03 (type checking of annotated let declarations)
+Next action: /gsd:new-milestone for next version
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (phase 64 plan 02 complete — return type annotation parsing)*
+*Last updated: 2026-03-30 (v8.0 milestone archived)*

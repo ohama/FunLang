@@ -1,5 +1,30 @@
 # Project Milestones: LangThree
 
+## v8.0 Declaration Type Annotations (Shipped: 2026-03-30)
+
+**Delivered:** FunLexYacc 호환성을 위해 앵글 브래킷 제네릭 구문과 module-level 함수 선언 타입 어노테이션(파라미터 + 반환) 추가 — Parser.fsy 중심 확장
+
+**Phases completed:** 63-64 (5 plans total)
+
+**Key accomplishments:**
+- 앵글 브래킷 제네릭 타입 구문: `Result<'a>`, `Map<string, int>`, `Either<'a, 'b>` — LT/GT 토큰 재활용
+- `type` 선언에서 앵글 브래킷: `type Result<'a> = Ok of 'a | Error of string`
+- MixedParamList: plain/annotated 파라미터 혼합 — `let f (x : int) y = ...`
+- 반환 타입 어노테이션: `let f x : int = ...`, `let f (x : int) : bool = ...`
+- `let rec ... and ...` 상호 재귀에서 타입 어노테이션 지원
+- 9개 flt 테스트 추가, 기존 후위 구문 100% 호환 유지
+
+**Stats:**
+- 26 files changed, +2,193 LOC
+- ~14,044 lines of F# source
+- 2 phases, 5 plans
+- 1 day (2026-03-30)
+- 224 F# unit tests + ~650 flt tests, all passing
+
+**Git range:** `docs(63): research` → `docs(64): complete`
+
+---
+
 ## v7.1 Remove Dot Notation (Shipped: 2026-03-29)
 
 **Delivered:** OOP 스타일 dot dispatch를 제거하고 순수 함수형 module function API로 통일 — Eval.fs/Bidir.fs에서 ~170줄 value-type FieldAccess dispatch 삭제
