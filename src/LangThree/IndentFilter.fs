@@ -385,6 +385,13 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 state <- { state with JustSawModule = true; PrevToken = Some token }
                 yield token
 
+            | Parser.TYPECLASS | Parser.INSTANCE ->
+                // Phase 71 (Type Classes): treat typeclass/instance bodies like module bodies
+                // (declaration context, not expression context) so that LET inside instance
+                // methods does not trigger the offside-rule IN emission.
+                state <- { state with JustSawModule = true; PrevToken = Some token }
+                yield token
+
             | Parser.MATCH ->
                 // Mark that we just saw MATCH, will enter context on next NEWLINE
                 state <- { state with JustSawMatch = true; PrevToken = Some token }
@@ -566,6 +573,12 @@ let filterPositioned (config: IndentConfig) (tokens: PositionedToken list) : Pos
             result.Add(pt)  // EOF with its own position
 
         | Parser.MODULE ->
+            lastRealToken <- pt
+            state <- { state with JustSawModule = true; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.TYPECLASS | Parser.INSTANCE ->
+            // Phase 71 (Type Classes): treat typeclass/instance bodies like module bodies
             lastRealToken <- pt
             state <- { state with JustSawModule = true; PrevToken = Some token }
             result.Add(pt)

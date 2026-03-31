@@ -1,0 +1,8 @@
+// Test: typeclass declaration with multiple methods parses both to TypeClassDecl methods list
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+typeclass Eq 'a =
+    | eq : 'a -> 'a -> bool
+    | neq : 'a -> 'a -> bool
+// --- Output:
+TypeClassDecl "Eq" 'a [eq : TEArrow (TEVar "'a", TEArrow (TEVar "'a", TEBool)), neq : TEArrow (TEVar "'a", TEArrow (TEVar "'a", TEBool))]

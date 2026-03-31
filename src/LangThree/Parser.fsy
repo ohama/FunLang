@@ -785,12 +785,14 @@ MixedParam:
     | LPAREN IDENT COLON TypeExpr RPAREN        { Choice2Of2 ($2, $4) }
 
 // Phase 71 (Type Classes): typeclass method signatures
+// Leading PIPE on each method makes parsing unambiguous (IDENT after TypeExpr is ambiguous
+// because IDENT is a valid AtomicType start, but PIPE cannot appear in a TypeExpr).
 TypeClassMethodList:
     | TypeClassMethod                           { [$1] }
     | TypeClassMethod TypeClassMethodList       { $1 :: $2 }
 
 TypeClassMethod:
-    | IDENT COLON TypeExpr                      { ($1, $3) }
+    | PIPE IDENT COLON TypeExpr                 { ($2, $4) }
 
 // Phase 71 (Type Classes): instance method definitions
 InstanceMethodList:

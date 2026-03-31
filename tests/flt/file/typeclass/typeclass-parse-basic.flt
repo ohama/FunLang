@@ -1,0 +1,7 @@
+// Test: typeclass declaration parses to TypeClassDecl AST node (single method)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+typeclass Show 'a =
+    | show : 'a -> string
+// --- Output:
+TypeClassDecl "Show" 'a [show : TEArrow (TEVar "'a", TEString)]

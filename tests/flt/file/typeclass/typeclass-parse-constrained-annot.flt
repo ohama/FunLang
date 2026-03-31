@@ -1,0 +1,6 @@
+// Test: constrained type annotation parses to TEConstrained in let declaration AST
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Input:
+let f : Show 'a => 'a -> string = fun x -> show x
+// --- Output:
+LetDecl ("f", Annot (Lambda ("x", App (Var "show", Var "x")), TEConstrained ([Show TEVar "'a"], TEArrow (TEVar "'a", TEString))))
