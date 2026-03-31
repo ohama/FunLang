@@ -853,8 +853,11 @@ let rec typeCheckDecls
                 // Phase 18: Mutual recursive function type checking
                 // 1. Create fresh type variables for each function
                 let funcTypes =
-                    bindings |> List.map (fun (name, param, _paramTyOpt, _body, _) ->
-                        let paramTy = Infer.freshVar()
+                    bindings |> List.map (fun (name, param, paramTyOpt, _body, _) ->
+                        let paramTy =
+                            match paramTyOpt with
+                            | Some tyExpr -> elaborateTypeExpr tyExpr
+                            | None -> Infer.freshVar()
                         let retTy = Infer.freshVar()
                         (name, param, TArrow(paramTy, retTy), paramTy))
 

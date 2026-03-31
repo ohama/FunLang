@@ -299,10 +299,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             })
 
     // === LetRec ===
-    | LetRec (name, param, _paramTyOpt, body, expr, span) ->
+    | LetRec (name, param, paramTyOpt, body, expr, span) ->
         // Pre-bind function with fresh type for recursive calls
         let funcTy = freshVar()
-        let paramTy = freshVar()
+        let paramTy =
+            match paramTyOpt with
+            | Some tyExpr -> elaborateTypeExpr tyExpr
+            | None -> freshVar()
         let recTypeEnv = Map.add name (Scheme ([], funcTy)) env
         let bodyEnv = Map.add param (Scheme ([], paramTy)) recTypeEnv
         // Infer body type
