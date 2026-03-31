@@ -15,13 +15,13 @@
 
 ### 프로젝트 파일
 
-- [ ] **PROJ-01**: `funproj.toml` 파싱 -- TOML 포맷의 프로젝트 파일을 읽어 `[project]`, `[[executable]]`, `[[test]]` 섹션 해석
-- [ ] **PROJ-02**: `langthree build` 서브커맨드 -- `funproj.toml`의 모든 `[[executable]]` 타겟을 타입 체크
-- [ ] **PROJ-03**: `langthree build <name>` -- 특정 executable 타겟만 타입 체크
-- [ ] **PROJ-04**: `langthree test` 서브커맨드 -- `funproj.toml`의 모든 `[[test]]` 타겟을 실행
-- [ ] **PROJ-05**: `langthree test <name>` -- 특정 test 타겟만 실행
-- [ ] **PROJ-06**: `[project].prelude` 설정 -- `funproj.toml`에서 Prelude 경로 지정 (CLI/환경 변수보다 우선순위 낮음)
-- [ ] **PROJ-07**: flt 테스트 -- CLI 확장 + 프로젝트 파일 기능의 통합 테스트
+- [x] **PROJ-01**: `funproj.toml` 파싱 -- TOML 포맷의 프로젝트 파일을 읽어 `[project]`, `[[executable]]`, `[[test]]` 섹션 해석
+- [x] **PROJ-02**: `langthree build` 서브커맨드 -- `funproj.toml`의 모든 `[[executable]]` 타겟을 타입 체크
+- [x] **PROJ-03**: `langthree build <name>` -- 특정 executable 타겟만 타입 체크
+- [x] **PROJ-04**: `langthree test` 서브커맨드 -- `funproj.toml`의 모든 `[[test]]` 타겟을 실행
+- [x] **PROJ-05**: `langthree test <name>` -- 특정 test 타겟만 실행
+- [x] **PROJ-06**: `[project].prelude` 설정 -- `funproj.toml`에서 Prelude 경로 지정 (CLI/환경 변수보다 우선순위 낮음)
+- [x] **PROJ-07**: flt 테스트 -- CLI 확장 + 프로젝트 파일 기능의 통합 테스트
 
 ## Out of Scope
 
@@ -42,13 +42,13 @@
 | CLI-03 | Phase 67 | Complete |
 | CLI-04 | Phase 67 | Complete |
 | CLI-05 | Phase 67 | Complete |
-| PROJ-01 | Phase 68 | Pending |
-| PROJ-02 | Phase 68 | Pending |
-| PROJ-03 | Phase 68 | Pending |
-| PROJ-04 | Phase 68 | Pending |
-| PROJ-05 | Phase 68 | Pending |
-| PROJ-06 | Phase 68 | Pending |
-| PROJ-07 | Phase 68 | Pending |
+| PROJ-01 | Phase 68 | Complete |
+| PROJ-02 | Phase 68 | Complete |
+| PROJ-03 | Phase 68 | Complete |
+| PROJ-04 | Phase 68 | Complete |
+| PROJ-05 | Phase 68 | Complete |
+| PROJ-06 | Phase 68 | Complete |
+| PROJ-07 | Phase 68 | Complete |
 
 **Coverage:**
 - v9.0 requirements: 12 total

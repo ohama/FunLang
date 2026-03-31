@@ -20,7 +20,7 @@ v9.0 delivers a Cargo-style project build system in two phases: first extending 
 ## Phases
 
 - [x] **Phase 67: CLI Extensions** - --check, --deps, --prelude flags + env var + file import caching
-- [ ] **Phase 68: Project File** - funproj.toml parsing + build/test subcommands
+- [x] **Phase 68: Project File** - funproj.toml parsing + build/test subcommands
 
 ## Phase Details
 
@@ -64,4 +64,4 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 67. CLI Extensions | 4/4 | ✓ Complete | 2026-03-31 |
-| 68. Project File | 0/3 | Not started | - |
+| 68. Project File | 3/3 | ✓ Complete | 2026-03-31 |
