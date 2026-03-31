@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Milestone: v10.0 Type Classes
 Phase: 72 of 74 (Type Checker and Constraint Inference)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-03-31 — Completed 72-01-PLAN.md (TypeClassDecl/InstanceDecl type checker processing)
+Last activity: 2026-03-31 — Completed 72-02-PLAN.md (constraint inference in Bidir.synth)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [█████░░░░░░░░░░░░░░░] v10.0: 25% (phases 70+71 complete, 72 in progress)
+         [██████░░░░░░░░░░░░░░] v10.0: ~35% (phases 70+71 complete, 72 plan 02 done)
 
 ## Performance Metrics
 
@@ -73,19 +73,26 @@ From Phase 72 Plan 01:
 - InstanceDecl method body type-checking uses outer module-level env (not method-local env); each body checked against class scheme instantiated with concrete instance type via Map.ofList[classTypeVar,instType]
 - InstanceDecl does NOT propagate inner classEnv/instEnv from module/namespace recursion back to outer scope — typeclass decls in nested modules don't leak
 
+From Phase 72 Plan 02:
+- instantiate/generalize defined in Bidir.fs shadowing Infer.fs versions — avoids circular dep (Infer cannot reference Bidir); any module open Bidir after Infer uses constraint-aware versions
+- currentClassEnv/currentInstEnv moved from TypeCheck.fs to Bidir.fs; TypeCheck.fs sets them via Bidir refs
+- applySubstToConstraints called at EVERY generalize call site before generalize — resolves TVar refs from unification before constraint partitioning
+- Partition logic: constraints mentioning generalized TVars are deferred into Scheme; concrete constraints resolve against InstanceEnv (NoInstance raised on failure)
+- Verified: `show_twice : Show 'a => 'a -> string`; `show_twice 42` type-checks; `show_twice (fun x -> x)` produces NoInstance error
+
 ### Blockers/Concerns
 
 - [Phase 71] `where` keyword audit RESOLVED — `where` not used anywhere in Lexer.fsl, no conflict
-- [Phase 72] `synth` evidence representation: mutable ref pattern used (currentClassEnv/currentInstEnv) — Plan 02 reads these for constraint resolution
-- [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch
+- [Phase 72] currentClassEnv/currentInstEnv mutable ref pattern: RESOLVED in Plan 02 — refs now live in Bidir.fs
+- [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch (Phase 72 Plan 03 scope)
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:16:47Z
-Stopped at: Completed 72-01-PLAN.md (TypeClassDecl/InstanceDecl type checker processing)
+Last session: 2026-03-31T11:25:35Z
+Stopped at: Completed 72-02-PLAN.md (constraint inference in Bidir.synth)
 Resume file: None
-Next action: Execute Phase 72 Plan 02 (constraint inference in Bidir.synth)
+Next action: Execute Phase 72 Plan 03 (integration tests for typeclass constraint inference)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 72 plan 01 complete)*
+*Last updated: 2026-03-31 (phase 72 plan 02 complete)*
