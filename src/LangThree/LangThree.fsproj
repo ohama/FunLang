@@ -102,10 +102,13 @@
     <!-- 14. REPL implementation (uses Eval) -->
     <Compile Include="Repl.fs" />
 
-    <!-- 15. CLI argument parsing (uses Argu) -->
+    <!-- 15. Project file parsing (funproj.toml, uses Tomlyn) -->
+    <Compile Include="ProjectFile.fs" />
+
+    <!-- 16. CLI argument parsing (uses Argu) -->
     <Compile Include="Cli.fs" />
 
-    <!-- 16. Main program -->
+    <!-- 17. Main program -->
     <Compile Include="Program.fs" />
   </ItemGroup>
 
