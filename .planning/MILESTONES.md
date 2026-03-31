@@ -1,5 +1,31 @@
 # Project Milestones: LangThree
 
+## v10.0 Type Classes (Shipped: 2026-03-31)
+
+**Delivered:** Haskell 스타일 타입 클래스 — typeclass/instance 선언, 제약 추론, 딕셔너리 전달 elaboration, 내장 Show/Eq 인스턴스
+
+**Phases completed:** 70-74 (11 plans total)
+
+**Key accomplishments:**
+- Scheme(vars, constraints, ty) 확장 — ~92 패턴 매치 사이트 업데이트
+- typeclass/instance/=> 구문 파싱 (LALR(1))
+- pendingConstraints + constraint-aware generalize/instantiate
+- elaborateTypeclasses: InstanceDecl → LetDecl 디슈거링 (Eval.fs 변경 없음)
+- Prelude/Typeclass.fun: Show/Eq 내장 인스턴스 (int/bool/string/char)
+- E0701-E0706 타입 클래스 진단 메시지
+
+**Stats:**
+- 34 files changed, +797 LOC
+- ~15,360 lines of F# source
+- 5 phases, 11 plans
+- 1 day (2026-03-31)
+- 224 F# unit tests + 676 flt tests, all passing
+- 13/13 requirements shipped
+
+**Git range:** `feat(70-01)` → `docs(74): complete`
+
+---
+
 ## v9.1 Span Fix (Shipped: 2026-03-31)
 
 **Delivered:** AST Span 위치 정보 수정 — PositionedToken 파이프라인으로 에러 메시지에 정확한 file:line:column 표시
