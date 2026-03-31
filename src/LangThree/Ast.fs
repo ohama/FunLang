@@ -76,7 +76,7 @@ type Expr =
     // Phase 5: Functions
     | Lambda of param: string * body: Expr * span: Span      // fun param -> body
     | App of func: Expr * arg: Expr * span: Span             // func arg (function application)
-    | LetRec of name: string * param: string * body: Expr * inExpr: Expr * span: Span
+    | LetRec of name: string * param: string * paramType: TypeExpr option * body: Expr * inExpr: Expr * span: Span
     // let rec name param = body in inExpr
     // Phase 1 (v3.0): Tuples
     | Tuple of Expr list * span: Span               // Tuple expression: (e1, e2, ...)
@@ -309,7 +309,7 @@ let spanOf (expr: Expr) : Span =
     | Number(_, s) | Bool(_, s) | String(_, s) | Char(_, s) | Var(_, s) -> s
     | Add(_, _, s) | Subtract(_, _, s) | Multiply(_, _, s) | Divide(_, _, s) -> s
     | Negate(_, s) -> s
-    | Let(_, _, _, s) | LetPat(_, _, _, s) | LetRec(_, _, _, _, s) -> s
+    | Let(_, _, _, s) | LetPat(_, _, _, s) | LetRec(_, _, _, _, _, s) -> s
     | If(_, _, _, s) -> s
     | Equal(_, _, s) | NotEqual(_, _, s) -> s
     | LessThan(_, _, s) | GreaterThan(_, _, s) | LessEqual(_, _, s) | GreaterEqual(_, _, s) -> s
@@ -357,7 +357,7 @@ type Decl =
     // Phase 17 (Type Aliases): Type alias declaration
     | TypeAliasDecl of name: string * typeParams: string list * body: TypeExpr * Span
     // Phase 18 (Mutual Recursion): Module-level let rec (single and mutual)
-    | LetRecDecl of bindings: (string * string * Expr * Span) list * Span
+    | LetRecDecl of bindings: (string * string * TypeExpr option * Expr * Span) list * Span
     // Phase 31 (Module System): File-based import declaration
     | FileImportDecl of path: string * Span
     // Phase 42 (Mutable Variables): Module-level mutable variable declaration

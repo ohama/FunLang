@@ -299,7 +299,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             })
 
     // === LetRec ===
-    | LetRec (name, param, body, expr, span) ->
+    | LetRec (name, param, _paramTyOpt, body, expr, span) ->
         // Pre-bind function with fresh type for recursive calls
         let funcTy = freshVar()
         let paramTy = freshVar()
