@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 72 of 74 (Type Checker and Constraint Inference) — COMPLETE
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-03-31 — Completed 72-03-PLAN.md (integration tests for typeclass constraint inference)
+Phase: 73 of 74 (Dictionary Construction and Elaboration) — In progress
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-31 — Completed 73-01-PLAN.md (elaborateTypeclasses pass + Program.fs wiring)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [████████░░░░░░░░░░░░] v10.0: ~45% (phases 70+71+72 complete)
+         [█████████░░░░░░░░░░░] v10.0: ~55% (phases 70+71+72+73-plan1 complete)
 
 ## Performance Metrics
 
@@ -91,13 +91,20 @@ From Phase 72 Plan 03:
 - FsLit Stderr: section does partial matching -- only first error line needed; path-containing --> line varies by temp file path and is excluded
 - ++ is list append in LangThree; use + for string concatenation when types are known
 
+From Phase 73 Plan 01:
+- elaborateTypeclasses: List.collect flatmap over Decl list; TypeClassDecl -> [], InstanceDecl -> [LetDecl per method], recurses into ModuleDecl/NamespaceDecl
+- Program.fs: elaboratedDecls inserted before both Eval.evalModuleDecls call sites (Test subcommand + file execution)
+- Last-binding lookup in file execution uses elaboratedDecls (not moduleDecls) — necessary so TypeClassDecl removal doesn't cause missed output
+- Prelude.fs call sites NOT updated: prelude files contain no InstanceDecl
+- Method names bound directly without mangling (last-wins shadowing for multiple instances; MVP acceptable)
+
 ## Session Continuity
 
-Last session: 2026-03-31T11:32:02Z
-Stopped at: Completed 72-03-PLAN.md (integration tests for typeclass constraint inference)
+Last session: 2026-03-31
+Stopped at: Completed 73-01-PLAN.md (elaborateTypeclasses + Program.fs wiring)
 Resume file: None
-Next action: Execute Phase 73 (Dictionary Passing)
+Next action: Execute Phase 73 Plan 02 (integration tests for runtime typeclass method dispatch)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 72 complete — all 3 plans done)*
+*Last updated: 2026-03-31 (phase 73 plan 1 complete — elaborateTypeclasses added, runtime typeclass dispatch working)*
