@@ -67,10 +67,12 @@ Plans:
   2. Calling `show_twice 42` resolves the `Show int` constraint and type-checks successfully; calling `show_twice (fun x -> x)` produces a clear "no instance of Show for ('a -> 'b)" error.
   3. A duplicate instance declaration (e.g., two `instance Show int` blocks) produces an error at the second declaration.
   4. `let`-generalization preserves constraints: a polymorphic constrained binding used at two different types produces two separate constraint resolution calls.
-**Plans:** TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 72-01: TBD
+- [ ] 72-01-PLAN.md — Diagnostic error kinds, TEConstrained elaboration, Eval no-ops, TypeClassDecl/InstanceDecl processing in typeCheckDecls
+- [ ] 72-02-PLAN.md — pendingConstraints accumulator, constraint-aware instantiate/generalize, substitution-aware resolution
+- [ ] 72-03-PLAN.md — flt integration tests for constraint inference, resolution, and error cases
 
 ---
 
@@ -110,6 +112,6 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 70. Core Type Infrastructure | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
 | 71. Parsing and AST | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
-| 72. Type Checker and Constraint Inference | v10.0 | 0/TBD | Not started | - |
+| 72. Type Checker and Constraint Inference | v10.0 | 0/3 | Not started | - |
 | 73. Dictionary Construction and Elaboration | v10.0 | 0/TBD | Not started | - |
 | 74. Built-in Instances and Tests | v10.0 | 0/TBD | Not started | - |
