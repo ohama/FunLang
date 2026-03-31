@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 74: Built-in Instances and Tests
+**Current focus:** v10.0 Type Classes — COMPLETE
 
 ## Current Position
 
-Milestone: v10.0 Type Classes
-Phase: 74 of 74 (Built-in Instances and Tests) — In progress
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-31 — Completed 74-01-PLAN.md (Show/Eq prelude instances + Prelude.fs elaboration fix)
+Milestone: v10.0 Type Classes — COMPLETE
+Phase: 74 of 74 (Built-in Instances and Tests) — Complete
+Plan: 2 of 2 complete
+Status: Milestone v10.0 complete
+Last activity: 2026-03-31 — Completed 74-02-PLAN.md (5 built-in Show/Eq flt tests; 676/676 passing)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [████████████░░░░░░░░] v10.0: ~75% (phases 70+71+72+73+74-01 complete)
+         [████████████████████] v10.0: 100% complete (phases 70+71+72+73+74 all done)
 
 ## Performance Metrics
 
@@ -112,13 +112,18 @@ From Phase 74 Plan 01:
 - show 'x' returns "'x'" (with single quotes) — to_string delegates to formatValue for CharValue
 - 671 tests still pass after updating 3 typeclass inference tests to use prelude Show
 
+From Phase 74 Plan 02:
+- 5 new flt integration tests lock in built-in Show/Eq for primitives; 676/676 tests pass
+- Runtime built-in test pattern: no typeclass/instance headers in flt file; just use show/eq directly
+- Polymorphic Show instances (Show list, Show option) confirmed out-of-scope for v10.0; need unification-based instance resolution in future milestone
+
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 74-01-PLAN.md (Show/Eq prelude instances + Prelude.fs elaboration fix)
+Stopped at: Completed 74-02-PLAN.md (5 built-in Show/Eq flt tests; milestone v10.0 complete)
 Resume file: None
-Next action: Execute Phase 74 Plan 02
+Next action: Begin next milestone planning
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 74 plan 01 — Show/Eq prelude instances; 671/671 tests passing)*
+*Last updated: 2026-03-31 (phase 74 plan 02 — built-in instances tests; 676/676 tests passing; v10.0 COMPLETE)*
