@@ -1,5 +1,26 @@
 # Project Milestones: LangThree
 
+## v9.1 Span Fix (Shipped: 2026-03-31)
+
+**Delivered:** AST Span 위치 정보 수정 — PositionedToken 파이프라인으로 에러 메시지에 정확한 file:line:column 표시
+
+**Phases completed:** 69 (1 plan total)
+
+**Key accomplishments:**
+- PositionedToken 타입 + filterPositioned 함수 (IndentFilter.fs)
+- lexAndFilter가 렉싱 시 위치 캡처, parseModuleFromString이 lexbuf 위치 업데이트
+- 에러 메시지 :0:0: → 정확한 line:column (예: test.lt:2:6-19)
+
+**Stats:**
+- 2 files changed, ~100 LOC
+- 1 phase, 1 plan
+- 1 day (2026-03-31)
+- 224 F# unit tests + 659 flt tests, all passing
+
+**Git range:** `feat(69-01)` → `docs(69-01): complete`
+
+---
+
 ## v9.0 Project Build System (Shipped: 2026-03-31)
 
 **Delivered:** funproj.toml 기반 Cargo 스타일 빌드 시스템 — CLI 확장 (--check, --deps, --prelude, 환경 변수, 파일 캐싱) + 프로젝트 파일 파싱 + build/test 서브커맨드
