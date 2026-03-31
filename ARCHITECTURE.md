@@ -25,12 +25,12 @@ Source Code
     ▼
 ┌──────────────┐     Elaborated types
 │ Elaborate.fs  │ ──────────────────────►  TypeExpr → Type
-└──────────────┘
-    │
+└──────────────┘       + elaborateTypeclasses
+    │                  (instance → let binding)
     ▼
 ┌──────────────┐     Type-checked AST + substitutions
 │ Bidir.fs      │ ──────────────────────►  synth/check
-│ (TypeCheck.fs)│
+│ (TypeCheck.fs)│       + constraint inference
 └──────────────┘
     │
     ▼
@@ -55,6 +55,7 @@ Source Code
 - `mut`과 `mutable` 모두 `MUTABLE` 토큰으로 매핑 (v4.0)
 - `.[` → `DOTLBRACKET` 단일 토큰 (v5.0, `.IDENT` 필드접근과 LALR 충돌 회피)
 - `while`, `for`, `to`, `downto`, `do` 키워드 추가 (v5.0)
+- `typeclass`, `instance` 키워드 추가 (v10.0)
 
 **중요 패턴:**
 - `NEWLINE(col)`: 줄바꿈 후 다음 줄의 첫 비공백 문자 column
@@ -128,13 +129,19 @@ let f x y z = body
 
 ### 2.4 Elaborate (Elaborate.fs)
 
-**역할:** `TypeExpr` (파서 AST) → `Type` (내부 타입)
+**역할:** `TypeExpr` (파서 AST) → `Type` (내부 타입) + 타입 클래스 정교화
 
 - `TEInt` → `TInt`
 - `TEVar("'a")` → `TVar(freshIndex)`
 - `TEArrow(a, b)` → `TArrow(elaborate a, elaborate b)`
 - `TEData("Expr", [TEInt])` → `TData("Expr", [TInt])`
 - GADT 생성자: 인자 타입과 반환 타입 분리
+
+**타입 클래스 정교화 (v10.0):**
+- `elaborateTypeclasses`: `InstanceDecl` → 일반 `LetDecl`로 변환 (dictionary-passing)
+- 인스턴스 메서드를 `show_int`, `eq_string` 등의 이름으로 바인딩
+- `TypeClassDecl`은 환경에 클래스 정보를 등록하고 제거
+- Prelude 로딩 시에도 동일한 정교화 적용 (`Prelude.fs`)
 
 ### 2.5 Type Checker (Bidir.fs + TypeCheck.fs)
 
@@ -156,6 +163,15 @@ check(env, expr, expected) → substitution    // 타입 검증
 - **synth**: 리터럴, 변수, 함수 적용에서 타입 추론
 - **check**: 람다, if-then-else, match 분기에서 기대 타입과 비교
 - **subsumption**: check에서 직접 처리 못하면 synth 후 unify
+
+**타입 클래스 제약 추론 (v10.0):**
+- `Scheme` 타입: `(vars, constraints, ty)` — 제약 포함
+- `Constraint`: `{ ClassName: string; TypeArg: Type }`
+- `ClassEnv`: 클래스명 → 타입 변수 + 메서드 시그니처 맵
+- `InstanceEnv`: 클래스명 → 인스턴스 타입 목록 맵
+- `pendingConstraints`: 타입 추론 중 축적되는 제약 목록
+- 인스턴스 해결: 제약의 타입 인자가 구체 타입이면 InstanceEnv에서 매칭
+- 에러 코드: E0701 (인스턴스 없음), E0702 (중복 인스턴스), E0703-E0706
 
 **Let-Polymorphism:**
 ```
@@ -211,9 +227,10 @@ type Value =
 **Prelude 로딩:**
 1. `Prelude/` 디렉토리의 `.fun` 파일을 의존성 분석 후 토폴로지 정렬 순서로 로드
 2. 각 파일을 `module <Stem> = ...` 블록으로 래핑 후 `open <Stem>` 삽입 → 비정규화 접근 가능
-3. 각 파일을 파싱 → 타입 체크 → 평가
+3. 각 파일을 파싱 → 타입 클래스 정교화 → 타입 체크 → 평가
 4. `PreludeResult`는 `Modules`(타입 모듈 맵)와 `ModuleValueEnv`(값 모듈 맵) 필드를 포함
 5. `Program.fs`가 prelude 모듈 맵을 타입 체크 및 평가 단계로 스레딩하여 정규화 접근(`List.map` 등)을 보장
+6. `Prelude/Typeclass.fun`이 `Show`/`Eq` 타입 클래스와 기본 타입(`int`, `bool`, `string`, `char`) 인스턴스를 정의
 
 ## 3. Data Flow Example
 

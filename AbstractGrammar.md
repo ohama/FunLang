@@ -75,6 +75,12 @@ decl ::= 'let' IDENT '=' expr
 
        | 'namespace' qualified_ident
 
+       -- 타입 클래스 (v10.0)
+       | 'typeclass' IDENT type_var '='
+             ('|' IDENT ':' type_expr)+
+       | 'instance' IDENT atomic_type '='
+             ('let' IDENT param+ '=' expr)+
+
 param    ::= IDENT
 op_name  ::= INFIXOP0 | INFIXOP1 | INFIXOP2 | INFIXOP3 | INFIXOP4
 type_var ::= TYPE_VAR
@@ -256,8 +262,15 @@ tuple_pattern ::= '(' pattern ',' pattern (',' pattern)* ')'
 ## 5. 타입 표현식 (Type Expressions)
 
 ```
-type_expr ::= tuple_type '->' type_expr             -- 함수 타입 (우결합)
+type_expr ::= constraint_list '=>' arrow_type        -- 제약 타입 (v10.0)
+            | tuple_type '->' type_expr             -- 함수 타입 (우결합)
             | tuple_type
+
+constraint_list ::= constraint (',' constraint)*
+constraint      ::= IDENT TYPE_VAR                   -- e.g., Show 'a
+
+arrow_type ::= tuple_type '->' type_expr
+             | tuple_type
 
 tuple_type ::= atomic_type ('*' atomic_type)+       -- 튜플 타입 (2개 이상)
              | atomic_type

@@ -17,7 +17,7 @@ type_var    = '\'' letter (letter | digit | '_')*
 op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '~']
 ```
 
-### 1.2 Keywords (27)
+### 1.2 Keywords (29)
 
 | Token | Keyword | Token | Keyword |
 |-------|---------|-------|---------|
@@ -36,6 +36,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | WHILE | `while` | FOR | `for` |
 | TO | `to` | DOWNTO | `downto` |
 | DO | `do` | IN_KW | `in` |
+| TYPECLASS | `typeclass` | INSTANCE | `instance` |
 
 ### 1.3 Type Keywords (6)
 
@@ -74,6 +75,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | OR | `\|\|` | CONS | `::` |
 | ARROW | `->` | LARROW | `<-` |
 | DOTDOT | `..` | DOTLBRACKET | `.[` |
+| FATARROW | `=>` | | |
 | PIPE_RIGHT | `\|>` | | |
 | COMPOSE_RIGHT | `>>` | COMPOSE_LEFT | `<<` |
 
@@ -162,6 +164,7 @@ Decls       ::= Decl*
 Decl        ::= LetDecl | TypeDecl | RecordDecl | TypeAliasDecl
               | LetRecDecl | LetMutDecl | ModuleDecl | OpenDecl | ExceptionDecl
               | LetPatDecl | FileImportDecl
+              | TypeClassDecl | InstanceDecl
 
 LetDecl     ::= 'let' IDENT '=' Expr
               | 'let' IDENT ParamList '=' Expr
@@ -189,6 +192,14 @@ FileImportDecl ::= 'open' STRING                // file import (relative to impo
 LetPatDecl  ::= 'let' '(' Pattern ',' Pattern ')' '=' Expr  // module-level tuple destructuring
 
 ExceptionDecl ::= 'exception' IDENT ('of' TypeExpr)?
+
+TypeClassDecl ::= 'typeclass' IDENT TYPE_VAR '=' TypeClassMethods
+
+InstanceDecl  ::= 'instance' IDENT AtomicType '=' InstanceMethods
+
+TypeClassMethods ::= ('|' IDENT ':' TypeExpr)+
+
+InstanceMethods  ::= (LetDecl)+
 
 ParamList   ::= IDENT+
 OpName      ::= '(' INFIXOP ')'
@@ -295,7 +306,14 @@ PatternList  ::= Pattern ',' Pattern (',' Pattern)*
 ### 3.6 Type Expressions
 
 ```
-TypeExpr    ::= TupleType '->' TypeExpr   // function type
+TypeExpr    ::= ConstraintList '=>' ArrowType  // constrained type (e.g., Show 'a => 'a -> string)
+              | TupleType '->' TypeExpr   // function type
+              | TupleType
+
+ConstraintList ::= Constraint (',' Constraint)*
+Constraint     ::= IDENT TYPE_VAR          // e.g., Show 'a, Eq 'b
+
+ArrowType   ::= TupleType '->' TypeExpr
               | TupleType
 
 TupleType   ::= AtomicType '*' TupleType  // tuple type
@@ -402,7 +420,34 @@ Hindley-Milner 타입 추론 + bidirectional type checking:
 - **Checking (check)**: 표현식이 기대 타입과 일치하는지 검증
 - **Let-polymorphism**: `let` 경계에서 타입 일반화 (generalization)
 
-### 5.3 GADT Type Refinement
+### 5.3 Type Classes (v10.0)
+
+타입 클래스는 다형적 함수에 제약(constraint)을 부여하는 메커니즘:
+
+```
+typeclass Show 'a =
+    | show : 'a -> string
+
+instance Show int =
+    let show x = to_string x
+```
+
+**제약 추론:** 메서드 사용 시 자동으로 제약 전파:
+```
+let show_twice x = show x + show x   // Show 'a => 'a -> string
+```
+
+**내장 타입 클래스 (Prelude):**
+- `Show 'a`: `show : 'a -> string` — 인스턴스: `int`, `bool`, `string`, `char`
+- `Eq 'a`: `eq : 'a -> 'a -> bool` — 인스턴스: `int`, `bool`, `string`, `char`
+
+**정교화:** `InstanceDecl` → 일반 `LetDecl`로 변환 (dictionary-passing elaboration)
+
+**에러 코드:**
+- `E0701`: 인스턴스 없음 (e.g., `show (fun x -> x)`)
+- `E0702`: 중복 인스턴스 선언
+
+### 5.4 GADT Type Refinement
 
 GADT 패턴 매칭에서 분기별 독립적 타입 정제:
 
@@ -421,7 +466,7 @@ let eval e =
 - `: int` 주석: 모든 분기가 int 반환 강제
 - 불가능한 생성자 자동 제외 (completeness filtering)
 
-### 5.4 Exhaustiveness Checking
+### 5.5 Exhaustiveness Checking
 
 패턴 매칭의 완전성 검사 (W0001 경고):
 - 모든 ADT 생성자 커버 확인
@@ -429,7 +474,7 @@ let eval e =
 - Or-pattern은 각 대안을 별도로 처리
 - When guard가 있는 분기는 완전성에서 제외
 
-### 5.5 Built-in Functions
+### 5.6 Built-in Functions
 
 **String / Output:**
 
@@ -504,7 +549,7 @@ let eval e =
 | `hashtable_keys` | `('k,'v) hashtable -> 'k list` | Get all keys |
 | `hashtable_remove` | `('k,'v) hashtable -> 'k -> unit` | Remove entry |
 
-### 5.6 Prelude (Standard Library)
+### 5.7 Prelude (Standard Library)
 
 `Prelude/` 디렉토리의 `.fun` 파일이 시작 시 자동 로드:
 
@@ -535,3 +580,5 @@ let eval e =
 **MutableList functions (qualified):** `MutableList.create`, `MutableList.add`, `MutableList.count`
 
 **StringBuilder functions (qualified):** `StringBuilder.create`, `StringBuilder.add`, `StringBuilder.toString`
+
+**Type classes (Prelude/Typeclass.fun):** `Show` (`show`), `Eq` (`eq`) — instances for `int`, `bool`, `string`, `char`

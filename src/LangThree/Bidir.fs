@@ -32,13 +32,18 @@ let applySubstToConstraints (s: Subst) =
 
 /// Instantiate scheme: replace bound vars with fresh type variables.
 /// Also emits constraints onto pendingConstraints for tracking at generalize boundaries.
+/// Optional callSiteSpan overrides constraint source spans for better error locations.
 /// Shadows Infer.instantiate for all callers that open Bidir.
-let instantiate (Scheme (vars, constraints, ty)): Type =
+let instantiateAt (callSiteSpan: Ast.Span option) (Scheme (vars, constraints, ty)): Type =
+    let respan (c: Constraint) =
+        match callSiteSpan with
+        | Some sp when sp <> Ast.unknownSpan -> { c with SourceSpan = sp }
+        | _ -> c
     match vars with
     | [] ->
         // Monomorphic -- emit constraints as-is (for explicit constrained annotations)
         if not (List.isEmpty constraints) then
-            pendingConstraints <- constraints @ pendingConstraints
+            pendingConstraints <- (constraints |> List.map respan) @ pendingConstraints
         ty
     | _ ->
         let freshVars = List.map (fun _ -> Infer.freshVar()) vars
@@ -47,9 +52,11 @@ let instantiate (Scheme (vars, constraints, ty)): Type =
         if not (List.isEmpty constraints) then
             let freshConstraints =
                 constraints |> List.map (fun c ->
-                    { c with TypeArg = apply subst c.TypeArg })
+                    { c with TypeArg = apply subst c.TypeArg } |> respan)
             pendingConstraints <- freshConstraints @ pendingConstraints
         apply subst ty
+
+let instantiate scheme = instantiateAt None scheme
 
 /// Generalize type: abstract over free vars not in environment.
 /// Drains pendingConstraints: constraints mentioning generalized vars are deferred into Scheme;
@@ -77,7 +84,7 @@ let generalize (env: TypeEnv) (ty: Type): Scheme =
         if not resolved then
             raise (TypeException {
                 Kind = NoInstance(c.ClassName, c.TypeArg)
-                Span = unknownSpan
+                Span = c.SourceSpan
                 Term = None
                 ContextStack = []
                 Trace = []
@@ -127,7 +134,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     // === Variables (BIDIR-03) ===
     | Var (name, span) ->
         match Map.tryFind name env with
-        | Some scheme -> (empty, instantiate scheme)
+        | Some scheme -> (empty, instantiateAt (Some span) scheme)
         | None ->
             raise (TypeException {
                 Kind = UnboundVar name
@@ -253,6 +260,15 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     // === Annot (type annotation) ===
     | Annot (e, tyExpr, span) ->
+        // Validate constraint class names in TEConstrained annotations (Bug 7)
+        match tyExpr with
+        | Ast.TEConstrained(constraints, _) ->
+            constraints |> List.iter (fun (className, _) ->
+                if not (Map.containsKey className currentClassEnv) then
+                    raise (Diagnostic.TypeException {
+                        Kind = Diagnostic.UnknownTypeClass className
+                        Span = span; Term = Some expr; ContextStack = ctx; Trace = [] }))
+        | _ -> ()
         let expectedTy = elaborateTypeExpr tyExpr
         let ctx' = InCheckMode (expectedTy, "annotation", span) :: ctx
         let s = check ctorEnv recEnv ctx' env e expectedTy

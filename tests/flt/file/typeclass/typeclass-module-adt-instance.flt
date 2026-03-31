@@ -1,0 +1,12 @@
+// Test: ADT + Show instance in same module, accessible after open (Bug 4 fix)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Colors =
+    type Color = | Red | Green | Blue
+    instance Show Color =
+        let show c = match c with | Red -> "Red" | Green -> "Green" | Blue -> "Blue"
+
+open Colors
+let result = show Green
+// --- Output:
+"Green"

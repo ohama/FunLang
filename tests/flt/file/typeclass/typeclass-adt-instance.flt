@@ -1,0 +1,10 @@
+// Test: instance Show for user-defined ADT at top level
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Color = | Red | Green | Blue
+instance Show Color =
+    let show c = match c with | Red -> "Red" | Green -> "Green" | Blue -> "Blue"
+
+let result = show Red
+// --- Output:
+"Red"

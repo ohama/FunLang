@@ -36,6 +36,7 @@
 
 - [사용자 정의 연산자](13-user-defined-operators.md)
 - [GADT](14-gadt.md)
+- [타입 클래스](23-typeclasses.md)
 - [알고리즘과 자료구조](15-algorithms.md)
 
 # 부록

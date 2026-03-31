@@ -1,0 +1,13 @@
+// Test: instance declared inside module is accessible globally (Bug 2/5 fix)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+typeclass Render 'a =
+    | render : 'a -> string
+
+module A =
+    instance Render int =
+        let render x = "rendered:" + to_string x
+
+let result = render 42
+// --- Output:
+"rendered:42"

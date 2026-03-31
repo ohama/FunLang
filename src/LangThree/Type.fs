@@ -18,7 +18,8 @@ type Type =
 
 /// Constraint for type class requirements
 /// Example: { ClassName = "Show"; TypeArg = TVar 0 } means "Show 'a"
-type Constraint = { ClassName: string; TypeArg: Type }
+/// SourceSpan carries the location where the constraint was generated (for error messages)
+type Constraint = { ClassName: string; TypeArg: Type; SourceSpan: Ast.Span }
 
 /// Type scheme for polymorphism, optionally carrying type class constraints
 /// forall 'a 'b. 'a -> 'b -> 'a

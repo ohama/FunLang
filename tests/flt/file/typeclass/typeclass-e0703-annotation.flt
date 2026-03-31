@@ -1,0 +1,7 @@
+// Test: unknown class name in constraint annotation produces E0703 (Bug 7 fix)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+let f : Nonexistent 'a => 'a -> string = fun x -> to_string x
+// --- ExitCode: 1
+// --- Stderr:
+error[E0703]: Unknown type class: Nonexistent

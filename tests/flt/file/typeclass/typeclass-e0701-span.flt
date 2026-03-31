@@ -1,0 +1,8 @@
+// Test: E0701 NoInstance shows source location instead of <unknown location> (Bug 1 fix)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+type Foo = | Bar
+let result = show Bar
+// --- ExitCode: 1
+// --- Stderr:
+error[E0701]: No instance of Show for Foo

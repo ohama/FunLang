@@ -71,6 +71,7 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
     | TEConstrained(_, innerTy) ->
         // Constraints are handled at Scheme construction (TypeCheck/Bidir),
         // not at Type elaboration level. Just elaborate the inner type.
+        // Constraint class name validation is done in TypeCheck.fs (has access to ClassEnv).
         elaborateWithVars vars innerTy
 
 /// Elaborate single type expression with fresh scope
@@ -255,7 +256,15 @@ let rec elaborateTypeclasses (decls: Decl list) : Decl list =
                 LetDecl(methodName, methodBody, span))
         | ModuleDecl(name, innerDecls, span) ->
             // Recurse into module bodies
-            [ModuleDecl(name, elaborateTypeclasses innerDecls, span)]
+            // Instance method bindings are promoted to outer scope (instances are global)
+            let instanceBindings =
+                innerDecls |> List.collect (fun d ->
+                    match d with
+                    | InstanceDecl(_, _, methods, ispan) ->
+                        methods |> List.map (fun (methodName, methodBody) ->
+                            LetDecl(methodName, methodBody, ispan))
+                    | _ -> [])
+            [ModuleDecl(name, elaborateTypeclasses innerDecls, span)] @ instanceBindings
         | NamespaceDecl(path, innerDecls, span) ->
             // Recurse into namespace bodies
             [NamespaceDecl(path, elaborateTypeclasses innerDecls, span)]

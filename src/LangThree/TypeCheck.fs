@@ -223,22 +223,34 @@ type ModuleExports = {
     TypeEnv: TypeEnv
     CtorEnv: ConstructorEnv
     RecEnv: RecordEnv
+    ClassEnv: ClassEnv
+    InstanceEnv: InstanceEnv
     SubModules: Map<string, ModuleExports>
 }
 
 let emptyModuleExports = {
     TypeEnv = Map.empty; CtorEnv = Map.empty
-    RecEnv = Map.empty; SubModules = Map.empty
+    RecEnv = Map.empty; ClassEnv = Map.empty; InstanceEnv = Map.empty
+    SubModules = Map.empty
 }
 
 /// Merge module exports into current environments (for open directives)
 let openModuleExports (exports: ModuleExports)
                       (typeEnv: TypeEnv) (ctorEnv: ConstructorEnv) (recEnv: RecordEnv)
-    : TypeEnv * ConstructorEnv * RecordEnv =
+                      (classEnv: ClassEnv) (instEnv: InstanceEnv)
+    : TypeEnv * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv =
     let typeEnv' = Map.fold (fun acc k v -> Map.add k v acc) typeEnv exports.TypeEnv
     let ctorEnv' = Map.fold (fun acc k v -> Map.add k v acc) ctorEnv exports.CtorEnv
     let recEnv' = Map.fold (fun acc k v -> Map.add k v acc) recEnv exports.RecEnv
-    (typeEnv', ctorEnv', recEnv')
+    let classEnv' = Map.fold (fun acc k v -> Map.add k v acc) classEnv exports.ClassEnv
+    let instEnv' =
+        Map.fold (fun acc k v ->
+            let existing = Map.tryFind k acc |> Option.defaultValue []
+            Map.add k (v @ existing) acc) instEnv exports.InstanceEnv
+    // Update Bidir mutable refs so constraint resolution sees the opened classes/instances
+    Bidir.currentClassEnv <- classEnv'
+    Bidir.currentInstEnv <- instEnv'
+    (typeEnv', ctorEnv', recEnv', classEnv', instEnv')
 
 /// Resolve a module path in the modules map, raising E0502 if not found
 let resolveModule (modules: Map<string, ModuleExports>) (path: string list) (span: Span) : ModuleExports =
@@ -935,7 +947,7 @@ let rec typeCheckDecls
                         Kind = DuplicateModuleName name
                         Span = span; Term = None; ContextStack = []; Trace = [] })
                 // Recurse into inner declarations
-                let (innerTypeEnv, innerCtorEnv, innerRecEnv, _innerClsEnv, _innerInstEnv, innerMods, innerWarns) =
+                let (innerTypeEnv, innerCtorEnv, innerRecEnv, innerClsEnv, innerInstEnv, innerMods, innerWarns) =
                     typeCheckDecls innerDecls env cEnv rEnv clsEnv iEnv mods
                 // Build module exports (only bindings defined in this module, not inherited).
                 // Include a binding if it's new OR if it shadows an outer binding with a different type.
@@ -955,6 +967,17 @@ let rec typeCheckDecls
                     Map.fold (fun acc k v ->
                         if Map.containsKey k rEnv then acc
                         else Map.add k v acc) Map.empty innerRecEnv
+                // ClassEnv/InstanceEnv: only classes/instances newly defined in this module
+                let moduleClsEnv =
+                    Map.fold (fun acc k v ->
+                        if Map.containsKey k clsEnv then acc
+                        else Map.add k v acc) Map.empty innerClsEnv
+                let moduleInstEnv =
+                    Map.fold (fun acc k v ->
+                        let outerInsts = Map.tryFind k iEnv |> Option.defaultValue []
+                        let newInsts = v |> List.filter (fun inst -> not (List.contains inst outerInsts))
+                        if List.isEmpty newInsts then acc
+                        else Map.add k newInsts acc) Map.empty innerInstEnv
                 // SubModules: only modules newly defined INSIDE this module (not outer mods)
                 let newSubMods =
                     Map.fold (fun acc k v ->
@@ -964,9 +987,16 @@ let rec typeCheckDecls
                     TypeEnv = moduleTypeEnv
                     CtorEnv = moduleCtorEnv
                     RecEnv = moduleRecEnv
+                    ClassEnv = moduleClsEnv
+                    InstanceEnv = moduleInstEnv
                     SubModules = newSubMods
                 }
-                (env, cEnv, rEnv, clsEnv, iEnv, Map.add name exports mods, warns @ innerWarns)
+                // Propagate ClassEnv and InstanceEnv to outer scope (typeclass effects are global)
+                let clsEnv' = Map.fold (fun acc k v -> Map.add k v acc) clsEnv innerClsEnv
+                let iEnv' = Map.fold (fun acc k v -> Map.add k v acc) iEnv innerInstEnv
+                Bidir.currentClassEnv <- clsEnv'
+                Bidir.currentInstEnv <- iEnv'
+                (env, cEnv, rEnv, clsEnv', iEnv', Map.add name exports mods, warns @ innerWarns)
 
             | OpenDecl(path, span) ->
                 // Look up module in current modules map
@@ -978,12 +1008,12 @@ let rec typeCheckDecls
                             Kind = ForwardModuleReference name
                             Span = span; Term = None; ContextStack = []; Trace = [] })
                     | Some exports ->
-                        let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
-                        (env', cEnv', rEnv', clsEnv, iEnv, mods, warns)
+                        let (env', cEnv', rEnv', clsEnv', iEnv') = openModuleExports exports env cEnv rEnv clsEnv iEnv
+                        (env', cEnv', rEnv', clsEnv', iEnv', mods, warns)
                 | _ ->
                     let exports = resolveModule mods path span
-                    let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
-                    (env', cEnv', rEnv', clsEnv, iEnv, mods, warns)
+                    let (env', cEnv', rEnv', clsEnv', iEnv') = openModuleExports exports env cEnv rEnv clsEnv iEnv
+                    (env', cEnv', rEnv', clsEnv', iEnv', mods, warns)
 
             | FileImportDecl(path, _span) ->
                 // Use currentTypeCheckingFile for path resolution since span.FileName
@@ -1009,7 +1039,7 @@ let rec typeCheckDecls
                         methods |> List.map (fun (methodName, methodTypeExpr) ->
                             let (methodTy, _) = Elaborate.elaborateWithVars (Map.ofList [(typeVarName, classVarId)]) methodTypeExpr
                             // Method scheme: forall [classVarId]. ClassName classVarId => methodTy
-                            let methodConstraint = { ClassName = className; TypeArg = TVar classVarId }
+                            let methodConstraint = { ClassName = className; TypeArg = TVar classVarId; SourceSpan = span }
                             let scheme = Scheme([classVarId], [methodConstraint], methodTy)
                             (methodName, scheme))
                     // Build ClassInfo and add to classEnv
@@ -1033,7 +1063,19 @@ let rec typeCheckDecls
                             Kind = UnknownTypeClass className
                             Span = span; Term = None; ContextStack = []; Trace = [] })
                 // Elaborate the instance type (e.g., TEName "int" -> TInt)
-                let instType = Elaborate.elaborateTypeExpr instTypeExpr
+                // TEName for user-defined types must resolve to TData, not fresh TVar.
+                // Check if any constructor resolves to this type, or if it's a record type.
+                let instType =
+                    match instTypeExpr with
+                    | Ast.TEName name ->
+                        let isAdt = cEnv |> Map.exists (fun _ info ->
+                            match info.ResultType with
+                            | TData(n, _) when n = name -> true
+                            | _ -> false)
+                        let isRecord = Map.containsKey name rEnv
+                        if isAdt || isRecord then TData(name, [])
+                        else Elaborate.elaborateTypeExpr instTypeExpr
+                    | _ -> Elaborate.elaborateTypeExpr instTypeExpr
                 // Check for duplicate instance
                 let existingInstances = Map.tryFind className iEnv |> Option.defaultValue []
                 if existingInstances |> List.exists (fun ii -> ii.InstanceType = instType) then
@@ -1099,15 +1141,29 @@ let rec typeCheckDecls
                                 raise (TypeException {
                                     Kind = DuplicateModuleName name
                                     Span = span; Term = None; ContextStack = []; Trace = [] })
-                            let (iTypeEnv, iCtor, iRec, _iCls, _iInst, iMods, iWarns) =
+                            let (iTypeEnv, iCtor, iRec, iCls, iInst, iMods, iWarns) =
                                 typeCheckDecls mInnerDecls e ce re cls inst ms
+                            let mClsEnv = Map.fold (fun acc k v -> if Map.containsKey k cls then acc else Map.add k v acc) Map.empty iCls
+                            let mInstEnv =
+                                Map.fold (fun acc k v ->
+                                    let outerInsts = Map.tryFind k inst |> Option.defaultValue []
+                                    let newInsts = v |> List.filter (fun i -> not (List.contains i outerInsts))
+                                    if List.isEmpty newInsts then acc
+                                    else Map.add k newInsts acc) Map.empty iInst
                             let mExports = {
                                 TypeEnv = Map.fold (fun acc k v -> if Map.containsKey k e then acc else Map.add k v acc) Map.empty iTypeEnv
                                 CtorEnv = Map.fold (fun acc k v -> if Map.containsKey k ce then acc else Map.add k v acc) Map.empty iCtor
                                 RecEnv = Map.fold (fun acc k v -> if Map.containsKey k re then acc else Map.add k v acc) Map.empty iRec
+                                ClassEnv = mClsEnv
+                                InstanceEnv = mInstEnv
                                 SubModules = iMods
                             }
-                            (e, ce, re, cls, inst, Map.add name mExports ms, ws @ iWarns)
+                            // Propagate ClassEnv/InstanceEnv to outer scope
+                            let cls' = Map.fold (fun acc k v -> Map.add k v acc) cls iCls
+                            let inst' = Map.fold (fun acc k v -> Map.add k v acc) inst iInst
+                            Bidir.currentClassEnv <- cls'
+                            Bidir.currentInstEnv <- inst'
+                            (e, ce, re, cls', inst', Map.add name mExports ms, ws @ iWarns)
                         | _ -> (e, ce, re, cls, inst, ms, ws)
                     ) (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
                 (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns)

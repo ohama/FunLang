@@ -24,6 +24,7 @@ Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에
 - `Prelude/Result.fun` -- Result 타입과 함수 (`resultMap`, `resultBind`, `resultDefault` 등)
 - `Prelude/String.fun` -- String 모듈 (`String.endsWith`, `String.startsWith`, `String.trim` 등)
 - `Prelude/StringBuilder.fun` -- StringBuilder 모듈
+- `Prelude/Typeclass.fun` -- 타입 클래스 (`Show`, `Eq`)와 기본 타입 인스턴스 (`int`, `bool`, `string`, `char`)
 
 **Prelude/Option.fun:**
 ```
@@ -579,6 +580,7 @@ funlang> to_string (Some [1; 2; 3])
 | 분류 | 출처 | 예제 |
 |----------|--------|---------|
 | Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `Result`, `map`, `filter`, `fold`, `sort`, `tryFind`, `choose`, `id`, `compose`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore` 등 |
+| Prelude 타입 클래스 | `Prelude/Typeclass.fun` | `show`, `eq` — 타입 클래스와 기본 타입 인스턴스 ([23장](23-typeclasses.md) 참조) |
 | Prelude 모듈 | `Prelude/*.fun` 파일 | `String.trim`, `Char.IsDigit`, `Array.sort`, `HashSet.create`, `Queue.create`, `MutableList.create`, `StringBuilder.create` 등 |
 | Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
 | 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
