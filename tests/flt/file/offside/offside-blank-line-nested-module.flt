@@ -1,0 +1,11 @@
+// Test: blank line inside nested module body
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+module Outer =
+    module Inner =
+        let x = 1
+
+        let y = 2
+let result = Outer.Inner.x + Outer.Inner.y
+// --- Output:
+3

@@ -1,0 +1,10 @@
+// Test: blank line inside let body does not cause parse error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let result =
+    let x = 10
+
+    let y = 20
+    x + y
+// --- Output:
+30

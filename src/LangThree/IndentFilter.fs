@@ -267,6 +267,11 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 // Inside brackets: suppress INDENT/DEDENT, just advance line counter
                 state <- { state with LineNum = state.LineNum + 1 }
 
+            | Parser.NEWLINE _ when index + 1 < tokenList.Length && (match tokenList.[index + 1] with Parser.NEWLINE _ -> true | _ -> false) ->
+                // Blank line: next token is also NEWLINE, skip without processing indentation.
+                // This prevents blank lines from triggering premature DEDENT in module/let/match bodies.
+                state <- { state with LineNum = state.LineNum + 1 }
+
             | Parser.NEWLINE col ->
                 // Look ahead to next non-NEWLINE token
                 let nextToken =
@@ -474,6 +479,11 @@ let filterPositioned (config: IndentConfig) (tokens: PositionedToken list) : Pos
 
         | Parser.NEWLINE _ when state.BracketDepth > 0 ->
             // Inside brackets: suppress INDENT/DEDENT, just advance line counter
+            state <- { state with LineNum = state.LineNum + 1 }
+
+        | Parser.NEWLINE _ when index + 1 < tokens.Length && (match tokens.[index + 1].Token with Parser.NEWLINE _ -> true | _ -> false) ->
+            // Blank line: next token is also NEWLINE, skip without processing indentation.
+            // This prevents blank lines from triggering premature DEDENT in module/let/match bodies.
             state <- { state with LineNum = state.LineNum + 1 }
 
         | Parser.NEWLINE col ->

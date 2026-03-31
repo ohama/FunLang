@@ -22,6 +22,7 @@ type TestArgs =
 type CliArgs =
     | [<AltCommandLine("-e")>] Expr of expression: string
     | Emit_Tokens
+    | Emit_Filtered_Tokens
     | Emit_Ast
     | Emit_Type
     | Check
@@ -36,6 +37,7 @@ with
             match this with
             | Expr _ -> "evaluate expression"
             | Emit_Tokens -> "show lexer tokens"
+            | Emit_Filtered_Tokens -> "show tokens after IndentFilter"
             | Emit_Ast -> "show parsed AST"
             | Emit_Type -> "show inferred type"
             | Check -> "type-check without executing"

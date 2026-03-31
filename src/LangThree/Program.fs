@@ -213,6 +213,17 @@ let main argv =
             with ex ->
                 eprintfn "Error: %s" ex.Message
                 1
+        // --emit-filtered-tokens with --expr
+        elif results.Contains Emit_Filtered_Tokens && results.Contains Expr then
+            let expr = results.GetResult Expr
+            try
+                let filtered = lexAndFilter expr "<expr>"
+                let tokenStrs = filtered |> List.map (fun pt -> formatToken pt.Token)
+                printfn "%s" (String.concat " " tokenStrs)
+                0
+            with ex ->
+                eprintfn "Error: %s" ex.Message
+                1
         // --emit-ast with --expr
         elif results.Contains Emit_Ast && results.Contains Expr then
             let expr = results.GetResult Expr
@@ -324,6 +335,22 @@ let main argv =
                     let input = File.ReadAllText filename
                     let tokens = lex input
                     printfn "%s" (formatTokens tokens)
+                    0
+                with ex ->
+                    eprintfn "Error: %s" ex.Message
+                    1
+            else
+                eprintfn "File not found: %s" filename
+                1
+        // --emit-filtered-tokens with file
+        elif results.Contains Emit_Filtered_Tokens && results.Contains File then
+            let filename = results.GetResult File
+            if File.Exists filename then
+                try
+                    let input = File.ReadAllText filename
+                    let filtered = lexAndFilter input filename
+                    let tokenStrs = filtered |> List.map (fun pt -> formatToken pt.Token)
+                    printfn "%s" (String.concat " " tokenStrs)
                     0
                 with ex ->
                     eprintfn "Error: %s" ex.Message
