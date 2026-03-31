@@ -1021,17 +1021,19 @@ let rec typeCheckDecls
 
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
-/// Returns Ok(warnings, CtorEnv, RecordEnv, modules, TypeEnv) on success, Error(Diagnostic) on type error.
+/// Returns Ok(warnings, CtorEnv, RecordEnv, ClassEnv, InstanceEnv, modules, TypeEnv) on success, Error(Diagnostic) on type error.
 let typeCheckModuleWithPrelude
-    (preludeCtorEnv: ConstructorEnv) (preludeRecEnv: RecordEnv) (preludeTypeEnv: TypeEnv)
+    (preludeCtorEnv: ConstructorEnv) (preludeRecEnv: RecordEnv)
+    (preludeClassEnv: ClassEnv) (preludeInstEnv: InstanceEnv)
+    (preludeTypeEnv: TypeEnv)
     (initialModules: Map<string, ModuleExports>)
     (m: Module)
-    : Result<Diagnostic list * ConstructorEnv * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
+    : Result<Diagnostic list * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
     try
         // Phase 42: Reset mutable variable tracking for each top-level type check
         Bidir.mutableVars <- Set.empty
         match m with
-        | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty)
+        | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
             // Check for circular module dependencies
             let depGraph = buildDependencyGraph decls
@@ -1045,12 +1047,12 @@ let typeCheckModuleWithPrelude
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
             let (typeEnv, ctorEnv, recEnv, modules, warnings) =
                 typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv initialModules
-            Ok (warnings, ctorEnv, recEnv, modules, typeEnv)
+            Ok (warnings, ctorEnv, recEnv, preludeClassEnv, preludeInstEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
 
 let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
-    match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty m with
-    | Ok (warnings, _ctorEnv, recEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
+    match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty Map.empty Map.empty m with
+    | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
     | Error e -> Error e
