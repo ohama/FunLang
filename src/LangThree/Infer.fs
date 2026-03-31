@@ -263,29 +263,42 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let s2, bodyTy = inferWithContext (InLetBody (name, span) :: ctx) bodyEnv body
         (compose s2 s1, bodyTy)
 
-    // === LetRec (INFER-09) ===
+    // === LetRec (INFER-09) - multi-binding mutual recursion ===
     | LetRec (bindings, inExpr, span) ->
-        // Mechanical List.head for single-binding compatibility (Plan 02 rewrites for multi-binding)
-        let (name, param, paramTyOpt, body, _bindingSpan) = List.head bindings
-        // Pre-bind function with fresh type for recursive calls
-        let funcTy = freshVar()
-        let paramTy =
-            match paramTyOpt with
-            | Some tyExpr -> elaborateTypeExpr tyExpr
-            | None -> freshVar()
-        let recEnv = Map.add name (Scheme ([], funcTy)) env
-        let bodyEnv = Map.add param (Scheme ([], paramTy)) recEnv
-        // Infer body type
-        let s1, bodyTy = inferWithContext (InLetRecBody (name, span) :: ctx) bodyEnv body
-        // Unify function type with inferred arrow
-        let s2 = unifyWithContext ctx [] span (apply s1 funcTy) (TArrow (apply s1 paramTy, bodyTy))
-        let s = compose s2 s1
-        // Generalize and add to env for expression
-        let env' = applyEnv s env
-        let scheme = generalize env' (apply s funcTy)
-        let exprEnv = Map.add name scheme env'
+        // 1. Create fresh type variables for each function
+        let funcTypes =
+            bindings |> List.map (fun (name, param, paramTyOpt, _, _) ->
+                let paramTy =
+                    match paramTyOpt with
+                    | Some tyExpr -> elaborateTypeExpr tyExpr
+                    | None -> freshVar()
+                let retTy = freshVar()
+                (name, param, TArrow(paramTy, retTy), paramTy))
+        // 2. Add ALL functions to env simultaneously (monomorphic)
+        let recEnv =
+            funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
+                Map.add name (Scheme([], funcTy)) acc) env
+        // 3. Infer each body in the extended env, unify with expected return type
+        let bodySubst =
+            List.map2 (fun (bindName, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
+                let bodyEnv = Map.add param (Scheme([], paramTy)) recEnv
+                let s, bodyTy = inferWithContext (InLetRecBody (bindName, bindSpan) :: ctx) bodyEnv body
+                let expectedRetTy =
+                    match apply s funcTy with
+                    | TArrow(_, ret) -> ret
+                    | t -> t
+                let s2 = unifyWithContext ctx [] span (apply s bodyTy) expectedRetTy
+                compose s2 s
+            ) bindings funcTypes
+            |> List.fold compose empty
+        // 4. Generalize all function types and extend env for inExpr
+        let env' = applyEnv bodySubst env
+        let exprEnv =
+            funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
+                let scheme = generalize env' (apply bodySubst funcTy)
+                Map.add name scheme acc) env'
         let s3, exprTy = inferWithContext ctx exprEnv inExpr
-        (compose s3 s, exprTy)
+        (compose s3 bodySubst, exprTy)
 
     // === Tuple (INFER-11) ===
     | Tuple (exprs, span) ->

@@ -1352,20 +1352,22 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
                 | _ -> ()
             result
 
-    // Let rec - recursive function definition
-    // Creates a self-referential closure using mutable ref (same as LetRecDecl).
-    // The naive FunctionValue approach breaks when LetRec is inside a lambda body:
-    // the trampoline loop re-applies the outer funcExpr, losing the self-binding.
+    // Let rec - mutual recursive function definitions via shared mutable env ref.
+    // Each function is a BuiltinValue that dereferences sharedEnvRef at call time,
+    // giving true mutual references without recursive AST wrapping.
     | LetRec (bindings, inExpr, _) ->
-        // Mechanical List.head for single-binding compatibility (Plan 02 rewrites for multi-binding)
-        let (name, param, _, funcBody, _bindingSpan) = List.head bindings
-        let envRef = ref env
-        let wrapper = BuiltinValue (fun argVal ->
-            let callEnv = Map.add param argVal !envRef
-            eval recEnv moduleEnv callEnv true funcBody)
-        let recEnv' = Map.add name wrapper env
-        envRef := recEnv'
-        eval recEnv moduleEnv recEnv' tailPos inExpr
+        let sharedEnvRef = ref env
+        let funcValues =
+            bindings |> List.map (fun (name, param, _, body, _) ->
+                let wrapper = BuiltinValue (fun argVal ->
+                    let callEnv = Map.add param argVal !sharedEnvRef
+                    eval recEnv moduleEnv callEnv true body)
+                (name, wrapper))
+        let mutualEnv =
+            funcValues |> List.fold (fun acc (name, v) ->
+                Map.add name v acc) env
+        sharedEnvRef := mutualEnv
+        eval recEnv moduleEnv mutualEnv tailPos inExpr
 
     // Phase 3 (Records): Record expression - create RecordValue with resolved type name
     | RecordExpr (_, fieldExprs, _) ->
