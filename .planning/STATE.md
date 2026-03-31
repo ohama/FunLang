@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 74: next phase
+**Current focus:** v10.0 Type Classes — Phase 74: Built-in Instances and Tests
 
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 73 of 74 (Dictionary Construction and Elaboration) — Complete
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-03-31 — Completed 73-02-PLAN.md (runtime flt tests for typeclass dispatch)
+Phase: 74 of 74 (Built-in Instances and Tests) — In progress
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-31 — Completed 74-01-PLAN.md (Show/Eq prelude instances + Prelude.fs elaboration fix)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [██████████░░░░░░░░░░] v10.0: ~60% (phases 70+71+72+73 complete)
+         [████████████░░░░░░░░] v10.0: ~75% (phases 70+71+72+73+74-01 complete)
 
 ## Performance Metrics
 
@@ -104,13 +104,21 @@ From Phase 73 Plan 02:
 - show is a first-class value passable to List.map (higher-order use confirmed at runtime)
 - 671 flt tests total after Phase 73 (was 668 after Phase 73-01)
 
+From Phase 74 Plan 01:
+- Prelude/Typeclass.fun: Show and Eq classes + instances for int/bool/string/char; loads alphabetically after StringBuilder.fun
+- Prelude.fs: loadPrelude and loadAndEvalFileImpl both call Elaborate.elaborateTypeclasses before Eval.evalModuleDecls
+- TypeCheck: TypeClassDecl redeclaration is idempotent — if class already in classEnv (from prelude), skip silently; duplicate instances still raise E0702
+- Polymorphic instances (list 'a, Option 'a) NOT supported: instance resolution uses exact type equality; TList(TVar 0) != TList TInt; needs unification-based lookup (deferred)
+- show 'x' returns "'x'" (with single quotes) — to_string delegates to formatValue for CharValue
+- 671 tests still pass after updating 3 typeclass inference tests to use prelude Show
+
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 73-02-PLAN.md (runtime flt tests for typeclass method dispatch)
+Stopped at: Completed 74-01-PLAN.md (Show/Eq prelude instances + Prelude.fs elaboration fix)
 Resume file: None
-Next action: Execute Phase 74
+Next action: Execute Phase 74 Plan 02
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 73 complete — elaborateTypeclasses + runtime flt tests; 671/671 tests passing)*
+*Last updated: 2026-03-31 (phase 74 plan 01 — Show/Eq prelude instances; 671/671 tests passing)*
