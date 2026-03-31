@@ -816,6 +816,8 @@ let rec typeCheckDecls
                 // Type check the let binding (with module-resolved body)
                 let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
                 let ty' = apply s ty
+                // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+                Bidir.applySubstToConstraints s
                 let scheme = generalize (applyEnv s env) ty'
                 let env' = Map.add name scheme env
                 // Collect match warnings from this let body
@@ -831,6 +833,8 @@ let rec typeCheckDecls
                     else mergeModuleExportsForTypeCheck mods refsInBody env cEnv rEnv
                 let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
                 let ty' = apply s ty
+                // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+                Bidir.applySubstToConstraints s
                 // NO generalization -- mutable variables must be monomorphic
                 let scheme = Scheme([], [], ty')
                 let env' = Map.add name scheme env
@@ -849,6 +853,8 @@ let rec typeCheckDecls
                 let patEnv, patTy = Infer.inferPattern cEnv pat
                 let s2 = Unify.unify (apply s valueTy) patTy
                 let s' = compose s2 s
+                // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+                Bidir.applySubstToConstraints s'
                 let env' = applyEnv s' env
                 let generalizedPatEnv =
                     patEnv |> Map.map (fun _ (Scheme(_, _, ty)) ->
@@ -898,6 +904,8 @@ let rec typeCheckDecls
 
                 // 4. Generalize all function types and add to env
                 let env' = applyEnv finalSubst env
+                // Apply final substitution to pending constraints so TVar refs are resolved (Phase 72)
+                Bidir.applySubstToConstraints finalSubst
                 let env'' =
                     funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
                         let resolvedTy = apply finalSubst funcTy

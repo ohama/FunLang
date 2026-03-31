@@ -262,6 +262,8 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     | Let (name, value, body, span) ->
         let s1, valueTy = synth ctorEnv recEnv (InLetRhs (name, span) :: ctx) env value
         let env' = applyEnv s1 env
+        // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+        applySubstToConstraints s1
         let scheme = generalize env' (apply s1 valueTy)
         let bodyEnv = Map.add name scheme env'
         let s2, bodyTy = synth ctorEnv recEnv (InLetBody (name, span) :: ctx) bodyEnv body
@@ -405,6 +407,8 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             |> List.fold compose empty
         // 4. Generalize all function types and extend env for inExpr
         let env' = applyEnv bodySubst env
+        // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+        applySubstToConstraints bodySubst
         let exprEnv =
             funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
                 let scheme = generalize env' (apply bodySubst funcTy)
@@ -849,6 +853,8 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let patEnv, patTy = inferPattern ctorEnv pat
         let s2 = unifyWithContext ctx [] span (apply s1 valueTy) patTy
         let s = compose s2 s1
+        // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
+        applySubstToConstraints s
         let env' = applyEnv s env
         let generalizedPatEnv =
             patEnv
