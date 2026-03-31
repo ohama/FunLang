@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 73: Dictionary Passing
+**Current focus:** v10.0 Type Classes — Phase 74: next phase
 
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 73 of 74 (Dictionary Construction and Elaboration) — In progress
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-31 — Completed 73-01-PLAN.md (elaborateTypeclasses pass + Program.fs wiring)
+Phase: 73 of 74 (Dictionary Construction and Elaboration) — Complete
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-03-31 — Completed 73-02-PLAN.md (runtime flt tests for typeclass dispatch)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [█████████░░░░░░░░░░░] v10.0: ~55% (phases 70+71+72+73-plan1 complete)
+         [██████████░░░░░░░░░░] v10.0: ~60% (phases 70+71+72+73 complete)
 
 ## Performance Metrics
 
@@ -98,13 +98,19 @@ From Phase 73 Plan 01:
 - Prelude.fs call sites NOT updated: prelude files contain no InstanceDecl
 - Method names bound directly without mangling (last-wins shadowing for multiple instances; MVP acceptable)
 
+From Phase 73 Plan 02:
+- Runtime flt test pattern: typeclass + instance + let result = <expr>, no --check flag, Stdout matches formatValue output
+- StringValue prints with surrounding quotes (e.g., show 42 -> "42"); ListValue of StringValues prints as ["1"; "2"; "3"]
+- show is a first-class value passable to List.map (higher-order use confirmed at runtime)
+- 671 flt tests total after Phase 73 (was 668 after Phase 73-01)
+
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 73-01-PLAN.md (elaborateTypeclasses + Program.fs wiring)
+Stopped at: Completed 73-02-PLAN.md (runtime flt tests for typeclass method dispatch)
 Resume file: None
-Next action: Execute Phase 73 Plan 02 (integration tests for runtime typeclass method dispatch)
+Next action: Execute Phase 74
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 73 plan 1 complete — elaborateTypeclasses added, runtime typeclass dispatch working)*
+*Last updated: 2026-03-31 (phase 73 complete — elaborateTypeclasses + runtime flt tests; 671/671 tests passing)*
