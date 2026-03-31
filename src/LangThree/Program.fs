@@ -188,8 +188,9 @@ let main argv =
                                             | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
                                             | EmptyModule _ -> []
                                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
+                                        let elaboratedDecls = Elaborate.elaborateTypeclasses moduleDecls
                                         let _finalEnv, _moduleEnv =
-                                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv moduleDecls
+                                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv elaboratedDecls
                                         eprintfn "OK: %s" target.Name
                             with ex ->
                                 eprintfn "Error in %s: %s" target.Name ex.Message
@@ -406,10 +407,11 @@ let main argv =
                         else
                         // Evaluate module declarations with module-aware pipeline
                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
+                        let elaboratedDecls = Elaborate.elaborateTypeclasses moduleDecls
                         let finalEnv, moduleEnv =
-                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv moduleDecls
+                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv elaboratedDecls
                         // Print the last let binding's value (look up from env to avoid re-evaluating side effects)
-                        match moduleDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
+                        match elaboratedDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
                         | Some lastName ->
                             match Map.tryFind lastName finalEnv with
                             | Some result -> printfn "%s" (formatValue result)
