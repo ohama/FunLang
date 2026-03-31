@@ -257,6 +257,7 @@ false
 $ cat mod_typeclass.l3
 module Shapes =
     type Shape = | Circle | Square | Triangle
+
     instance Show Shape =
         let show s =
             match s with

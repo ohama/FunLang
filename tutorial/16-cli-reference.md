@@ -150,14 +150,14 @@ $ langthree --emit-type --expr 'fun f -> fun x -> f x'
 
 ## 토큰 출력
 
-`--emit-tokens`로 렉서 출력을 확인합니다:
+`--emit-tokens`로 렉서의 원시 토큰을 확인합니다 (IndentFilter 적용 전):
 
 ```
 $ langthree --emit-tokens --expr '1 + 2'
 NUMBER(1) PLUS NUMBER(2) EOF
 ```
 
-파일 모드에서는 IndentFilter가 들여쓰기를 토큰으로 처리합니다:
+파일 모드에서는 `NEWLINE(n)` 토큰이 각 줄의 들여쓰기 수준을 나타냅니다:
 
 ```
 $ cat tokens_demo.l3
@@ -169,9 +169,101 @@ $ langthree --emit-tokens tokens_demo.l3
 LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBER(2) NEWLINE(0) EOF
 ```
 
-`NEWLINE(n)` 토큰은 각 줄 시작의 들여쓰기 수준을 나타냅니다.
-들여쓰기 문제를 디버깅하는 데 유용합니다 -- 프로그램이 파일 모드에서 파싱에 실패할 때,
-토큰 출력을 통해 IndentFilter가 공백을 어떻게 해석하는지 확인할 수 있습니다.
+## 필터된 토큰 출력
+
+`--emit-filtered-tokens`로 IndentFilter를 거친 토큰을 확인합니다. `NEWLINE(n)`이 `INDENT`/`DEDENT`/`IN`/`SEMICOLON`으로 변환된 결과를 볼 수 있습니다:
+
+```
+$ cat filtered_demo.l3
+module M =
+    let x = 1
+    let y = 2
+let result = M.x + M.y
+
+$ langthree --emit-filtered-tokens filtered_demo.l3
+MODULE IDENT(M) EQUALS INDENT LET IDENT(x) EQUALS NUMBER(1) LET IDENT(y) EQUALS NUMBER(2) DEDENT LET IDENT(result) EQUALS IDENT(M) DOT IDENT(x) PLUS IDENT(M) DOT IDENT(y) EOF
+```
+
+들여쓰기 관련 파싱 문제를 디버깅할 때 유용합니다. `--emit-tokens`는 렉서의 원시 출력을 보여주고, `--emit-filtered-tokens`는 파서가 실제로 받는 토큰 스트림을 보여줍니다.
+
+## 타입 체크만 수행
+
+`--check`는 파일을 타입 체크하지만 실행하지 않습니다. `open`으로 임포트된 파일도 모두 포함됩니다:
+
+```
+$ cat good.l3
+let x = 1 + 2
+let y = x * 3
+
+$ langthree --check good.l3
+OK (0 warnings)
+```
+
+타입 오류가 있으면 에러 메시지만 출력하고 종료합니다:
+
+```
+$ cat bad.l3
+let x = 1 + "hello"
+
+$ langthree --check bad.l3
+error[E0301]: Type mismatch: expected int but got string
+ --> bad.l3:1:6-18
+   = hint: Check that all branches of your expression return the same type
+```
+
+CI/CD 파이프라인이나 에디터 통합에서 코드를 실행하지 않고 검증할 때 유용합니다.
+
+## 의존성 트리
+
+`--deps`는 파일의 임포트 의존성 트리를 출력합니다:
+
+```
+$ langthree --deps main.l3
+main.l3
+  lib/math.fun
+    lib/helpers.fun
+  utils/format.fun
+    lib/math.fun (cached)
+```
+
+순환 의존성이 있으면 감지하여 보고합니다.
+
+## Prelude 경로 설정
+
+`--prelude`로 Prelude 디렉토리 경로를 지정합니다:
+
+```
+$ langthree --prelude /path/to/my/Prelude myfile.l3
+```
+
+Prelude 경로 우선순위: `--prelude` > `LANGTHREE_PRELUDE` 환경 변수 > `funproj.toml` 설정 > 자동 탐색.
+
+## 프로젝트 빌드
+
+`funproj.toml` 파일이 있는 디렉토리에서 `build`와 `test` 서브커맨드를 사용할 수 있습니다:
+
+```
+$ langthree build          # 모든 [[executable]] 타겟 타입 체크
+$ langthree build myapp    # 특정 타겟만 타입 체크
+$ langthree test           # 모든 [[test]] 타겟 실행
+$ langthree test mytest    # 특정 테스트만 실행
+```
+
+`funproj.toml` 형식:
+
+```toml
+[project]
+name = "myproject"
+prelude = "Prelude"
+
+[[executable]]
+name = "myapp"
+main = "src/main.l3"
+
+[[test]]
+name = "mytest"
+main = "tests/test.l3"
+```
 
 ## REPL
 
@@ -202,7 +294,13 @@ REPL은 한 줄 표현식을 평가합니다 (`--expr` 모드와 동일). 바인
 | `--expr` | 표현식 평가 | 표현식 결과 | N/A |
 | `--emit-ast` | 파싱된 AST 표시 | 표현식의 AST | 모든 선언 |
 | `--emit-type` | 추론된 타입 표시 | 표현식의 타입 | 모든 바인딩 타입 |
-| `--emit-tokens` | 렉서 토큰 표시 | 원시 토큰 | IndentFilter 적용 토큰 |
+| `--emit-tokens` | 렉서 원시 토큰 표시 | 원시 토큰 | NEWLINE(n) 포함 |
+| `--emit-filtered-tokens` | 필터된 토큰 표시 | 필터된 토큰 | INDENT/DEDENT/IN 포함 |
+| `--check` | 타입 체크만 (실행 안 함) | N/A | 오류/경고 출력 |
+| `--deps` | 의존성 트리 표시 | N/A | 임포트 트리 |
+| `--prelude` | Prelude 경로 지정 | 적용 | 적용 |
+| `build [name]` | 프로젝트 타입 체크 | N/A | funproj.toml |
+| `test [name]` | 프로젝트 테스트 실행 | N/A | funproj.toml |
 | *(인자 없음)* | REPL 대화형 세션 | 줄 단위 평가 | N/A |
 
 진단 플래그는 `--expr` 또는 파일 이름과 함께 사용합니다:

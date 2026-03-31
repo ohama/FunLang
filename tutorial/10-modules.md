@@ -282,6 +282,27 @@ Error: Circular module dependency: a.fun → b.fun → a.fun
 
 의존성 그래프는 항상 단방향이어야 합니다.
 
+## 빈 줄과 가독성
+
+모듈 본문 안에서 선언 사이에 빈 줄을 넣어 코드를 논리적으로 구분할 수 있습니다:
+
+```
+$ cat readable.l3
+module Config =
+    let host = "localhost"
+    let port = 5432
+
+    let maxRetries = 3
+    let timeout = 30
+
+let result = Config.host + ":" + to_string Config.port
+
+$ langthree readable.l3
+"localhost:5432"
+```
+
+빈 줄은 모듈 본문뿐 아니라, `let` 본문이나 `match` 표현식 안에서도 허용됩니다. F#과 동일한 관례로, 관련 있는 선언을 그룹화하고 논리적 단위 사이에 빈 줄을 넣으면 읽기 좋은 코드가 됩니다.
+
 ## 모듈과 타입 클래스
 
 모듈 안에서 타입 클래스 인스턴스를 선언할 수 있습니다. 타입과 그에 대한 인스턴스를 하나의 모듈로 캡슐화하는 것은 일반적인 패턴입니다:
@@ -290,6 +311,7 @@ Error: Circular module dependency: a.fun → b.fun → a.fun
 $ cat mod_tc.l3
 module Colors =
     type Color = | Red | Green | Blue
+
     instance Show Color =
         let show c =
             match c with
@@ -309,6 +331,7 @@ $ langthree mod_tc.l3
 ## 참고 사항
 
 - **들여쓰기 기반:** 모듈 본문은 들여쓰기로 구분되며, `end`나 `}`가 아님
+- **빈 줄 허용:** 모듈 본문, let 본문, match 안에서 빈 줄로 코드를 구분할 수 있음
 - **위에서 아래 순서:** 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)
 - **`module M =`** 은 중첩 모듈에 `=`을 사용; 최상위 `namespace`는 `=`이 없음
 - **타입 클래스 인스턴스:** 모듈 안에 선언해도 전역적으로 동작 ([23장](23-typeclasses.md) 참조)
