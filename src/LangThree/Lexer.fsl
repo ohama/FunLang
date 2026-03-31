@@ -95,11 +95,15 @@ rule tokenize = parse
     | "to"          { TO }
     | "downto"      { DOWNTO }
     | "do"          { DO }
+    // Phase 71 (Type Classes): typeclass/instance keywords
+    | "typeclass"   { TYPECLASS }
+    | "instance"    { INSTANCE }
     // Phase 1 (v3.0): Wildcard pattern (must come before identifier)
     | '_'           { UNDERSCORE }
     // Phase 29: Char literals - MUST come before type_var rule (longest match wins: 'A' > 'a)
     | '\'' '\\' 'n' '\''     { CHAR '\n' }
     | '\'' '\\' 't' '\''     { CHAR '\t' }
+    | '\'' '\\' 'r' '\''     { CHAR '\r' }
     | '\'' '\\' '\\' '\''    { CHAR '\\' }
     | '\'' '\\' '\'' '\''    { CHAR '\'' }
     | '\'' [^ '\'' '\\'] '\'' { CHAR ((lexeme lexbuf).[1]) }
@@ -126,6 +130,8 @@ rule tokenize = parse
     | "<<"          { COMPOSE_LEFT }
     // Phase 3 (Records-06): Field assignment operator
     | "<-"          { LARROW }
+    // Phase 71 (Type Classes): Fat arrow for constraint annotation (BEFORE catch-all op_char rule)
+    | "=>"          { FATARROW }
     // Comments: don't consume newline so it triggers NEWLINE token
     | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment (newline handled separately)
     | "(*"          { block_comment 1 lexbuf }   // Start block comment, depth=1
@@ -183,6 +189,7 @@ and read_string buf = parse
     | '"'           { STRING (buf.ToString()) }
     | "\\n"         { buf.Append('\n') |> ignore; read_string buf lexbuf }
     | "\\t"         { buf.Append('\t') |> ignore; read_string buf lexbuf }
+    | "\\r"         { buf.Append('\r') |> ignore; read_string buf lexbuf }
     | "\\\\"        { buf.Append('\\') |> ignore; read_string buf lexbuf }
     | "\\\""        { buf.Append('\"') |> ignore; read_string buf lexbuf }
     | newline       { failwith "Newline in string literal" }

@@ -981,6 +981,12 @@ let rec typeCheckDecls
                 let mods' = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
                 (env', cEnv', rEnv', mods', warns)
 
+            // Phase 71 (Type Classes): stubs — Phase 72 will implement these
+            | TypeClassDecl(name, _, _, span) ->
+                failwithf "TypeClassDecl '%s' at %s not yet implemented in type checker" name (Ast.formatSpan span)
+            | InstanceDecl(name, _, _, span) ->
+                failwithf "InstanceDecl '%s' at %s not yet implemented in type checker" name (Ast.formatSpan span)
+
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope
                 let (env', cEnv'', rEnv'', mods', innerWarns) =

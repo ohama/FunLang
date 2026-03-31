@@ -68,6 +68,10 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
         let (revTypes, finalVars) = List.fold folder ([], vars) args
         (TData(canonical, List.rev revTypes), finalVars)
 
+    | TEConstrained _ ->
+        // Phase 71 (Type Classes): constrained type elaboration — Phase 72 will implement
+        failwith "TEConstrained not yet implemented in elaboration"
+
 /// Elaborate single type expression with fresh scope
 /// Each call starts with empty type variable environment
 let elaborateTypeExpr (te: TypeExpr): Type =
@@ -96,6 +100,10 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
         let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
         TData(canonical, List.map (substTypeExprWithMap paramMap) args)
 
+    | Ast.TEConstrained _ ->
+        // Phase 71 (Type Classes): constrained type substitution — Phase 72 will implement
+        failwith "TEConstrained not yet implemented in substTypeExprWithMap"
+
 /// Collect all TEVar names from a TypeExpr (for detecting constructor-local type variables)
 let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
     match te with
@@ -105,6 +113,10 @@ let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
     | Ast.TEArrow(t1, t2) -> Set.union (collectTypeExprVars t1) (collectTypeExprVars t2)
     | Ast.TETuple ts -> ts |> List.map collectTypeExprVars |> Set.unionMany
     | Ast.TEData(_, args) -> args |> List.map collectTypeExprVars |> Set.unionMany
+    | Ast.TEConstrained(constraints, ty) ->
+        // Phase 71 (Type Classes): collect vars from constrained type
+        let constraintVars = constraints |> List.map (fun (_, tv) -> collectTypeExprVars tv) |> Set.unionMany
+        Set.union constraintVars (collectTypeExprVars ty)
 
 /// Elaborate a type declaration into ConstructorEnv entries
 /// Example: type Option 'a = None | Some of 'a

@@ -169,6 +169,8 @@ and TypeExpr =
     | TEVar of string                     // 'a, 'b (includes apostrophe)
     | TEName of string                    // Named type: Tree, Option, etc. (Phase 2 ADT-01)
     | TEData of name: string * args: TypeExpr list  // Parameterized named type: int expr, 'a option (Phase 4 GADT)
+    // Phase 71 (Type Classes): Constrained type: Show 'a => 'a -> string
+    | TEConstrained of constraints: (string * TypeExpr) list * TypeExpr
 
 /// Type declaration AST for algebraic data types (discriminated unions)
 /// Phase 2 (ADT-01): F# discriminated union syntax
@@ -362,6 +364,9 @@ type Decl =
     | FileImportDecl of path: string * Span
     // Phase 42 (Mutable Variables): Module-level mutable variable declaration
     | LetMutDecl of name: string * body: Expr * Span
+    // Phase 71 (Type Classes): Typeclass and instance declarations
+    | TypeClassDecl of className: string * typeVar: string * methods: (string * TypeExpr) list * Span
+    | InstanceDecl of className: string * instanceType: TypeExpr * methods: (string * Expr) list * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -386,6 +391,8 @@ let declSpanOf (decl: Decl) : Span =
     | LetRecDecl(_, s) -> s
     | FileImportDecl(_, s) -> s
     | LetMutDecl(_, _, s) -> s
+    | TypeClassDecl(_, _, _, s) -> s
+    | InstanceDecl(_, _, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =

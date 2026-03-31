@@ -76,6 +76,8 @@ let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
 %token EXCEPTION RAISE TRY WHEN
 // Phase 46 (Loop Constructs): Loop keywords
 %token WHILE FOR TO DOWNTO DO
+// Phase 71 (Type Classes): typeclass/instance tokens
+%token TYPECLASS INSTANCE FATARROW
 // Phase 9 (Pipe & Composition): Pipe and composition operator tokens
 %token PIPE_RIGHT COMPOSE_RIGHT COMPOSE_LEFT
 // Phase 19 (User-Defined Operators): INFIXOP tokens (payload is operator string)
@@ -511,7 +513,18 @@ AnnotParam:
 //   Arrow (lowest) -> Tuple -> Atomic (highest)
 
 TypeExpr:
-    | ArrowType                     { $1 }
+    // Phase 71 (Type Classes): Constrained type: Show 'a => 'a -> string
+    | ConstraintList FATARROW ArrowType  { TEConstrained($1, $3) }
+    | ArrowType                          { $1 }
+
+// Phase 71 (Type Classes): Constraint list for type annotations
+ConstraintList:
+    | Constraint                         { [$1] }
+    | Constraint COMMA ConstraintList    { $1 :: $3 }
+
+// Phase 71 (Type Classes): Single constraint: ClassName TypeVar
+Constraint:
+    | IDENT TYPE_VAR                     { ($1, TEVar($2)) }
 
 // Arrow is right-associative: int -> int -> int = int -> (int -> int)
 ArrowType:
@@ -680,6 +693,16 @@ Decls:
         { [FileImportDecl($2, ruleSpan parseState 1 2)] }
     | OPEN STRING Decls
         { FileImportDecl($2, ruleSpan parseState 1 2) :: $3 }
+    // Phase 71 (Type Classes): typeclass declaration
+    | TYPECLASS IDENT TYPE_VAR EQUALS INDENT TypeClassMethodList DEDENT
+        { [TypeClassDecl($2, $3, $6, ruleSpan parseState 1 7)] }
+    | TYPECLASS IDENT TYPE_VAR EQUALS INDENT TypeClassMethodList DEDENT Decls
+        { TypeClassDecl($2, $3, $6, ruleSpan parseState 1 7) :: $8 }
+    // Phase 71 (Type Classes): instance declaration
+    | INSTANCE IDENT AtomicType EQUALS INDENT InstanceMethodList DEDENT
+        { [InstanceDecl($2, $3, $6, ruleSpan parseState 1 7)] }
+    | INSTANCE IDENT AtomicType EQUALS INDENT InstanceMethodList DEDENT Decls
+        { InstanceDecl($2, $3, $6, ruleSpan parseState 1 7) :: $8 }
 
 // Decl: Single top-level declaration
 // Top-level declarations must be at column 0
@@ -760,6 +783,27 @@ MixedParamList:
 MixedParam:
     | IDENT                                     { Choice1Of2 $1 }
     | LPAREN IDENT COLON TypeExpr RPAREN        { Choice2Of2 ($2, $4) }
+
+// Phase 71 (Type Classes): typeclass method signatures
+TypeClassMethodList:
+    | TypeClassMethod                           { [$1] }
+    | TypeClassMethod TypeClassMethodList       { $1 :: $2 }
+
+TypeClassMethod:
+    | IDENT COLON TypeExpr                      { ($1, $3) }
+
+// Phase 71 (Type Classes): instance method definitions
+InstanceMethodList:
+    | InstanceMethod                            { [$1] }
+    | InstanceMethod InstanceMethodList         { $1 :: $2 }
+
+InstanceMethod:
+    | LET IDENT ParamList EQUALS SeqExpr
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 5)) $3 $5
+          ($2, lambda) }
+    | LET IDENT ParamList EQUALS INDENT SeqExpr DEDENT
+        { let lambda = List.foldBack (fun param body -> Lambda(param, body, ruleSpan parseState 1 7)) $3 $6
+          ($2, lambda) }
 
 // Phase 3 (Records): Record type declaration
 RecordDeclaration:

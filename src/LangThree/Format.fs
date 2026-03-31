@@ -89,6 +89,10 @@ let formatToken (token: Parser.token) : string =
     | Parser.TO -> "TO"
     | Parser.DOWNTO -> "DOWNTO"
     | Parser.DO -> "DO"
+    // Phase 71 (Type Classes): typeclass/instance tokens
+    | Parser.TYPECLASS -> "TYPECLASS"
+    | Parser.INSTANCE -> "INSTANCE"
+    | Parser.FATARROW -> "FATARROW"
     // Phase 9 (Pipe & Composition): Pipe and composition tokens
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
@@ -251,6 +255,10 @@ and formatTypeExpr (te: Ast.TypeExpr) : string =
     | Ast.TEData (name, args) ->
         let formatted = args |> List.map formatTypeExpr |> String.concat ", "
         sprintf "TEData (\"%s\", [%s])" name formatted
+    // Phase 71 (Type Classes): constrained type rendering
+    | Ast.TEConstrained(constraints, ty) ->
+        let cs = constraints |> List.map (fun (cls, tv) -> sprintf "%s %s" cls (formatTypeExpr tv)) |> String.concat ", "
+        sprintf "TEConstrained ([%s], %s)" cs (formatTypeExpr ty)
 
 /// Format Pattern as string
 and formatPattern (pat: Ast.Pattern) : string =
@@ -345,6 +353,14 @@ let rec formatDecl (decl: Ast.Decl) : string =
 
     | Ast.LetMutDecl(name, body, _) ->
         sprintf "LetMutDecl (\"%s\", %s)" name (formatAst body)
+
+    // Phase 71 (Type Classes): render new decl nodes
+    | Ast.TypeClassDecl(className, typeVar, methods, _) ->
+        let methodsStr = methods |> List.map (fun (name, ty) -> sprintf "%s : %s" name (formatTypeExpr ty)) |> String.concat ", "
+        sprintf "TypeClassDecl \"%s\" %s [%s]" className typeVar methodsStr
+    | Ast.InstanceDecl(className, instType, methods, _) ->
+        let methodsStr = methods |> List.map (fun (name, body) -> sprintf "%s = %s" name (formatAst body)) |> String.concat ", "
+        sprintf "InstanceDecl \"%s\" %s [%s]" className (formatTypeExpr instType) methodsStr
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =

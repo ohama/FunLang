@@ -1694,6 +1694,11 @@ let rec evalModuleDecls
         | TypeAliasDecl _ ->
             // Type aliases are purely a type-level feature, no runtime behavior
             (env, modEnv)
+        // Phase 71 (Type Classes): stubs — Phase 72 will implement these
+        | TypeClassDecl(name, _, _, _) ->
+            failwithf "TypeClassDecl '%s' not yet implemented in evaluator" name
+        | InstanceDecl(name, _, _, _) ->
+            failwithf "InstanceDecl '%s' not yet implemented in evaluator" name
         | FileImportDecl(path, _span) ->
             // Use currentEvalFile for path resolution (span.FileName may be empty due to
             // fsyacc position tracking using lexbuf.StartPos which isn't updated in filtered-token mode)
