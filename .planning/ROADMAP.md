@@ -12,7 +12,7 @@ v8.1 completes the mutual recursion story: first by fixing the LetRecDecl AST to
 ## Phases
 
 - [x] **Phase 65: LetRecDecl AST Refactoring** - Preserve first param type info in mutual recursion bindings
-- [ ] **Phase 66: Expression-Level Mutual Recursion** - Full `let rec ... and ... in expr` support
+- [x] **Phase 66: Expression-Level Mutual Recursion** - Full `let rec ... and ... in expr` support
 
 ## Phase Details
 
@@ -44,12 +44,12 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 66-01-PLAN.md — AST node change + parser grammar + mechanical pattern-match fixes
-- [ ] 66-02-PLAN.md — Type checking/eval logic for multi-binding + flt tests
+- [x] 66-01-PLAN.md — AST node change + parser grammar + mechanical pattern-match fixes
+- [x] 66-02-PLAN.md — Type checking/eval logic for multi-binding + flt tests
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 65. LetRecDecl AST Refactoring | 2/2 | ✓ Complete | 2026-03-31 |
-| 66. Expression-Level Mutual Recursion | 0/2 | Not started | - |
+| 66. Expression-Level Mutual Recursion | 2/2 | ✓ Complete | 2026-03-31 |

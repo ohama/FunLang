@@ -13,12 +13,12 @@
 
 ### Expression-Level Mutual Recursion
 
-- [ ] **EXPR-01**: Expression-level `let rec ... and ... in expr` AST 노드 추가
-- [ ] **EXPR-02**: Parser에 expression-level `let rec f x = ... and g y = ... in expr` 문법 규칙 추가
-- [ ] **EXPR-03**: Bidir.fs에서 expression-level mutual recursion 타입 체킹 — 모든 바인딩을 동시에 환경에 추가 후 각 바디 체크
-- [ ] **EXPR-04**: Eval.fs에서 expression-level mutual recursion 평가 — 상호 재귀 클로저 환경 연결
-- [ ] **EXPR-05**: Expression-level mutual recursion에서 MixedParamList + 반환 타입 어노테이션 지원
-- [ ] **EXPR-06**: flt 테스트 — expression-level mutual recursion 기본, 타입 어노테이션 조합, 3개 이상 바인딩
+- [x] **EXPR-01**: Expression-level `let rec ... and ... in expr` AST 노드 추가
+- [x] **EXPR-02**: Parser에 expression-level `let rec f x = ... and g y = ... in expr` 문법 규칙 추가
+- [x] **EXPR-03**: Bidir.fs에서 expression-level mutual recursion 타입 체킹 — 모든 바인딩을 동시에 환경에 추가 후 각 바디 체크
+- [x] **EXPR-04**: Eval.fs에서 expression-level mutual recursion 평가 — 상호 재귀 클로저 환경 연결
+- [x] **EXPR-05**: Expression-level mutual recursion에서 MixedParamList + 반환 타입 어노테이션 지원
+- [x] **EXPR-06**: flt 테스트 — expression-level mutual recursion 기본, 타입 어노테이션 조합, 3개 이상 바인딩
 
 ## Out of Scope
 
@@ -34,12 +34,12 @@
 | AST-01 | Phase 65 | Complete |
 | AST-02 | Phase 65 | Complete |
 | AST-03 | Phase 65 | Complete |
-| EXPR-01 | Phase 66 | Pending |
-| EXPR-02 | Phase 66 | Pending |
-| EXPR-03 | Phase 66 | Pending |
-| EXPR-04 | Phase 66 | Pending |
-| EXPR-05 | Phase 66 | Pending |
-| EXPR-06 | Phase 66 | Pending |
+| EXPR-01 | Phase 66 | Complete |
+| EXPR-02 | Phase 66 | Complete |
+| EXPR-03 | Phase 66 | Complete |
+| EXPR-04 | Phase 66 | Complete |
+| EXPR-05 | Phase 66 | Complete |
+| EXPR-06 | Phase 66 | Complete |
 
 **Coverage:**
 - v8.1 requirements: 9 total
