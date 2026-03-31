@@ -31,20 +31,20 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AST-01 | — | Pending |
-| AST-02 | — | Pending |
-| AST-03 | — | Pending |
-| EXPR-01 | — | Pending |
-| EXPR-02 | — | Pending |
-| EXPR-03 | — | Pending |
-| EXPR-04 | — | Pending |
-| EXPR-05 | — | Pending |
-| EXPR-06 | — | Pending |
+| AST-01 | Phase 65 | Pending |
+| AST-02 | Phase 65 | Pending |
+| AST-03 | Phase 65 | Pending |
+| EXPR-01 | Phase 66 | Pending |
+| EXPR-02 | Phase 66 | Pending |
+| EXPR-03 | Phase 66 | Pending |
+| EXPR-04 | Phase 66 | Pending |
+| EXPR-05 | Phase 66 | Pending |
+| EXPR-06 | Phase 66 | Pending |
 
 **Coverage:**
 - v8.1 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
