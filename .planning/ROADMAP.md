@@ -33,7 +33,9 @@ v9.1 fixes the AST Span zeroing bug where all position information is lost throu
   3. IndentFilter processes PositionedToken list, preserving positions and assigning positions to inserted tokens
   4. parseModuleFromString updates lexbuf.StartPos/EndPos before returning each token to the parser
   5. Error messages from type checker show correct file:line:column (not :0:0:)
-**Plans**: TBD
+**Plans:** 1 plans
+Plans:
+- [ ] 69-01-PLAN.md — PositionedToken pipeline: type definition, IndentFilter update, lexbuf position propagation
 
 ## Progress
 
@@ -41,4 +43,4 @@ v9.1 fixes the AST Span zeroing bug where all position information is lost throu
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 69. Span Position Fix | 0/TBD | Not started | - |
+| 69. Span Position Fix | 0/1 | Not started | - |
