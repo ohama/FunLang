@@ -2,6 +2,17 @@ module LangThree.IndentFilter
 
 open Parser
 
+/// A token together with the source position at which it appeared
+type PositionedToken = {
+    Token: Parser.token
+    StartPos: FSharp.Text.Lexing.Position
+    EndPos: FSharp.Text.Lexing.Position
+}
+
+/// Create a positioned token by copying positions from a reference token
+let withPosOf (ref: PositionedToken) (tok: Parser.token) : PositionedToken =
+    { Token = tok; StartPos = ref.StartPos; EndPos = ref.EndPos }
+
 /// Configuration for indent processing
 type IndentConfig = {
     IndentWidth: int  // Expected indent width (2, 4, or 8)
@@ -430,3 +441,187 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
 
             index <- index + 1
     }
+
+/// Filter a PositionedToken stream, converting NEWLINE(col) to INDENT/DEDENT while preserving positions.
+/// Synthetic tokens (INDENT, DEDENT, SEMICOLON, IN) receive the position of the most recent real token.
+let filterPositioned (config: IndentConfig) (tokens: PositionedToken list) : PositionedToken list =
+    let result = System.Collections.Generic.List<PositionedToken>()
+    let mutable state = initialState
+    let mutable lastRealToken = { Token = Parser.EOF; StartPos = FSharp.Text.Lexing.Position.Empty; EndPos = FSharp.Text.Lexing.Position.Empty }
+    let mutable index = 0
+
+    while index < tokens.Length do
+        let pt = tokens.[index]
+        let token = pt.Token
+
+        match token with
+        | Parser.LBRACKET | Parser.LPAREN | Parser.LBRACE | Parser.DOTLBRACKET ->
+            lastRealToken <- pt
+            state <- { state with BracketDepth = state.BracketDepth + 1; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.RBRACKET | Parser.RPAREN | Parser.RBRACE ->
+            lastRealToken <- pt
+            state <- { state with BracketDepth = max 0 (state.BracketDepth - 1); PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.NEWLINE _ when state.BracketDepth > 0 ->
+            // Inside brackets: suppress INDENT/DEDENT, just advance line counter
+            state <- { state with LineNum = state.LineNum + 1 }
+
+        | Parser.NEWLINE col ->
+            // Look ahead to next non-NEWLINE token
+            let nextToken =
+                tokens
+                |> List.skip (index + 1)
+                |> List.tryFind (fun p -> match p.Token with Parser.NEWLINE _ -> false | _ -> true)
+                |> Option.map (fun p -> p.Token)
+
+            let (newState_, emitted) = processNewlineWithContext config state col nextToken
+            let newState = { newState_ with LineNum = state.LineNum + 1 }
+
+            let nextIsExplicitIn = match nextToken with | Some Parser.IN -> true | _ -> false
+            let isAtSameLevel =
+                List.isEmpty emitted &&
+                newState.IndentStack.Length > 1 &&
+                not nextIsExplicitIn &&
+                (match state.PrevToken with
+                 | Some Parser.IN -> false
+                 | _ -> true) &&
+                (match newState.Context with
+                 | InFunctionApp _ :: _ -> false
+                 | _ -> true)
+
+            if isAtSameLevel then
+                let rec checkOffside ctx acc =
+                    match ctx with
+                    | InLetDecl(true, offsideCol) :: rest when col <= offsideCol ->
+                        checkOffside rest (Parser.IN :: acc)
+                    | _ -> (ctx, List.rev acc)
+                let (newCtx, insTokens) = checkOffside newState.Context []
+                if not (List.isEmpty insTokens) then
+                    state <- { newState with Context = newCtx }
+                    for t in insTokens do result.Add(withPosOf lastRealToken t)
+                else
+                    let shouldInjectSemicolon =
+                        match newState.Context with
+                        | InExprBlock _ :: _ ->
+                            let suppressByNext =
+                                match nextToken with
+                                | Some t -> isContinuationStart t || isStructuralTerminator t
+                                | None -> false
+                            not suppressByNext
+                        | _ -> false
+                    if shouldInjectSemicolon then
+                        state <- newState
+                        result.Add(withPosOf lastRealToken Parser.SEMICOLON)
+                    else
+                        state <- newState
+                        for t in emitted do result.Add(withPosOf lastRealToken t)
+            else
+                if List.contains Parser.DEDENT emitted then
+                    if nextIsExplicitIn then
+                        let rec popLetDecls ctx =
+                            match ctx with
+                            | InLetDecl(true, offsideCol) :: rest when newState.IndentStack.Head <= offsideCol ->
+                                popLetDecls rest
+                            | _ -> ctx
+                        state <- { newState with Context = popLetDecls newState.Context }
+                        for t in emitted do result.Add(withPosOf lastRealToken t)
+                    else
+                        let rec checkOffsideDedent ctx acc =
+                            match ctx with
+                            | InLetDecl(true, offsideCol) :: rest when newState.IndentStack.Head <= offsideCol ->
+                                checkOffsideDedent rest (Parser.IN :: acc)
+                            | _ -> (ctx, List.rev acc)
+                        let (newCtx, insTokens) = checkOffsideDedent newState.Context []
+                        state <- { newState with Context = newCtx }
+                        for t in emitted do result.Add(withPosOf lastRealToken t)
+                        for t in insTokens do result.Add(withPosOf lastRealToken t)
+                else
+                    state <- newState
+                    if List.contains Parser.INDENT emitted then
+                        if state.JustSawModule then
+                            state <- { state with Context = InModule :: state.Context; JustSawModule = false }
+                        else
+                            match state.PrevToken with
+                            | Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO ->
+                                let baseCol = match state.IndentStack with _ :: parent :: _ -> parent | _ -> 0
+                                state <- { state with Context = InExprBlock(baseCol) :: state.Context }
+                            | _ -> ()
+                    for t in emitted do result.Add(withPosOf lastRealToken t)
+
+        | Parser.EOF ->
+            let rec emitPendingIns ctx acc =
+                match ctx with
+                | InLetDecl(true, _) :: rest -> emitPendingIns rest (Parser.IN :: acc)
+                | _ -> (ctx, List.rev acc)
+            let (ctxAfterIns, insTokens) = emitPendingIns state.Context []
+            state <- { state with Context = ctxAfterIns }
+            for t in insTokens do result.Add(withPosOf lastRealToken t)
+            while state.IndentStack.Length > 1 do
+                let (newState, toks) = processNewline config state 0
+                state <- newState
+                for t in toks do result.Add(withPosOf lastRealToken t)
+            result.Add(pt)  // EOF with its own position
+
+        | Parser.MODULE ->
+            lastRealToken <- pt
+            state <- { state with JustSawModule = true; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.MATCH ->
+            lastRealToken <- pt
+            state <- { state with JustSawMatch = true; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.TRY ->
+            lastRealToken <- pt
+            state <- { state with JustSawTry = true; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.PIPE when state.JustSawMatch ->
+            lastRealToken <- pt
+            state <- { state with JustSawMatch = false; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.PIPE when state.JustSawTry ->
+            lastRealToken <- pt
+            state <- { state with JustSawTry = false; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.LET ->
+            lastRealToken <- pt
+            let blockLet = state.IndentStack.Length > 1 && isExprContext state.Context
+            if blockLet then
+                let offsideCol = state.IndentStack.Head
+                state <- { state with Context = InLetDecl(true, offsideCol) :: state.Context; PrevToken = Some token }
+            else
+                state <- { state with PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.IN ->
+            lastRealToken <- pt
+            let currentCol = state.IndentStack.Head
+            let rec popLetDecl ctx =
+                match ctx with
+                | InLetDecl(_, _) :: rest -> rest
+                | InMatch col :: rest when col = currentCol -> popLetDecl rest
+                | InTry col :: rest when col = currentCol -> popLetDecl rest
+                | _ -> ctx
+            state <- { state with Context = popLetDecl state.Context; PrevToken = Some token }
+            result.Add(pt)
+
+        | Parser.DEDENT ->
+            lastRealToken <- pt
+            state <- updateContextOnDedent state
+            result.Add(pt)
+
+        | other ->
+            lastRealToken <- pt
+            state <- { state with PrevToken = Some other }
+            result.Add(pt)
+
+        index <- index + 1
+
+    result |> Seq.toList
