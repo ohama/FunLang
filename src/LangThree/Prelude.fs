@@ -15,11 +15,13 @@ type PreludeResult = {
     TypeEnv: TypeEnv
     CtorEnv: ConstructorEnv
     RecEnv: RecordEnv
+    ClassEnv: ClassEnv
+    InstEnv: InstanceEnv
     Modules: Map<string, ModuleExports>
     ModuleValueEnv: Map<string, ModuleValueEnv>
 }
 
-let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty }
+let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; ClassEnv = Map.empty; InstEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty }
 
 /// Parse a string as module with IndentFilter
 let parseModuleFromString (input: string) (filename: string) : Module =
@@ -120,8 +122,8 @@ let rec loadAndTypeCheckFileImpl
         TypeCheck.currentTypeCheckingFile <- resolvedPath
         let source = File.ReadAllText resolvedPath
         let m = parseModuleFromString source resolvedPath
-        match typeCheckModuleWithPrelude cEnv rEnv typeEnv mods m with
-        | Ok (_warnings, fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
+        match typeCheckModuleWithPrelude cEnv rEnv Map.empty Map.empty typeEnv mods m with
+        | Ok (_warnings, fileCEnv, fileREnv, _fileClassEnv, _fileInstEnv, fileMods, fileTypeEnv) ->
             // Cache the file's own exports BEFORE merging with caller env
             tcCache.[resolvedPath] <- (fileCEnv, fileREnv, fileMods, fileTypeEnv)
             let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
@@ -274,8 +276,8 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
                     let m = parseModuleFromString source file
 
                     // Type check with accumulated prelude environments (including accumulated modules)
-                    match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.TypeEnv result.Modules m with
-                    | Ok (_warnings, ctorEnv, recEnv, modules, typeEnv) ->
+                    match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.ClassEnv result.InstEnv result.TypeEnv result.Modules m with
+                    | Ok (_warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv) ->
                         // Accumulate type environments (exclude built-in types)
                         let newTypeBindings = typeEnv |> Map.filter (fun k _ -> not (Map.containsKey k initialTypeEnv))
                         let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) result.TypeEnv newTypeBindings
@@ -283,6 +285,10 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
                         // Accumulate constructor and record environments
                         let mergedCtorEnv = Map.fold (fun acc k v -> Map.add k v acc) result.CtorEnv ctorEnv
                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) result.RecEnv recEnv
+
+                        // Accumulate class and instance environments
+                        let mergedClassEnv = Map.fold (fun acc k v -> Map.add k v acc) result.ClassEnv classEnv
+                        let mergedInstEnv = Map.fold (fun acc k v -> Map.add k v acc) result.InstEnv instEnv
 
                         // Accumulate module map
                         let mergedModules = Map.fold (fun acc k v -> Map.add k v acc) result.Modules modules
@@ -297,7 +303,7 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
                         let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env newValues
                         let mergedModuleValueEnv = Map.fold (fun acc k v -> Map.add k v acc) result.ModuleValueEnv fileModuleEnv
 
-                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv }
+                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; ClassEnv = mergedClassEnv; InstEnv = mergedInstEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv }
 
                     | Error diag ->
                         eprintfn "Warning: Type error in %s: %s" file (formatDiagnostic diag)

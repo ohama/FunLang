@@ -126,8 +126,8 @@ let main argv =
                                     let input = System.IO.File.ReadAllText target.Main
                                     TypeCheck.currentTypeCheckingFile <- target.Main
                                     let m = parseModuleFromString input target.Main
-                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
-                                    | Ok (warnings, _, _, _, _) ->
+                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
+                                    | Ok (warnings, _, _, _, _, _, _) ->
                                         for w in warnings do
                                             eprintfn "Warning: %s" (formatDiagnostic w)
                                         eprintfn "OK: %s (%d warnings)" target.Name (List.length warnings)
@@ -176,11 +176,11 @@ let main argv =
                                     Eval.currentEvalFile <- target.Main
                                     Eval.scriptArgs <- []
                                     let m = parseModuleFromString input target.Main
-                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
                                     | Error diag ->
                                         eprintfn "Error in %s: %s" target.Name (formatDiagnostic diag)
                                         exitCode <- 1
-                                    | Ok (warnings, _ctorEnv, recEnv, _modules, _typeEnv) ->
+                                    | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
                                         for w in warnings do
                                             eprintfn "Warning: %s" (formatDiagnostic w)
                                         let moduleDecls =
@@ -245,8 +245,8 @@ let main argv =
                     let input = File.ReadAllText filename
                     TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
-                    | Ok (warnings, _, _, _, _) ->
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
+                    | Ok (warnings, _, _, _, _, _, _) ->
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
                         eprintfn "OK (%d warnings)" (List.length warnings)
@@ -294,8 +294,8 @@ let main argv =
                     // Set current file path for FileImportDecl relative path resolution
                     TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
-                    | Ok (warnings, _ctorEnv, _recEnv, _modules, typeEnv) ->
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
+                    | Ok (warnings, _ctorEnv, _recEnv, _classEnv, _instEnv, _modules, typeEnv) ->
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
                         // Print types of user-defined top-level bindings (exclude built-in and prelude)
@@ -386,11 +386,11 @@ let main argv =
                         | Some i -> rawArgv |> Array.skip (i + 1) |> Array.toList
                         | None -> []
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
                     | Error diag ->
                         eprintfn "%s" (formatDiagnostic diag)
                         1
-                    | Ok (warnings, _ctorEnv, recEnv, _modules, _typeEnv) ->
+                    | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
                         // Print any warnings (non-exhaustive matches, etc.)
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
