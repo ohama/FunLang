@@ -1,0 +1,14 @@
+// Test: multi-method typeclass — both methods callable at runtime
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+typeclass Describable 'a =
+    | describe : 'a -> string
+    | tag : 'a -> string
+
+instance Describable int =
+    let describe x = to_string x
+    let tag x = "int"
+
+let result = describe 42 + ":" + tag 42
+// --- Stdout:
+"42:int"

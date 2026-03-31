@@ -1,0 +1,12 @@
+// Test: instance Show int — show 42 evaluates to "42" at runtime
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+typeclass Show 'a =
+    | show : 'a -> string
+
+instance Show int =
+    let show x = to_string x
+
+let result = show 42
+// --- Stdout:
+"42"
