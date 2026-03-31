@@ -4,18 +4,19 @@
 
 See: .planning/PROJECT.md (updated 2026-03-30)
 
-**Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v9.0 Project Build System
+**Core value:** funproj.toml 기반 Cargo 스타일 빌드 시스템으로 멀티파일 프로젝트 체계적 관리
+**Current focus:** v9.0 Phase 67 - CLI Extensions
 
 ## Current Position
 
 Milestone: v9.0 Project Build System
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-31 — Milestone v9.0 started
+Phase: 67 of 68 (CLI Extensions)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-31 -- Roadmap created for v9.0
 
 Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
+         [░░░░░░░░░░░░░░░░░░░░] v9.0: 0% (0/2 phases)
 
 ## Performance Metrics
 
@@ -38,15 +39,9 @@ Progress: [████████████████████] v1.0-v8
 (Full log in PROJECT.md Key Decisions table)
 
 Key cross-milestone context:
-- v8.0: MixedParamList subsumes ParamList -- remove old ParamList productions to resolve reduce/reduce conflicts
-- v8.0: Return type annotation wraps body in Annot(body, typeExpr, span) -- erased at runtime
-- v8.0: LT/GT tokens reused for angle bracket generics -- LALR(1) disambiguates by parser state
-- v8.1: LetRec/LetRecDecl binding now includes TypeExpr option for first param type annotation
-- v8.1: Bidir.fs and Infer.fs updated mechanically in Plan 01; logic change to enforce type deferred to Plan 02
-- v8.1: elaborateTypeExpr wired into TypeCheck/Bidir/Infer for let rec first-param annotations (Plan 02)
-- v8.1: LetRec AST changed to bindings list shape matching LetRecDecl -- Bidir/Infer/Eval use List.head placeholder (Plan 02 rewrites)
-- v8.1: LetRecContinuation nonterminal reused for expression-level let rec `and` chains
-- v8.1: Multi-line `and` in indented contexts triggers indent filter issues -- tests use single-line format
+- v9.0: Adopted "방안 D" (open chain enhancement) with Phase 2 project file -- CLI extensions first, funproj.toml second
+- v9.0: funproj.toml filename (not l3proj.toml) per REQUIREMENTS.md
+- v9.0: Prelude priority order: --prelude flag > LANGTHREE_PRELUDE env > funproj.toml [project].prelude > auto-discovery
 
 ### Pending Todos
 
@@ -59,10 +54,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Defining v9.0 requirements
+Stopped at: Roadmap created for v9.0
 Resume file: None
-Next action: Define requirements → create roadmap
+Next action: Plan Phase 67 (CLI Extensions)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v9.0 milestone started)*
+*Last updated: 2026-03-31 (v9.0 roadmap created)*
