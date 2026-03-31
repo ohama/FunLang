@@ -51,7 +51,11 @@ Plans:
   3. `langthree test` in a directory with `funproj.toml` executes all `[[test]]` targets; `langthree test <name>` executes only the named target
   4. `[project].prelude` in `funproj.toml` sets the Prelude path (lower priority than `--prelude` flag and `LANGTHREE_PRELUDE` env var)
   5. flt integration tests cover CLI extensions (--check, --deps, --prelude) and project file features (build, test subcommands)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 68-01-PLAN.md -- Tomlyn NuGet + ProjectFile.fs TOML parsing module
+- [ ] 68-02-PLAN.md -- Build/Test subcommands in Cli.fs + Prelude priority + Program.fs dispatch
+- [ ] 68-03-PLAN.md -- flt integration tests for build, test, and project prelude
 
 ## Progress
 
@@ -60,4 +64,4 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 67. CLI Extensions | 4/4 | ✓ Complete | 2026-03-31 |
-| 68. Project File | 0/TBD | Not started | - |
+| 68. Project File | 0/3 | Not started | - |
