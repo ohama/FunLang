@@ -5,17 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone
+**Current focus:** v9.1 Phase 69 - Span Position Fix
 
 ## Current Position
 
-Milestone: None active (v9.0 shipped 2026-03-31)
-Phase: N/A
-Plan: N/A
-Status: Between milestones
-Last activity: 2026-03-31 -- v9.0 milestone archived
+Milestone: v9.1 Span Fix
+Phase: 69 of 69 (Span Position Fix)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-31 -- v9.1 milestone started
 
 Progress: [████████████████████] v1.0-v9.0 done (68 phases, 149 plans)
+         [░░░░░░░░░░░░░░░░░░░░] v9.1: 0% (0/1 phases)
 
 ## Performance Metrics
 
@@ -53,10 +54,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: v9.0 milestone archived
+Stopped at: v9.1 milestone created
 Resume file: None
-Next action: /gsd:new-milestone to start next milestone
+Next action: Plan Phase 69 (Span Position Fix)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v9.0 archived, ready for next milestone)*
+*Last updated: 2026-03-31 (v9.1 milestone started)*
