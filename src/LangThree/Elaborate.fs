@@ -68,9 +68,10 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
         let (revTypes, finalVars) = List.fold folder ([], vars) args
         (TData(canonical, List.rev revTypes), finalVars)
 
-    | TEConstrained _ ->
-        // Phase 71 (Type Classes): constrained type elaboration — Phase 72 will implement
-        failwith "TEConstrained not yet implemented in elaboration"
+    | TEConstrained(_, innerTy) ->
+        // Constraints are handled at Scheme construction (TypeCheck/Bidir),
+        // not at Type elaboration level. Just elaborate the inner type.
+        elaborateWithVars vars innerTy
 
 /// Elaborate single type expression with fresh scope
 /// Each call starts with empty type variable environment
@@ -100,9 +101,9 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
         let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
         TData(canonical, List.map (substTypeExprWithMap paramMap) args)
 
-    | Ast.TEConstrained _ ->
-        // Phase 71 (Type Classes): constrained type substitution — Phase 72 will implement
-        failwith "TEConstrained not yet implemented in substTypeExprWithMap"
+    | Ast.TEConstrained(_, innerTy) ->
+        // Constraints are handled at Scheme construction; just elaborate the inner type.
+        substTypeExprWithMap paramMap innerTy
 
 /// Collect all TEVar names from a TypeExpr (for detecting constructor-local type variables)
 let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =

@@ -51,6 +51,13 @@ type TypeErrorKind =
     | ImmutableVariableAssignment of varName: string            // E0320
     // Phase 47 (Array/Hashtable Indexing): tried to index non-array/hashtable
     | IndexOnNonCollection of ty: Type                          // E0471
+    // Phase 72 (Type Classes): Type class errors
+    | NoInstance of className: string * ty: Type                // E0701
+    | DuplicateInstance of className: string * ty: Type         // E0702
+    | UnknownTypeClass of className: string                     // E0703
+    | MethodTypeMismatch of className: string * methodName: string * expected: Type * actual: Type  // E0704
+    | MissingMethod of className: string * methodName: string   // E0705
+    | ExtraMethod of className: string * methodName: string     // E0706
 
 /// Inference context - path through the expression being type checked
 /// Each case tracks where in the code we are during type inference
@@ -316,6 +323,36 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0471",
             sprintf "Cannot index into value of type %s; expected array or hashtable" (formatType ty),
             Some "Use array_create to create an array or hashtable_create to create a hashtable"
+
+        | NoInstance (className, ty) ->
+            Some "E0701",
+            sprintf "No instance of %s for %s" className (formatType ty),
+            Some "Add an instance declaration for this type"
+
+        | DuplicateInstance (className, ty) ->
+            Some "E0702",
+            sprintf "Duplicate instance declaration: %s %s" className (formatType ty),
+            Some "Remove the duplicate instance declaration"
+
+        | UnknownTypeClass className ->
+            Some "E0703",
+            sprintf "Unknown type class: %s" className,
+            Some "Make sure the type class is declared before use"
+
+        | MethodTypeMismatch (className, methodName, expected, actual) ->
+            Some "E0704",
+            sprintf "Method '%s' in instance %s has type %s but class declares %s" methodName className (formatType actual) (formatType expected),
+            Some "Check that the method signature matches the type class declaration"
+
+        | MissingMethod (className, methodName) ->
+            Some "E0705",
+            sprintf "Instance missing required method: %s" methodName,
+            Some (sprintf "Add an implementation for method '%s' to complete the instance" methodName)
+
+        | ExtraMethod (className, methodName) ->
+            Some "E0706",
+            sprintf "Instance declares unknown method '%s' for class %s" methodName className,
+            Some "Remove the method or add it to the type class declaration"
 
         | NonExhaustiveMatch patterns ->
             let patternsStr = patterns |> String.concat ", "
