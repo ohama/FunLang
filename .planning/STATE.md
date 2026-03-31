@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 72: Type Checker and Constraint Inference
+**Current focus:** v10.0 Type Classes — Phase 73: Dictionary Passing
 
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 72 of 74 (Type Checker and Constraint Inference)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-03-31 — Completed 72-02-PLAN.md (constraint inference in Bidir.synth)
+Phase: 72 of 74 (Type Checker and Constraint Inference) — COMPLETE
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-03-31 — Completed 72-03-PLAN.md (integration tests for typeclass constraint inference)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [██████░░░░░░░░░░░░░░] v10.0: ~35% (phases 70+71 complete, 72 plan 02 done)
+         [████████░░░░░░░░░░░░] v10.0: ~45% (phases 70+71+72 complete)
 
 ## Performance Metrics
 
@@ -84,15 +84,20 @@ From Phase 72 Plan 02:
 
 - [Phase 71] `where` keyword audit RESOLVED — `where` not used anywhere in Lexer.fsl, no conflict
 - [Phase 72] currentClassEnv/currentInstEnv mutable ref pattern: RESOLVED in Plan 02 — refs now live in Bidir.fs
-- [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch (Phase 72 Plan 03 scope)
+- [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch (Phase 72 Plan 03 scope) — DEFERRED to Phase 73+ if needed
+
+From Phase 72 Plan 03:
+- flt tests use --check mode (not runtime) because Phase 73 dictionary elaboration not yet implemented; runtime calls to typeclass methods would be "unbound variable: show"
+- FsLit Stderr: section does partial matching -- only first error line needed; path-containing --> line varies by temp file path and is excluded
+- ++ is list append in LangThree; use + for string concatenation when types are known
 
 ## Session Continuity
 
-Last session: 2026-03-31T11:25:35Z
-Stopped at: Completed 72-02-PLAN.md (constraint inference in Bidir.synth)
+Last session: 2026-03-31T11:32:02Z
+Stopped at: Completed 72-03-PLAN.md (integration tests for typeclass constraint inference)
 Resume file: None
-Next action: Execute Phase 72 Plan 03 (integration tests for typeclass constraint inference)
+Next action: Execute Phase 73 (Dictionary Passing)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 72 plan 02 complete)*
+*Last updated: 2026-03-31 (phase 72 complete — all 3 plans done)*
