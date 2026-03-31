@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 71: Parsing and AST
+**Current focus:** v10.0 Type Classes — Phase 72: Type Checker and Constraint Inference
 
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 71 of 74 (Parsing and AST) — COMPLETE
-Plan: 2 of 2 complete
-Status: Phase complete — ready for Phase 72
-Last activity: 2026-03-31 — Completed 71-02-PLAN.md (typeclass integration tests)
+Phase: 72 of 74 (Type Checker and Constraint Inference)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-03-31 — Completed 72-01-PLAN.md (TypeClassDecl/InstanceDecl type checker processing)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [████░░░░░░░░░░░░░░░░] v10.0: 20% (phases 70+71 complete)
+         [█████░░░░░░░░░░░░░░░] v10.0: 25% (phases 70+71 complete, 72 in progress)
 
 ## Performance Metrics
 
@@ -66,19 +66,26 @@ From Phase 71 Plan 02:
 - TYPECLASS/INSTANCE bodies get InModule context in IndentFilter (not InExprBlock) — prevents spurious IN injection for instance method LET and SEMICOLON between typeclass methods
 - flt integration tests: one test case per file (5 files created in tests/flt/file/typeclass/)
 
+From Phase 72 Plan 01:
+- TEConstrained in elaborateWithVars/substTypeExprWithMap recurses into inner type only — constraints are handled at Scheme construction, not Type elaboration level
+- typeCheckDecls now threads ClassEnv*InstanceEnv as 7-tuple fold; all 12 existing arms pass through unchanged
+- currentClassEnv/currentInstEnv mutable refs in TypeCheck.fs initialized from preludeClassEnv/preludeInstEnv; updated incrementally by TypeClassDecl/InstanceDecl arms
+- InstanceDecl method body type-checking uses outer module-level env (not method-local env); each body checked against class scheme instantiated with concrete instance type via Map.ofList[classTypeVar,instType]
+- InstanceDecl does NOT propagate inner classEnv/instEnv from module/namespace recursion back to outer scope — typeclass decls in nested modules don't leak
+
 ### Blockers/Concerns
 
 - [Phase 71] `where` keyword audit RESOLVED — `where` not used anywhere in Lexer.fsl, no conflict
-- [Phase 72] `synth` evidence representation decision needed before coding: recommended mutable ref accumulator (like `mutableVars`) to avoid call-site explosion
+- [Phase 72] `synth` evidence representation: mutable ref pattern used (currentClassEnv/currentInstEnv) — Plan 02 reads these for constraint resolution
 - [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch
 
 ## Session Continuity
 
-Last session: 2026-03-31T00:40:00Z
-Stopped at: Completed 71-02-PLAN.md (typeclass integration tests)
+Last session: 2026-03-31T11:16:47Z
+Stopped at: Completed 72-01-PLAN.md (TypeClassDecl/InstanceDecl type checker processing)
 Resume file: None
-Next action: Execute Phase 72 (type inference for type classes)
+Next action: Execute Phase 72 Plan 02 (constraint inference in Bidir.synth)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (phase 71 plan 01 complete)*
+*Last updated: 2026-03-31 (phase 72 plan 01 complete)*
