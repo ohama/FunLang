@@ -100,10 +100,11 @@ Plans:
   1. `show 42`, `show true`, `show 'x'`, `show "hello"`, `show [1; 2; 3]`, and `show (Some 5)` all evaluate to their string representations without any explicit `instance Show` declaration in user code.
   2. `1 = 1` evaluates to `true` and `1 = 2` evaluates to `false` via the `Eq` type class; attempting `(fun x -> x) = (fun x -> x)` produces a type error rather than a runtime crash.
   3. At least 5 new `.flt` integration tests cover: typeclass declaration, instance declaration, constrained function, built-in `Show` instances, and built-in `Eq` instances — all passing with `FsLit tests/flt/`.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 74-01: TBD
+- [ ] 74-01-PLAN.md — Create Prelude/Typeclass.fun with Show+Eq classes and instances; fix Prelude.fs elaboration
+- [ ] 74-02-PLAN.md — 5+ flt integration tests for built-in Show/Eq instances and constrained functions
 
 ---
 
@@ -115,4 +116,4 @@ Plans:
 | 71. Parsing and AST | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
 | 72. Type Checker and Constraint Inference | v10.0 | 3/3 | ✓ Complete | 2026-03-31 |
 | 73. Dictionary Construction and Elaboration | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
-| 74. Built-in Instances and Tests | v10.0 | 0/TBD | Not started | - |
+| 74. Built-in Instances and Tests | v10.0 | 0/2 | Not started | - |
