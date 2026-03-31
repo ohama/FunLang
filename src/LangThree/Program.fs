@@ -81,16 +81,123 @@ let main argv =
             if results.Contains Prelude then Some (results.GetResult Prelude)
             else None
 
-        // Load prelude from Prelude/*.fun directory
-        let prelude = Prelude.loadPrelude(preludePath)
-        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
-
         // Check if help was requested
         if results.IsUsageRequested then
             printfn "%s" (parser.PrintUsage())
             0
+        // build subcommand: type-check project executable targets
+        elif results.Contains Build then
+            let buildResults = results.GetResult Build
+            let targetName = buildResults.TryGetResult BuildArgs.Target
+            match ProjectFile.findFunProj() with
+            | None ->
+                eprintfn "Error: funproj.toml not found in current directory"
+                1
+            | Some projPath ->
+                match ProjectFile.loadFunProj projPath with
+                | Error msg -> eprintfn "%s" msg; 1
+                | Ok config ->
+                    let targets =
+                        match targetName with
+                        | None -> config.Executables
+                        | Some name ->
+                            match config.Executables |> List.tryFind (fun t -> t.Name = name) with
+                            | Some t -> [t]
+                            | None -> eprintfn "Error: no executable target named '%s'" name; []
+                    if targets.IsEmpty && targetName.IsSome then 1
+                    elif targets.IsEmpty then
+                        eprintfn "No executable targets defined in funproj.toml"
+                        0
+                    else
+                        let prelude = Prelude.loadPrelude preludePath config.PreludePath
+                        let mutable exitCode = 0
+                        for target in targets do
+                            try
+                                if not (System.IO.File.Exists target.Main) then
+                                    eprintfn "Error: target file not found: %s" target.Main
+                                    exitCode <- 1
+                                else
+                                    let input = System.IO.File.ReadAllText target.Main
+                                    TypeCheck.currentTypeCheckingFile <- target.Main
+                                    let m = parseModuleFromString input target.Main
+                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+                                    | Ok (warnings, _, _, _, _) ->
+                                        for w in warnings do
+                                            eprintfn "Warning: %s" (formatDiagnostic w)
+                                        eprintfn "OK: %s (%d warnings)" target.Name (List.length warnings)
+                                    | Error diag ->
+                                        eprintfn "Error in %s: %s" target.Name (formatDiagnostic diag)
+                                        exitCode <- 1
+                            with ex ->
+                                eprintfn "Error in %s: %s" target.Name ex.Message
+                                exitCode <- 1
+                        exitCode
+        // test subcommand: evaluate project test targets
+        elif results.Contains Test then
+            let testResults = results.GetResult Test
+            let targetName = testResults.TryGetResult TestArgs.Target
+            match ProjectFile.findFunProj() with
+            | None ->
+                eprintfn "Error: funproj.toml not found in current directory"
+                1
+            | Some projPath ->
+                match ProjectFile.loadFunProj projPath with
+                | Error msg -> eprintfn "%s" msg; 1
+                | Ok config ->
+                    let targets =
+                        match targetName with
+                        | None -> config.Tests
+                        | Some name ->
+                            match config.Tests |> List.tryFind (fun t -> t.Name = name) with
+                            | Some t -> [t]
+                            | None -> eprintfn "Error: no test target named '%s'" name; []
+                    if targets.IsEmpty && targetName.IsSome then 1
+                    elif targets.IsEmpty then
+                        eprintfn "No test targets defined in funproj.toml"
+                        0
+                    else
+                        let prelude = Prelude.loadPrelude preludePath config.PreludePath
+                        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
+                        let mutable exitCode = 0
+                        for target in targets do
+                            try
+                                if not (System.IO.File.Exists target.Main) then
+                                    eprintfn "Error: target file not found: %s" target.Main
+                                    exitCode <- 1
+                                else
+                                    let input = System.IO.File.ReadAllText target.Main
+                                    TypeCheck.currentTypeCheckingFile <- target.Main
+                                    Eval.currentEvalFile <- target.Main
+                                    Eval.scriptArgs <- []
+                                    let m = parseModuleFromString input target.Main
+                                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+                                    | Error diag ->
+                                        eprintfn "Error in %s: %s" target.Name (formatDiagnostic diag)
+                                        exitCode <- 1
+                                    | Ok (warnings, _ctorEnv, recEnv, _modules, _typeEnv) ->
+                                        for w in warnings do
+                                            eprintfn "Warning: %s" (formatDiagnostic w)
+                                        let moduleDecls =
+                                            match m with
+                                            | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+                                            | EmptyModule _ -> []
+                                        let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
+                                        let _finalEnv, _moduleEnv =
+                                            Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv moduleDecls
+                                        eprintfn "OK: %s" target.Name
+                            with ex ->
+                                eprintfn "Error in %s: %s" target.Name ex.Message
+                                exitCode <- 1
+                        exitCode
+        // All other branches: load prelude with None for projPrelude
+        else
+
+        // Load prelude from Prelude/*.fun directory
+        let prelude = Prelude.loadPrelude preludePath None
+        let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
+
         // --emit-tokens with --expr
-        elif results.Contains Emit_Tokens && results.Contains Expr then
+        if results.Contains Emit_Tokens && results.Contains Expr then
             let expr = results.GetResult Expr
             try
                 let tokens = lex expr
