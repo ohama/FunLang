@@ -1,0 +1,15 @@
+// Test: first-param type annotation enforcement on let rec bindings
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let rec f (x : int) y = x + y
+and g (z : bool) = if z then 1 else 0
+let _ = println (to_string (f 3 4))
+let _ = println (to_string (g true))
+let _ = println (to_string (let rec h (x : int) = x + 1 in h 5))
+let _ = println (to_string (let rec k x = x + 1 in k 5))
+// --- Output:
+7
+1
+6
+6
+()

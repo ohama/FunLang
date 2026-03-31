@@ -1,0 +1,5 @@
+// Test: type error when annotated first param conflicts with usage in let rec
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --expr "let rec f (x : int) = x + true in f 1"
+// --- ExitCode: 1
+// --- Stderr:
+error[E0301]: Type mismatch: expected int but got bool
