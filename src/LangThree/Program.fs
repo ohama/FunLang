@@ -101,6 +101,33 @@ let main argv =
             with ex ->
                 eprintfn "Error: %s" ex.Message
                 1
+        // --check with file (type-check only, no execution)
+        elif results.Contains Check && results.Contains File then
+            let filename = results.GetResult File
+            if File.Exists filename then
+                try
+                    let input = File.ReadAllText filename
+                    TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
+                    let m = parseModuleFromString input filename
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
+                    | Ok (warnings, _, _, _, _) ->
+                        for w in warnings do
+                            eprintfn "Warning: %s" (formatDiagnostic w)
+                        eprintfn "OK (%d warnings)" (List.length warnings)
+                        0
+                    | Error diag ->
+                        eprintfn "%s" (formatDiagnostic diag)
+                        1
+                with ex ->
+                    eprintfn "Error: %s" ex.Message
+                    1
+            else
+                eprintfn "File not found: %s" filename
+                1
+        // --check without file
+        elif results.Contains Check then
+            eprintfn "Usage: langthree --check <file>"
+            1
         // --emit-type with file (module pipeline)
         elif results.Contains Emit_Type && results.Contains File then
             let filename = results.GetResult File
