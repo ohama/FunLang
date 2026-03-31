@@ -161,7 +161,8 @@ and loadAndEvalFileImpl
         let source = File.ReadAllText resolvedPath
         let m = parseModuleFromString source resolvedPath
         let decls = getDecls m
-        let (fileEnv, fileModEnv) = Eval.evalModuleDecls recEnv modEnv env decls
+        let elaboratedDecls = Elaborate.elaborateTypeclasses decls
+        let (fileEnv, fileModEnv) = Eval.evalModuleDecls recEnv modEnv env elaboratedDecls
         // Cache the file's own exports BEFORE merging with caller env
         evalCache.[resolvedPath] <- (fileEnv, fileModEnv)
         // Merge all file bindings into the caller's env (shadowing is acceptable)
@@ -295,8 +296,9 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
 
                         // Evaluate module declarations for value environment
                         let decls = getDecls m
+                        let elaboratedDecls = Elaborate.elaborateTypeclasses decls
                         let evalEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env Eval.initialBuiltinEnv
-                        let (finalEnv, fileModuleEnv) = Eval.evalModuleDecls mergedRecEnv result.ModuleValueEnv evalEnv decls
+                        let (finalEnv, fileModuleEnv) = Eval.evalModuleDecls mergedRecEnv result.ModuleValueEnv evalEnv elaboratedDecls
                         // Extract only new bindings (not built-ins or previous prelude)
                         let newValues = finalEnv |> Map.filter (fun k _ ->
                             not (Map.containsKey k Eval.initialBuiltinEnv) && not (Map.containsKey k result.Env))

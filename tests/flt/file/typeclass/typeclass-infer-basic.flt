@@ -1,12 +1,6 @@
 // Test: show_twice infers Show 'a => 'a -> string; resolves Show int at use site
 // --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
 // --- Input:
-typeclass Show 'a =
-    | show : 'a -> string
-
-instance Show int =
-    let show x = to_string x
-
 let show_twice x = show x + show x
 
 let _ = show_twice 42

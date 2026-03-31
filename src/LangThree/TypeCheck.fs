@@ -995,32 +995,33 @@ let rec typeCheckDecls
 
             // Phase 72 (Type Classes): TypeClassDecl and InstanceDecl processing
             | TypeClassDecl(className, typeVarName, methods, span) ->
-                // Check class not already defined (reuse DuplicateModuleName for now)
+                // If class is already defined (e.g. from Prelude), skip redeclaration silently.
+                // This allows user code to re-declare a prelude class without error.
+                // Duplicate instance declarations are still caught below.
                 if Map.containsKey className clsEnv then
-                    raise (TypeException {
-                        Kind = DuplicateModuleName className
-                        Span = span; Term = None; ContextStack = []; Trace = [] })
-                // Create a fresh type variable for the class param
-                let classTypeVar = Infer.freshVar()
-                let classVarId = match classTypeVar with TVar n -> n | _ -> failwith "impossible"
-                // Elaborate each method signature with this shared type var env
-                let methodSchemes =
-                    methods |> List.map (fun (methodName, methodTypeExpr) ->
-                        let (methodTy, _) = Elaborate.elaborateWithVars (Map.ofList [(typeVarName, classVarId)]) methodTypeExpr
-                        // Method scheme: forall [classVarId]. ClassName classVarId => methodTy
-                        let methodConstraint = { ClassName = className; TypeArg = TVar classVarId }
-                        let scheme = Scheme([classVarId], [methodConstraint], methodTy)
-                        (methodName, scheme))
-                // Build ClassInfo and add to classEnv
-                let classInfo = { Name = className; TypeVar = classVarId; Methods = methodSchemes }
-                let clsEnv' = Map.add className classInfo clsEnv
-                // Update Bidir mutable ref for constraint resolution access
-                Bidir.currentClassEnv <- clsEnv'
-                // Add method schemes to typeEnv (so methods are callable as regular functions)
-                let env' =
-                    methodSchemes |> List.fold (fun acc (methodName, scheme) ->
-                        Map.add methodName scheme acc) env
-                (env', cEnv, rEnv, clsEnv', iEnv, mods, warns)
+                    (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
+                else
+                    // Create a fresh type variable for the class param
+                    let classTypeVar = Infer.freshVar()
+                    let classVarId = match classTypeVar with TVar n -> n | _ -> failwith "impossible"
+                    // Elaborate each method signature with this shared type var env
+                    let methodSchemes =
+                        methods |> List.map (fun (methodName, methodTypeExpr) ->
+                            let (methodTy, _) = Elaborate.elaborateWithVars (Map.ofList [(typeVarName, classVarId)]) methodTypeExpr
+                            // Method scheme: forall [classVarId]. ClassName classVarId => methodTy
+                            let methodConstraint = { ClassName = className; TypeArg = TVar classVarId }
+                            let scheme = Scheme([classVarId], [methodConstraint], methodTy)
+                            (methodName, scheme))
+                    // Build ClassInfo and add to classEnv
+                    let classInfo = { Name = className; TypeVar = classVarId; Methods = methodSchemes }
+                    let clsEnv' = Map.add className classInfo clsEnv
+                    // Update Bidir mutable ref for constraint resolution access
+                    Bidir.currentClassEnv <- clsEnv'
+                    // Add method schemes to typeEnv (so methods are callable as regular functions)
+                    let env' =
+                        methodSchemes |> List.fold (fun acc (methodName, scheme) ->
+                            Map.add methodName scheme acc) env
+                    (env', cEnv, rEnv, clsEnv', iEnv, mods, warns)
 
             | InstanceDecl(className, instTypeExpr, methods, span) ->
                 // Look up class in classEnv
