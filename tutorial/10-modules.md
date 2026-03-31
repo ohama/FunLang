@@ -282,11 +282,36 @@ Error: Circular module dependency: a.fun → b.fun → a.fun
 
 의존성 그래프는 항상 단방향이어야 합니다.
 
+## 모듈과 타입 클래스
+
+모듈 안에서 타입 클래스 인스턴스를 선언할 수 있습니다. 타입과 그에 대한 인스턴스를 하나의 모듈로 캡슐화하는 것은 일반적인 패턴입니다:
+
+```
+$ cat mod_tc.l3
+module Colors =
+    type Color = | Red | Green | Blue
+    instance Show Color =
+        let show c =
+            match c with
+            | Red -> "red"
+            | Green -> "green"
+            | Blue -> "blue"
+
+open Colors
+let result = show Green
+
+$ langthree mod_tc.l3
+"green"
+```
+
+인스턴스는 전역적으로 동작하므로, `open Colors` 이후에 `show Green`이 바로 동작합니다. 타입 클래스에 대한 자세한 내용은 [23장: 타입 클래스](23-typeclasses.md)를 참조하세요.
+
 ## 참고 사항
 
 - **들여쓰기 기반:** 모듈 본문은 들여쓰기로 구분되며, `end`나 `}`가 아님
 - **위에서 아래 순서:** 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)
 - **`module M =`** 은 중첩 모듈에 `=`을 사용; 최상위 `namespace`는 `=`이 없음
+- **타입 클래스 인스턴스:** 모듈 안에 선언해도 전역적으로 동작 ([23장](23-typeclasses.md) 참조)
 - **한정된 접근**은 값, 함수, 생성자에 대해 동작함
 - **`open "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능 (경로는 임포트하는 파일 기준)
 

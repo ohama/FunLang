@@ -144,12 +144,6 @@ $ langthree constrained_annot.l3
 
 ```
 $ cat show_map.l3
-typeclass Show 'a =
-    | show : 'a -> string
-
-instance Show int =
-    let show x = to_string x
-
 let map_show lst = List.map show lst
 let result = map_show [1; 2; 3]
 
@@ -157,7 +151,7 @@ $ langthree show_map.l3
 ["1"; "2"; "3"]
 ```
 
-`List.map show [1; 2; 3]`에서 `show`는 `int -> string` 함수처럼 동작합니다. 타입 클래스 메서드가 일급 함수라는 사실이 파이프라인 스타일 프로그래밍과 자연스럽게 어울립니다.
+`List.map show [1; 2; 3]`에서 `show`는 `int -> string` 함수처럼 동작합니다. Prelude의 `Show int` 인스턴스가 자동으로 선택됩니다. 타입 클래스 메서드가 일급 함수라는 사실이 파이프라인 스타일 프로그래밍과 자연스럽게 어울립니다.
 
 ## 에러 처리
 
@@ -208,16 +202,10 @@ error[E0701]: No instance of Eq for 'z -> 'z
 
 ## 사용자 정의 타입에 인스턴스 추가하기
 
-타입 클래스의 큰 장점은 사용자가 정의한 ADT에도 인스턴스를 추가할 수 있다는 것입니다:
+타입 클래스의 큰 장점은 사용자가 정의한 ADT에도 인스턴스를 추가할 수 있다는 것입니다. Prelude의 `Show`와 `Eq`에 대해 사용자 타입의 인스턴스를 바로 선언할 수 있습니다:
 
 ```
 $ cat custom_show.l3
-typeclass Show 'a =
-    | show : 'a -> string
-
-instance Show int =
-    let show x = to_string x
-
 type Color =
     | Red
     | Green
@@ -237,6 +225,75 @@ $ langthree custom_show.l3
 ```
 
 타입 정의와 인스턴스 선언이 분리되어 있으므로, 이미 존재하는 타입에 새로운 동작을 추가할 수 있습니다. Java에서 기존 클래스에 인터페이스를 구현하려면 클래스 자체를 수정해야 하지만, 타입 클래스에서는 그럴 필요가 없습니다.
+
+`Eq`도 마찬가지입니다:
+
+```
+$ cat custom_eq.l3
+type Direction = | North | South | East | West
+
+instance Eq Direction =
+    let eq a = fun b ->
+        match (a, b) with
+        | (North, North) -> true
+        | (South, South) -> true
+        | (East, East) -> true
+        | (West, West) -> true
+        | _ -> false
+
+let _ = println (to_string (eq North North))
+let result = eq North South
+
+$ langthree custom_eq.l3
+true
+false
+```
+
+## 모듈과 타입 클래스
+
+타입 클래스는 모듈 시스템과 자연스럽게 결합됩니다. 타입과 인스턴스를 같은 모듈에 묶어서 캡슐화할 수 있습니다:
+
+```
+$ cat mod_typeclass.l3
+module Shapes =
+    type Shape = | Circle | Square | Triangle
+    instance Show Shape =
+        let show s =
+            match s with
+            | Circle -> "circle"
+            | Square -> "square"
+            | Triangle -> "triangle"
+
+open Shapes
+let _ = println (show Circle)
+let _ = println (show Square)
+let result = show Triangle
+
+$ langthree mod_typeclass.l3
+circle
+square
+"triangle"
+```
+
+모듈 안에서 선언된 인스턴스는 전역적으로 동작합니다 — `open Shapes` 이후에 `show Circle`이 바로 동작합니다. 인스턴스가 모듈 안에 있더라도 `open` 없이 인스턴스 자체는 유효합니다. `open`이 필요한 것은 생성자(`Circle`, `Square`)와 타입 이름을 스코프에 가져오기 위해서입니다.
+
+타입 클래스 자체도 모듈 안에서 선언하고 `open`으로 가져올 수 있습니다:
+
+```
+$ cat mod_class.l3
+module Render =
+    typeclass Renderable 'a =
+        | render : 'a -> string
+
+open Render
+instance Renderable int =
+    let render x = "[" + to_string x + "]"
+
+let result = render 42
+
+$ langthree mod_class.l3
+"[42]"
+```
 
 ## Prelude의 타입 클래스
 
@@ -288,7 +345,9 @@ instance Eq char =
 | 제약 추론 | (자동) | 메서드 사용 시 제약 자동 추론 |
 
 - `Show`와 `Eq` 타입 클래스가 Prelude에 내장되어 있으며, `int`, `bool`, `string`, `char`에 대한 인스턴스를 제공합니다
+- 사용자 정의 ADT에 대해 `instance Show MyType = ...`으로 인스턴스를 추가할 수 있습니다
 - 타입 클래스 메서드는 일급 함수로, 고차 함수와 자연스럽게 결합됩니다
+- 모듈 안에서 선언된 인스턴스는 전역적으로 동작합니다
 - 인스턴스가 없는 타입에 메서드를 사용하면 `E0701` 에러가 발생합니다
 
 향후 버전에서는 제약된 인스턴스 (`Show 'a => Show (list 'a)`), 슈퍼클래스 제약, 자동 인스턴스 도출(`derive`) 등이 추가될 예정입니다.
