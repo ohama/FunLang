@@ -1,0 +1,15 @@
+// Test: langthree build type-checks all/named executable targets; reports errors for type errors and missing funproj.toml
+// --- Command: bash -c 'LT=/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree && DIR=$(mktemp -d) && printf "let x : int = 42\n" > $DIR/main.fun && printf "let y : int = 99\n" > $DIR/other.fun && printf "let z : int = \x22hello\x22\n" > $DIR/bad.fun && printf "[project]\nname = \x22proj\x22\n\n[[executable]]\nname = \x22main\x22\nmain = \x22main.fun\x22\n\n[[executable]]\nname = \x22other\x22\nmain = \x22other.fun\x22\n" > $DIR/funproj.toml && echo "=build-all=" && cd $DIR && $LT build 2>&1; echo "=build-named=" && cd $DIR && $LT build main 2>&1; echo "=build-named-end="; echo "=build-error=" && printf "[project]\nname = \x22proj\x22\n\n[[executable]]\nname = \x22bad\x22\nmain = \x22bad.fun\x22\n" > $DIR/funproj.toml && cd $DIR && $LT build 2>&1; echo "=build-missing=" && cd $(mktemp -d) && $LT build 2>&1; echo "=build-unknown=" && printf "[project]\nname = \x22proj\x22\n\n[[executable]]\nname = \x22main\x22\nmain = \x22main.fun\x22\n" > $DIR/funproj.toml && cd $DIR && $LT build nonexistent 2>&1; echo done'
+// --- Output:
+CONTAINS: =build-all=
+CONTAINS: OK: main (0 warnings)
+CONTAINS: OK: other (0 warnings)
+CONTAINS: =build-named=
+CONTAINS: =build-named-end=
+CONTAINS: =build-error=
+CONTAINS: Error in bad
+CONTAINS: =build-missing=
+CONTAINS: funproj.toml not found
+CONTAINS: =build-unknown=
+CONTAINS: no executable target named
+CONTAINS: done

@@ -1,0 +1,14 @@
+// Test: langthree test executes all/named test targets; reports errors for missing funproj.toml and unknown target
+// --- Command: bash -c 'LT=/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree && DIR=$(mktemp -d) && printf "let x : int = 42\n" > $DIR/t1.fun && printf "let y : int = 99\n" > $DIR/t2.fun && printf "[project]\nname = \x22proj\x22\n\n[[test]]\nname = \x22test1\x22\nmain = \x22t1.fun\x22\n\n[[test]]\nname = \x22test2\x22\nmain = \x22t2.fun\x22\n" > $DIR/funproj.toml && echo "=test-all=" && cd $DIR && $LT test 2>&1; echo "=test-named=" && cd $DIR && $LT test test1 2>&1; echo "=test-named-end="; echo "=test-missing=" && cd $(mktemp -d) && $LT test 2>&1; echo "=test-unknown=" && cd $DIR && $LT test nonexistent 2>&1; echo done'
+// --- Output:
+CONTAINS: =test-all=
+CONTAINS: OK: test1
+CONTAINS: OK: test2
+CONTAINS: =test-named=
+CONTAINS: OK: test1
+CONTAINS: =test-named-end=
+CONTAINS: =test-missing=
+CONTAINS: funproj.toml not found
+CONTAINS: =test-unknown=
+CONTAINS: no test target named
+CONTAINS: done

@@ -1,0 +1,8 @@
+// Test: [project].prelude in funproj.toml sets the Prelude path; build succeeds when prelude path is valid and fails when function is unavailable without it
+// --- Command: bash -c 'LT=/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree && DIR=$(mktemp -d) && mkdir $DIR/myprelude && printf "let myHelper : int = 999\n" > $DIR/myprelude/MyLib.fun && mkdir $DIR/proj && printf "let result = myHelper\n" > $DIR/proj/main.fun && printf "[project]\nname = \x22proj\x22\nprelude = \x22../myprelude\x22\n\n[[executable]]\nname = \x22main\x22\nmain = \x22main.fun\x22\n" > $DIR/proj/funproj.toml && echo "=with-prelude=" && cd $DIR/proj && $LT build 2>&1; echo "=without-prelude=" && printf "[project]\nname = \x22proj\x22\n\n[[executable]]\nname = \x22main\x22\nmain = \x22main.fun\x22\n" > $DIR/proj/funproj.toml && cd $DIR/proj && $LT build 2>&1; echo done'
+// --- Output:
+CONTAINS: =with-prelude=
+CONTAINS: OK: main (0 warnings)
+CONTAINS: =without-prelude=
+CONTAINS: Unbound variable
+CONTAINS: done
