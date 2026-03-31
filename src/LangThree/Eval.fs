@@ -1356,7 +1356,9 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     // Creates a self-referential closure using mutable ref (same as LetRecDecl).
     // The naive FunctionValue approach breaks when LetRec is inside a lambda body:
     // the trampoline loop re-applies the outer funcExpr, losing the self-binding.
-    | LetRec (name, param, _, funcBody, inExpr, _) ->
+    | LetRec (bindings, inExpr, _) ->
+        // Mechanical List.head for single-binding compatibility (Plan 02 rewrites for multi-binding)
+        let (name, param, _, funcBody, _bindingSpan) = List.head bindings
         let envRef = ref env
         let wrapper = BuiltinValue (fun argVal ->
             let callEnv = Map.add param argVal !envRef

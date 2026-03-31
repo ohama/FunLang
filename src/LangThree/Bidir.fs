@@ -299,7 +299,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             })
 
     // === LetRec ===
-    | LetRec (name, param, paramTyOpt, body, expr, span) ->
+    | LetRec (bindings, inExpr, span) ->
+        // Mechanical List.head for single-binding compatibility (Plan 02 rewrites for multi-binding)
+        let (name, param, paramTyOpt, body, _bindingSpan) = List.head bindings
         // Pre-bind function with fresh type for recursive calls
         let funcTy = freshVar()
         let paramTy =
@@ -317,7 +319,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let env' = applyEnv s env
         let scheme = generalize env' (apply s funcTy)
         let exprEnv = Map.add name scheme env'
-        let s3, exprTy = synth ctorEnv recEnv ctx exprEnv expr
+        let s3, exprTy = synth ctorEnv recEnv ctx exprEnv inExpr
         (compose s3 s, exprTy)
 
     // === If ===

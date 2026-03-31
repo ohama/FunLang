@@ -177,15 +177,15 @@ Expr:
         { let span = ruleSpan parseState 1 8
           let lambda = desugarMixedParams $4 $6 span
           match lambda with
-          | Lambda(p, b, _) -> LetRec($3, p, None, b, $8, span)
-          | LambdaAnnot(p, ty, b, _) -> LetRec($3, p, Some ty, b, $8, span)
+          | Lambda(p, b, _) -> LetRec([($3, p, None, b, ruleSpan parseState 3 6)], $8, span)
+          | LambdaAnnot(p, ty, b, _) -> LetRec([($3, p, Some ty, b, ruleSpan parseState 3 6)], $8, span)
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | LET REC IDENT MixedParamList EQUALS INDENT Expr DEDENT IN SeqExpr
         { let span = ruleSpan parseState 1 10
           let lambda = desugarMixedParams $4 $7 span
           match lambda with
-          | Lambda(p, b, _) -> LetRec($3, p, None, b, $10, span)
-          | LambdaAnnot(p, ty, b, _) -> LetRec($3, p, Some ty, b, $10, span)
+          | Lambda(p, b, _) -> LetRec([($3, p, None, b, ruleSpan parseState 3 8)], $10, span)
+          | LambdaAnnot(p, ty, b, _) -> LetRec([($3, p, Some ty, b, ruleSpan parseState 3 8)], $10, span)
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     // Phase 64: expression let rec with mixed params + return type
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS Expr IN SeqExpr
@@ -193,16 +193,16 @@ Expr:
           let body = Annot($8, $6, span)
           let lambda = desugarMixedParams $4 body span
           match lambda with
-          | Lambda(p, b, _) -> LetRec($3, p, None, b, $10, span)
-          | LambdaAnnot(p, ty, b, _) -> LetRec($3, p, Some ty, b, $10, span)
+          | Lambda(p, b, _) -> LetRec([($3, p, None, b, ruleSpan parseState 3 8)], $10, span)
+          | LambdaAnnot(p, ty, b, _) -> LetRec([($3, p, Some ty, b, ruleSpan parseState 3 8)], $10, span)
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS INDENT Expr DEDENT IN SeqExpr
         { let span = ruleSpan parseState 1 12
           let body = Annot($9, $6, span)
           let lambda = desugarMixedParams $4 body span
           match lambda with
-          | Lambda(p, b, _) -> LetRec($3, p, None, b, $12, span)
-          | LambdaAnnot(p, ty, b, _) -> LetRec($3, p, Some ty, b, $12, span)
+          | Lambda(p, b, _) -> LetRec([($3, p, None, b, ruleSpan parseState 3 10)], $12, span)
+          | LambdaAnnot(p, ty, b, _) -> LetRec([($3, p, Some ty, b, ruleSpan parseState 3 10)], $12, span)
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | FUN IDENT ARROW SeqExpr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
     | FUN IDENT ARROW INDENT SeqExpr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }

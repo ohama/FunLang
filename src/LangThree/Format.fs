@@ -146,10 +146,15 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.Or (l, r, _) -> sprintf "Or (%s, %s)" (formatAst l) (formatAst r)
     | Ast.If (cond, t, e, _) -> sprintf "If (%s, %s, %s)" (formatAst cond) (formatAst t) (formatAst e)
     | Ast.Let (name, value, body, _) -> sprintf "Let (\"%s\", %s, %s)" name (formatAst value) (formatAst body)
-    | Ast.LetRec (name, param, paramTyOpt, body, expr, _) ->
-        match paramTyOpt with
-        | Some ty -> sprintf "LetRec (\"%s\", (\"%s\" : %s), %s, %s)" name param (formatTypeExpr ty) (formatAst body) (formatAst expr)
-        | None -> sprintf "LetRec (\"%s\", \"%s\", %s, %s)" name param (formatAst body) (formatAst expr)
+    | Ast.LetRec (bindings, inExpr, _) ->
+        let bindingsStr =
+            bindings
+            |> List.map (fun (name, param, paramTyOpt, body, _) ->
+                match paramTyOpt with
+                | Some ty -> sprintf "%s (%s : %s) = %s" name param (formatTypeExpr ty) (formatAst body)
+                | None -> sprintf "%s %s = %s" name param (formatAst body))
+            |> String.concat " and "
+        sprintf "LetRec (%s) in %s" bindingsStr (formatAst inExpr)
     | Ast.Lambda (param, body, _) -> sprintf "Lambda (\"%s\", %s)" param (formatAst body)
     | Ast.LambdaAnnot (param, tyExpr, body, _) ->
         sprintf "LambdaAnnot (\"%s\", %s, %s)" param (formatTypeExpr tyExpr) (formatAst body)

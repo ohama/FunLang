@@ -76,7 +76,7 @@ type Expr =
     // Phase 5: Functions
     | Lambda of param: string * body: Expr * span: Span      // fun param -> body
     | App of func: Expr * arg: Expr * span: Span             // func arg (function application)
-    | LetRec of name: string * param: string * paramType: TypeExpr option * body: Expr * inExpr: Expr * span: Span
+    | LetRec of bindings: (string * string * TypeExpr option * Expr * Span) list * inExpr: Expr * span: Span
     // let rec name param = body in inExpr
     // Phase 1 (v3.0): Tuples
     | Tuple of Expr list * span: Span               // Tuple expression: (e1, e2, ...)
@@ -309,7 +309,7 @@ let spanOf (expr: Expr) : Span =
     | Number(_, s) | Bool(_, s) | String(_, s) | Char(_, s) | Var(_, s) -> s
     | Add(_, _, s) | Subtract(_, _, s) | Multiply(_, _, s) | Divide(_, _, s) -> s
     | Negate(_, s) -> s
-    | Let(_, _, _, s) | LetPat(_, _, _, s) | LetRec(_, _, _, _, _, s) -> s
+    | Let(_, _, _, s) | LetPat(_, _, _, s) | LetRec(_, _, s) -> s
     | If(_, _, _, s) -> s
     | Equal(_, _, s) | NotEqual(_, _, s) -> s
     | LessThan(_, _, s) | GreaterThan(_, _, s) | LessEqual(_, _, s) | GreaterEqual(_, _, s) -> s

@@ -264,7 +264,9 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         (compose s2 s1, bodyTy)
 
     // === LetRec (INFER-09) ===
-    | LetRec (name, param, paramTyOpt, body, expr, span) ->
+    | LetRec (bindings, inExpr, span) ->
+        // Mechanical List.head for single-binding compatibility (Plan 02 rewrites for multi-binding)
+        let (name, param, paramTyOpt, body, _bindingSpan) = List.head bindings
         // Pre-bind function with fresh type for recursive calls
         let funcTy = freshVar()
         let paramTy =
@@ -282,7 +284,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let env' = applyEnv s env
         let scheme = generalize env' (apply s funcTy)
         let exprEnv = Map.add name scheme env'
-        let s3, exprTy = inferWithContext ctx exprEnv expr
+        let s3, exprTy = inferWithContext ctx exprEnv inExpr
         (compose s3 s, exprTy)
 
     // === Tuple (INFER-11) ===

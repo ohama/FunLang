@@ -347,7 +347,8 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
         (patterns, scrutinee, span) :: nested
     | Let(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
     | LetPat(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
-    | LetRec(_, _, _, rhs, body, _) -> collectMatches rhs @ collectMatches body
+    | LetRec(bindings, body, _) ->
+        (bindings |> List.collect (fun (_, _, _, rhs, _) -> collectMatches rhs)) @ collectMatches body
     | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectMatches body
     | App(f, arg, _) -> collectMatches f @ collectMatches arg
     | If(cond, thenE, elseE, _) -> collectMatches cond @ collectMatches thenE @ collectMatches elseE
@@ -480,7 +481,8 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
                 collectTryWiths s @ (clauses |> List.collect (fun (_, _, b) -> collectTryWiths b))
             | Let(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | LetPat(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
-            | LetRec(_, _, _, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
+            | LetRec(bindings, body, _) ->
+                (bindings |> List.collect (fun (_, _, _, rhs, _) -> collectTryWiths rhs)) @ collectTryWiths body
             | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectTryWiths body
             | App(f, arg, _) -> collectTryWiths f @ collectTryWiths arg
             | If(c, t, e, _) -> collectTryWiths c @ collectTryWiths t @ collectTryWiths e
@@ -566,7 +568,9 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
         Set.singleton modName
     | Let(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
     | LetPat(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
-    | LetRec(_, _, _, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
+    | LetRec(bindings, body, _) ->
+        let bindingRefs = bindings |> List.map (fun (_, _, _, rhs, _) -> collectModuleRefs modules rhs) |> Set.unionMany
+        Set.union bindingRefs (collectModuleRefs modules body)
     | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectModuleRefs modules body
     | App(f, arg, _) -> Set.union (collectModuleRefs modules f) (collectModuleRefs modules arg)
     | If(c, t, e, _) -> Set.unionMany [collectModuleRefs modules c; collectModuleRefs modules t; collectModuleRefs modules e]
@@ -644,7 +648,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     // Recurse into subexpressions
     | Let(n, rhs, body, s) -> Let(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
     | LetPat(p, rhs, body, s) -> LetPat(p, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
-    | LetRec(n, p, pty, rhs, body, s) -> LetRec(n, p, pty, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
+    | LetRec(bindings, body, s) -> LetRec(bindings |> List.map (fun (n, p, pty, rhs, bs) -> (n, p, pty, rewriteModuleAccess modules rhs, bs)), rewriteModuleAccess modules body, s)
     | Lambda(p, body, s) -> Lambda(p, rewriteModuleAccess modules body, s)
     | LambdaAnnot(p, t, body, s) -> LambdaAnnot(p, t, rewriteModuleAccess modules body, s)
     | App(f, arg, s) -> App(rewriteModuleAccess modules f, rewriteModuleAccess modules arg, s)
