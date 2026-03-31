@@ -33,10 +33,11 @@ v10.0 adds Haskell-style type classes to LangThree's existing Hindley-Milner typ
   2. `ClassEnv` and `InstanceEnv` types are defined in `Type.fs` and threaded through `TypeCheck.typeCheckModuleWithPrelude` alongside existing environments.
   3. `mkScheme`/`schemeType` compatibility helpers exist so downstream consumers can be updated incrementally.
   4. `formatSchemeNormalized` displays constraints (e.g., `Show 'a =>`) when present; existing output is unchanged when constraints list is empty.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 70-01: TBD
+- [ ] 70-01-PLAN.md — Extend Scheme to 3-field, add Constraint/ClassEnv/InstanceEnv types, update all ~92 match sites
+- [ ] 70-02-PLAN.md — Thread ClassEnv/InstanceEnv through typeCheckModuleWithPrelude and all callers
 
 ---
 
@@ -106,7 +107,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 70. Core Type Infrastructure | v10.0 | 0/TBD | Not started | - |
+| 70. Core Type Infrastructure | v10.0 | 0/2 | Not started | - |
 | 71. Parsing and AST | v10.0 | 0/TBD | Not started | - |
 | 72. Type Checker and Constraint Inference | v10.0 | 0/TBD | Not started | - |
 | 73. Dictionary Construction and Elaboration | v10.0 | 0/TBD | Not started | - |
