@@ -112,6 +112,6 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 70. Core Type Infrastructure | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
 | 71. Parsing and AST | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
-| 72. Type Checker and Constraint Inference | v10.0 | 0/3 | Not started | - |
+| 72. Type Checker and Constraint Inference | v10.0 | 3/3 | ✓ Complete | 2026-03-31 |
 | 73. Dictionary Construction and Elaboration | v10.0 | 0/TBD | Not started | - |
 | 74. Built-in Instances and Tests | v10.0 | 0/TBD | Not started | - |
