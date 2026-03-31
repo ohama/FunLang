@@ -16,7 +16,7 @@ Status: In progress
 Last activity: 2026-03-31 -- Completed 67-03-PLAN.md (file import caching)
 
 Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
-         [███░░░░░░░░░░░░░░░░░] v9.0: in progress (plans 67-01, 67-03 done)
+         [████░░░░░░░░░░░░░░░░] v9.0: in progress (plans 67-01, 67-02, 67-03 done)
 
 ## Performance Metrics
 
@@ -55,7 +55,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 67-03-PLAN.md (file import caching, tcCache + evalCache in Prelude.fs)
+Stopped at: Completed 67-02-PLAN.md (--check and --deps modes in Program.fs)
 Resume file: None
 Next action: Execute Phase 67 Plan 04 (funproj.toml support)
 
