@@ -90,6 +90,7 @@ type SyntaxContext =
 3. **Pipe alignment**: `InMatch`/`InTry` 컨텍스트에서 `|` 파이프 column 검증
 4. **Function application**: 다음 줄이 현재보다 들여쓰기되고 atom이면 `InFunctionApp` 진입
 5. **Context push/pop**: INDENT 시 `InExprBlock`/`InModule` push, DEDENT 시 pop
+6. **Blank line skip (v10.3)**: 연속 NEWLINE 토큰(빈 줄) 감지 시 첫 NEWLINE 무시 → INDENT 블록 내 빈 줄이 DEDENT를 유발하지 않음
 
 **이 패턴이 중요한 이유:**
 파서 문법을 context-free로 유지하면서 들여쓰기 기반 문법을 구현. 파서는 `INDENT`/`DEDENT`를 `{}`처럼 취급.

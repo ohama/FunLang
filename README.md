@@ -61,6 +61,9 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Extended Prelude** | List.sort/sortBy/tryFind/choose/distinctBy/mapi, Array.sort/ofSeq, String/Char modules | v7.0 |
 | **Module Function API** | Removed dot dispatch, unified to `Module.function value` style | v7.1 |
 | **Type Classes** | `typeclass`/`instance` declarations, constraint inference (`Show 'a =>`), dictionary-passing elaboration, built-in `Show`/`Eq` instances | v10.0 |
+| **Typeclass Module Integration** | Instances in modules globally accessible, ClassEnv/InstanceEnv module export, ADT instance support | v10.1 |
+| **Module Error Quality** | Clear `E0502` for undefined modules, file import span, constraint annotation validation | v10.2 |
+| **Blank Line Tolerance** | Blank lines allowed in module bodies, let bodies, match arms; `--emit-filtered-tokens` CLI | v10.3 |
 
 ## Quick Start
 
@@ -265,12 +268,12 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (~15,000 LOC F#)
+├── src/LangThree/       # Interpreter source (~15,500 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (676 tests)
+│   └── flt/             # fslit integration tests (690 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
-│       ├── file/        # File-mode tests (453 tests, 34 subdirs)
+│       ├── file/        # File-mode tests (467 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
 │       └── error/       # Error case tests (4 tests)
 ├── tutorial/            # mdBook tutorial (23 chapters, Korean)
@@ -294,10 +297,10 @@ LangThree/
 # F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (676)
+# fslit integration tests (690)
 /path/to/fslit tests/flt/
 
-# Total: ~900 tests
+# Total: ~914 tests
 ```
 
 ## Milestones
@@ -321,8 +324,11 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v7.0 | Native Collections & Built-in Library | 54-59 | 14 | 2026-03-29 |
 | v7.1 | Remove Dot Dispatch | 60-62 | 7 | 2026-03-29 |
 | v10.0 | Type Classes | 70-74 | 10 | 2026-04-01 |
+| v10.1 | Typeclass Module Integration | 75-78 | — | 2026-04-01 |
+| v10.2 | Module Error Quality | 79-80 | — | 2026-04-01 |
+| v10.3 | Blank Line Tolerance | 81-82 | — | 2026-04-01 |
 
-**Total:** 74 phases, 144 plans across 18 milestones
+**Total:** 82 phases across 21 milestones
 
 ## Reference Documents
 

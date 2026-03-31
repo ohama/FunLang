@@ -10,7 +10,7 @@ Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 # F# unit tests (224 tests)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (676 tests)
+# fslit integration tests (690 tests)
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)
@@ -62,7 +62,7 @@ tests/flt/
 │   ├── tuple/      # 튜플
 │   ├── type-annot/ # 타입 주석
 │   └── unit/       # 유닛 타입
-├── file/           # 파일 모드 테스트 (453 tests, 34 subdirs)
+├── file/           # 파일 모드 테스트 (467 tests, 34 subdirs)
 │   ├── adt/        # ADT + GADT (20 tests)
 │   ├── algorithm/  # 알고리즘 (27 tests)
 │   ├── alias/      # 타입 별칭 (4 tests)
@@ -79,10 +79,10 @@ tests/flt/
 │   ├── let/        # let 바인딩 (9 tests)
 │   ├── list/       # 리스트 + 컴프리헨션 (4 tests)
 │   ├── match/      # 패턴 매칭 (39 tests)
-│   ├── module/     # 모듈 (11 tests)
+│   ├── module/     # 모듈 (14 tests)
 │   ├── mutable/    # 가변 변수 let mut (30 tests)
 │   ├── mutablelist/# MutableList (5 tests)
-│   ├── offside/    # offside rule (34 tests)
+│   ├── offside/    # offside rule (38 tests)
 │   ├── operator/   # 사용자 정의 연산자 (16 tests)
 │   ├── option/     # Option 타입 (6 tests)
 │   ├── pipe/       # 파이프 (7 tests)
@@ -94,7 +94,7 @@ tests/flt/
 │   ├── record/     # 레코드 (11 tests)
 │   ├── string/     # 문자열 + StringBuilder + 슬라이싱 (18 tests)
 │   ├── tco/        # 꼬리 호출 최적화 (4 tests)
-│   ├── typeclass/  # 타입 클래스 (17 tests)
+│   ├── typeclass/  # 타입 클래스 (24 tests)
 │   └── unit/       # 유닛 (3 tests)
 ├── emit/           # AST/타입 출력 테스트 (100 tests)
 │   ├── ast-decl/   # 선언 AST 출력 (17 tests)

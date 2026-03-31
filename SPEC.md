@@ -123,7 +123,8 @@ Single-character operators (`+`, `-`, `*`, `/`, `%`, `<`, `>`, `=`) are always l
 
 - Tabs are forbidden — spaces only
 - Indentation is significant (F# style offside rule)
-- Blank lines and comment-only lines do not generate NEWLINE tokens
+- Blank lines are permitted inside indented blocks (module bodies, let bodies, match arms) — they do not trigger DEDENT (v10.3)
+- Comment-only lines do not generate NEWLINE tokens
 
 ## 2. Operator Precedence (lowest to highest)
 
@@ -358,6 +359,7 @@ Python 알고리즘 기반. Indent stack `[0]`에서 시작:
 - `col > top` → INDENT 발생, col을 스택에 push
 - `col = top` → 동일 레벨 (토큰 없음)
 - `col < top` → DEDENT 발생, top을 pop (반복 가능 — 다단계 dedent)
+- 빈 줄 (연속 NEWLINE) → 첫 NEWLINE 무시, INDENT 블록 유지 (v10.3)
 
 ### 4.2 Context Stack
 
