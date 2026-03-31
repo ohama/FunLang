@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 Milestone: v9.0 Project Build System
 Phase: 67 of 68 (CLI Extensions)
-Plan: 1 of TBD in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-31 -- Completed 67-01-PLAN.md (CLI flag foundation)
+Last activity: 2026-03-31 -- Completed 67-03-PLAN.md (file import caching)
 
 Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
-         [█░░░░░░░░░░░░░░░░░░░] v9.0: in progress (plan 67-01 done)
+         [███░░░░░░░░░░░░░░░░░] v9.0: in progress (plans 67-01, 67-03 done)
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Key cross-milestone context:
 - v9.0: Adopted "방안 D" (open chain enhancement) with Phase 2 project file -- CLI extensions first, funproj.toml second
 - v9.0: funproj.toml filename (not l3proj.toml) per REQUIREMENTS.md
 - v9.0: Prelude priority order: --prelude flag > LANGTHREE_PRELUDE env > funproj.toml [project].prelude > auto-discovery
+- v9.0 67-03: File import caching -- store file's own exports only (not merged), TC cache after cycle detection, eval cache at top
 
 ### Pending Todos
 
@@ -54,10 +55,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 67-01-PLAN.md (CLI flag foundation, Check/Deps/Prelude flags + resolvePreludeDir)
+Stopped at: Completed 67-03-PLAN.md (file import caching, tcCache + evalCache in Prelude.fs)
 Resume file: None
-Next action: Execute Phase 67 Plan 02+ (--check, --deps implementation)
+Next action: Execute Phase 67 Plan 04 (funproj.toml support)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (67-01 complete: CLI flag foundation)*
+*Last updated: 2026-03-31 (67-03 complete: file import caching)*
