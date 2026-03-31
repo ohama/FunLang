@@ -750,13 +750,19 @@ let mutable fileImportTypeChecker :
     fun resolvedPath _ _ _ _ ->
         failwithf "FileImport type checker not initialized. Cannot import '%s'." resolvedPath
 
+/// Module-level class and instance environments for Bidir constraint resolution (Phase 72)
+/// Same threading pattern as Bidir.mutableVars
+let mutable currentClassEnv : ClassEnv = Map.empty
+let mutable currentInstEnv : InstanceEnv = Map.empty
+
 /// Type check declarations sequentially, building up environments and collecting warnings.
-/// Returns (typeEnv, ctorEnv, recEnv, modules, warnings)
+/// Returns (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, warnings)
 let rec typeCheckDecls
     (decls: Decl list)
     (typeEnv: TypeEnv) (ctorEnv: ConstructorEnv) (recEnv: RecordEnv)
+    (classEnv: ClassEnv) (instEnv: InstanceEnv)
     (modules: Map<string, ModuleExports>)
-    : TypeEnv * ConstructorEnv * RecordEnv * Map<string, ModuleExports> * Diagnostic list =
+    : TypeEnv * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * Diagnostic list =
 
     // First pass: collect all type and record declarations for the scope
     let ctorEnv =
@@ -798,9 +804,9 @@ let rec typeCheckDecls
     validateUniqueRecordFields decls
 
     // Second pass: process declarations sequentially
-    let (typeEnv', ctorEnv', recEnv', modules', warnings') =
+    let (typeEnv', ctorEnv', recEnv', classEnv', instEnv', modules', warnings') =
         decls
-        |> List.fold (fun (env, cEnv, rEnv, mods, warns) decl ->
+        |> List.fold (fun (env, cEnv, rEnv, clsEnv, iEnv, mods, warns) decl ->
             match decl with
             | LetDecl(name, body, _) ->
                 // Resolve qualified module access before type checking
@@ -816,7 +822,7 @@ let rec typeCheckDecls
                 let env' = Map.add name scheme env
                 // Collect match warnings from this let body
                 let matchWarnings = checkMatchWarnings cEnv body
-                (env', cEnv, rEnv, mods, warns @ matchWarnings)
+                (env', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
 
             | LetMutDecl(name, body, _) ->
                 // Phase 42: Mutable variable at module level (monomorphic, no generalization)
@@ -833,7 +839,7 @@ let rec typeCheckDecls
                 // Track as mutable for Assign checks
                 Bidir.mutableVars <- Set.add name Bidir.mutableVars
                 let matchWarnings = checkMatchWarnings cEnv body
-                (env', cEnv, rEnv, mods, warns @ matchWarnings)
+                (env', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
 
             | LetPatDecl(pat, body, _) ->
                 let refsInBody = collectModuleRefs mods body
@@ -851,7 +857,7 @@ let rec typeCheckDecls
                         generalize env' (apply s' ty))
                 let env'' = Map.fold (fun acc k v -> Map.add k v acc) env' generalizedPatEnv
                 let matchWarnings = checkMatchWarnings cEnv body
-                (env'', cEnv, rEnv, mods, warns @ matchWarnings)
+                (env'', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
 
             | LetRecDecl(bindings, _) ->
                 // Phase 18: Mutual recursive function type checking
@@ -904,17 +910,17 @@ let rec typeCheckDecls
                 let matchWarnings =
                     bindings |> List.collect (fun (_, _, _, body, _) -> checkMatchWarnings cEnv body)
 
-                (env'', cEnv, rEnv, mods, warns @ matchWarnings)
+                (env'', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
 
             | Decl.TypeDecl _ | Decl.RecordTypeDecl _ | ExceptionDecl _ ->
                 // Already processed in first pass (ExceptionDecl: TODO in Plan 02)
-                (env, cEnv, rEnv, mods, warns)
+                (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
 
             | TypeAliasDecl _ ->
                 // Type aliases are transparent -- they don't create new types.
                 // TEName "AliasName" in type annotations elaborates to a fresh TVar
                 // which unifies with the actual type at use sites.
-                (env, cEnv, rEnv, mods, warns)
+                (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
 
             | ModuleDecl(name, innerDecls, span) ->
                 // Check duplicate module name
@@ -923,8 +929,8 @@ let rec typeCheckDecls
                         Kind = DuplicateModuleName name
                         Span = span; Term = None; ContextStack = []; Trace = [] })
                 // Recurse into inner declarations
-                let (innerTypeEnv, innerCtorEnv, innerRecEnv, innerMods, innerWarns) =
-                    typeCheckDecls innerDecls env cEnv rEnv mods
+                let (innerTypeEnv, innerCtorEnv, innerRecEnv, _innerClsEnv, _innerInstEnv, innerMods, innerWarns) =
+                    typeCheckDecls innerDecls env cEnv rEnv clsEnv iEnv mods
                 // Build module exports (only bindings defined in this module, not inherited).
                 // Include a binding if it's new OR if it shadows an outer binding with a different type.
                 // This allows e.g. String.length (string -> int) to be exported even though
@@ -954,7 +960,7 @@ let rec typeCheckDecls
                     RecEnv = moduleRecEnv
                     SubModules = newSubMods
                 }
-                (env, cEnv, rEnv, Map.add name exports mods, warns @ innerWarns)
+                (env, cEnv, rEnv, clsEnv, iEnv, Map.add name exports mods, warns @ innerWarns)
 
             | OpenDecl(path, span) ->
                 // Look up module in current modules map
@@ -967,11 +973,11 @@ let rec typeCheckDecls
                             Span = span; Term = None; ContextStack = []; Trace = [] })
                     | Some exports ->
                         let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
-                        (env', cEnv', rEnv', mods, warns)
+                        (env', cEnv', rEnv', clsEnv, iEnv, mods, warns)
                 | _ ->
                     let exports = resolveModule mods path span
                     let (env', cEnv', rEnv') = openModuleExports exports env cEnv rEnv
-                    (env', cEnv', rEnv', mods, warns)
+                    (env', cEnv', rEnv', clsEnv, iEnv, mods, warns)
 
             | FileImportDecl(path, _span) ->
                 // Use currentTypeCheckingFile for path resolution since span.FileName
@@ -979,19 +985,96 @@ let rec typeCheckDecls
                 let resolvedPath = resolveImportPath path currentTypeCheckingFile
                 let (env', cEnv', rEnv', fileMods) = fileImportTypeChecker resolvedPath cEnv rEnv env mods
                 let mods' = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
-                (env', cEnv', rEnv', mods', warns)
+                (env', cEnv', rEnv', clsEnv, iEnv, mods', warns)
 
-            // Phase 71 (Type Classes): stubs — Phase 72 will implement these
-            | TypeClassDecl(name, _, _, span) ->
-                failwithf "TypeClassDecl '%s' at %s not yet implemented in type checker" name (Ast.formatSpan span)
-            | InstanceDecl(name, _, _, span) ->
-                failwithf "InstanceDecl '%s' at %s not yet implemented in type checker" name (Ast.formatSpan span)
+            // Phase 72 (Type Classes): TypeClassDecl and InstanceDecl processing
+            | TypeClassDecl(className, typeVarName, methods, span) ->
+                // Check class not already defined (reuse DuplicateModuleName for now)
+                if Map.containsKey className clsEnv then
+                    raise (TypeException {
+                        Kind = DuplicateModuleName className
+                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                // Create a fresh type variable for the class param
+                let classTypeVar = Infer.freshVar()
+                let classVarId = match classTypeVar with TVar n -> n | _ -> failwith "impossible"
+                // Elaborate each method signature with this shared type var env
+                let methodSchemes =
+                    methods |> List.map (fun (methodName, methodTypeExpr) ->
+                        let (methodTy, _) = Elaborate.elaborateWithVars (Map.ofList [(typeVarName, classVarId)]) methodTypeExpr
+                        // Method scheme: forall [classVarId]. ClassName classVarId => methodTy
+                        let methodConstraint = { ClassName = className; TypeArg = TVar classVarId }
+                        let scheme = Scheme([classVarId], [methodConstraint], methodTy)
+                        (methodName, scheme))
+                // Build ClassInfo and add to classEnv
+                let classInfo = { Name = className; TypeVar = classVarId; Methods = methodSchemes }
+                let clsEnv' = Map.add className classInfo clsEnv
+                // Update module-level mutable ref for Bidir access
+                currentClassEnv <- clsEnv'
+                // Add method schemes to typeEnv (so methods are callable as regular functions)
+                let env' =
+                    methodSchemes |> List.fold (fun acc (methodName, scheme) ->
+                        Map.add methodName scheme acc) env
+                (env', cEnv, rEnv, clsEnv', iEnv, mods, warns)
+
+            | InstanceDecl(className, instTypeExpr, methods, span) ->
+                // Look up class in classEnv
+                let classInfo =
+                    match Map.tryFind className clsEnv with
+                    | Some ci -> ci
+                    | None ->
+                        raise (TypeException {
+                            Kind = UnknownTypeClass className
+                            Span = span; Term = None; ContextStack = []; Trace = [] })
+                // Elaborate the instance type (e.g., TEName "int" -> TInt)
+                let instType = Elaborate.elaborateTypeExpr instTypeExpr
+                // Check for duplicate instance
+                let existingInstances = Map.tryFind className iEnv |> Option.defaultValue []
+                if existingInstances |> List.exists (fun ii -> ii.InstanceType = instType) then
+                    raise (TypeException {
+                        Kind = DuplicateInstance(className, instType)
+                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                // Check methods match class declaration (same set of names)
+                let classMethodNames = classInfo.Methods |> List.map fst |> Set.ofList
+                let instMethodNames = methods |> List.map fst |> Set.ofList
+                let missing = Set.difference classMethodNames instMethodNames
+                let extra = Set.difference instMethodNames classMethodNames
+                if not (Set.isEmpty missing) then
+                    let missingName = Set.minElement missing
+                    raise (TypeException {
+                        Kind = MissingMethod(className, missingName)
+                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                if not (Set.isEmpty extra) then
+                    let extraName = Set.minElement extra
+                    raise (TypeException {
+                        Kind = ExtraMethod(className, extraName)
+                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                // Type-check each method body against the class method signature
+                // instantiated with the concrete instance type
+                methods |> List.iter (fun (methodName, methodBody) ->
+                    let classScheme =
+                        classInfo.Methods |> List.find (fun (n, _) -> n = methodName) |> snd
+                    // Instantiate: replace the class type var with the concrete instance type
+                    let (Scheme(_, _, methodTy)) = classScheme
+                    let subst = Map.ofList [classInfo.TypeVar, instType]
+                    let expectedTy = apply subst methodTy
+                    // Synth the body and unify with expected type
+                    let rewrittenBody = rewriteModuleAccess mods methodBody
+                    let s, actualTy = Bidir.synth cEnv rEnv [] env rewrittenBody
+                    let s2 = Unify.unifyWithContext [] [] span (apply s actualTy) (apply s expectedTy)
+                    ignore s2  // We only care about errors, not the resulting substitution
+                )
+                // Add to instanceEnv
+                let newInst = { ClassName = className; InstanceType = instType }
+                let iEnv' = Map.add className (newInst :: existingInstances) iEnv
+                // Update module-level mutable ref for Bidir access
+                currentInstEnv <- iEnv'
+                (env, cEnv, rEnv, clsEnv, iEnv', mods, warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope
-                let (env', cEnv'', rEnv'', mods', innerWarns) =
+                let (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns) =
                     innerDecls
-                    |> List.fold (fun (e, ce, re, ms, ws) d ->
+                    |> List.fold (fun (e, ce, re, cls, inst, ms, ws) d ->
                         match d with
                         | LetDecl(n, body, _) ->
                             let refsInBody = collectModuleRefs ms body
@@ -1003,27 +1086,27 @@ let rec typeCheckDecls
                             let ty' = apply s ty
                             let scheme = generalize (applyEnv s e) ty'
                             let matchWarnings = checkMatchWarnings ce body
-                            (Map.add n scheme e, ce, re, ms, ws @ matchWarnings)
+                            (Map.add n scheme e, ce, re, cls, inst, ms, ws @ matchWarnings)
                         | ModuleDecl(name, mInnerDecls, span) ->
                             if Map.containsKey name ms then
                                 raise (TypeException {
                                     Kind = DuplicateModuleName name
                                     Span = span; Term = None; ContextStack = []; Trace = [] })
-                            let (iEnv, iCtor, iRec, iMods, iWarns) =
-                                typeCheckDecls mInnerDecls e ce re ms
+                            let (iTypeEnv, iCtor, iRec, _iCls, _iInst, iMods, iWarns) =
+                                typeCheckDecls mInnerDecls e ce re cls inst ms
                             let mExports = {
-                                TypeEnv = Map.fold (fun acc k v -> if Map.containsKey k e then acc else Map.add k v acc) Map.empty iEnv
+                                TypeEnv = Map.fold (fun acc k v -> if Map.containsKey k e then acc else Map.add k v acc) Map.empty iTypeEnv
                                 CtorEnv = Map.fold (fun acc k v -> if Map.containsKey k ce then acc else Map.add k v acc) Map.empty iCtor
                                 RecEnv = Map.fold (fun acc k v -> if Map.containsKey k re then acc else Map.add k v acc) Map.empty iRec
                                 SubModules = iMods
                             }
-                            (e, ce, re, Map.add name mExports ms, ws @ iWarns)
-                        | _ -> (e, ce, re, ms, ws)
-                    ) (env, cEnv, rEnv, mods, warns)
-                (env', cEnv'', rEnv'', mods', innerWarns)
-        ) (typeEnv, ctorEnv, recEnv, modules, [])
+                            (e, ce, re, cls, inst, Map.add name mExports ms, ws @ iWarns)
+                        | _ -> (e, ce, re, cls, inst, ms, ws)
+                    ) (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
+                (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns)
+        ) (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, [])
 
-    (typeEnv', ctorEnv', recEnv', modules', warnings')
+    (typeEnv', ctorEnv', recEnv', classEnv', instEnv', modules', warnings')
 
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
@@ -1038,6 +1121,9 @@ let typeCheckModuleWithPrelude
     try
         // Phase 42: Reset mutable variable tracking for each top-level type check
         Bidir.mutableVars <- Set.empty
+        // Phase 72: Initialize class/instance env mutable refs for Bidir access
+        currentClassEnv <- preludeClassEnv
+        currentInstEnv <- preludeInstEnv
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
@@ -1051,9 +1137,9 @@ let typeCheckModuleWithPrelude
             | None -> ()
 
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
-            let (typeEnv, ctorEnv, recEnv, modules, warnings) =
-                typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv initialModules
-            Ok (warnings, ctorEnv, recEnv, preludeClassEnv, preludeInstEnv, modules, typeEnv)
+            let (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, warnings) =
+                typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv preludeClassEnv preludeInstEnv initialModules
+            Ok (warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error(typeErrorToDiagnostic err)
