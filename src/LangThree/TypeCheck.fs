@@ -750,10 +750,8 @@ let mutable fileImportTypeChecker :
     fun resolvedPath _ _ _ _ ->
         failwithf "FileImport type checker not initialized. Cannot import '%s'." resolvedPath
 
-/// Module-level class and instance environments for Bidir constraint resolution (Phase 72)
-/// Same threading pattern as Bidir.mutableVars
-let mutable currentClassEnv : ClassEnv = Map.empty
-let mutable currentInstEnv : InstanceEnv = Map.empty
+// Phase 72: currentClassEnv/currentInstEnv live in Bidir.fs (not here) to avoid
+// circular dependency Infer -> TypeCheck. Access via Bidir.currentClassEnv / Bidir.currentInstEnv.
 
 /// Type check declarations sequentially, building up environments and collecting warnings.
 /// Returns (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, warnings)
@@ -1008,8 +1006,8 @@ let rec typeCheckDecls
                 // Build ClassInfo and add to classEnv
                 let classInfo = { Name = className; TypeVar = classVarId; Methods = methodSchemes }
                 let clsEnv' = Map.add className classInfo clsEnv
-                // Update module-level mutable ref for Bidir access
-                currentClassEnv <- clsEnv'
+                // Update Bidir mutable ref for constraint resolution access
+                Bidir.currentClassEnv <- clsEnv'
                 // Add method schemes to typeEnv (so methods are callable as regular functions)
                 let env' =
                     methodSchemes |> List.fold (fun acc (methodName, scheme) ->
@@ -1066,8 +1064,8 @@ let rec typeCheckDecls
                 // Add to instanceEnv
                 let newInst = { ClassName = className; InstanceType = instType }
                 let iEnv' = Map.add className (newInst :: existingInstances) iEnv
-                // Update module-level mutable ref for Bidir access
-                currentInstEnv <- iEnv'
+                // Update Bidir mutable ref for constraint resolution access
+                Bidir.currentInstEnv <- iEnv'
                 (env, cEnv, rEnv, clsEnv, iEnv', mods, warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
@@ -1121,9 +1119,10 @@ let typeCheckModuleWithPrelude
     try
         // Phase 42: Reset mutable variable tracking for each top-level type check
         Bidir.mutableVars <- Set.empty
-        // Phase 72: Initialize class/instance env mutable refs for Bidir access
-        currentClassEnv <- preludeClassEnv
-        currentInstEnv <- preludeInstEnv
+        // Phase 72: Initialize class/instance env and pending constraints for Bidir
+        Bidir.currentClassEnv <- preludeClassEnv
+        Bidir.currentInstEnv <- preludeInstEnv
+        Bidir.pendingConstraints <- []
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->

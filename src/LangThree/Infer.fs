@@ -29,6 +29,7 @@ let freshVar =
 
 /// Instantiate scheme: replace bound vars with fresh type variables
 /// Example: forall 'a. 'a -> 'a becomes 'c -> 'c (with fresh 'c)
+/// NOTE: The constraint-emitting version lives in Bidir.fs (instantiate there shadows this one)
 let instantiate (Scheme (vars, _, ty)): Type =
     match vars with
     | [] -> ty  // Monomorphic - no substitution needed
@@ -39,6 +40,7 @@ let instantiate (Scheme (vars, _, ty)): Type =
 
 /// Generalize type: abstract over free vars not in environment
 /// Creates polymorphic scheme at let boundaries
+/// NOTE: The constraint-draining version lives in Bidir.fs (generalize there shadows this one)
 let generalize (env: TypeEnv) (ty: Type): Scheme =
     let envFree = freeVarsEnv env
     let tyFree = freeVars ty

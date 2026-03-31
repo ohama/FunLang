@@ -10,6 +10,83 @@ open Infer  // Reuse freshVar, instantiate, generalize
 /// Mutable variables currently in scope (Phase 42)
 let mutable mutableVars : Set<string> = Set.empty
 
+/// Pending type class constraints accumulated during synth/check (Phase 72)
+/// Drained at let-generalization boundaries (same pattern as mutableVars)
+let mutable pendingConstraints : Constraint list = []
+
+/// Current ClassEnv/InstanceEnv for constraint resolution (set by TypeCheck before synth)
+/// Avoids circular dep: Infer -> TypeCheck is impossible, but Infer -> Bidir is fine
+let mutable currentClassEnv : ClassEnv = Map.empty
+let mutable currentInstEnv : InstanceEnv = Map.empty
+
+/// Apply a substitution to all pending constraints (resolves stale TVar refs after unification)
+let applySubstToConstraints (s: Subst) =
+    pendingConstraints <- pendingConstraints |> List.map (fun c ->
+        { c with TypeArg = Type.apply s c.TypeArg })
+
+// ============================================================================
+// Constraint-aware instantiate and generalize (Phase 72)
+// These shadow the pure versions in Infer.fs.
+// Any code that opens Bidir after Infer will use these versions.
+// ============================================================================
+
+/// Instantiate scheme: replace bound vars with fresh type variables.
+/// Also emits constraints onto pendingConstraints for tracking at generalize boundaries.
+/// Shadows Infer.instantiate for all callers that open Bidir.
+let instantiate (Scheme (vars, constraints, ty)): Type =
+    match vars with
+    | [] ->
+        // Monomorphic -- emit constraints as-is (for explicit constrained annotations)
+        if not (List.isEmpty constraints) then
+            pendingConstraints <- constraints @ pendingConstraints
+        ty
+    | _ ->
+        let freshVars = List.map (fun _ -> Infer.freshVar()) vars
+        let subst = List.zip vars freshVars |> Map.ofList
+        // Apply substitution to constraints and push onto pending
+        if not (List.isEmpty constraints) then
+            let freshConstraints =
+                constraints |> List.map (fun c ->
+                    { c with TypeArg = apply subst c.TypeArg })
+            pendingConstraints <- freshConstraints @ pendingConstraints
+        apply subst ty
+
+/// Generalize type: abstract over free vars not in environment.
+/// Drains pendingConstraints: constraints mentioning generalized vars are deferred into Scheme;
+/// constraints on concrete types are resolved against currentInstEnv.
+/// Shadows Infer.generalize for all callers that open Bidir.
+let generalize (env: TypeEnv) (ty: Type): Scheme =
+    let envFree = freeVarsEnv env
+    let tyFree = freeVars ty
+    let vars = Set.difference tyFree envFree |> Set.toList
+    let varsSet = Set.ofList vars
+    // Drain pending constraints
+    let pending = pendingConstraints
+    pendingConstraints <- []
+    // Partition: constraints mentioning generalized vars stay in Scheme (deferred);
+    // constraints on concrete types (no generalized vars) must be resolved now
+    let deferred, concrete =
+        pending |> List.partition (fun c ->
+            let constraintFree = freeVars c.TypeArg
+            not (Set.isEmpty (Set.intersect constraintFree varsSet)))
+    // Resolve concrete constraints against InstanceEnv
+    concrete |> List.iter (fun c ->
+        let instEnv = currentInstEnv
+        let instances = Map.tryFind c.ClassName instEnv |> Option.defaultValue []
+        let resolved = instances |> List.exists (fun ii -> ii.InstanceType = c.TypeArg)
+        if not resolved then
+            raise (TypeException {
+                Kind = NoInstance(c.ClassName, c.TypeArg)
+                Span = unknownSpan
+                Term = None
+                ContextStack = []
+                Trace = []
+            })
+    )
+    // Remove duplicate deferred constraints (same class + same type arg)
+    let uniqueDeferred = deferred |> List.distinctBy (fun c -> (c.ClassName, c.TypeArg))
+    Scheme (vars, uniqueDeferred, ty)
+
 // ============================================================================
 // GADT Detection
 // ============================================================================
