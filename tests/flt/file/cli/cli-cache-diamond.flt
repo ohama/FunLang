@@ -1,0 +1,4 @@
+// Test: diamond dependency caching produces correct output (cache-test: d imported by b and c, a imports b and c)
+// --- Command: bash -c 'printf "let d = 42\n" > /tmp/flt-cache-d.fun && printf "open \x22/tmp/flt-cache-d.fun\x22\nlet b = d + 1\n" > /tmp/flt-cache-b.fun && printf "open \x22/tmp/flt-cache-d.fun\x22\nlet c = d + 2\n" > /tmp/flt-cache-c.fun && printf "open \x22/tmp/flt-cache-b.fun\x22\nopen \x22/tmp/flt-cache-c.fun\x22\nlet result = b + c\n" > /tmp/flt-cache-a.fun && /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree /tmp/flt-cache-a.fun'
+// --- Output:
+87

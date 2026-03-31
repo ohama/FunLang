@@ -1,0 +1,7 @@
+// Test: --deps shows dependency tree; single file and imported file cases
+// --- Command: bash -c 'printf "let x = 42\n" > /tmp/flt-deps-leaf.fun && printf "open \x22/tmp/flt-deps-leaf.fun\x22\nlet y = x + 1\n" > /tmp/flt-deps-root.fun && LT=/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree && $LT --deps /tmp/flt-deps-leaf.fun && echo "---" && $LT --deps /tmp/flt-deps-root.fun'
+// --- Output:
+flt-deps-leaf.fun
+---
+flt-deps-root.fun
+  flt-deps-leaf.fun

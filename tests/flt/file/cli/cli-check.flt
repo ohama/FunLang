@@ -1,0 +1,7 @@
+// Test: --check validates files; reports OK for valid code and type errors for invalid code
+// --- Command: bash -c 'printf "let x : int = 42\nlet y : string = \x22hello\x22\n" > /tmp/flt-check-valid.fun && printf "let x : int = \x22hello\x22\n" > /tmp/flt-check-error.fun && LT=/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree && $LT --check /tmp/flt-check-valid.fun 2>&1 && echo "---" && $LT --check /tmp/flt-check-error.fun 2>&1; echo done'
+// --- Output:
+CONTAINS: OK (0 warnings)
+CONTAINS: ---
+CONTAINS: Type mismatch: expected int but got string
+CONTAINS: done
