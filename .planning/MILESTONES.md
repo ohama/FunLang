@@ -1,5 +1,32 @@
 # Project Milestones: LangThree
 
+## v9.0 Project Build System (Shipped: 2026-03-31)
+
+**Delivered:** funproj.toml 기반 Cargo 스타일 빌드 시스템 — CLI 확장 (--check, --deps, --prelude, 환경 변수, 파일 캐싱) + 프로젝트 파일 파싱 + build/test 서브커맨드
+
+**Phases completed:** 67-68 (7 plans total)
+
+**Key accomplishments:**
+- `--check` 모드: 타입 체크만 수행, 실행 없이 오류/성공 stderr 출력
+- `--deps` 모드: 재귀적 의존성 트리 출력 (순환 감지 포함)
+- `--prelude` 플래그 + `LANGTHREE_PRELUDE` 환경 변수 + 파일 임포트 캐싱
+- `funproj.toml` TOML 파싱 (Tomlyn 2.3.0) — [project], [[executable]], [[test]] 섹션
+- `langthree build [name]` — [[executable]] 타겟 타입 체크
+- `langthree test [name]` — [[test]] 타겟 실행
+- Prelude 우선순위: --prelude > LANGTHREE_PRELUDE > funproj.toml > auto-discovery
+
+**Stats:**
+- 35 files changed, +3,459 LOC
+- ~14,453 lines of F# source
+- 2 phases, 7 plans
+- 1 day (2026-03-31)
+- 224 F# unit tests + 659 flt tests, all passing
+- 12/12 requirements shipped
+
+**Git range:** `feat(67-01)` → `docs(68): complete`
+
+---
+
 ## v8.1 Mutual Recursion Completion (Shipped: 2026-03-31)
 
 **Delivered:** `let rec ... and ...` 타입 어노테이션 완성 (첫 파라미터 타입 보존) + expression-level 상호 재귀 구현 (`let rec f x = ... and g y = ... in expr`)

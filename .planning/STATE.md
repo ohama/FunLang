@@ -2,26 +2,26 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-30)
+See: .planning/PROJECT.md (updated 2026-03-31)
 
-**Core value:** funproj.toml 기반 Cargo 스타일 빌드 시스템으로 멀티파일 프로젝트 체계적 관리
-**Current focus:** v9.0 COMPLETE - Project Build System milestone done
+**Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v9.0 Project Build System -- COMPLETE
-Phase: 68 of 68 (Project File) -- COMPLETE
-Plan: 3 of 3 in current phase -- COMPLETE
-Status: Phase 68 verified ✓ / Milestone v9.0 complete ✓
-Last activity: 2026-03-31 -- Phase 68 verified (5/5 must-haves), v9.0 milestone complete
+Milestone: None active (v9.0 shipped 2026-03-31)
+Phase: N/A
+Plan: N/A
+Status: Between milestones
+Last activity: 2026-03-31 -- v9.0 milestone archived
 
-Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
-         [████████████████████] v9.0: 100% (2/2 phases, 7/7 plans complete)
+Progress: [████████████████████] v1.0-v9.0 done (68 phases, 149 plans)
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 149
+- v9.0: 7 plans across 2 phases in 1 day
 - v8.1: 4 plans (2 in phase 65, 2 in phase 66)
 - v8.0: 5 plans across 2 phases in 1 day
 - v7.1: 7 plans across 3 phases in 1 day
@@ -38,11 +38,9 @@ Progress: [████████████████████] v1.0-v8
 
 (Full log in PROJECT.md Key Decisions table)
 
-Key cross-milestone context:
-- v9.0: Adopted "방안 D" (open chain enhancement) with Phase 2 project file -- CLI extensions first, funproj.toml second
-- v9.0: funproj.toml filename (not l3proj.toml) per REQUIREMENTS.md
-- v9.0: Prelude priority order: --prelude flag > LANGTHREE_PRELUDE env > funproj.toml [project].prelude > auto-discovery
-- v9.0 67-03: File import caching -- store file's own exports only (not merged), TC cache after cycle detection, eval cache at top
+Key cross-milestone context carried forward:
+- Prelude priority order: --prelude flag > LANGTHREE_PRELUDE env > funproj.toml [project].prelude > auto-discovery
+- File import caching: store file's own exports only (not merged), TC cache after cycle detection
 
 ### Pending Todos
 
@@ -55,10 +53,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: v9.0 milestone verified ✓
+Stopped at: v9.0 milestone archived
 Resume file: None
-Next action: /gsd:complete-milestone to archive v9.0
+Next action: /gsd:new-milestone to start next milestone
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v9.0 milestone complete, both phases verified ✓)*
+*Last updated: 2026-03-31 (v9.0 archived, ready for next milestone)*
