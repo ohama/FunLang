@@ -238,3 +238,25 @@ let elaborateScoped (tes: TypeExpr list): Type list =
         (ty :: acc, env')
     let (revTypes, _) = List.fold folder ([], Map.empty) tes
     List.rev revTypes
+
+/// Phase 73: Elaborate typeclass declarations into ordinary let-bindings.
+/// Runs after type checking, before evaluation.
+/// - TypeClassDecl: removed (type-level only, eval already ignores)
+/// - InstanceDecl(cls, ty, methods, span): replaced with LetDecl(methodName, methodBody, span) for each method
+/// - All other decls: pass through unchanged
+let rec elaborateTypeclasses (decls: Decl list) : Decl list =
+    decls |> List.collect (fun decl ->
+        match decl with
+        | TypeClassDecl(_, _, _, _) ->
+            [] // Type-level only; remove from eval pipeline
+        | InstanceDecl(_className, _instType, methods, span) ->
+            // Each method becomes an ordinary let-binding
+            methods |> List.map (fun (methodName, methodBody) ->
+                LetDecl(methodName, methodBody, span))
+        | ModuleDecl(name, innerDecls, span) ->
+            // Recurse into module bodies
+            [ModuleDecl(name, elaborateTypeclasses innerDecls, span)]
+        | NamespaceDecl(path, innerDecls, span) ->
+            // Recurse into namespace bodies
+            [NamespaceDecl(path, elaborateTypeclasses innerDecls, span)]
+        | other -> [other])
