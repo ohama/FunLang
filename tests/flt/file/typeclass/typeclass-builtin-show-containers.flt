@@ -1,0 +1,8 @@
+// Test: built-in Show for bool and char — show true and show 'x' work without user instance
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let a = show true
+let b = show 'x'
+let result = show "hello"
+// --- Stdout:
+"hello"

@@ -1,0 +1,8 @@
+// Test: user-defined constrained function using built-in Show instance
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let show_twice x = show x + show x
+
+let result = show_twice 42
+// --- Stdout:
+"4242"
