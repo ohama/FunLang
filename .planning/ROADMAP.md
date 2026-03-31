@@ -41,16 +41,15 @@ Plans:
   3. Three or more mutually recursive bindings work: `let rec a x = ... and b y = ... and c z = ... in a 1`
   4. Type checker rejects type mismatches in mutual recursive bindings (e.g., calling `g` with wrong argument type)
   5. Expression-level `let rec ... and ... in` works nested inside other expressions (inside function bodies, match arms, etc.)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 66-01: TBD
-- [ ] 66-02: TBD
-- [ ] 66-03: TBD
+- [ ] 66-01-PLAN.md — AST node change + parser grammar + mechanical pattern-match fixes
+- [ ] 66-02-PLAN.md — Type checking/eval logic for multi-binding + flt tests
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 65. LetRecDecl AST Refactoring | 2/2 | ✓ Complete | 2026-03-31 |
-| 66. Expression-Level Mutual Recursion | 0/TBD | Not started | - |
+| 66. Expression-Level Mutual Recursion | 0/2 | Not started | - |
