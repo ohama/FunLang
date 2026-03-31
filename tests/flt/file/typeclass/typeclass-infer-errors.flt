@@ -1,0 +1,10 @@
+// Test: calling show on a type with no instance produces E0701 no-instance error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+typeclass Show 'a =
+    | show : 'a -> string
+
+let bad = show (fun x -> x)
+// --- ExitCode: 1
+// --- Stderr:
+error[E0701]: No instance of Show for 'g -> 'g

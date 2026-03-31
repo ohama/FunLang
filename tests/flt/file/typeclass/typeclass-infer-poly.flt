@@ -1,0 +1,14 @@
+// Test: duplicate instance declaration for the same type produces E0702 error
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+typeclass Show 'a =
+    | show : 'a -> string
+
+instance Show int =
+    let show x = to_string x
+
+instance Show int =
+    let show x = to_string x
+// --- ExitCode: 1
+// --- Stderr:
+error[E0702]: Duplicate instance declaration: Show int
