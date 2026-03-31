@@ -5,18 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.1 COMPLETE -- Phase 66 Plan 02 done (expression-level mutual recursion)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v8.1 Mutual Recursion Completion
-Phase: 66 of 66 (Expression-Level Mutual Recursion)
-Plan: 2 of 2
-Status: COMPLETE
-Last activity: 2026-03-31 -- Completed 66-02-PLAN.md
+Milestone: v8.1 Mutual Recursion Completion — ARCHIVED
+Phase: —
+Plan: —
+Status: Ready for next milestone
+Last activity: 2026-03-31 — v8.1 milestone archived
 
-Progress: [████████████████████] v1.0-v8.0 done (64 phases, 138 plans)
-         [████████████████████] v8.1: 100% (4/4 plans, 2/2 phases)
+Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
 
 ## Performance Metrics
 
@@ -60,10 +59,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 66-02-PLAN.md -- v8.1 milestone complete
+Stopped at: v8.1 milestone archived
 Resume file: None
-Next action: None (milestone complete)
+Next action: /gsd:new-milestone for next version
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (66-02 complete, v8.1 complete)*
+*Last updated: 2026-03-31 (v8.1 milestone archived)*

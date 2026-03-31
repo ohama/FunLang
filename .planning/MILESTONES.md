@@ -1,5 +1,29 @@
 # Project Milestones: LangThree
 
+## v8.1 Mutual Recursion Completion (Shipped: 2026-03-31)
+
+**Delivered:** `let rec ... and ...` 타입 어노테이션 완성 (첫 파라미터 타입 보존) + expression-level 상호 재귀 구현 (`let rec f x = ... and g y = ... in expr`)
+
+**Phases completed:** 65-66 (4 plans total)
+
+**Key accomplishments:**
+- LetRec/LetRecDecl AST에 `TypeExpr option` 추가 — 첫 파라미터 타입 어노테이션 보존
+- `elaborateTypeExpr` 통한 타입 어노테이션 실제 검증 (TypeCheck/Bidir/Infer)
+- Expression-level `let rec ... and ... in expr` — AST 바인딩 리스트 + `LetRecContinuation` 재사용
+- Bidir/Infer simultaneous env, Eval sharedEnvRef mutual closure linking
+- 11개 flt 테스트 추가 (even/odd, 3-binding, 타입 어노테이션, nested, error rejection)
+
+**Stats:**
+- 27 files changed, +2,007 LOC
+- ~14,122 lines of F# source
+- 2 phases, 4 plans, 19 commits
+- 1 day (2026-03-31)
+- 224 F# unit tests + 652 flt tests, all passing
+
+**Git range:** `docs(65): research` → `docs(66): complete`
+
+---
+
 ## v8.0 Declaration Type Annotations (Shipped: 2026-03-30)
 
 **Delivered:** FunLexYacc 호환성을 위해 앵글 브래킷 제네릭 구문과 module-level 함수 선언 타입 어노테이션(파라미터 + 반환) 추가 — Parser.fsy 중심 확장
