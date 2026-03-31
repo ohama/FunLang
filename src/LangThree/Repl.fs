@@ -41,7 +41,7 @@ let startRepl () : int =
     printfn "FunLang REPL"
     printfn "Type '#quit' or Ctrl+D to quit."
     printfn ""
-    let prelude = Prelude.loadPrelude()
+    let prelude = Prelude.loadPrelude(None)
     let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
     replLoop initialEnv
     0

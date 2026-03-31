@@ -53,8 +53,13 @@ let main argv =
     try
         let results = parser.Parse(argv, raiseOnUsage = false)
 
+        // Extract --prelude path before loading (must happen before loadPrelude)
+        let preludePath =
+            if results.Contains Prelude then Some (results.GetResult Prelude)
+            else None
+
         // Load prelude from Prelude/*.fun directory
-        let prelude = Prelude.loadPrelude()
+        let prelude = Prelude.loadPrelude(preludePath)
         let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv
 
         // Check if help was requested

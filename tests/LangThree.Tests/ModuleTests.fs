@@ -293,7 +293,7 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
 
 // Helper to eval with prelude loaded
 let evalWithPrelude (input: string) : Ast.Value =
-    let prelude = Prelude.loadPrelude()
+    let prelude = Prelude.loadPrelude(None)
     let m = parseModule input
     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.TypeEnv prelude.Modules m with
     | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
