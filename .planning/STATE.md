@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 71 of 74 (Parsing and AST)
-Plan: 1 of ? complete
-Status: In progress
-Last activity: 2026-03-31 — Completed 71-01-PLAN.md (typeclass/instance parsing and AST nodes)
+Phase: 71 of 74 (Parsing and AST) — COMPLETE
+Plan: 2 of 2 complete
+Status: Phase complete — ready for Phase 72
+Last activity: 2026-03-31 — Completed 71-02-PLAN.md (typeclass integration tests)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [███░░░░░░░░░░░░░░░░░] v10.0: 15% (phases 70+71-01 complete)
+         [████░░░░░░░░░░░░░░░░] v10.0: 20% (phases 70+71 complete)
 
 ## Performance Metrics
 
@@ -61,6 +61,11 @@ From Phase 71 Plan 01:
 - Tasks 1+2 committed together — new Decl variants make TypeCheck/Eval pattern matches non-exhaustive if committed separately
 - formatToken in Format.fs must always cover all Parser.token variants (new tokens need entries there too)
 
+From Phase 71 Plan 02:
+- TypeClassMethod syntax uses leading PIPE: `| methodName : type` (not `methodName : type`) — IDENT after TypeExpr shifts as type application (163 silent LALR conflicts), PIPE is unambiguous
+- TYPECLASS/INSTANCE bodies get InModule context in IndentFilter (not InExprBlock) — prevents spurious IN injection for instance method LET and SEMICOLON between typeclass methods
+- flt integration tests: one test case per file (5 files created in tests/flt/file/typeclass/)
+
 ### Blockers/Concerns
 
 - [Phase 71] `where` keyword audit RESOLVED — `where` not used anywhere in Lexer.fsl, no conflict
@@ -69,10 +74,10 @@ From Phase 71 Plan 01:
 
 ## Session Continuity
 
-Last session: 2026-03-31T00:15:00Z
-Stopped at: Completed 71-01-PLAN.md (typeclass/instance parsing and AST)
+Last session: 2026-03-31T00:40:00Z
+Stopped at: Completed 71-02-PLAN.md (typeclass integration tests)
 Resume file: None
-Next action: Execute Phase 71 Plan 02 (if exists) or Phase 72
+Next action: Execute Phase 72 (type inference for type classes)
 
 ---
 *State initialized: 2026-02-25*
