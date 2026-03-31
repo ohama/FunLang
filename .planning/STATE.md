@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 Milestone: v9.0 Project Build System
 Phase: 67 of 68 (CLI Extensions)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-31 -- Completed 67-03-PLAN.md (file import caching)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-03-31 -- Completed 67-04-PLAN.md (CLI flt integration tests)
 
 Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
-         [████░░░░░░░░░░░░░░░░] v9.0: in progress (plans 67-01, 67-02, 67-03 done)
+         [████████░░░░░░░░░░░░] v9.0: in progress (phase 67 all 4 plans done, phase 68 pending)
 
 ## Performance Metrics
 
@@ -55,10 +55,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 67-02-PLAN.md (--check and --deps modes in Program.fs)
+Stopped at: Completed 67-04-PLAN.md (CLI flt integration tests; phase 67 complete)
 Resume file: None
-Next action: Execute Phase 67 Plan 04 (funproj.toml support)
+Next action: Execute Phase 68 (funproj.toml support)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (67-03 complete: file import caching)*
+*Last updated: 2026-03-31 (67-04 complete: CLI flt integration tests; phase 67 done)*
