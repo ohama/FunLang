@@ -2,7 +2,7 @@
 
 ## Overview
 
-v8.1 completes the mutual recursion story: first by fixing the LetRecDecl AST to preserve type annotations on first parameters (lost during v8.0 parser desugaring), then by implementing expression-level `let rec ... and ... in expr` across all compiler layers. Two phases, building on 64 phases shipped across v1.0-v8.0.
+v8.1 completes the mutual recursion story: first by fixing the LetRecDecl AST to preserve type annotations on first parameters (lost during v8.0 parser desugaring), then by implementing expression-level `let rec ... and ...` across all compiler layers. Two phases, building on 64 phases shipped across v1.0-v8.0.
 
 ## Milestones
 
@@ -25,11 +25,11 @@ v8.1 completes the mutual recursion story: first by fixing the LetRecDecl AST to
   2. Type checker rejects `let rec f (x : int) = x ^^ "hi"` with a type error (annotation is actually enforced, not silently dropped)
   3. All existing `let rec ... and ...` flt tests continue to pass (no regression from AST change)
   4. `dotnet build` succeeds with no warnings from exhaustive pattern match on the changed AST node
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 65-01: TBD
-- [ ] 65-02: TBD
+- [ ] 65-01-PLAN.md — AST definition change + parser + all 28 mechanical pattern-match site updates
+- [ ] 65-02-PLAN.md — Type checker enforcement logic + flt tests for annotation enforcement
 
 ### Phase 66: Expression-Level Mutual Recursion
 **Goal**: Users can write `let rec f x = ... and g y = ... in expr` inside any expression context with full type annotation support
@@ -52,5 +52,5 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 65. LetRecDecl AST Refactoring | 0/TBD | Not started | - |
+| 65. LetRecDecl AST Refactoring | 0/2 | Planned | - |
 | 66. Expression-Level Mutual Recursion | 0/TBD | Not started | - |
