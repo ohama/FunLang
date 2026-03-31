@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Milestone: v10.0 Type Classes
 Phase: 70 of 74 (Core Type Infrastructure)
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-03-31 — Completed 70-01-PLAN.md (Scheme 3-field infrastructure)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-03-31 — Completed 70-02-PLAN.md (ClassEnv/InstanceEnv threading)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [█░░░░░░░░░░░░░░░░░░░] v10.0: 5% (phase 70 plan 1 of 2 done)
+         [██░░░░░░░░░░░░░░░░░░] v10.0: 10% (phase 70 complete, 2/2 plans done)
 
 ## Performance Metrics
 
@@ -45,6 +45,12 @@ From Phase 70 Plan 01:
 - Tasks 1+2 committed together (T1 alone won't compile due to F# exhaustive matching)
 - `mkScheme`/`schemeType` helpers added as zero-cost backward-compat for Phase 71+ gradual migration
 
+From Phase 70 Plan 02:
+- `typeCheckModuleWithPrelude` now accepts `preludeClassEnv: ClassEnv` and `preludeInstEnv: InstanceEnv` (same threading pattern as CtorEnv/RecEnv)
+- `PreludeResult` has `ClassEnv`/`InstEnv` fields; `loadPrelude` accumulates them per-file
+- `loadAndTypeCheckFileImpl` (file import handler) passes `Map.empty` for both — file imports don't declare typeclasses yet
+- Test helpers in GadtTests.fs and ModuleTests.fs updated alongside (auto-fixed blocking deviation)
+
 ### Pending Todos
 
 None.
@@ -57,10 +63,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:26:34Z
-Stopped at: Completed 70-01-PLAN.md (Scheme 3-field infrastructure)
+Last session: 2026-03-31T10:36:00Z
+Stopped at: Completed 70-02-PLAN.md (ClassEnv/InstanceEnv threading) — Phase 70 fully complete
 Resume file: None
-Next action: Execute Phase 70 Plan 02
+Next action: Execute Phase 71 (Typeclass/Instance Parser)
 
 ---
 *State initialized: 2026-02-25*
