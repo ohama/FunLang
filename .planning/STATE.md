@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** v8.1 Phase 66 Plan 01 complete -- Plan 02 next (type-check/eval multi-binding)
+**Current focus:** v8.1 COMPLETE -- Phase 66 Plan 02 done (expression-level mutual recursion)
 
 ## Current Position
 
 Milestone: v8.1 Mutual Recursion Completion
 Phase: 66 of 66 (Expression-Level Mutual Recursion)
-Plan: 1 of 2
-Status: In progress
-Last activity: 2026-03-31 -- Completed 66-01-PLAN.md
+Plan: 2 of 2
+Status: COMPLETE
+Last activity: 2026-03-31 -- Completed 66-02-PLAN.md
 
 Progress: [████████████████████] v1.0-v8.0 done (64 phases, 138 plans)
-         [█████████████████░░░] v8.1: 75% (3/4 plans, 1.5/2 phases)
+         [████████████████████] v8.1: 100% (4/4 plans, 2/2 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 141
-- v8.1: 3 plans (2 in phase 65, 1 in phase 66)
+- Total plans completed: 142
+- v8.1: 4 plans (2 in phase 65, 2 in phase 66)
 - v8.0: 5 plans across 2 phases in 1 day
 - v7.1: 7 plans across 3 phases in 1 day
 - v1.0-v2.2: 92 plans across 37 phases
@@ -47,6 +47,7 @@ Key cross-milestone context:
 - v8.1: elaborateTypeExpr wired into TypeCheck/Bidir/Infer for let rec first-param annotations (Plan 02)
 - v8.1: LetRec AST changed to bindings list shape matching LetRecDecl -- Bidir/Infer/Eval use List.head placeholder (Plan 02 rewrites)
 - v8.1: LetRecContinuation nonterminal reused for expression-level let rec `and` chains
+- v8.1: Multi-line `and` in indented contexts triggers indent filter issues -- tests use single-line format
 
 ### Pending Todos
 
@@ -59,10 +60,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Completed 66-01-PLAN.md
+Stopped at: Completed 66-02-PLAN.md -- v8.1 milestone complete
 Resume file: None
-Next action: 66-02-PLAN.md (type-check/eval multi-binding logic)
+Next action: None (milestone complete)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (66-01 complete)*
+*Last updated: 2026-03-31 (66-02 complete, v8.1 complete)*
