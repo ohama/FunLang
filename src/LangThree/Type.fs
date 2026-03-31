@@ -16,9 +16,20 @@ type Type =
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
     | TExn                                        // Exception base type
 
-/// Type scheme for polymorphism
+/// Constraint for type class requirements
+/// Example: { ClassName = "Show"; TypeArg = TVar 0 } means "Show 'a"
+type Constraint = { ClassName: string; TypeArg: Type }
+
+/// Type scheme for polymorphism, optionally carrying type class constraints
 /// forall 'a 'b. 'a -> 'b -> 'a
-type Scheme = Scheme of vars: int list * ty: Type
+/// forall 'a. Show 'a => 'a -> string
+type Scheme = Scheme of vars: int list * constraints: Constraint list * ty: Type
+
+/// Create a simple scheme with no constraints (backward compat helper)
+let mkScheme (vars: int list) (ty: Type) : Scheme = Scheme(vars, [], ty)
+
+/// Extract the type from a scheme (ignoring constraints)
+let schemeType (Scheme(_, _, ty)) : Type = ty
 
 /// Type environment: variable name -> type scheme
 type TypeEnv = Map<string, Scheme>
@@ -55,6 +66,25 @@ type RecordTypeInfo = {
 
 /// Record environment: record type name -> type information
 type RecordEnv = Map<string, RecordTypeInfo>
+
+/// Type class declaration info (Phase 70 — class body populated in Phase 71)
+type ClassInfo = {
+    Name: string
+    TypeVar: int
+    Methods: (string * Scheme) list
+}
+
+/// Type class instance info (Phase 70 — method bodies populated in Phase 71)
+type InstanceInfo = {
+    ClassName: string
+    InstanceType: Type
+}
+
+/// Class environment: class name -> ClassInfo
+type ClassEnv = Map<string, ClassInfo>
+
+/// Instance environment: class name -> list of InstanceInfo
+type InstanceEnv = Map<string, InstanceInfo list>
 
 /// Type substitution: type variable -> type
 type Subst = Map<int, Type>
@@ -123,8 +153,53 @@ let formatTypeNormalized (ty: Type) : string =
     format ty
 
 /// Format a type scheme with normalized variables
-let formatSchemeNormalized (Scheme (_vars, ty)) : string =
-    formatTypeNormalized ty
+/// Displays constraints when present: "Show 'a => 'a -> string"
+/// For unconstrained schemes, output is identical to before
+let formatSchemeNormalized (Scheme (_vars, constraints, ty)) : string =
+    // Collect vars from both constraints and ty for a unified normalization map
+    let rec collectVars acc = function
+        | TVar n -> if List.contains n acc then acc else acc @ [n]
+        | TArrow(t1, t2) -> collectVars (collectVars acc t1) t2
+        | TTuple ts -> List.fold collectVars acc ts
+        | TList t -> collectVars acc t
+        | TArray t -> collectVars acc t
+        | THashtable (k, v) -> collectVars (collectVars acc k) v
+        | TData (_, args) -> List.fold collectVars acc args
+        | TInt | TBool | TString | TChar | TExn -> acc
+    let constraintTypes = constraints |> List.map (fun c -> c.TypeArg)
+    let allVarsFromConstraints = List.fold collectVars [] constraintTypes
+    let allVars = collectVars allVarsFromConstraints ty
+    let varMap = allVars |> List.mapi (fun i v -> (v, i)) |> Map.ofList
+    let rec format = function
+        | TInt -> "int"
+        | TBool -> "bool"
+        | TString -> "string"
+        | TChar -> "char"
+        | TVar n ->
+            match Map.tryFind n varMap with
+            | Some idx -> sprintf "'%c" (char (97 + idx % 26))
+            | None -> sprintf "'%c" (char (97 + n % 26))
+        | TArrow(t1, t2) ->
+            let left = match t1 with TArrow _ -> sprintf "(%s)" (format t1) | _ -> format t1
+            sprintf "%s -> %s" left (format t2)
+        | TTuple [] -> "unit"
+        | TTuple ts -> ts |> List.map format |> String.concat " * "
+        | TList t -> sprintf "%s list" (format t)
+        | TArray t -> sprintf "%s array" (format t)
+        | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (format k) (format v)
+        | TData (name, []) -> name
+        | TData (name, args) ->
+            let argStr = args |> List.map format |> String.concat ", "
+            sprintf "%s<%s>" name argStr
+        | TExn -> "exn"
+    let tyStr = format ty
+    match constraints with
+    | [] -> tyStr
+    | cs ->
+        let constraintStr =
+            cs |> List.map (fun c -> sprintf "%s %s" c.ClassName (format c.TypeArg))
+            |> String.concat ", "
+        sprintf "%s => %s" constraintStr tyStr
 
 // ============================================================================
 // Substitution Operations
@@ -164,9 +239,10 @@ let compose (s2: Subst) (s1: Subst): Subst =
 
 /// Apply substitution to scheme
 /// CRITICAL: Remove bound vars from substitution before applying
-let applyScheme (s: Subst) (Scheme (vars, ty)): Scheme =
+let applyScheme (s: Subst) (Scheme (vars, constraints, ty)): Scheme =
     let s' = List.fold (fun acc v -> Map.remove v acc) s vars
-    Scheme (vars, apply s' ty)
+    let constraints' = constraints |> List.map (fun c -> { c with TypeArg = apply s' c.TypeArg })
+    Scheme (vars, constraints', apply s' ty)
 
 /// Apply substitution to all schemes in environment
 let applyEnv (s: Subst) (env: TypeEnv): TypeEnv =
@@ -188,8 +264,9 @@ let rec freeVars = function
     | TData (_, args) -> args |> List.map freeVars |> Set.unionMany
 
 /// Free variables in a type scheme (excludes bound variables)
-let freeVarsScheme (Scheme (vars, ty)) =
-    Set.difference (freeVars ty) (Set.ofList vars)
+let freeVarsScheme (Scheme (vars, constraints, ty)) =
+    let constraintVars = constraints |> List.map (fun c -> freeVars c.TypeArg) |> Set.unionMany
+    Set.difference (Set.union (freeVars ty) constraintVars) (Set.ofList vars)
 
 /// Free variables in entire type environment
 let freeVarsEnv (env: TypeEnv) =

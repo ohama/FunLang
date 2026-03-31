@@ -20,202 +20,202 @@ let initialTypeEnv: TypeEnv =
 
         // Phase 11: String built-in functions
         // string_length: string -> int
-        "string_length", Scheme([], TArrow(TString, TInt))
+        "string_length", Scheme([], [], TArrow(TString, TInt))
 
         // string_concat: string -> string -> string
-        "string_concat", Scheme([], TArrow(TString, TArrow(TString, TString)))
+        "string_concat", Scheme([], [], TArrow(TString, TArrow(TString, TString)))
 
         // string_sub: string -> int -> int -> string  (start index, length)
-        "string_sub", Scheme([], TArrow(TString, TArrow(TInt, TArrow(TInt, TString))))
+        "string_sub", Scheme([], [], TArrow(TString, TArrow(TInt, TArrow(TInt, TString))))
 
         // string_contains: string -> string -> bool
-        "string_contains", Scheme([], TArrow(TString, TArrow(TString, TBool)))
+        "string_contains", Scheme([], [], TArrow(TString, TArrow(TString, TBool)))
 
         // Phase 60: String operation builtins (BLT-01, BLT-02, BLT-03)
-        "string_endswith",   Scheme([], TArrow(TString, TArrow(TString, TBool)))
-        "string_startswith", Scheme([], TArrow(TString, TArrow(TString, TBool)))
-        "string_trim",       Scheme([], TArrow(TString, TString))
+        "string_endswith",   Scheme([], [], TArrow(TString, TArrow(TString, TBool)))
+        "string_startswith", Scheme([], [], TArrow(TString, TArrow(TString, TBool)))
+        "string_trim",       Scheme([], [], TArrow(TString, TString))
 
         // to_string: 'a -> string  (permissively polymorphic; runtime enforces int/bool/string)
-        "to_string", Scheme([0], TArrow(TVar 0, TString))
+        "to_string", Scheme([0], [], TArrow(TVar 0, TString))
 
         // string_to_int: string -> int
-        "string_to_int", Scheme([], TArrow(TString, TInt))
+        "string_to_int", Scheme([], [], TArrow(TString, TInt))
 
         // Phase 12: Output functions
         // print : string -> unit
-        "print",   Scheme([], TArrow(TString, TTuple []))
+        "print",   Scheme([], [], TArrow(TString, TTuple []))
 
         // println : string -> unit
-        "println", Scheme([], TArrow(TString, TTuple []))
+        "println", Scheme([], [], TArrow(TString, TTuple []))
 
         // printf : string -> 'a  (permissively polymorphic — runtime enforces arity from format string)
-        "printf", Scheme([0], TArrow(TString, TVar 0))
+        "printf", Scheme([0], [], TArrow(TString, TVar 0))
 
         // printfn : string -> 'a  (like printf but appends newline)
-        "printfn", Scheme([0], TArrow(TString, TVar 0))
+        "printfn", Scheme([0], [], TArrow(TString, TVar 0))
 
         // sprintf : string -> 'a  (like printf but returns string; runtime enforces arity)
-        "sprintf", Scheme([0], TArrow(TString, TVar 0))
+        "sprintf", Scheme([0], [], TArrow(TString, TVar 0))
 
         // eprintfn : string -> 'a  (like printfn but writes to stderr)
-        "eprintfn", Scheme([0], TArrow(TString, TVar 0))
+        "eprintfn", Scheme([0], [], TArrow(TString, TVar 0))
 
         // failwith : string -> 'a  (polymorphic return — unifies with any expected type, like raise)
-        "failwith", Scheme([0], TArrow(TString, TVar 0))
+        "failwith", Scheme([0], [], TArrow(TString, TVar 0))
 
         // Phase 29: char conversion builtins
         // char_to_int : char -> int
-        "char_to_int", Scheme([], TArrow(TChar, TInt))
+        "char_to_int", Scheme([], [], TArrow(TChar, TInt))
         // int_to_char : int -> char
-        "int_to_char", Scheme([], TArrow(TInt, TChar))
+        "int_to_char", Scheme([], [], TArrow(TInt, TChar))
 
         // Phase 55: Char module builtins (STR-02)
-        "char_is_digit",  Scheme([], TArrow(TChar, TBool))
-        "char_to_upper",  Scheme([], TArrow(TChar, TChar))
-        "char_is_letter", Scheme([], TArrow(TChar, TBool))
-        "char_is_upper",  Scheme([], TArrow(TChar, TBool))
-        "char_is_lower",  Scheme([], TArrow(TChar, TBool))
-        "char_to_lower",  Scheme([], TArrow(TChar, TChar))
+        "char_is_digit",  Scheme([], [], TArrow(TChar, TBool))
+        "char_to_upper",  Scheme([], [], TArrow(TChar, TChar))
+        "char_is_letter", Scheme([], [], TArrow(TChar, TBool))
+        "char_is_upper",  Scheme([], [], TArrow(TChar, TBool))
+        "char_is_lower",  Scheme([], [], TArrow(TChar, TBool))
+        "char_to_lower",  Scheme([], [], TArrow(TChar, TChar))
 
         // Phase 55: String.concat builtin (STR-03)
-        "string_concat_list", Scheme([], TArrow(TString, TArrow(TList TString, TString)))
+        "string_concat_list", Scheme([], [], TArrow(TString, TArrow(TList TString, TString)))
 
         // Phase 32: File I/O builtins (STD-02 through STD-09)
         // STD-02: read_file : string -> string
-        "read_file", Scheme([], TArrow(TString, TString))
+        "read_file", Scheme([], [], TArrow(TString, TString))
 
         // STD-03: stdin_read_all : unit -> string
-        "stdin_read_all", Scheme([], TArrow(TTuple [], TString))
+        "stdin_read_all", Scheme([], [], TArrow(TTuple [], TString))
 
         // STD-04: stdin_read_line : unit -> string
-        "stdin_read_line", Scheme([], TArrow(TTuple [], TString))
+        "stdin_read_line", Scheme([], [], TArrow(TTuple [], TString))
 
         // STD-05: write_file : string -> string -> unit
-        "write_file", Scheme([], TArrow(TString, TArrow(TString, TTuple [])))
+        "write_file", Scheme([], [], TArrow(TString, TArrow(TString, TTuple [])))
 
         // STD-06: append_file : string -> string -> unit
-        "append_file", Scheme([], TArrow(TString, TArrow(TString, TTuple [])))
+        "append_file", Scheme([], [], TArrow(TString, TArrow(TString, TTuple [])))
 
         // STD-07: file_exists : string -> bool
-        "file_exists", Scheme([], TArrow(TString, TBool))
+        "file_exists", Scheme([], [], TArrow(TString, TBool))
 
         // STD-08: read_lines : string -> string list
-        "read_lines", Scheme([], TArrow(TString, TList TString))
+        "read_lines", Scheme([], [], TArrow(TString, TList TString))
 
         // STD-09: write_lines : string -> string list -> unit
-        "write_lines", Scheme([], TArrow(TString, TArrow(TList TString, TTuple [])))
+        "write_lines", Scheme([], [], TArrow(TString, TArrow(TList TString, TTuple [])))
 
         // Phase 32: System builtins (STD-10 through STD-15)
         // STD-10: get_args : unit -> string list
-        "get_args", Scheme([], TArrow(TTuple [], TList TString))
+        "get_args", Scheme([], [], TArrow(TTuple [], TList TString))
 
         // STD-11: get_env : string -> string
-        "get_env", Scheme([], TArrow(TString, TString))
+        "get_env", Scheme([], [], TArrow(TString, TString))
 
         // STD-12: get_cwd : unit -> string
-        "get_cwd", Scheme([], TArrow(TTuple [], TString))
+        "get_cwd", Scheme([], [], TArrow(TTuple [], TString))
 
         // STD-13: path_combine : string -> string -> string
-        "path_combine", Scheme([], TArrow(TString, TArrow(TString, TString)))
+        "path_combine", Scheme([], [], TArrow(TString, TArrow(TString, TString)))
 
         // STD-14: dir_files : string -> string list
-        "dir_files", Scheme([], TArrow(TString, TList TString))
+        "dir_files", Scheme([], [], TArrow(TString, TList TString))
 
         // STD-15: eprint : string -> unit
-        "eprint",   Scheme([], TArrow(TString, TTuple []))
+        "eprint",   Scheme([], [], TArrow(TString, TTuple []))
         // STD-15: eprintln : string -> unit
-        "eprintln", Scheme([], TArrow(TString, TTuple []))
+        "eprintln", Scheme([], [], TArrow(TString, TTuple []))
 
         // Phase 38: Array builtins (ARR-01 through ARR-06)
         // array_create : int -> 'a -> 'a array
-        "array_create", Scheme([0], TArrow(TInt, TArrow(TVar 0, TArray (TVar 0))))
+        "array_create", Scheme([0], [], TArrow(TInt, TArrow(TVar 0, TArray (TVar 0))))
         // array_get : 'a array -> int -> 'a
-        "array_get",    Scheme([0], TArrow(TArray (TVar 0), TArrow(TInt, TVar 0)))
+        "array_get",    Scheme([0], [], TArrow(TArray (TVar 0), TArrow(TInt, TVar 0)))
         // array_set : 'a array -> int -> 'a -> unit
-        "array_set",    Scheme([0], TArrow(TArray (TVar 0), TArrow(TInt, TArrow(TVar 0, TTuple []))))
+        "array_set",    Scheme([0], [], TArrow(TArray (TVar 0), TArrow(TInt, TArrow(TVar 0, TTuple []))))
         // array_length : 'a array -> int
-        "array_length", Scheme([0], TArrow(TArray (TVar 0), TInt))
+        "array_length", Scheme([0], [], TArrow(TArray (TVar 0), TInt))
         // array_of_list : 'a list -> 'a array
-        "array_of_list", Scheme([0], TArrow(TList (TVar 0), TArray (TVar 0)))
+        "array_of_list", Scheme([0], [], TArrow(TList (TVar 0), TArray (TVar 0)))
         // array_to_list : 'a array -> 'a list
-        "array_to_list", Scheme([0], TArrow(TArray (TVar 0), TList (TVar 0)))
+        "array_to_list", Scheme([0], [], TArrow(TArray (TVar 0), TList (TVar 0)))
 
         // Phase 40: Array higher-order function builtins (ARR-07 through ARR-10)
         // array_iter : ('a -> unit) -> 'a array -> unit
-        "array_iter",  Scheme([0], TArrow(TArrow(TVar 0, TTuple []), TArrow(TArray (TVar 0), TTuple [])))
+        "array_iter",  Scheme([0], [], TArrow(TArrow(TVar 0, TTuple []), TArrow(TArray (TVar 0), TTuple [])))
         // array_map : ('a -> 'b) -> 'a array -> 'b array
-        "array_map",   Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TArray (TVar 0), TArray (TVar 1))))
+        "array_map",   Scheme([0; 1], [], TArrow(TArrow(TVar 0, TVar 1), TArrow(TArray (TVar 0), TArray (TVar 1))))
         // array_fold : ('acc -> 'a -> 'acc) -> 'acc -> 'a array -> 'acc
-        "array_fold",  Scheme([0; 1], TArrow(TArrow(TVar 0, TArrow(TVar 1, TVar 0)), TArrow(TVar 0, TArrow(TArray (TVar 1), TVar 0))))
+        "array_fold",  Scheme([0; 1], [], TArrow(TArrow(TVar 0, TArrow(TVar 1, TVar 0)), TArrow(TVar 0, TArrow(TArray (TVar 1), TVar 0))))
         // array_init : int -> (int -> 'a) -> 'a array
-        "array_init",  Scheme([0], TArrow(TInt, TArrow(TArrow(TInt, TVar 0), TArray (TVar 0))))
+        "array_init",  Scheme([0], [], TArrow(TInt, TArrow(TArrow(TInt, TVar 0), TArray (TVar 0))))
 
         // Phase 39: Hashtable builtins (HT-01 through HT-06)
         // hashtable_create : unit -> hashtable<'k, 'v>
-        "hashtable_create",    Scheme([0; 1], TArrow(TTuple [], THashtable (TVar 0, TVar 1)))
+        "hashtable_create",    Scheme([0; 1], [], TArrow(TTuple [], THashtable (TVar 0, TVar 1)))
         // hashtable_get : hashtable<'k, 'v> -> 'k -> 'v
-        "hashtable_get",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TVar 1)))
+        "hashtable_get",       Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TVar 1)))
         // hashtable_set : hashtable<'k, 'v> -> 'k -> 'v -> unit
-        "hashtable_set",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TArrow(TVar 1, TTuple []))))
+        "hashtable_set",       Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TArrow(TVar 1, TTuple []))))
         // hashtable_containsKey : hashtable<'k, 'v> -> 'k -> bool
-        "hashtable_containsKey", Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TBool)))
+        "hashtable_containsKey", Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TBool)))
         // hashtable_keys : hashtable<'k, 'v> -> 'k list
-        "hashtable_keys",      Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TList (TVar 0)))
+        "hashtable_keys",      Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TList (TVar 0)))
         // hashtable_remove : hashtable<'k, 'v> -> 'k -> unit
-        "hashtable_remove",    Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [])))
+        "hashtable_remove",    Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [])))
 
         // Phase 60: Hashtable operation builtins (BLT-04, BLT-05)
-        "hashtable_trygetvalue", Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [TBool; TVar 1])))
-        "hashtable_count",       Scheme([0; 1], TArrow(THashtable (TVar 0, TVar 1), TInt))
+        "hashtable_trygetvalue", Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [TBool; TVar 1])))
+        "hashtable_count",       Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TInt))
 
         // Phase 55: StringBuilder builtins
         // stringbuilder_create : unit -> StringBuilder
-        "stringbuilder_create",   Scheme([], TArrow(TTuple [], TData("StringBuilder", [])))
+        "stringbuilder_create",   Scheme([], [], TArrow(TTuple [], TData("StringBuilder", [])))
         // stringbuilder_append : StringBuilder -> string -> StringBuilder
-        "stringbuilder_append",   Scheme([0], TArrow(TData("StringBuilder", []), TArrow(TVar 0, TData("StringBuilder", []))))
+        "stringbuilder_append",   Scheme([0], [], TArrow(TData("StringBuilder", []), TArrow(TVar 0, TData("StringBuilder", []))))
         // stringbuilder_tostring : StringBuilder -> string
-        "stringbuilder_tostring", Scheme([], TArrow(TData("StringBuilder", []), TString))
+        "stringbuilder_tostring", Scheme([], [], TArrow(TData("StringBuilder", []), TString))
 
         // Phase 56: HashSet builtins
         // hashset_create : unit -> HashSet
-        "hashset_create",    Scheme([], TArrow(TTuple [], TData("HashSet", [])))
+        "hashset_create",    Scheme([], [], TArrow(TTuple [], TData("HashSet", [])))
         // hashset_add : HashSet -> 'a -> bool
-        "hashset_add",       Scheme([0], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
+        "hashset_add",       Scheme([0], [], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
         // hashset_contains : HashSet -> 'a -> bool
-        "hashset_contains",  Scheme([0], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
+        "hashset_contains",  Scheme([0], [], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
         // hashset_count : HashSet -> int
-        "hashset_count",     Scheme([], TArrow(TData("HashSet", []), TInt))
+        "hashset_count",     Scheme([], [], TArrow(TData("HashSet", []), TInt))
 
         // Phase 56: Queue builtins
         // queue_create : unit -> Queue
-        "queue_create",    Scheme([], TArrow(TTuple [], TData("Queue", [])))
+        "queue_create",    Scheme([], [], TArrow(TTuple [], TData("Queue", [])))
         // queue_enqueue : Queue -> 'a -> unit
-        "queue_enqueue",   Scheme([0], TArrow(TData("Queue", []), TArrow(TVar 0, TTuple [])))
+        "queue_enqueue",   Scheme([0], [], TArrow(TData("Queue", []), TArrow(TVar 0, TTuple [])))
         // queue_dequeue : Queue -> unit -> 'a
-        "queue_dequeue",   Scheme([0], TArrow(TData("Queue", []), TArrow(TTuple [], TVar 0)))
+        "queue_dequeue",   Scheme([0], [], TArrow(TData("Queue", []), TArrow(TTuple [], TVar 0)))
         // queue_count : Queue -> int
-        "queue_count",     Scheme([], TArrow(TData("Queue", []), TInt))
+        "queue_count",     Scheme([], [], TArrow(TData("Queue", []), TInt))
 
         // Phase 57: MutableList builtins
         // mutablelist_create : unit -> MutableList
-        "mutablelist_create",  Scheme([], TArrow(TTuple [], TData("MutableList", [])))
+        "mutablelist_create",  Scheme([], [], TArrow(TTuple [], TData("MutableList", [])))
         // mutablelist_add : MutableList -> 'a -> unit
-        "mutablelist_add",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TVar 0, TTuple [])))
+        "mutablelist_add",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TVar 0, TTuple [])))
         // mutablelist_get : MutableList -> int -> 'a
-        "mutablelist_get",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TInt, TVar 0)))
+        "mutablelist_get",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TInt, TVar 0)))
         // mutablelist_set : MutableList -> int -> 'a -> unit
-        "mutablelist_set",     Scheme([0], TArrow(TData("MutableList", []), TArrow(TInt, TArrow(TVar 0, TTuple []))))
+        "mutablelist_set",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TInt, TArrow(TVar 0, TTuple []))))
         // mutablelist_count : MutableList -> int
-        "mutablelist_count",   Scheme([], TArrow(TData("MutableList", []), TInt))
+        "mutablelist_count",   Scheme([], [], TArrow(TData("MutableList", []), TInt))
         // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
-        "list_sort_by",        Scheme([0; 1], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
+        "list_sort_by",        Scheme([0; 1], [], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
         // list_of_seq : 'a -> 'b list  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)
-        "list_of_seq",         Scheme([0; 1], TArrow(TVar 0, TList (TVar 1)))
+        "list_of_seq",         Scheme([0; 1], [], TArrow(TVar 0, TList (TVar 1)))
         // array_sort : 'a array -> unit
-        "array_sort",          Scheme([0], TArrow(TArray (TVar 0), TTuple []))
+        "array_sort",          Scheme([0], [], TArrow(TArray (TVar 0), TTuple []))
         // array_of_seq : 'a -> 'b array  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)
-        "array_of_seq",        Scheme([0; 1], TArrow(TVar 0, TArray (TVar 1)))
+        "array_of_seq",        Scheme([0; 1], [], TArrow(TVar 0, TArray (TVar 1)))
     ]
 
 /// Module exports: collected type/constructor/record environments from a module
@@ -787,8 +787,8 @@ let rec typeCheckDecls
                 // Add exception constructor to type env as a function
                 let scheme =
                     match ctorInfo.ArgType with
-                    | Some argTy -> Scheme([], TArrow(argTy, TExn))
-                    | None -> Scheme([], TExn)
+                    | Some argTy -> Scheme([], [], TArrow(argTy, TExn))
+                    | None -> Scheme([], [], TExn)
                 let tEnv' = Map.add ctorName scheme tEnv
                 (cEnv', tEnv')
             | _ -> (cEnv, tEnv)
@@ -828,7 +828,7 @@ let rec typeCheckDecls
                 let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
                 let ty' = apply s ty
                 // NO generalization -- mutable variables must be monomorphic
-                let scheme = Scheme([], ty')
+                let scheme = Scheme([], [], ty')
                 let env' = Map.add name scheme env
                 // Track as mutable for Assign checks
                 Bidir.mutableVars <- Set.add name Bidir.mutableVars
@@ -847,7 +847,7 @@ let rec typeCheckDecls
                 let s' = compose s2 s
                 let env' = applyEnv s' env
                 let generalizedPatEnv =
-                    patEnv |> Map.map (fun _ (Scheme(_, ty)) ->
+                    patEnv |> Map.map (fun _ (Scheme(_, _, ty)) ->
                         generalize env' (apply s' ty))
                 let env'' = Map.fold (fun acc k v -> Map.add k v acc) env' generalizedPatEnv
                 let matchWarnings = checkMatchWarnings cEnv body
@@ -868,13 +868,13 @@ let rec typeCheckDecls
                 // 2. Add all functions to env with monomorphic types
                 let recEnvTC =
                     funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
-                        Map.add name (Scheme([], funcTy)) acc) env
+                        Map.add name (Scheme([], [], funcTy)) acc) env
 
                 // 3. Type-check each body in the extended env and unify
                 let finalSubst =
                     List.map2 (fun (_, _, _, body, _) (_, param, funcTy, paramTy) ->
                         // Add param to env
-                        let bodyEnv = Map.add param (Scheme([], paramTy)) recEnvTC
+                        let bodyEnv = Map.add param (Scheme([], [], paramTy)) recEnvTC
                         // Resolve qualified module access
                         let refsInBody = collectModuleRefs mods body
                         let rewrittenBody = rewriteModuleAccess mods body

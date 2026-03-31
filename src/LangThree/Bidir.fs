@@ -162,7 +162,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     // === Lambda (unannotated) (BIDIR-05 - HYBRID approach) ===
     | Lambda (param, body, _) ->
         let paramTy = freshVar()
-        let bodyEnv = Map.add param (Scheme ([], paramTy)) env
+        let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = synth ctorEnv recEnv ctx bodyEnv body
         (s, TArrow (apply s paramTy, bodyTy))
 
@@ -170,7 +170,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     | LambdaAnnot (param, paramTyExpr, body, span) ->
         let paramTy = elaborateTypeExpr paramTyExpr
         let ctx' = InCheckMode (paramTy, "annotation", span) :: ctx
-        let bodyEnv = Map.add param (Scheme ([], paramTy)) env
+        let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = synth ctorEnv recEnv ctx' bodyEnv body
         (s, TArrow (apply s paramTy, bodyTy))
 
@@ -195,7 +195,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s1, valueTy = synth ctorEnv recEnv (InLetRhs (name, span) :: ctx) env value
         let env' = applyEnv s1 env
         // NO generalization -- mutable variables must be monomorphic
-        let scheme = Scheme([], apply s1 valueTy)
+        let scheme = Scheme([], [], apply s1 valueTy)
         let bodyEnv = Map.add name scheme env'
         let savedMutableVars = mutableVars
         mutableVars <- Set.add name mutableVars
@@ -223,7 +223,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s1234 = compose s4 (compose s3 s12)
         let env2 = applyEnv s1234 env
         // Bind loop variable as immutable int — NOT in mutableVars (LOOP-04)
-        let loopEnv = Map.add var (Scheme([], TInt)) env2
+        let loopEnv = Map.add var (Scheme([], [], TInt)) env2
         // Do NOT add var to mutableVars — loop variable must be immutable
         let s5, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
         (compose s5 s1234, TTuple [])  // for always returns unit
@@ -266,7 +266,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s13 = compose (unifyWithContext ctx [] span (apply s12 elemTy) patTy) s12
         let generalizedPatEnv =
             patEnv
-            |> Map.map (fun _ (Scheme (_, ty)) ->
+            |> Map.map (fun _ (Scheme (_, _, ty)) ->
                 let ty' = apply s13 ty
                 generalize (applyEnv s13 env2) ty')
         let loopEnv = Map.fold (fun acc k v -> Map.add k v acc) (applyEnv s13 env2) generalizedPatEnv
@@ -312,11 +312,11 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         // 2. Add ALL functions to env simultaneously (monomorphic)
         let recTypeEnv =
             funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
-                Map.add name (Scheme([], funcTy)) acc) env
+                Map.add name (Scheme([], [], funcTy)) acc) env
         // 3. Type-check each body in the extended env, unify with expected return type
         let bodySubst =
             List.map2 (fun (bindName, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
-                let bodyEnv = Map.add param (Scheme([], paramTy)) recTypeEnv
+                let bodyEnv = Map.add param (Scheme([], [], paramTy)) recTypeEnv
                 let s, bodyTy = synth ctorEnv recEnv (InLetRecBody (bindName, bindSpan) :: ctx) bodyEnv body
                 let expectedRetTy =
                     match apply s funcTy with
@@ -743,7 +743,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 let s2 = unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
                 let s12 = compose s2 s1
                 (s12, apply s12 elemTv)
-        let loopEnv = Map.add var (Scheme([], elemTy)) (applyEnv s12 env)
+        let loopEnv = Map.add var (Scheme([], [], elemTy)) (applyEnv s12 env)
         let s3, bodyTy = synth ctorEnv recEnv ctx loopEnv bodyExpr
         (compose s3 s12, TList (apply s3 bodyTy))
 
@@ -775,7 +775,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let env' = applyEnv s env
         let generalizedPatEnv =
             patEnv
-            |> Map.map (fun _ (Scheme (_, ty)) ->
+            |> Map.map (fun _ (Scheme (_, _, ty)) ->
                 let ty' = apply s ty
                 generalize env' ty')
         let bodyEnv = Map.fold (fun acc k v -> Map.add k v acc) env' generalizedPatEnv
@@ -790,7 +790,7 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
     | Lambda (param, body, _) ->
         match expected with
         | TArrow (paramTy, resultTy) ->
-            let bodyEnv = Map.add param (Scheme ([], paramTy)) env
+            let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
             let s = check ctorEnv recEnv ctx bodyEnv body resultTy
             let s' = unifyWithContext ctx [] (spanOf expr) (apply s paramTy) paramTy
             compose s' s

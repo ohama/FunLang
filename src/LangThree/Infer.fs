@@ -29,7 +29,7 @@ let freshVar =
 
 /// Instantiate scheme: replace bound vars with fresh type variables
 /// Example: forall 'a. 'a -> 'a becomes 'c -> 'c (with fresh 'c)
-let instantiate (Scheme (vars, ty)): Type =
+let instantiate (Scheme (vars, _, ty)): Type =
     match vars with
     | [] -> ty  // Monomorphic - no substitution needed
     | _ ->
@@ -43,7 +43,7 @@ let generalize (env: TypeEnv) (ty: Type): Scheme =
     let envFree = freeVarsEnv env
     let tyFree = freeVars ty
     let vars = Set.difference tyFree envFree |> Set.toList
-    Scheme (vars, ty)
+    Scheme (vars, [], ty)
 
 open Ast
 
@@ -54,7 +54,7 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
     match pat with
     | VarPat (name, _) ->
         let ty = freshVar()
-        (Map.ofList [(name, Scheme ([], ty))], ty)
+        (Map.ofList [(name, Scheme ([], [], ty))], ty)
 
     | WildcardPat _ ->
         (Map.empty, freshVar())
@@ -204,14 +204,14 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     // === Lambda (INFER-08) ===
     | Lambda (param, body, _) ->
         let paramTy = freshVar()
-        let bodyEnv = Map.add param (Scheme ([], paramTy)) env
+        let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = inferWithContext ctx bodyEnv body
         (s, TArrow (apply s paramTy, bodyTy))
 
     // === LambdaAnnot (annotated lambda) ===
     | LambdaAnnot (param, paramTyExpr, body, _) ->
         let paramTy = elaborateTypeExpr paramTyExpr
-        let bodyEnv = Map.add param (Scheme ([], paramTy)) env
+        let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = inferWithContext ctx bodyEnv body
         (s, TArrow (apply s paramTy, bodyTy))
 
@@ -277,11 +277,11 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         // 2. Add ALL functions to env simultaneously (monomorphic)
         let recEnv =
             funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
-                Map.add name (Scheme([], funcTy)) acc) env
+                Map.add name (Scheme([], [], funcTy)) acc) env
         // 3. Infer each body in the extended env, unify with expected return type
         let bodySubst =
             List.map2 (fun (bindName, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
-                let bodyEnv = Map.add param (Scheme([], paramTy)) recEnv
+                let bodyEnv = Map.add param (Scheme([], [], paramTy)) recEnv
                 let s, bodyTy = inferWithContext (InLetRecBody (bindName, bindSpan) :: ctx) bodyEnv body
                 let expectedRetTy =
                     match apply s funcTy with
@@ -358,7 +358,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | LetMut (name, value, body, _) ->
         let s1, valTy = inferWithContext ctx env value
         let env' = applyEnv s1 env
-        let scheme = Scheme([], apply s1 valTy)
+        let scheme = Scheme([], [], apply s1 valTy)
         let bodyEnv = Map.add name scheme env'
         let s2, bodyTy = inferWithContext ctx bodyEnv body
         (compose s2 s1, bodyTy)
@@ -432,7 +432,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
         let env' = applyEnv s env
         let generalizedPatEnv =
             patEnv
-            |> Map.map (fun _ (Scheme (_, ty)) ->
+            |> Map.map (fun _ (Scheme (_, _, ty)) ->
                 let ty' = apply s ty
                 generalize env' ty')
         // Merge into environment
