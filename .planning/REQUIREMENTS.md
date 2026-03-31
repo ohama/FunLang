@@ -50,24 +50,25 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TC-01 | TBD | Pending |
-| TC-02 | TBD | Pending |
-| TC-03 | TBD | Pending |
-| TC-04 | TBD | Pending |
-| TC-05 | TBD | Pending |
-| TC-06 | TBD | Pending |
-| TC-07 | TBD | Pending |
-| TC-08 | TBD | Pending |
-| TC-09 | TBD | Pending |
-| TC-10 | TBD | Pending |
-| TC-11 | TBD | Pending |
-| TC-12 | TBD | Pending |
-| TC-13 | TBD | Pending |
+| TC-01 | Phase 70 | Pending |
+| TC-02 | Phase 70 | Pending |
+| TC-03 | Phase 71 | Pending |
+| TC-04 | Phase 71 | Pending |
+| TC-05 | Phase 71 | Pending |
+| TC-06 | Phase 72 | Pending |
+| TC-07 | Phase 72 | Pending |
+| TC-08 | Phase 72 | Pending |
+| TC-09 | Phase 73 | Pending |
+| TC-10 | Phase 73 | Pending |
+| TC-11 | Phase 74 | Pending |
+| TC-12 | Phase 74 | Pending |
+| TC-13 | Phase 74 | Pending |
 
 **Coverage:**
 - v10.0 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-31*
+*Traceability updated: 2026-03-31 (roadmap created)*
