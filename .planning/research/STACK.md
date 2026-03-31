@@ -1,229 +1,280 @@
-# Technology Stack: LangThree v6.0 Practical Programming
+# Technology Stack: LangThree v10.0 Type Classes
 
 **Project:** LangThree — ML-style functional language interpreter
-**Researched:** 2026-03-28
-**Milestone:** v6.0 — newline implicit sequencing, for-in loops, Option/Result utilities
-**Confidence:** HIGH — all three features extend well-understood existing infrastructure
+**Researched:** 2026-03-31
+**Milestone:** v10.0 — Haskell-style type classes with dictionary-passing implementation
+**Confidence:** HIGH — implementation strategy derived directly from codebase inspection
 
 ---
 
-## Existing Stack (No Changes Needed)
+## Existing Stack (No NuGet Changes Needed)
 
 | Technology | Version | Role |
 |------------|---------|------|
 | F# | .NET 10 | Implementation language |
 | fslex (FsLexYacc) | 12.x | Lexer — Lexer.fsl |
 | fsyacc (FsLexYacc) | 12.x | LALR(1) parser — Parser.fsy |
-| IndentFilter.fs | custom | Token-stream filter between lexer and parser |
-| SeqExpr nonterminal | Parser.fsy | e1; e2 sequencing, desugars to LetPat(WildcardPat, e1, e2) |
+| IndentFilter.fs | custom | Token-stream layout filter |
 | Prelude/*.fun | .fun files | Auto-loaded standard library |
 
-The entire stack is inherited and validated. No new dependencies, no version changes.
+No new NuGet packages. Type classes are a language feature implemented entirely within the existing F# source.
 
 ---
 
-## Feature 1: Newline Implicit Sequencing
+## Implementation Strategy: Dictionary Passing
 
-### What Must Change
+**Recommendation: Dictionary passing (over monomorphization or vtable dispatch).**
 
-**IndentFilter.fs only.** The parser and evaluator need zero changes because SeqExpr already handles `e1; e2`.
+### Why Dictionary Passing
 
-The goal: two statements at the same indentation level inside an expression block are automatically sequenced, as if the user wrote `;` between them.
+Three strategies exist for implementing type classes at runtime:
 
-**Current behavior:**
-```
-let _ =
-    println "a"    ← these are two separate lines at the same indent
-    println "b"    ← second line is currently a parse error or ignored
-```
+| Strategy | How It Works | Verdict |
+|----------|-------------|---------|
+| **Dictionary passing** | Each typeclass instance is a record of functions. At call sites with a typeclass constraint, the dictionary is passed as an extra argument. | **Recommended.** Standard approach for interpreted languages, natural fit for LangThree's tree-walking evaluator. |
+| **Monomorphization** | Generate a specialized copy of each function for each type instantiation, eliminating dictionaries at code generation time. | Inappropriate for an interpreter. Requires full type information at code generation time. LangThree's evaluator is tree-walking, not a compiler. |
+| **Vtable / inline dispatch** | Embed method pointers in the value representation (like C++ vtables). | Would require adding method tables to every `Value` variant — invasive refactor of `CustomEquality`/`CustomComparison` machinery that is already complex in Ast.fs. |
 
-**Target behavior:**
-```
-let _ =
-    println "a"
-    println "b"    ← treated as: println "a"; println "b"
-```
-
-### Mechanism
-
-IndentFilter already injects `IN` tokens for the offside rule. The analogous mechanism for sequencing is: when processing a `NEWLINE col` where `col` equals the current indent level, and we are inside an `InExprBlock` context, emit a `SEMICOLON` token before the next statement.
-
-**Specifically, in `filter` in IndentFilter.fs:**
-
-The `isAtSameLevel` branch (no INDENT/DEDENT emitted, same column as current indent) is the insertion point. Currently this branch either emits pending `IN` tokens or nothing. The addition is: also emit `SEMICOLON` when inside `InExprBlock`.
-
-**Condition for SEMICOLON emission:**
-- `isAtSameLevel = true` (col equals current indent top, no INDENT/DEDENT)
-- Current context is `InExprBlock _`
-- Previous token is not a token that opens a block continuation (EQUALS, ARROW, IN, DO, THEN, ELSE, PIPE, WITH — these indicate the current expression continues on next line, not a new statement)
-- Next token is not EOF
-
-**No new tokens, no new AST nodes, no new grammar rules.**
-
-### Token Considerations
-
-`SEMICOLON` is the correct token to inject — it is exactly what SeqExpr expects, and the parser rule is already:
-
-```fsharp
-SeqExpr:
-    | Expr SEMICOLON SeqExpr   { LetPat(WildcardPat(...), $1, $3, ...) }
-    | Expr SEMICOLON           { $1 }
-    | Expr                     { $1 }
-```
-
-### InExprBlock Context
-
-`InExprBlock baseCol` is pushed when `INDENT` follows `EQUALS`, `ARROW`, `IN`, or `DO`. This is the correct scope for implicit sequencing — it covers:
-- `let f () = <INDENT>body<DEDENT>` — function body
-- `fun x -> <INDENT>body<DEDENT>` — lambda body
-- `let x = <INDENT>body<DEDENT>` — let RHS
-- `while cond do <INDENT>body<DEDENT>` — loop body
-- `for i = s to e do <INDENT>body<DEDENT>` — loop body
-
-**Do not emit SEMICOLON in `InLetDecl`, `InMatch`, `InTry`, `InModule`, or `TopLevel`.** Those contexts use different mechanisms (IN token, pipe alignment, declarations).
-
-### LALR(1) Safety
-
-Injecting SEMICOLON into the token stream is safe because:
-1. SEMICOLON already exists at the grammar level for SeqExpr
-2. SeqExpr is the top nonterminal for expression positions
-3. The injection happens only inside `InExprBlock`, never at record literal or list literal positions (those are inside bracket depth > 0, where NEWLINE is already suppressed)
+Dictionary passing is the correct choice because:
+1. LangThree is a tree-walking interpreter. Dictionaries are just values — `RecordValue` or `BuiltinValue` tuples — that slot cleanly into the existing `Value` type.
+2. The type checker already threads `ConstructorEnv` and `RecordEnv` through `synth`/`check`. A new `ClassEnv` + `InstanceEnv` follows the identical pattern.
+3. The evaluator already evaluates to `FunctionValue`/`BuiltinValue`. Dictionary-passing turns `show x` into `(dict.show) x` — a field lookup followed by a function application, both already supported.
+4. Haskell itself uses dictionary passing as its canonical implementation of type classes.
 
 ---
 
-## Feature 2: for x in collection do body
+## Component Changes
 
-### What Must Change
+### 1. Type.fs — Add Typeclass Constraint Representation
 
-Three files: Lexer.fsl, Parser.fsy, Eval.fs. Type.fs, Bidir.fs, Infer.fs need minor additions.
+**Current state:** `Type` DU has no notion of constraints. `Scheme` is `Scheme of vars: int list * ty: Type`.
 
-### Token Situation
-
-`IN` is already a keyword token, used for `let x = e in body`. This is the same `in` keyword that `for x in xs do` would use.
-
-**Recommendation: reuse the existing `IN` token.** The grammar context disambiguates — `FOR IDENT IN Expr DO` vs `LET IDENT EQUALS Expr IN SeqExpr` — these are different production rules and the LALR(1) parser has no ambiguity because FOR/LET are distinct lookahead tokens.
-
-No new token declaration needed.
-
-### AST Node
-
-Add a new variant to `Expr` in Ast.fs:
+**Change required:** Extend `Scheme` to carry class constraints, and add a `Constraint` type.
 
 ```fsharp
-| ForInExpr of var: string * collection: Expr * body: Expr * span: Span
+/// A typeclass constraint: "Show 'a", "Eq 'a", "Ord 'a"
+type Constraint =
+    | ClassConstraint of className: string * typeVar: int  // e.g., Show (TVar 5)
+
+/// Extended type scheme with constraints: forall 'a. Show 'a => 'a -> string
+type Scheme = Scheme of vars: int list * constraints: Constraint list * ty: Type
 ```
 
-Do not reuse `ForExpr` (which has `isTo: bool` and integer `start`/`stop` semantics). `ForInExpr` iterates any `ListValue` or `ArrayValue`, binding each element to `var`.
+**Why this shape:** Constraints are tied to the quantified variables in a scheme, exactly as in Haskell. The `typeVar: int` field refers to a `TVar` index from the `vars` list, which is the same integer representation already used throughout Type.fs, Unify.fs, Infer.fs, and Bidir.fs. No new type-variable representation is needed.
 
-### Grammar Rules (Parser.fsy)
+**Impact on existing code:** Every pattern match on `Scheme(vars, ty)` becomes `Scheme(vars, _, ty)` or `Scheme(vars, constraints, ty)`. This is a mechanical change — F# exhaustive matching ensures the compiler flags every site. Estimated ~15 sites across Type.fs, Infer.fs, Bidir.fs, TypeCheck.fs.
 
-Add inside the `Expr` production, adjacent to existing `ForExpr` rules:
+**Alternative considered:** Add a separate `ConstrainedScheme` DU case and keep `Scheme` unchanged. Rejected because it doubles every pattern-match site without simplifying anything.
+
+### 2. Type.fs — Add Class and Instance Environments
+
+**New types to add:**
 
 ```fsharp
-// FORIN-01: for x in collection do body (inline body)
-| FOR IDENT IN Expr DO SeqExpr
-    { ForInExpr($2, $4, $6, ruleSpan parseState 1 6) }
-// FORIN-02: for x in collection do <indent>body<dedent>
-| FOR IDENT IN Expr DO INDENT SeqExpr DEDENT
-    { ForInExpr($2, $4, $7, ruleSpan parseState 1 8) }
+/// A typeclass declaration: "typeclass Show 'a = { show : 'a -> string }"
+type ClassInfo = {
+    TypeParam: int                         // The TVar index for the class parameter ('a)
+    Methods: Map<string, Type>             // method name -> method type (using TypeParam)
+}
+
+/// A typeclass instance: "instance Show int = { show = fun x -> to_string x }"
+type InstanceInfo = {
+    ClassName: string
+    ConcreteType: Type                     // The type this instance is for (e.g., TInt, TData("Option", [TVar 0]))
+    ConstraintParams: int list             // If constrained instance: extra type vars (e.g., 'a in Show (Option 'a))
+    ConstraintRequirements: Constraint list // What constraints the instance itself requires (e.g., Show 'a)
+    MethodImpls: Map<string, Expr>         // method name -> implementation expression (from Ast)
+}
+
+/// Typeclass environment: class name -> ClassInfo
+type ClassEnv = Map<string, ClassInfo>
+
+/// Instance environment: (class name * canonical type key) -> InstanceInfo
+/// The canonical type key is a normalized string like "int", "bool", "Option"
+type InstanceEnv = Map<string * string, InstanceInfo>
 ```
 
-The `IN` token in `FOR IDENT IN Expr` cannot conflict with `let x = e IN body` because the LALR(1) parser sees `FOR` as the first token and shifts into the for-loop production.
+**The canonical type key** is needed because `InstanceEnv` maps pairs to instances. The key `("Show", "int")` resolves the `Show int` instance. For parameterized instances like `Show (Option 'a)`, the key is `("Show", "Option")` and the `ConstraintRequirements` carries `[ClassConstraint("Show", freshVar)]`.
 
-### Evaluator (Eval.fs)
+### 3. Ast.fs — Add Two New Declaration Forms
 
-Add one match arm in `eval`:
+**Add two variants to `Decl`:**
 
 ```fsharp
-| ForInExpr (var, collExpr, body, _) ->
-    let collVal = eval recEnv moduleEnv env false collExpr
-    match collVal with
-    | ListValue xs ->
-        for x in xs do
-            let loopEnv = Map.add var x env
-            eval recEnv moduleEnv loopEnv false body |> ignore
-        TupleValue []
-    | ArrayValue arr ->
-        for x in arr do
-            let loopEnv = Map.add var x env
-            eval recEnv moduleEnv loopEnv false body |> ignore
-        TupleValue []
-    | _ -> failwith "for-in: expected list or array"
+// In type Decl:
+| TypeClassDecl of
+    className: string *
+    typeParam: string *                    // e.g., "'a" in "typeclass Show 'a"
+    methods: (string * TypeExpr) list *    // method name + type signature
+    Span
+
+| InstanceDecl of
+    className: string *
+    instanceType: TypeExpr *               // the type being instantiated (e.g., TEInt, TEData("Option", [...]))
+    constraints: (string * string) list *  // constraint list: [("Show", "'a")] for "where Show 'a"
+    methods: (string * Expr) list *        // method implementations
+    Span
 ```
 
-### Type Checker (Bidir.fs / Infer.fs)
+**No new `Expr` variants** for the method call sites. Method calls look like ordinary function application: `show x`. Dictionary passing is invisible in the source syntax — the type checker rewrites calls to inject dictionary arguments.
 
-`ForInExpr` returns `unit` (TETuple []). The collection must be `TList 'a` or `TArray 'a`, and `var` is bound to `'a` in the body. The body must type-check to unit (same constraint as `WhileExpr` and `ForExpr`).
+**The `spanOf` function in Ast.fs** does not need changes — it only handles `Expr`, not `Decl`.
 
-Add `var` to `mutableVars` exclusion set (same pattern as `ForExpr` — loop variable is immutable):
+**`declSpanOf`** needs two new cases for the new `Decl` variants. This is a three-line addition.
+
+### 4. Lexer.fsl and Parser.fsy — Two New Keyword/Construct Pairs
+
+**New keywords:**
+
+```
+typeclass   (TYPECLASS token)
+instance    (INSTANCE token)
+where       (WHERE token — may already exist; check for GADT usage)
+```
+
+`where` may already appear in the lexer for GADT syntax. Check Lexer.fsl before adding.
+
+**Grammar rules (Parser.fsy):**
+
+Two new top-level `Decl` productions:
+
+```
+// TCLASS-01: typeclass declaration
+TypeClassDecl:
+    | TYPECLASS IDENT TYVAR EQUALS INDENT MethodSigList DEDENT
+        { TypeClassDecl($2, $3, $6, ...) }
+
+// TCLASS-02: instance declaration (unconstrained)
+InstanceDecl:
+    | INSTANCE IDENT TypeExpr EQUALS INDENT MethodImplList DEDENT
+        { InstanceDecl($2, $3, [], $6, ...) }
+
+// TCLASS-03: instance declaration with constraints
+InstanceDecl:
+    | INSTANCE IDENT TypeExpr WHERE ConstraintList EQUALS INDENT MethodImplList DEDENT
+        { InstanceDecl($2, $3, $5, $8, ...) }
+```
+
+`MethodSigList` and `MethodImplList` are new nonterminals following the same pattern as record field lists. The LALR(1) parser handles these without conflict because `TYPECLASS` and `INSTANCE` are distinct shift states from all existing declaration forms (`LET`, `TYPE`, `EXCEPTION`, `OPEN`).
+
+**No changes to `IndentFilter.fs`**: `EQUALS` + INDENT already triggers `InExprBlock` for method bodies, which is exactly right.
+
+### 5. Elaborate.fs — Elaborate TypeClassDecl and InstanceDecl into Environments
+
+**Add two new elaboration functions:**
 
 ```fsharp
-// In Bidir.fs synth/check for ForInExpr:
-// var is loop-bound, immutable — add to mutableVars exclusion (or simply don't add to mutableVars)
+/// Elaborate typeclass declaration into ClassInfo
+val elaborateTypeClassDecl :
+    className: string -> typeParam: string -> methods: (string * TypeExpr) list
+    -> ClassInfo
+
+/// Elaborate instance declaration into InstanceInfo
+val elaborateInstanceDecl :
+    ClassEnv -> className: string -> instanceType: TypeExpr ->
+    constraints: (string * string) list -> methods: (string * Expr) list
+    -> string * InstanceInfo     // returns (canonical key, InstanceInfo)
 ```
 
-### IndentFilter.fs
+These follow the exact pattern of `elaborateTypeDecl` and `elaborateRecordDecl` already in Elaborate.fs.
 
-`DO` is already in the set of tokens that trigger `InExprBlock` on the next INDENT:
+### 6. Bidir.fs — Constraint Propagation and Dictionary Injection
+
+This is the most complex change. Bidir.fs must:
+
+**a) Track constraints during inference.**
+
+When `synth` encounters a `Var` lookup whose `Scheme` has constraints, instantiate those constraints along with the type variables. Collect the constraints for the current scope.
+
+The existing `synth` signature:
+```fsharp
+synth : ConstructorEnv -> RecordEnv -> InferContext list -> TypeEnv -> Expr -> Subst * Type
+```
+
+Becomes (extended):
+```fsharp
+synth : ConstructorEnv -> RecordEnv -> ClassEnv -> InstanceEnv ->
+        InferContext list -> TypeEnv -> Expr -> Subst * Type * Constraint list
+```
+
+The returned `Constraint list` is the set of constraints that must be satisfied at the call site. The caller either resolves them (if the concrete type is known) or propagates them outward to the enclosing let-generalization.
+
+**Alternative:** Use a mutable `constraints` accumulator (like `mutableVars` in Bidir.fs). This avoids changing the return type but requires careful scoping. The `mutableVars` pattern already exists in the codebase (`let mutable mutableVars : Set<string> = Set.empty`). For type classes, a mutable approach is viable but risks interference in recursive/mutual contexts. Recommend the explicit return-value approach for correctness, accepting the signature extension.
+
+**b) Resolve instances at let-generalization boundaries.**
+
+At `Let(name, value, body, span)`, after inferring the value type, resolve any constraints where the type is fully known (ground type), and propagate unresolved constraints into the generalized scheme.
+
+**c) Rewrite call sites via dictionary insertion.**
+
+When a method `show` is called on a value whose type is known to be `int`, rewrite:
+```
+show x
+```
+to:
+```
+(dictShow_int.show) x
+```
+
+where `dictShow_int` is the dictionary record for `Show int`, which Eval.fs has already evaluated and stored.
+
+This rewriting happens at the `Var` case in `synth` when the resolved variable is a typeclass method. The rewrite produces an `App(FieldAccess(Var dictName, methodName), arg)` expression (or equivalent) that the evaluator handles without new machinery.
+
+**The key insight:** dictionary rewriting transforms typeclass method calls into ordinary function applications before the evaluator sees them. The evaluator needs zero changes for the basic case.
+
+### 7. TypeCheck.fs — Thread ClassEnv and InstanceEnv Through Declaration Processing
+
+**TypeCheck.fs currently accumulates:**
+- `TypeEnv` (variable types)
+- `ConstructorEnv` (ADT constructors)
+- `RecordEnv` (record types)
+
+**Add:**
+- `ClassEnv` (typeclass declarations)
+- `InstanceEnv` (typeclass instances)
+
+These are accumulated during the declaration processing loop in `typecheckDecls` (the function that processes `Decl list`). When a `TypeClassDecl` is encountered, elaborate it into `ClassEnv`. When an `InstanceDecl` is encountered, elaborate it into `InstanceEnv` and also emit a `let` binding for the dictionary value into both `TypeEnv` and the runtime environment.
+
+**Dictionary name convention:** `__dict_ClassName_TypeKey` (e.g., `__dict_Show_int`). Double underscore marks compiler-generated names. This name is injected into `TypeEnv` at instance registration time.
+
+### 8. Eval.fs — Evaluate Instance Method Bodies into Dictionary Values
+
+When `TypeCheck.fs` processes an `InstanceDecl`, it must also emit a runtime dictionary value. The dictionary is a `RecordValue` (or a `TupleValue` of functions, indexed by method name).
+
+**Recommended shape: RecordValue.**
 
 ```fsharp
-| Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO ->
-    state <- { state with Context = InExprBlock(baseCol) :: state.Context }
+// Instance "Show int" with method show = fun x -> to_string x
+// Evaluates to:
+RecordValue("__dict_Show_int", Map [
+    "show", ref (FunctionValue("x", App(Var("to_string", _), Var("x", _)), env))
+])
 ```
 
-No change needed — `for x in xs do <INDENT>body<DEDENT>` already pushes `InExprBlock` correctly.
+Eval.fs needs no new match arms. `RecordValue` field lookup (`FieldAccess` or dot-access) is already evaluated. The dictionary values are just ordinary `RecordValue`s stored in the environment under generated names.
 
----
-
-## Feature 3: Option/Result Utility Functions
-
-### What Must Change
-
-**Prelude/Option.fun and Prelude/Result.fun only.** Zero changes to F# source files.
-
-These are pure library additions written in LangThree itself.
-
-### Current State
-
-**Option.fun (current):**
-- `optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone`, `(<|>)`
-
-**Result.fun (current):**
-- `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `isOk`, `isError`
-
-### Additions Needed
-
-**Option.fun — add idiomatic short aliases:**
+**One new concern for Eval.fs:** constrained instances like `Show (Option 'a) where Show 'a` require that the dictionary for `Show (Option 'a)` can look up the dictionary for `Show 'a` at runtime. This means the dictionary constructor must accept the inner dictionary as a parameter:
 
 ```fsharp
-let map f opt     = optionMap f opt
-let bind f opt    = optionBind f opt
-let defaultValue d opt = optionDefault d opt
-let orElse b a    = match a with | Some x -> Some x | None -> b
-let filter pred opt = match opt with | Some x -> if pred x then Some x else None | None -> None
-let toList opt    = match opt with | Some x -> [x] | None -> []
-let ofBool b x    = if b then Some x else None
+// __dict_Show_Option = fun (dictShowA : Show 'a dict) ->
+//     { show = fun x -> match x with Some v -> "Some(" ++ dictShowA.show v ++ ")" | None -> "None" }
 ```
 
-**Result.fun — add idiomatic short aliases:**
+This is a `FunctionValue` that returns a `RecordValue`. Already evaluable. No new evaluator machinery.
 
-```fsharp
-let map f r       = resultMap f r
-let bind f r      = resultBind f r
-let mapError f r  = resultMapError f r
-let defaultValue d r = resultDefault d r
-let toOption r    = match r with | Ok x -> Some x | Error _ -> None
-let fromOption err opt = match opt with | Some x -> Ok x | None -> Error err
-let fold onOk onError r = match r with | Ok x -> onOk x | Error e -> onError e
-```
+### 9. Unify.fs — Constraint Unification (Minimal Change)
 
-**No new types, no new builtins, no grammar changes.**
+Unification itself does not need to know about constraints. Constraints are handled at the `generalize` / `instantiate` level in Infer.fs. Unify.fs unifies types, not constraints.
 
-### Naming Convention Decision
+**No change needed to Unify.fs.**
 
-The existing functions use long prefixed names (`optionMap`, `resultBind`) which are module-qualified as `Option.map` etc. The additions should use short names (`map`, `bind`) for ergonomic use after `open Option`.
+### 10. Infer.fs — Extend generalize and instantiate
 
-The existing long-name functions are kept for backward compatibility. Short names are aliases.
+**`instantiate`** must instantiate constraint type variables alongside the scheme type variables. A scheme `forall 'a. Show 'a => 'a -> string` instantiates to `Show 'x => 'x -> string` with a fresh `'x`.
+
+**`generalize`** must collect constraints for free variables and include them in the resulting scheme. A function inferred to have type `'a -> string` with constraint `Show 'a` in scope generalizes to `forall 'a. Show 'a => 'a -> string`.
+
+Both changes are localized to these two functions in Infer.fs.
 
 ---
 
@@ -231,20 +282,34 @@ The existing long-name functions are kept for backward compatibility. Short name
 
 | File | Change | Scope |
 |------|--------|-------|
-| `IndentFilter.fs` | Emit SEMICOLON in `InExprBlock` at same-level NEWLINE | ~10-20 lines |
-| `Ast.fs` | Add `ForInExpr` variant to `Expr` DU and `spanOf` | ~4 lines |
-| `Lexer.fsl` | No changes | — |
-| `Parser.fsy` | Add 2 grammar rules for `FOR IDENT IN Expr DO` | ~6 lines |
-| `Eval.fs` | Add `ForInExpr` match arm | ~10 lines |
-| `Bidir.fs` | Add `ForInExpr` type checking | ~8 lines |
-| `Infer.fs` | Add `ForInExpr` to inferType if present | ~4 lines |
-| `Elaborate.fs` | Add `ForInExpr` passthrough | ~2 lines |
-| `Format.fs` | Add `ForInExpr` formatting | ~3 lines |
-| `Exhaustive.fs` | Add `ForInExpr` traversal if present | ~2 lines |
-| `Prelude/Option.fun` | Add short-name aliases + filter/toList/ofBool | ~7 lines |
-| `Prelude/Result.fun` | Add short-name aliases + toOption/fromOption/fold | ~7 lines |
+| `Type.fs` | Extend `Scheme` with `Constraint list`; add `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types | ~40 lines |
+| `Ast.fs` | Add `TypeClassDecl` and `InstanceDecl` to `Decl` DU; extend `declSpanOf` | ~12 lines |
+| `Lexer.fsl` | Add `typeclass`, `instance`, `where` keywords (if `where` not already present) | ~3-5 lines |
+| `Parser.fsy` | Add `TypeClassDecl`, `InstanceDecl` grammar rules; `MethodSigList`, `MethodImplList` nonterminals | ~30-40 lines |
+| `Elaborate.fs` | Add `elaborateTypeClassDecl`, `elaborateInstanceDecl` | ~50 lines |
+| `Infer.fs` | Extend `instantiate` and `generalize` to handle `Constraint list` in `Scheme` | ~20 lines |
+| `Unify.fs` | **No change** | — |
+| `Bidir.fs` | Thread `ClassEnv`/`InstanceEnv` through `synth`/`check`; constraint resolution; dictionary injection at `Var` sites | ~100-150 lines |
+| `TypeCheck.fs` | Thread `ClassEnv`/`InstanceEnv` through declaration processing; emit dictionary bindings for `InstanceDecl` | ~50 lines |
+| `Eval.fs` | **No new match arms** for basic case; constrained instances evaluated as curried `FunctionValue` returning `RecordValue` | ~0-20 lines |
+| `Format.fs` | Add formatting for `TypeClassDecl` and `InstanceDecl` (if --emit-ast used) | ~10 lines |
+| `Exhaustive.fs` | No change — type class methods are not match scrutinees | — |
+| `Prelude/*.fun` | Add `Show`, `Eq`, `Ord` instances for builtin types; refactor `to_string` overloading | ~50-80 lines |
 
-**No new NuGet packages. No new tools. No version changes.**
+**Total estimated change: ~400-450 lines across 10 files. No new NuGet packages.**
+
+---
+
+## Constraint on Existing Scheme Usages
+
+Changing `Scheme` from `Scheme of vars: int list * ty: Type` to `Scheme of vars: int list * constraints: Constraint list * ty: Type` affects every pattern-match on `Scheme`. Current match sites (confirmed by source inspection):
+
+- `Type.fs`: `applyScheme`, `freeVarsScheme`, `formatSchemeNormalized` — 3 sites
+- `Infer.fs`: `instantiate`, `generalize`, `inferPattern` — 3 sites
+- `Bidir.fs`: `synth` Let/LetRec/LetMut cases, `check` — ~8 sites
+- `TypeCheck.fs`: `initialTypeEnv` declarations (all use `Scheme([], ty)`) — ~60 sites (mechanical `Scheme([], [], ty)` update)
+
+The `TypeCheck.fs` initial environment declarations are the largest mechanical change. All existing entries have `Scheme([], ty)` (no type variables, no constraints) and become `Scheme([], [], ty)`. This is a sed-level change with zero semantic content.
 
 ---
 
@@ -252,11 +317,13 @@ The existing long-name functions are kept for backward compatibility. Short name
 
 | Decision | Alternative | Why This Way |
 |----------|-------------|--------------|
-| Reuse `IN` token for for-in | New `IN_KW` or `OF_KW` token | Grammar context is unambiguous; same keyword is natural |
-| New `ForInExpr` AST node | Desugar to `List.iter` call | Need type-level dispatch (list vs array); desugar loses error context |
-| SEMICOLON injection in IndentFilter | New `NEWLINE_SEQ` token | SeqExpr already handles SEMICOLON; no grammar change needed |
-| Short aliases in Option/Result | Rename existing functions | Break backward compatibility for existing tests |
-| Emit SEMICOLON only in InExprBlock | Also in InLetDecl/TopLevel | Declarations are not statements; sequencing only applies inside expression blocks |
+| Dictionary passing | Monomorphization | Interpreter is tree-walking; no code generation phase to specialize into |
+| Dictionary passing | Vtable in Value DU | Would require adding method pointers to every Value variant; breaks CustomEquality |
+| `RecordValue` for dictionaries | New `DictValue` variant | RecordValue already supports field lookup; zero new Eval.fs machinery |
+| Extend `Scheme` signature | New `ConstrainedScheme` DU case | Would double every pattern match; single clean shape is better |
+| `__dict_ClassName_TypeKey` naming | Fresh integer suffixes | Readable in --emit-ast output; deterministic (no counter) |
+| Constrained instances as curried functions | Monomorphic dictionary records | Runtime lookup of inner dicts requires the function-returning-record shape; this is how Haskell GHC does it too |
+| Constraint tracking via returned list from synth | Mutable accumulator (like mutableVars) | Recursive/mutual let contexts require correct scoping; explicit return is safer |
 
 ---
 
@@ -264,7 +331,17 @@ The existing long-name functions are kept for backward compatibility. Short name
 
 | Area | Risk | Mitigation |
 |------|------|------------|
-| SEMICOLON injection | Could break multi-line expressions misread as two statements | Gated strictly on `InExprBlock`; previous-token guard prevents false positives |
-| `IN` token reuse | LALR(1) conflict | FOR and LET are distinct shift states; parser table verified at build time by fsyacc |
-| ForInExpr propagation | Missing a case in one of 6+ files causes compile error | F# exhaustive DU matching — the compiler flags every missing case |
-| Option/Result additions | Name collision with existing | Short names are new; long names kept — no removal |
+| `Scheme` shape change | ~70 mechanical sites in TypeCheck.fs initialTypeEnv | All are `Scheme([], ty)` → `Scheme([], [], ty)`; zero semantic change; F# exhaustive matching catches missed sites |
+| Bidir.fs signature extension | Many call sites for `synth`/`check` | Add ClassEnv/InstanceEnv as parameters at the end; existing callers pass empty maps; progressive roll-in |
+| Constraint resolution in Bidir | Incomplete constraint solving could cause silent type errors | Resolve eagerly at let-boundaries; emit error if constraint unsatisfiable rather than silently ignoring |
+| `where` keyword conflict | `where` might conflict with indentation-sensitive contexts | Check whether `where` is already used (GADT) before adding; consider `with` (already used for try-with) — may need a fresh token |
+| Constrained instance dictionary lookup | At runtime, must find inner dict `Show 'a` before constructing `Show (Option 'a)` | Inner dicts are looked up by name `__dict_Show_X` in the eval env; same lookup mechanism as ordinary variables |
+| Prelude integration | Existing `to_string` is a builtin `Scheme([0], TArrow(TVar 0, TString))`; wrapping into a typeclass changes its call convention | Staged migration: keep `to_string` as builtin; add `Show` typeclass that calls `to_string` for builtins; full migration is a follow-on milestone |
+
+---
+
+## Sources
+
+- Codebase inspection: `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs` (all read directly, 2026-03-31)
+- Hindley-Milner with type classes: Jones (1994) "Qualified Types: Theory and Practice" — the standard reference for dictionary-passing HM with constraints
+- GHC Core desugaring: type class instances desugar to records of functions; method calls desugar to record projections — same shape as this design

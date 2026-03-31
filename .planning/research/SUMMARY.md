@@ -1,172 +1,174 @@
 # Project Research Summary
 
-**Project:** LangThree v6.0 — Practical Programming Features
-**Domain:** ML-style functional language interpreter extension
-**Researched:** 2026-03-28
+**Project:** LangThree v10.0 — Haskell-style Type Classes
+**Domain:** ML-style interpreter — adding ad-hoc polymorphism to an existing HM type system
+**Researched:** 2026-03-31
 **Confidence:** HIGH
 
 ## Executive Summary
 
-LangThree v6.0 adds three practical programming features to an already-mature interpreter codebase: newline implicit sequencing, `for x in collection do` loops, and expanded Option/Result Prelude utilities. All three features extend well-understood existing infrastructure with no new dependencies, no stack changes, and no major architectural redesigns. The recommended approach is to implement in a specific order driven by dependency: newline sequencing first (every subsequent test benefits from it), for-in loops second (new AST node + parser + type checker + evaluator), and Prelude utilities last (pure `.fun` additions with zero interpreter changes).
+LangThree v10.0 adds Haskell-style type classes to an existing ML interpreter that already has full Hindley-Milner inference, bidirectional type checking, GADTs, a module system, and a tree-walking evaluator. The canonical implementation strategy is **dictionary passing**: each type class constraint `C 'a` is elaborated into an explicit dictionary argument (a record of method implementations) threaded through the program. This is the same approach GHC uses internally, and it is the correct fit for a tree-walking interpreter because dictionaries are just ordinary `RecordValue`s — no new evaluator machinery is required. The total implementation footprint is approximately 400–450 lines across 10 files with no new NuGet packages.
 
-The key risk is concentrated in Phase 1: the IndentFilter already manages a complex state machine (BracketDepth, InFunctionApp, InLetDecl offside, InExprBlock, InMatch, InTry), and adding SEMICOLON injection to that machine without breaking existing multi-line function application is the most dangerous change in the milestone. The critical guard is: do not emit SEMICOLON when the previous token can be a function and the next token is an atom — this distinguishes "f x / y" (application continuation) from "f x / let y = ..." (new statement). Phase 2 carries moderate risk in the type checker (extracting element types from collection types), and Phase 3 is the lowest-risk phase of the milestone.
+The recommended approach is to work in five sequential phases corresponding to the natural dependency chain: (1) extend the type infrastructure (`Scheme`, `ClassEnv`, `InstanceEnv`), (2) add parser/AST support, (3) wire constraint inference and resolution through the type checker, (4) construct dictionary values and elaborate call sites, and (5) replace hardcoded builtins with built-in `Show`/`Eq`/`Ord` instances. The payoff features are straightforward once the core machinery is in place. Features requiring Higher-Kinded Types (`Functor`, `Monad`), automatic `deriving`, multi-parameter type classes, and superclass hierarchies are explicitly out of scope for v10.0.
 
-The entire implementation touches a small number of files: IndentFilter.fs for sequencing; Ast.fs, Parser.fsy, Bidir.fs, and Eval.fs for for-in (plus passthrough in Elaborate/Format/Infer/Exhaustive); and Prelude/Option.fun and Prelude/Result.fun for utilities. F#'s exhaustive DU matching means any missed ForInExpr case is a compile-time error, not a runtime surprise.
+The primary risk is in the bidirectional type checker (`Bidir.fs`): constraint variables must be generalized alongside type variables, constraint resolution must be deferred until after unification completes, and elaboration (dictionary injection) must happen inline in `synth` rather than at runtime to correctly handle higher-order functions. A secondary risk is the mechanical breadth of the `Scheme` shape change — approximately 70 pattern-match sites in `TypeCheck.fs` require a trivial `Scheme([], ty)` to `Scheme([], [], ty)` update that is complete but tedious. The `mutableVars` pattern already present in `Bidir.fs` provides the correct model for threading `ClassEnv`/`InstanceEnv` without exploding call-site counts.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is unchanged from v5.0. F# on .NET 10, FsLexYacc 12.x for lexer/parser, IndentFilter for token-stream layout processing, and `.fun` Prelude files for the standard library. No new NuGet packages, no tooling changes, no version upgrades needed.
+No new dependencies. The entire implementation lives within the existing F#/.NET 10 codebase using the existing FsLexYacc toolchain. Type classes are a language feature, not a library. Three new keywords (`typeclass`, `instance`, `where`) and one new token (`=>` as `FATARROW`) are added to the lexer. All runtime dictionary values reuse the existing `RecordValue` DU variant.
 
 **Core technologies:**
-- **IndentFilter.fs**: Layout rule engine — the sole target for newline sequencing work; emits INDENT/DEDENT and now also SEMICOLON in InExprBlock contexts
-- **FsLexYacc (fslex/fsyacc)**: Existing LALR(1) parser — receives 2 new grammar rules for ForInExpr; no conflicts expected because FOR/LET are distinct shift states
-- **SeqExpr nonterminal**: Already handles `e1; e2` — implicit sequencing injects SEMICOLON upstream with zero parser changes needed
-- **Prelude/*.fun**: Standard library in LangThree itself — the only change surface for Option/Result utilities; loaded alphabetically by Prelude.fs
+- **F# / .NET 10** — implementation language; no version change needed
+- **FsLexYacc 12.x** — LALR(1) lexer/parser; new keyword tokens and grammar rules added to existing files
+- **Existing `RecordValue`** — reused as the runtime dictionary representation; zero new `Value` variants required
+- **`Bidir.fs` synth/check** — primary integration point; constraint resolution and elaboration happen here
 
 ### Expected Features
 
-**Must have (table stakes):**
-- Newline-as-semicolon in function bodies, loop bodies, and lambda bodies — F# convention; expected by any ML-style developer
-- `for x in list do body` and `for x in array do body` — collection iteration without `List.iter` boilerplate
-- Loop variable immutability in for-in — consistent with existing `for i = s to e` semantics
-- `optionIter`, `optionFilter`, `resultIter`, `resultToOption` — the four highest-priority missing Prelude functions
-- Module-level declarations NOT affected by newline sequencing — critical correctness: SEMICOLON must not appear between top-level `let` bindings
+**Must have (table stakes for v10.0):**
+- `typeclass` and `instance` declaration syntax — defines the surface language
+- Constraint representation in `Scheme` (`forall 'a. Show 'a => 'a -> string`) — foundational type system change
+- Dictionary passing at call sites — elaboration rewrites `show x` to `show_dict.show x` before eval
+- Constraint inference and propagation through `Bidir.fs` — constraints collected and generalized alongside types
+- Built-in `Show`, `Eq`, `Ord` instances for all primitive types
+- Constrained instance declarations (`instance Show (Option 'a) where Show 'a`) — required for generic containers
+- Type error when a constraint is unsatisfied — clear diagnostic with constraint name and source span
 
-**Should have (competitive):**
-- Short-name Prelude aliases (`map`, `bind`, `defaultValue`) for ergonomic use after `open Option`
-- `optionGet`, `optionOrElse`, `resultMapBoth`, `resultFold` — useful but not blocking
-- Mixing explicit `;` and newline sequencing (both styles work simultaneously)
-- `optionToList`, `optionOfBool`, `resultFromOption` — completeness
+**Should have (differentiators, deferrable within v10.0):**
+- `to_string` becomes an alias for `Show.show` — completes the migration from hardcoded dispatch
+- `=` / `<>` become `Eq`-constrained; `<` / `>` / `<=` / `>=` become `Ord`-constrained — replaces structural builtins
+- Named constraint annotations in user-facing type signatures (`Show 'a => 'a`)
+- Duplicate instance detection (error on re-declaration of the same class/type pair)
 
-**Defer (v2+):**
-- Tuple pattern destructuring in loop variable (`for (a, b) in pairs do`) — Medium complexity, not urgent
-- `for x in seq do` — lazy sequence iteration (Seq type not in scope)
-- Computation expressions for Option/Result (`option { ... }`) — requires computation expression infrastructure
-- String iteration (`for c in "hello" do`) — not supported; document workaround instead
+**Defer to v10.1+:**
+- `derive Show` / `derive Eq` automatic instance generation — reduces boilerplate but non-trivial
+- Default method implementations in class declarations
+- `Num` typeclass replacing arithmetic operators — high blast radius, no immediate demand
+- `Hashable` typeclass
+- `Functor` / `Foldable` — requires Higher-Kinded Types, separate milestone
 
 ### Architecture Approach
 
-All three features slot into the existing pipeline without disrupting it. The pipeline is unchanged: Source → Lexer.fsl → IndentFilter.fs → Parser.fsy → Elaborate.fs → Bidir.fs → Eval.fs. Newline sequencing is entirely a token-stream transformation in IndentFilter; the parser and evaluator are unaware of it. ForInExpr follows the exact same extension pattern as the existing ForExpr: new AST variant, two parser rules, one Bidir synth case, one Eval case. Option/Result utilities are implemented purely in `.fun` files, taking advantage of the fact that the existing HM type inference already handles polymorphic ADT functions correctly.
+The pipeline structure is unchanged. Type classes slot in as a new environment pair (`ClassEnv`, `InstanceEnv`) threaded through `TypeCheck.typeCheckModuleWithPrelude` alongside the existing `TypeEnv`, `ConstructorEnv`, and `RecordEnv`. Constraint solving is interleaved with HM inference: constraints are collected during `synth`, deferred past unification, resolved at `let` generalization boundaries, and elaborated inline by rewriting `Var` lookups for constrained methods into `App(Var dictName, ...)` nodes before the evaluator ever sees them. The evaluator remains type-class-unaware.
 
-**Major components and their change scope:**
-
-1. **IndentFilter.fs** — SEMICOLON injection at same-level NEWLINE inside InExprBlock; guarded by prevToken/nextToken checks and mutual exclusion with the offside IN rule
-2. **Ast.fs + Parser.fsy + Bidir.fs + Eval.fs** — ForInExpr variant with two grammar rules (inline and indented body), element-type extraction from TList/TArray, and loop-body evaluation for both ListValue and ArrayValue
-3. **Prelude/Option.fun + Prelude/Result.fun** — additive-only utility functions; load order already correct (O before R); no interpreter changes required
+**Major components:**
+1. **Type.fs** — Extended `Scheme of vars * constraints * ty`; new `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types
+2. **Lexer.fsl / Parser.fsy / Ast.fs** — New keywords and grammar rules; `TypeClassDecl` and `InstanceDecl` AST nodes; `TEConstrained` type expression variant
+3. **Infer.fs** — Extended `instantiate`/`generalize` to thread constraints alongside type variables in a single substitution pass
+4. **Bidir.fs** — Constraint resolution at `Var` instantiation; inline elaboration injecting dictionary arguments; `ClassEnv`/`InstanceEnv` threaded as module-level mutable refs (same pattern as `mutableVars`)
+5. **TypeCheck.fs** — Processes `TypeClassDecl` and `InstanceDecl`; builds and registers `RecordValue` dictionaries in the eval environment
+6. **Eval.fs** — Minimal or no changes; receives fully elaborated AST with explicit dictionary applications as ordinary `App`/`Var` nodes
 
 ### Critical Pitfalls
 
-1. **Newline sequencing breaks multi-line function application (V6-1)** — `f x` followed by `y` at the same indent is currently `(f x y)`. Implicit SEMICOLON would silently change it to `f x; y`. Prevent by checking `canBeFunction prevToken && isAtom nextToken` — if true, do NOT emit SEMICOLON. Run all existing flt function-application tests immediately after any IndentFilter change.
+1. **Constraint variables escaping let-generalization (TC-1)** — Extend `Scheme` to carry `Constraint list` from the very first commit; modify `generalize` to collect constraints on free variables simultaneously with the type variables. Never generalize a type without also generalizing its constraints. This is a correctness requirement, not an optimization.
 
-2. **Double-emission: offside IN and implicit SEMICOLON on same newline (V6-2)** — mutual exclusion required: if the offside rule fires (emits IN in InLetDecl context), SEMICOLON must not also be emitted. These contexts are mutually exclusive — newline sequencing fires only in InExprBlock, offside IN fires in InLetDecl.
+2. **Eager constraint resolution before unification completes (TC-2)** — Maintain "wanted" (unresolved) and "given" (in-scope) constraint sets; resolve wanted constraints only after unification is finished for a binding group, not inline during `synth`. Attempting resolution on `TVar 1042` before it unifies with `int` produces false "no instance" errors that are difficult to debug.
 
-3. **SEMICOLON emitted before structural terminators (V6-3)** — `ELSE`, `WITH`, `PIPE`, `IN`, `THEN`, `DEDENT`, `EOF` must be on a "do not emit SEMICOLON before this" blocklist. The IndentFilter already computes `nextToken`; add a terminator-token check before any SEMICOLON emission.
+3. **Dictionary scope leak in higher-order functions (TC-3)** — Use elaboration (rewrite the AST during type checking to add explicit dictionary parameters to constrained functions and explicit dictionary arguments at call sites). Do not thread a flat "dictionary environment" through the evaluator — closures would capture the wrong dictionary for higher-order uses.
 
-4. **Lines starting with infix operators are continuations, not statements (V6-7)** — `|> List.map f` on the next line is a pipe continuation, not a new statement. If the next token is a binary operator (`|>`, `>>`, `+`, `&&`, etc.), do not emit SEMICOLON.
+4. **Dual dispatch incoherence for `to_string` and comparison operators (TC-4)** — Decide the migration strategy before writing any Phase 1 syntax: either builtins delegate through the type class mechanism or they are replaced entirely. Never leave both active simultaneously.
 
-5. **ForInExpr loop variable scoping in type checker (V6-5)** — extract element type from the collection's synthesized type (`TList elemTy` or `TArray elemTy`), bind loop variable as `Scheme([], elemTy)`, and do NOT add it to `mutableVars`. Forgetting the mutableVars exclusion allows `x <- newValue` inside the body, which is semantically wrong.
+5. **`synth`/`check` signature explosion (LT-1)** — Thread `ClassEnv` and `InstanceEnv` as module-level mutable refs in `Bidir.fs` (the same pattern as `mutableVars`), not as additional function parameters. This avoids updating 67+ call sites.
+
+---
 
 ## Implications for Roadmap
 
-Three phases are the natural implementation order, driven by technical dependency and risk profile.
+The feature dependency chain is strict: parsing and AST must precede type infrastructure wiring, which must precede constraint inference, which must precede dictionary construction and evaluation. The payoff features (built-in instances, operator refactoring) depend on all prior phases working. This dictates a 5-phase structure.
 
-### Phase 1: Newline Implicit Sequencing
+### Phase 1: Core Type Infrastructure
+**Rationale:** Everything downstream depends on the `Scheme` shape and the new environment types. This phase has no parser dependencies and can be tested with F# unit tests before any `.fun` syntax changes.
+**Delivers:** Extended `Scheme of vars * constraints * ty`; `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types in `Type.fs`; helper functions `mkScheme`/`schemeType` for backwards compatibility; mechanical update of all ~70 `Scheme([], ty)` to `Scheme([], [], ty)` sites in `TypeCheck.fs`; extended `formatSchemeNormalized` to display constraints.
+**Addresses:** Table-stakes constraint representation.
+**Avoids:** TC-1 (constraints must be in `Scheme` from the start), TC-11 (single substitution pass for type + constraints during instantiation), TC-12 (format constraints in error messages immediately).
 
-**Rationale:** Every subsequent test — for for-in loops and Prelude utilities — will want to write multi-line bodies without explicit semicolons. Implementing sequencing first means all later tests are written in clean idiomatic style. It is also the highest-risk change and benefits from being isolated so the full regression suite can be run without interference from other changes.
+### Phase 2: Parsing and AST
+**Rationale:** New declaration forms must exist in the AST before the type checker can process them. LALR(1) conflict risk is highest here and must be resolved before other phases depend on the grammar.
+**Delivers:** `typeclass`, `instance`, `where`, `FATARROW` (`=>`) tokens in `Lexer.fsl`; `TypeClassDecl` and `InstanceDecl` grammar rules in `Parser.fsy`; corresponding `Decl` variants and `TEConstrained` `TypeExpr` variant in `Ast.fs`; `Format.fs` and `--emit-ast` coverage; `failwith` stubs in `TypeCheck.fs` and `Eval.fs` to prevent silent swallowing.
+**Avoids:** TC-8 (LALR(1) conflicts — use `where` not `=` in class/instance heads; add `FATARROW` as a distinct token; reserve keywords early), TC-13 (new `Decl` variants must be handled everywhere immediately; stubs prevent silent swallowing).
 
-**Delivers:** Newline-as-semicolon in all expression block contexts (function bodies, loop bodies, lambda bodies, let-RHS blocks). No parser or AST changes — purely an IndentFilter token-stream transformation.
+### Phase 3: Type Checker Wiring and Constraint Inference
+**Rationale:** The core algorithmic work. Constraint propagation through `synth`/`check`, `generalize`, `instantiate`, and the class/instance environment pipeline. This phase makes programs type-check correctly; it does not yet produce evaluable output.
+**Delivers:** `ClassEnv`/`InstanceEnv` as module-level mutable refs in `Bidir.fs`; `ClassDecl` processing (add methods to `TypeEnv` as constrained schemes); `InstanceDecl` processing (type-check method bodies, register in `InstanceEnv`); `resolveConstraint` linear search; constraint resolution in `Bidir.synth` `Var` case; constraint threading in `Infer.instantiate` and `Infer.generalize`; `InstanceEnv` propagated through the import/module pipeline; duplicate instance detection.
+**Avoids:** TC-2 (defer resolution past unification), TC-6 (no superclass hierarchies in v10.0), TC-7 (extend `mutableVars` check to constraint generalization), TC-9 (thread `InstanceEnv` through import pipeline), TC-14 (error on duplicate instance registration), LT-1 (mutable refs pattern avoids call-site explosion).
 
-**Files changed:** `src/LangThree/IndentFilter.fs` only (~15-25 lines of logic)
+### Phase 4: Dictionary Construction and Elaboration
+**Rationale:** Bridges type checker resolution to the evaluator. Elaboration rewrites the AST in-place so the evaluator sees only ordinary `App`/`Var` nodes. This is the phase that makes programs execute.
+**Delivers:** `InstanceDecl` processing emits a `RecordValue` dictionary bound in the eval environment under `__dict_ClassName_TypeKey`; inline elaboration in `Bidir.synth` wraps constrained `Var` lookups with `App(expr, Var dictName)` applications; constrained let-bound functions receive explicit dictionary lambda parameters; constrained parameterized instances (`Show (Option 'a)`) implemented as curried `FunctionValue` returning `RecordValue`.
+**Avoids:** TC-3 (elaboration, not runtime env threading, to correctly handle higher-order functions), TC-10 (recursive context reduction for constrained instances with subgoals), Anti-Pattern 3 (no `MethodCall` AST node; evaluator stays type-class-unaware), LT-3 (`callValueRef` wiring for builtin method closures).
 
-**Features addressed:** Multi-line function bodies, multi-line while/for-to bodies, pipe chains, all imperative code patterns without explicit `;`
-
-**Pitfalls to avoid:** V6-1 (function app breakage via prevToken/nextToken guard), V6-2 (double-emission mutual exclusion with offside), V6-3 (terminator blocklist), V6-7 (operator-continuation rule)
-
-**Research flag: NEEDS phase-specific research.** IndentFilter is the most complex existing component. The precise ordering and interaction of guards (prevToken check, nextToken check, offside mutual exclusion, terminator blocklist) must be specified exactly before coding. One wrong ordering causes silent semantic changes with no compile error and no parse error.
-
-### Phase 2: For-In Collection Loops
-
-**Rationale:** After newline sequencing is stable, the for-in feature can be implemented and tested with clean multi-line bodies. This is the most invasive change (AST + Parser + Bidir + Eval + passthrough files), but the pattern is well-established — it exactly mirrors how ForExpr was added in a prior phase.
-
-**Delivers:** `for x in list do body` and `for x in array do body`. Returns unit. Loop variable immutable. Empty collection is a no-op (zero iterations).
-
-**Files changed:** `Ast.fs`, `Parser.fsy`, `Bidir.fs`, `Eval.fs`, plus passthrough in `Elaborate.fs`, `Format.fs`, `Infer.fs`, `Exhaustive.fs` (each ~2-4 lines)
-
-**Features addressed:** Collection iteration over lists and arrays, replacing `List.iter` boilerplate, ergonomic loop syntax consistent with F#
-
-**Pitfalls to avoid:** V6-4 (LALR conflict — verify at build time with `dotnet build`), V6-5 (element type extraction from TList/TArray; exclude from mutableVars), V6-6 (handle both ListValue and ArrayValue; test empty collection), V6-10 (closure capture correct via Map.add immutable bind), V6-12 (clear error message for string iteration)
-
-**Research flag:** Standard patterns — ForExpr is the direct template. Verify LALR conflict at build time. The type checker's TList vs TArray handling requires a design decision (MVP: constrain to TList only; arrays work at eval time regardless of whether the type checker accepts TArray).
-
-### Phase 3: Option/Result Prelude Utilities
-
-**Rationale:** Pure `.fun` additions with zero interpreter changes. The lowest-risk phase. Placing it last means tests can use the clean multi-line style from Phase 1 and can be validated in programs that also use for-in loops.
-
-**Delivers:** `optionIter`, `optionFilter`, `optionGet`, `optionOrElse`, `optionToList`, `optionOfBool` (Option module); `resultIter`, `resultToOption`, `resultFromOption`, `resultMapBoth`, `resultFold` (Result module). Plus short-name aliases (`map`, `bind`, `defaultValue`) for use after `open Option` / `open Result`.
-
-**Files changed:** `Prelude/Option.fun`, `Prelude/Result.fun` only (~14-20 lines total)
-
-**Features addressed:** Side effects on optional values, conditional filtering, Result-to-Option bridging, complete parity with F# Option/Result modules for common operations
-
-**Pitfalls to avoid:** V6-8 (naming: follow `optionX` / `resultX` prefix convention, not bare `map`/`bind` at top level), V6-9 (verify ADT constructors enter ConstructorEnv when Prelude loads), V6-11 (define in .fun files for inferred polymorphism, not as Eval.fs builtins), V6-14 (snake_case naming consistent with existing builtins), V6-15 (test monad laws — specifically `Error e` unchanged through `result_bind`)
-
-**Research flag:** Standard patterns — Array.fun and Hashtable.fun are the naming/structure templates. No additional research phase needed.
+### Phase 5: Built-in Instances and Operator Migration
+**Rationale:** The payoff phase. Once the machinery works end-to-end, wire up the concrete instances that replace hardcoded builtins. This phase is mostly Prelude `.fun` file additions plus targeted changes to `Eval.fs` and `Bidir.fs` to remove old dispatch paths.
+**Delivers:** `Show`, `Eq`, `Ord` instances for all primitive types (`int`, `bool`, `string`, `char`); `Show (Option 'a)` constrained instance; `to_string` becomes an alias delegating to `Show.show`; `=` / `<>` become `Eq`-constrained; `<` / `>` / `<=` / `>=` become `Ord`-constrained; updated `flt` integration tests.
+**Avoids:** TC-4 (single dispatch path — builtins either replaced or delegate through type class; dual paths are incoherent), TC-5 (clear ambiguous-type diagnostics with constraint name and source span).
 
 ### Phase Ordering Rationale
 
-- **Sequencing before loops:** For-in tests need multi-line bodies; without sequencing those bodies require explicit `;` everywhere, making tests awkward to write and non-representative
-- **Sequencing before Prelude:** `optionIter` called on separate lines in a do-block only works with sequencing; tests read better with implicit sequencing in place
-- **Loops before Prelude:** Prelude additions are independent and could be done in any order, but keeping Phase 2 diff focused on interpreter files is cleaner when Phase 3 is deferred
-- **F# exhaustive DU matching:** Every missed ForInExpr case in propagation is a compile-time error — Phase 2 propagation to all files is caught at build time, not at test time
+- Phase 1 is a prerequisite for everything: `Scheme` shape and environment types must exist before any other phase can compile.
+- Phase 2 provides the AST nodes Phase 3 processes; parsing and type-checking are sequentially dependent.
+- Phase 3 cannot resolve instances until Phase 1's environments exist and Phase 2's AST nodes can be constructed.
+- Phase 4 cannot inject dictionaries until Phase 3 has resolved which instances exist.
+- Phase 5 is the only phase that modifies Prelude `.fun` files and existing `flt` integration tests; it proceeds incrementally once Phase 4 proves the pipeline works end-to-end.
+- The `Scheme` shape change (Phase 1) is the most invasive single change; doing it first ensures F# exhaustive pattern matching flags every incomplete update immediately as a compile error.
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
-- **Phase 1 (Newline Sequencing):** The IndentFilter state machine has the highest complexity in the codebase. The exact condition for SEMICOLON emission — specifically the ordering and interaction of prevToken, nextToken, context check, offside mutual exclusion, and BracketDepth — requires a precise written specification before coding. One incorrect guard ordering produces silent semantic breakage that only appears at runtime with wrong values, not with parse errors.
+Phases likely needing closer attention during planning:
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 2 (For-In Loop):** ForExpr is the direct template. Grammar, type-checker, and evaluator patterns are established. Verify LALR conflict at first build.
-- **Phase 3 (Prelude Utilities):** Array.fun and Hashtable.fun are the naming and structure templates. Purely additive, no interpreter involvement.
+- **Phase 3:** Constraint inference in `Bidir.fs` is the highest-uncertainty area. The exact design for "deferred wanted constraints" (collected during `synth`, resolved at let-boundaries) versus "given constraints" (in-scope class constraints) and how they interact with the existing `ctx: InferContext list` should be specified precisely before coding begins. LT-2 (GADT branch isolation vs. constraint propagation) is a related edge case to flag in the Phase 3 plan.
+- **Phase 4:** Elaboration of constrained let-bound functions (adding implicit dict parameters) and constrained parameterized instances (dictionary-functions for `'a`-parameterized types) are the two sub-tasks most likely to require iteration.
+- **Phase 2:** Audit `where` in `Lexer.fsl` before committing to the keyword — existing GADT syntax may already use it contextually. If it does, grammar rules must be adapted. Check before writing parser rules.
+
+Phases with standard, well-documented patterns:
+
+- **Phase 1:** Mechanical data structure extension. F# exhaustive matching is the complete verification strategy. No algorithmic uncertainty.
+- **Phase 5:** Prelude instance wiring is additive and low-risk once Phase 4 is validated end-to-end.
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | No changes to stack; all existing tools verified at v5.0 |
-| Features | HIGH | All three features have direct F# standard library precedents; scope is well-bounded |
-| Architecture | HIGH | ForExpr and IndentFilter patterns are concrete existing code; integration points identified from source inspection |
-| Pitfalls | HIGH | Based on direct inspection of IndentFilter.fs, Bidir.fs, Eval.fs source; not theoretical; prior phase analysis (45-RESEARCH.md) already resolved earlier pitfalls |
+| Stack | HIGH | Derived entirely from codebase inspection; no external dependency changes; implementation strategy matches GHC's own approach |
+| Features | HIGH | Feature categorization is well-grounded; MVP scope is conservative and validated against the dependency chain; anti-features are explicitly argued |
+| Architecture | HIGH | Standard HM-with-classes pattern (Jones 1994); component boundaries follow existing `ConstructorEnv`/`RecordEnv` precedent already in the codebase |
+| Pitfalls | HIGH | Most pitfalls are LangThree-specific, derived from direct codebase inspection (67+ call sites, `mutableVars`, `callValueRef`); general pitfalls validated against GHC documentation |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **TList vs TArray in Bidir.fs for ForInExpr:** MVP recommendation is constrain type checker to `TList elemTy` only (ranges also evaluate to ListValue). ArrayValue works at eval time regardless. If the type checker should also accept `for x in array do`, a second unification attempt against `TArray elemTy` is needed. This design decision should be made explicit during Phase 2 — do not leave it implicit.
+- **`where` keyword conflict:** `Lexer.fsl` must be audited before Phase 2 begins to confirm whether `WHERE` already exists. Low risk but must be checked first.
+- **`synth` evidence representation:** Phase 3 requires `synth` to produce constraint resolution evidence alongside types. The exact F# representation (list of dict variable names, structured evidence type, or mutable ref accumulator) should be decided before Phase 3 coding starts. The mutable ref approach (like `mutableVars`) is recommended to avoid call-site explosion.
+- **GADT branch constraint isolation (LT-2):** If constrained instances are used inside GADT match branches, the branch-local type refinement must be applied to constraints before they escape the branch. Flag this in the Phase 3 plan.
+- **`callValueRef` wiring for builtin instance methods (LT-3):** When constructing built-in dictionaries (e.g., `Show int`), method closures must use `callValueRef` to invoke the evaluator. Account for this in Phase 4's dictionary construction design.
 
-- **REPL behavior under newline sequencing (V6-13):** If the REPL uses the same IndentFilter pipeline as file parsing, a mode flag may be needed to suppress implicit SEMICOLON in interactive mode. The recommended approach (REPL requires explicit `;;` or `;`; file mode uses implicit sequencing) mirrors OCaml REPL convention. Verify against `Repl.fs` implementation before releasing Phase 1.
-
-- **Short-name alias coexistence:** Both long-name (`optionMap`) and short-name (`map`) aliases can coexist in Option.fun. The safe choice is additive short-name aliases only, keeping full backward compatibility for all existing tests. This must be confirmed as the policy before Phase 3 implementation.
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct inspection of `IndentFilter.fs` — InExprBlock, BracketDepth, canBeFunction, isAtom, processNewlineWithContext
-- Direct inspection of `Parser.fsy` — SeqExpr, ForExpr grammar rules, IN token usage
-- Direct inspection of `Bidir.fs` — ForExpr type checker, mutableVars exclusion pattern
-- Direct inspection of `Eval.fs` — ForExpr evaluator, ListValue/ArrayValue handling
-- Direct inspection of `Ast.fs` — Expr DU, ForExpr/ForInExpr candidate patterns
-- Project history via `PROJECT.md` — Key Decisions table (closure capture, mutableVars, SeqExpr)
-- Phase 45 research (`45-RESEARCH.md`) — SeqExpr and offside interaction analysis
+- LangThree codebase (direct inspection, 2026-03-31) — `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs`
+- Jones (1994), "Qualified Types: Theory and Practice" — standard reference for constraint-augmented HM
+- GHC instance resolution documentation — authoritative on dictionary passing, Paterson conditions, linear-search resolution
 
 ### Secondary (MEDIUM confidence)
-- [F# for...in Expression — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/loops-for-in-expression)
-- [F# Option Module — FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-optionmodule.html)
-- [F# Result Module — FSharp.Core docs](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html)
-- [F# syntax: indentation and verbosity — F# for fun and profit](https://fsharpforfunandprofit.com/posts/fsharp-syntax/)
-- [OCaml Mutability and Imperative Control Flow](https://ocaml.org/docs/mutability-imperative-control-flow)
+- [Implementing, and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html) — dictionary passing mechanics
+- [Making dictionary passing explicit in Haskell — Joachim Breitner](https://www.joachim-breitner.de/blog/398-Making_dictionary_passing_explicit_in_Haskell) — GHC elaboration model
+- [Hindley-Milner inference with constraints — Kwang's Haskell Blog](https://kseo.github.io/posts/2017-01-02-hindley-milner-inference-with-constraints.html) — constraint-based HM formulation
+- [Type Classes — Tufts CS150PLD Notes](https://www.cs.tufts.edu/comp/150PLD/Notes/TypeClasses.pdf) — implementation walkthrough
+- [Introduction to Haskell Typeclasses — Serokell](https://serokell.io/blog/haskell-typeclasses) — feature survey
+
+### Tertiary (LOW confidence)
+- [Coherence of type class resolution — Bottu et al.](https://xnning.github.io/papers/coherence-class.pdf) — formal coherence treatment (relevant if superclasses are added later)
+- [Type Classes: Confluence, Coherence and Global Uniqueness — ezyang's blog](http://blog.ezyang.com/2014/07/type-classes-confluence-coherence-global-uniqueness/) — orphan instances and coherence
 
 ---
-*Research completed: 2026-03-28*
+*Research completed: 2026-03-31*
 *Ready for roadmap: yes*

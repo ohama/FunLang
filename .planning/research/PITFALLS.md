@@ -1,546 +1,401 @@
-# Domain Pitfalls: LangThree v6.0 Practical Programming Features
+# Domain Pitfalls: Type Classes for LangThree v10.0
 
-**Domain:** Adding newline implicit sequencing, for-in loops, and Option/Result utilities to an existing ML-style interpreter
-**Researched:** 2026-03-28
-**Context:** LangThree v5.0 baseline — IndentFilter + SeqExpr + ForExpr + BracketDepth all already in place
-**Scope:** Pitfalls specific to the v6.0 milestone: (1) newline-based implicit sequencing, (2) `for x in collection do body`, (3) Option/Result Prelude utilities
-
----
-
-## PART A: Pitfalls for Earlier Milestones (Inherited, Already Resolved)
-
-The original PITFALLS.md covered language implementation pitfalls from v1.0–v5.0. Those are not repeated here. This file focuses exclusively on v6.0 features. The most relevant previously-resolved pitfalls that v6.0 must NOT regress are:
-
-- **Pitfall 1** (INDENT/DEDENT buffering): IndentFilter already handles multi-DEDENT; newline sequencing must not corrupt this.
-- **Pitfall 9** (LALR conflicts via offside rule): SeqExpr nonterminal already avoids the semicolon conflict; newline sequencing must not reintroduce conflicts.
-- **Prior Phase 45 research** (45-RESEARCH.md): All SeqExpr analysis already done; do not redo.
+**Domain:** Adding Haskell-style type classes to an existing ML interpreter with HM inference
+**Researched:** 2026-03-31
+**Scope:** Pitfalls specific to adding type classes to LangThree's existing HM + bidirectional checker + GADT + module system
+**Context:** LangThree v9.1 baseline — Scheme(vars, ty) generalization, Bidir.fs synth/check, Infer.freshVar/generalize, Unify.unifyWithContext, Eval.fs tree-walker
 
 ---
 
-## PART B: Critical Pitfalls for v6.0
+## How to Read This File
 
-Mistakes that cause rewrites or major issues.
+Each pitfall has a **Phase** tag indicating which implementation phase is most at risk. Phases assumed are:
 
-### Pitfall V6-1: Newline Sequencing Swallows Multi-Line Function Application
+- **P1**: Type class declarations and instance declarations (parser + AST + typeclass env)
+- **P2**: Constraint-augmented HM inference (Scheme → qualified types, constraint propagation)
+- **P3**: Instance resolution (dictionary building, entailment checking)
+- **P4**: Dictionary passing in evaluator (elaboration or runtime lookup)
+- **P5**: Integration with existing builtins (to_string, comparison operators, arithmetic)
+- **P6**: Constrained instances (e.g. `instance Show (Option 'a) where Show 'a`)
 
-**What goes wrong:** The IndentFilter's `InFunctionApp` context correctly handles:
-```
-f x
-  y    ← continuation: parsed as "f x y" (one application)
-```
-If newline-based implicit sequencing is added naively, the SAME layout would instead be parsed as:
-```
-f x
-y    ← sequence: parsed as "f x; y" (two statements)
-```
-This silently changes program semantics — no parse error, wrong behavior.
+---
 
-**Why it happens:** The distinction between "argument on next line" and "next statement on next line" is ambiguous from indentation alone:
-- `f x` followed by `y` at same indent = sequence
-- `f x` followed by `y` at deeper indent = function application continuation
-But `InFunctionApp` detection only fires when `y` is **deeper** than `f`. Code where the next statement happens to be at the SAME indent as the function call hits an edge: is `y` a new statement or a zero-indent continuation?
+## PART A: Critical Pitfalls (Cause Rewrites)
 
-The current `InFunctionApp` detection in `IndentFilter.fs` (lines 128–138) enters `InFunctionApp` only when `col > topIndent`. A newline token at `col == topIndent` therefore falls through to the normal sequencing path. For the pattern:
-```
-let _ =
-    f x
-    y       ← col == 4, same as f x
-```
-If newline sequencing emits `SEMICOLON` at same-level continuations, `y` becomes a sequence step. But if `y` is meant as an argument to `f`, it was previously parsed as `(f x y)` via `InFunctionApp`.
+### Pitfall TC-1: Constraint Variables Escape Let Generalization
 
-**Consequences:**
-- Code that worked as multi-line applications silently becomes sequencing
-- No error is produced — different runtime behavior
-- Existing tests in `tests/flt/` that rely on multi-line function application break
-- Particularly dangerous for curried functions like `List.fold f init xs` split across lines
+**What goes wrong:** When generalizing a type at a `let` boundary, free type variables are quantified. If constraints are NOT tracked alongside quantified variables, the constraint `Show 'a` for a generalized `'a` disappears from the scheme. The resulting scheme `forall 'a. 'a -> string` looks unconditionally polymorphic but at call sites there is no constraint to discharge — either the wrong instance fires or a runtime crash occurs.
+
+**Why it happens:** LangThree's `generalize` in `Infer.fs` currently produces `Scheme(vars, ty)` with no constraint component. Adding type variables to the quantified set without also capturing their constraints silently produces unsound schemes.
+
+**Concrete example:**
+```
+let show_it x = show x   (* show : Show 'a => 'a -> string *)
+```
+Without constraint tracking, `show_it` generalizes to `Scheme([a], a -> string)` — no `Show a` constraint retained. Calling `show_it 42` works (Show int resolves), but `show_it (fun x -> x)` also type-checks with no error, then crashes at runtime when the Show dictionary lookup finds nothing.
 
 **Prevention:**
-1. **Do NOT emit implicit SEMICOLON between any two tokens at the same indent when `canBeFunction prevToken && isAtom nextToken`**. The IndentFilter already has `canBeFunction` and `isAtom` predicates for this exact purpose.
-2. Reuse the `InFunctionApp` context check: if STILL in a function app context when a same-level newline is seen, do NOT emit a semicolon — it is still a continuation.
-3. **The safest rule:** Only emit implicit SEMICOLON when the `PrevToken` is a token that cannot be a function (not `IDENT`, not `RPAREN`) OR when the next token is not an atom. Sequences typically start with keywords (`let`, `if`, `for`, `while`), identifiers that are known statements, or pipe-right `|>` chains.
-4. Run ALL existing flt tests for function application after any IndentFilter change.
+- Extend `Scheme` to `Scheme of vars: int list * constraints: Constraint list * ty: Type` from the start of P2.
+- Modify `generalize` to also collect constraints that mention any of the free variables being generalized.
+- At call sites (`instantiate`), re-emit fresh constraint goals from the scheme constraints, substituting fresh vars for quantified vars.
+- Do NOT generalize without simultaneously generalizing constraints.
 
-**Detection:**
-- Warning sign: `tests/flt/expr/lambda/` or `tests/flt/file/function/` tests start failing after IndentFilter change.
-- Write a specific regression test: `let result = List.fold (fun acc x -> acc + x) 0 [1; 2; 3]` split across lines — must still return 6, not produce a type error or wrong value.
+**Warning signs:**
+- `let f x = show x` type-checks but `f (fun x -> x)` produces no type error.
+- Scheme pretty-printing shows no constraints for functions that use overloaded operations.
 
-**Phase:** Phase 1 (newline sequencing in IndentFilter) — must be addressed first.
+**Phase:** P2 (constraint-augmented generalization). Must be correct before P3 attempts any resolution.
 
 ---
 
-### Pitfall V6-2: Implicit Semicolon Double-Firing Inside `let = ... body` Blocks
+### Pitfall TC-2: Instance Resolution Called at Inference Time Instead of Post-Unification
 
-**What goes wrong:** The offside rule (InLetDecl) and the newline-sequencing rule both fire on the same newline, producing duplicate effects:
+**What goes wrong:** Resolution is attempted eagerly during type inference — as soon as a constraint goal is generated — before unification has had a chance to determine what the type variable actually is. The resolver sees an unconstrained `TVar 1042` and either fails (no instance for `TVar`) or picks the wrong instance.
 
-```fsharp
-let f () =
-    x <- 1          ← line 1 of body
-    x <- x + 1      ← line 2 of body
+**Why it happens:** It is natural to resolve constraints immediately when they are emitted (similar to how unification is called immediately in Algorithm W). But constraints involving type variables must be deferred: `Show (TVar 1042)` cannot be resolved until 1042 is unified with a concrete type.
+
+**Concrete example:**
 ```
-
-If newline sequencing emits `SEMICOLON` between line 1 and line 2 at the same indent, AND the offside rule also emits `IN` (because line 2's column equals the `let`'s offside column), the token stream becomes malformed: `...x <- 1 IN SEMICOLON x <- x + 1 IN...` which is a parse error.
-
-**Why it happens:** `IndentFilter.processNewlineWithContext` checks `isAtSameLevel` (no INDENT/DEDENT emitted) to decide whether to fire the offside rule. If newline sequencing also runs in the `isAtSameLevel` branch, both transformations apply simultaneously to the same newline event.
-
-Current code structure (lines 254–282 in IndentFilter.fs): the `isAtSameLevel` branch handles offside `IN` insertion. Newline sequencing would need to fit into this same branch without conflicting.
-
-**Consequences:**
-- Parse error on perfectly valid indented blocks
-- Offside `IN` and implicit `SEMICOLON` appear in the wrong order
-- All `let` bodies with multiple statements break
-
-**Prevention:**
-1. **Mutual exclusion:** At any same-level newline: if the offside rule emits `IN`, do NOT also emit `SEMICOLON`. The IN already handles the sequence boundary.
-2. **Order of operations:** Check offside first; if it fires, stop processing that newline for sequencing.
-3. Newline sequencing should ONLY apply inside `InExprBlock` context — inside an already-established indented expression block. It must NOT apply when `InLetDecl` offside firing is pending.
-4. The cleanest model: newline sequencing fires only in `InExprBlock` context (after `= INDENT` opens a block), not at the `InLetDecl` offside column itself.
-
-**Detection:**
-- Warning sign: Any multi-statement function body breaks with parse error after IndentFilter change.
-- Test `let f () = \n    e1\n    e2` — `e2` must execute as second statement.
-- If this produces `syntax error: unexpected IN` or `unexpected SEMICOLON`, both rules fired.
-
-**Phase:** Phase 1 (newline sequencing) — core correctness requirement.
-
----
-
-### Pitfall V6-3: Implicit Semicolon Before `else` / `with` / `|` Terminators
-
-**What goes wrong:** Newline sequencing emits a SEMICOLON before a token that should close a branch, not start a new statement:
-
-```fsharp
-if cond then
-    doSomething ()
-else                  ← should NOT have SEMICOLON before "else"
-    doSomethingElse ()
+let x = show 42    (* generates: Show ?a, ?a ~ int *)
 ```
+If resolution fires before `?a ~ int` unification, the resolver sees `Show TVar 1042` and fails with "no instance for type variable". Correct behavior: defer, unify first, then resolve `Show int`.
 
-```fsharp
-match x with
-| A -> doA ()
-| B ->                ← PIPE should NOT be preceded by implicit SEMICOLON
-    doB ()
+**Prevention:**
+- Maintain two constraint sets during inference: **wanted** (unresolved goals) and **given** (in-scope axioms from instance heads, local class constraints).
+- Resolve wanted constraints only after unification is complete for a binding group — i.e., at the end of the let-binding, not inline.
+- Alternatively, use a constraint-based reformulation (generate all constraints first, unify second, resolve third). This is cleaner than interleaved Algorithm W style.
+
+**Warning signs:**
+- Calls to `show 42` produce "no instance for TVar" errors even when int has a Show instance.
+- Resolution works for top-level let bindings but fails for intermediate sub-expressions.
+
+**Phase:** P2/P3 boundary. The discipline of when resolution fires must be decided in P2's design.
+
+---
+
+### Pitfall TC-3: Dictionary Passing via Environment (Not Elaboration) Causes Scope Leaks
+
+**What goes wrong:** In a tree-walking interpreter, the simplest approach is to thread a "dictionary environment" alongside the value environment, adding instance dictionaries at declaration sites and looking them up at call sites. This breaks with higher-order functions because the dictionary is captured at the definition site, not resolved at the use site.
+
+**Why it happens:** LangThree's `Eval.fs` passes `Env` (a `Map<string, Value>`) as a pure value. If dictionaries are stored in `Env` as `DictValue "Show"` etc., they are subject to normal closure capture. A function `fun f -> f 42` closed over a `Show int` dictionary will fail when called with an argument that requires `Show string` — the wrong dictionary is in the closure.
+
+**Concrete example:**
 ```
-
-If the IndentFilter emits `SEMICOLON` before `ELSE`, `WITH`, `PIPE`, the parser sees `doSomething (); else ...` which is a grammar error.
-
-**Why it happens:** `ELSE`, `WITH`, and `PIPE` tokens at the same indent level as the preceding expression look, structurally, like "the next statement in a sequence." But they are structural terminators, not expression starts.
-
-Note that the current IndentFilter ALREADY handles `ELSE` correctly (lines 196–201): it suppresses `INDENT` before `ELSE`. Newline sequencing must apply the same logic for SEMICOLON emission.
-
-**Consequences:**
-- `if/then/else` completely breaks
-- Match expressions with multiple arms break (every arm after the first fails)
-- Try/with expressions break
+let apply_show f x = f (show x)    (* show needs Show ?a dictionary *)
+apply_show identity "hello"         (* should resolve Show string *)
+apply_show identity 42              (* should resolve Show int *)
+```
+If `show`'s dictionary is captured at `apply_show`'s definition site, both calls use the same dictionary — wrong for whichever call doesn't match.
 
 **Prevention:**
-1. **Terminator token list:** Before emitting an implicit SEMICOLON, check if the next token is a structural terminator: `ELSE`, `WITH`, `PIPE`, `IN`, `THEN`, `DO`, `DEDENT`, `EOF`. If so, do not emit.
-2. `PIPE` is the trickiest: it can start a match arm (terminator context) or appear mid-expression in `a || b` patterns. Use context: if in `InMatch` or `InTry` context, `PIPE` is a terminator; otherwise it is an operator. The existing context stack already tracks `InMatch` and `InTry`.
-3. Reuse the existing `nextToken` lookahead already computed in `processNewlineWithContext` — it is already available when deciding what to emit.
+- The correct model: dictionaries are passed as **explicit lambda arguments** (elaboration). Type inference elaborates `show x` into `show_dict x` where `show_dict` is an explicit parameter.
+- For a tree-walker, elaboration means: during type-checking, rewrite the AST to add dictionary parameters to functions that have class constraints, and add dictionary arguments at call sites.
+- Alternatively: pass dictionaries through a separate "evidence environment" that is threaded correctly alongside the call stack — effectively the same as elaboration but done in the evaluator.
+- Do NOT attempt to resolve dictionaries globally from a flat name table at runtime without elaboration — this is coherent only for a non-higher-order language.
 
-**Detection:**
-- Warning sign: Tests with if/else or match break immediately after IndentFilter change.
-- Test: Simple `if true then 1 else 2` split across lines must still work.
-- Test: Three-arm match must produce all three arms, not a parse error after arm 1.
+**Warning signs:**
+- Higher-order functions using overloaded operations produce wrong results or wrong-instance errors.
+- `map show [1; 2; 3]` works, but `let f = map show in f [1; 2; 3]` fails or uses wrong instance.
 
-**Phase:** Phase 1 (newline sequencing) — must be addressed before any other work.
+**Phase:** P4 (evaluator integration). Must decide elaboration vs. runtime threading in P3 design.
 
 ---
 
-### Pitfall V6-4: `for x in collection` Conflicts with `for i = s to e` Grammar
+### Pitfall TC-4: Overlapping `to_string`/Comparison Builtins Break Instance Uniqueness
 
-**What goes wrong:** Adding `for x in collection do body` as a new grammar rule creates a shift/reduce conflict with the existing `for i = s to e do body` rule because both start with `FOR IDENT` and the parser cannot determine which production to use until it sees `IN` vs `EQUALS`.
+**What goes wrong:** LangThree has existing built-in functions `to_string`, `=`, `<>`, `<`, `>`, `<=`, `>=` that work on multiple types via ad-hoc runtime dispatch in `Eval.fs`. When type classes are added, these become instances of `Show`, `Eq`, `Ord`. If both the old builtin dispatch AND the new type class dispatch exist simultaneously, there are two competing resolution paths for the same constraint — incoherence.
 
-In an LALR(1) parser, the one-token lookahead after `FOR IDENT` sees either `EQUALS` (integer range loop) or `IN` (collection loop). This is only one token away from disambiguating, but if IDENT binds to a common production early, a reduce/reduce or shift/reduce conflict can appear depending on the grammar structure.
+**Why it happens:** The natural migration path is to add type class instances for `Show int`, `Show string`, etc. while leaving the old builtins intact "for compatibility". The result is that `to_string 42` resolves via the builtin but `show 42` resolves via the type class, and they may diverge if the builtin is not an exact alias.
 
-**Why it happens:** fsyacc is LALR(1). After `FOR IDENT`, it has a conflict between:
-- `ForExpr: FOR IDENT EQUALS Expr TO Expr DO SeqExpr`
-- `ForInExpr: FOR IDENT IN Expr DO SeqExpr`
-
-The discriminating token (`EQUALS` vs `IN`) is at position 3, which IS within the single-token lookahead from the point of the `FOR IDENT` reduce. However, the conflict depends on whether `IDENT` is first reduced to something or kept as a terminal — in LR parsing, both rules share the same `FOR IDENT` prefix, which means the parser can simply wait for the third token. This SHOULD be unambiguous for LALR(1) since no reduction of `IDENT` is needed before seeing `EQUALS` or `IN`.
-
-**The real risk:** `IN` is already used as a keyword in `let x = e IN body`. If `in` appears in a collection loop context, the parser must not confuse `for x in collection` with `let x = ... in ...` — specifically, does `for x in` shift `IN` as "for-in loop start" or try to reduce via some IN-related rule? Since `FOR` is not part of any `let` production, this should be safe, but needs explicit verification.
-
-**Consequences:**
-- fsyacc prints "shift/reduce conflict" or "reduce/reduce conflict" during build
-- Parser silently chooses wrong production (fsyacc defaults to shift)
-- `for x in list` mis-parses as `for x = ...` or vice versa
+**Concrete example:**
+```
+to_string true   (* builtin: "true" *)
+show true        (* typeclass Show bool: could be different format *)
+```
+If `show` for `bool` is user-extensible but `to_string` is hardcoded, a user overriding `show` for their ADT can never override `to_string` — inconsistency.
 
 **Prevention:**
-1. **Verify experimentally:** After adding the new grammar rule, check fsyacc output for conflict warnings. Build with verbose fsyacc output enabled.
-2. **IDENT before IN is safe:** Because neither `FOR IDENT` reduces to anything in the existing grammar — both loops must read more tokens before any reduction. LALR(1) should handle this without conflict.
-3. **Explicit token test:** Add a test with `for x in [1; 2; 3] do body` immediately after adding the grammar rule, before anything else. If it parses, there is no conflict.
-4. **Do not reuse `IN` token for for-in loop.** Consider whether a fresh keyword is needed. But `in` is the natural ML keyword here and OCaml/F# both use it — it should be fine since the parser context (after `FOR IDENT`) is unambiguous.
+- Make a clear architectural decision at the start of P5: either (a) the builtins become the default instances and `to_string` becomes an alias for `show`, or (b) the builtins are removed and replaced entirely by type class instances.
+- If (a): the builtin dispatch in `Eval.fs` must delegate through the type class mechanism, not bypass it.
+- If (b): migration requires updating all existing tests that use `to_string`, `=`, etc.
+- Never have both paths active simultaneously.
 
-**Detection:**
-- Build output from `dotnet build` includes fsyacc warnings — watch for any conflict messages.
-- Parser test: `for x in [1]` must parse, `for i = 1 to 3` must still parse, both in the same file.
+**Warning signs:**
+- `to_string` and the method from `Show` produce different output for the same value.
+- Tests that use `=` directly pass while tests that use `Eq.equal` fail, or vice versa.
 
-**Phase:** Phase 2 (for-in loop parser) — check for conflicts immediately.
+**Phase:** P5 (builtin integration). The design decision must be made before P1 parser design commits syntax.
 
 ---
 
-### Pitfall V6-5: `for x in collection` Loop Variable Scoping in Type Checker
+## PART B: Moderate Pitfalls (Cause Delays and Technical Debt)
 
-**What goes wrong:** The loop variable `x` in `for x in collection do body` is typed incorrectly — either (a) given the type of the collection instead of the element type, (b) allowed to be reassigned inside the body (should be immutable), or (c) not added to the type environment for the body.
+### Pitfall TC-5: Ambiguous Type Errors with No Good Diagnostic
 
-**Why it happens:** The existing `ForExpr` in Bidir.fs (lines 181–195) handles integer range loops: it types `startExpr` and `stopExpr` as `TInt` and binds `var` as `Scheme([], TInt)`. For `for x in collection`, the element type must be extracted from the collection's type:
-- `TList(elemTy)` → `x : elemTy`
-- `TArray(elemTy)` → `x : elemTy`
+**What goes wrong:** After inference, a constraint remains with a type variable that is not determined by the function's inputs or outputs. For example:
 
-If the type checker does `synth collection` and gets `TList(TVar 0)` but then binds `x : TVar 0` (the variable, not a monomorphic copy), unification later might accidentally generalize `x` or leave it as a type variable instead of an int.
-
-Also, the loop variable must be excluded from `mutableVars` (same as the integer range loop variable — see the "For-loop variable immutability via mutableVars exclusion" Key Decision in PROJECT.md). Forgetting this allows `x <- newValue` inside the body, which would be type-correct but semantically wrong (the loop variable is not a ref cell).
-
-**Consequences:**
-- `for x in [1; 2; 3] do println (to_string x)` fails to typecheck with type variable error
-- `for x in items do x <- modified` incorrectly accepted
-- Type mismatch errors with misleading messages about list vs element types
-
-**Prevention:**
-1. **Extract element type from collection type:** Pattern match on the synthesized type of `collectionExpr`:
-   - `TList elemTy` → bind `x : Scheme([], elemTy)` in body environment
-   - `TArray elemTy` → bind `x : Scheme([], elemTy)` in body environment
-   - Otherwise → type error "for-in requires list or array"
-2. **Do NOT put `x` in `mutableVars`** — identical to the integer range loop treatment.
-3. **Force monomorphic binding:** Use `Scheme([], elemTy)` not `Scheme([tv], TVar tv)` — the loop variable is not polymorphic.
-4. **Body returns unit:** The type checker must unify the body type with `TTuple []`, same as integer for-loops and while-loops.
-
-**Detection:**
-- Test: `for x in [1; 2; 3] do println (to_string x)` — must print 1, 2, 3.
-- Test: `for x in ["a"; "b"] do println x` — must print a, b.
-- Test: `for x in [1; 2; 3] do x <- 0` — must produce E0320 immutable assignment error.
-- Test: Body type mismatch: `for x in [1] do 42` — must error "body must return unit".
-
-**Phase:** Phase 2 (for-in type checker) — required for correctness.
-
----
-
-### Pitfall V6-6: `for x in collection` Evaluator Handles Wrong Value Types
-
-**What goes wrong:** The `ForInExpr` evaluator case only handles `ListValue` but not `ArrayValue`, or vice versa. Or it incorrectly handles an empty list by crashing instead of silently doing nothing.
-
-**Why it happens:** The existing `ForExpr` evaluator (Eval.fs lines 766–777) handles only `IntValue` range. A new `ForInExpr` case must handle both `ListValue` and `ArrayValue`. Forgetting one means runtime errors that don't reflect the program logic — they reflect evaluator incompleteness.
-
-The empty-collection case must be a no-op (loop executes zero times) — not an error. Developers often forget to test the empty case.
-
-**Consequences:**
-- `for x in [||] do body` crashes with match failure instead of silently skipping
-- `for x in array do body` fails where `for x in list do body` works — asymmetric
-- Confusing runtime errors about value types instead of logical errors
-
-**Prevention:**
-1. Handle both cases in the evaluator:
-   ```fsharp
-   | ListValue elems ->
-       for elem in elems do
-           let env' = Map.add var elem env
-           eval recEnv moduleEnv env' false body |> ignore
-       TupleValue []
-   | ArrayValue arr ->
-       for elem in arr do
-           let env' = Map.add var elem env
-           eval recEnv moduleEnv env' false body |> ignore
-       TupleValue []
-   | _ -> failwith "for-in: collection must be a list or array"
-   ```
-2. Empty list/array must be tested explicitly — they loop zero times and return `TupleValue []`.
-3. The loop variable must be bound freshly for each iteration (Map.add, not mutation).
-
-**Detection:**
-- Test with empty list: `for x in [] do println "never"` — must produce no output, return `()`.
-- Test with array: `for x in [|1; 2; 3|] do ...`
-- Test mixing: type checker accepts `for x in array`, evaluator also handles it.
-
-**Phase:** Phase 2 (for-in evaluator) — correctness requirement.
-
----
-
-## PART C: Moderate Pitfalls for v6.0
-
-Mistakes that cause delays or technical debt.
-
-### Pitfall V6-7: Newline Sequencing Ambiguity with Multi-Line Operators
-
-**What goes wrong:** Code like:
-
-```fsharp
-let result =
-    x + y
-    + z        ← is this "x + y" SEMICOLON "+z" (error), or "x + y + z" (continuation)?
+```
+let x = show (read "42")    (* Show ?a, Read ?a — both unsatisfied, ?a unknown *)
 ```
 
-In most languages, a line starting with a binary operator signals continuation. But with newline sequencing, `+ z` at the same indent would be treated as a new sequence step — which is not a valid expression (unary `+` on `z` is unusual; worse, `+z` is a type error if `z` is not an int, but `+` on its own fails).
+Without defaulting rules or explicit annotations, inference correctly reports this as ambiguous. But without a clear error message pointing to the ambiguous variable and the unsatisfied constraints, users get a cryptic unification error or a "no instance" error that does not explain what annotation is needed.
 
-Similar with pipe chains:
-```fsharp
-let result =
-    xs
-    |> List.map f    ← must be continuation, not sequence
-    |> List.filter g
+**Prevention:**
+- After constraint solving, if any wanted constraint contains a type variable that is not reachable from the environment (no context to fix it), report `AmbiguousType` with the constraint name and the variable.
+- Include the source span from where the constrained operation was called.
+- Suggest "add a type annotation to disambiguate" in the error message.
+- Add this to `Diagnostic.fs` as a new `ErrorKind`.
+
+**Warning signs:**
+- Users report confusing type errors on code that should obviously work once annotated.
+- The error message mentions internal `TVar 1042` instead of a human-readable class name.
+
+**Phase:** P2/P3. Must be addressed before user-facing testing begins.
+
+---
+
+### Pitfall TC-6: Superclass Constraints Cause Infinite Resolution Loops
+
+**What goes wrong:** If `Ord 'a` has superclass `Eq 'a`, and the instance resolution for `Eq` tries to use `Ord` as evidence (common when `Eq` methods are defined in terms of `Ord`), you get an infinite loop: resolving `Eq int` looks for `Ord int` which requires `Eq int` to check the superclass...
+
+**Why it happens:** The Paterson Conditions exist in GHC specifically to prevent this. Without a termination check on resolution depth or constraint set size, the resolver loops.
+
+**Prevention:**
+- For LangThree v10.0 (initial type classes), avoid superclass hierarchies entirely in the first phase. Implement `Show`, `Eq`, `Ord`, `Num` as independent classes with no declared superclass relationship.
+- If superclasses are added later, implement a depth limit (e.g. 50 resolution steps) with a clear error message "constraint resolution exceeded depth limit — possible cycle".
+- Track the set of constraints currently being resolved as a "stack" and detect when the same constraint re-appears in the stack (the Coin-cell check used in real implementations).
+
+**Warning signs:**
+- The type checker hangs on programs with multiple type class constraints.
+- Stack overflow in the F# process when type-checking even simple programs.
+
+**Phase:** P3 (instance resolution). Relevant if P6 (constrained instances) is in scope.
+
+---
+
+### Pitfall TC-7: Constraint Generalization Interacts Badly with Mutable Variables
+
+**What goes wrong:** LangThree already has a deliberate decision: `let mut x = e` is monomorphic (no generalization). This was correct for preventing unsound polymorphism with mutable references. However, if a mutable variable holds a value of a constrained type, the constraint also must not be generalized. If the implementation forgets this and generalizes `let mut x = 0` to `Scheme([a; Show a], a)`, the mutable variable becomes unsoundly polymorphic.
+
+**Why it happens:** The constraint-augmented generalization in P2 must query `mutableVars` (LangThree already has this `Set<string>` in `Bidir.fs`) and skip generalization for mutable variables — including skipping constraint generalization.
+
+**Prevention:**
+- Extend the existing `mutableVars` check in `generalize` to cover constraint generalization.
+- Rule: if a binding is in `mutableVars`, produce `Scheme([], [], monotype)` with no quantified variables AND no generalized constraints.
+- This is already correct for the type variable case; ensure the same holds when constraints are added.
+
+**Warning signs:**
+- A `let mut` binding accepts values of different types across different uses in the same scope.
+- Runtime type errors in code that uses mutable variables with overloaded operations.
+
+**Phase:** P2. A straightforward extension of the existing mutable variable check.
+
+---
+
+### Pitfall TC-8: LALR(1) Conflicts from Typeclass Syntax Choices
+
+**What goes wrong:** LangThree uses fsyacc (LALR(1)). Type class syntax introduces tokens and productions that can conflict with existing grammar. Common conflict sites:
+
+1. `typeclass Show 'a = ...` — if `typeclass` is a new keyword, it must be added to the lexer. But the parser currently has `let` declarations at top level. A `typeclass` at top level that uses `=` may conflict with `let ... = ...`.
+2. `instance Show int = ...` — the word `instance` may tokenize as `IDENT` unless added as a keyword, causing ambiguity.
+3. Constraint syntax `(Show 'a) =>` in function signatures — the `=>` token does not currently exist. If it is `= >` split across tokens, the lexer produces `ASSIGN GT` which is a sequence the parser cannot distinguish from `=` followed by `>`.
+4. `where` clause — LangThree does not have `where`. Adding it as a keyword may conflict if any existing code uses `where` as an identifier.
+
+**Prevention:**
+- Reserve `typeclass`, `instance`, and `where` as keywords in the lexer (Lexer.fsl) from P1 start.
+- Add `FATARROW` (or `DARROW`) as a distinct token for `=>`.
+- Run `dotnet build` after every lexer/parser change and inspect the shift/reduce report for new conflicts.
+- Keep type class declarations syntactically distinct from `let` declarations — using `typeclass Name 'a where` instead of `typeclass Name 'a =` avoids the `=`-conflict entirely.
+
+**Warning signs:**
+- fsyacc reports new shift/reduce or reduce/reduce conflicts after parser additions.
+- The parser accepts type class declarations but silently parses them as something else (e.g., a `let` with a wrong name).
+
+**Phase:** P1. Must be resolved before any other phase can proceed.
+
+---
+
+### Pitfall TC-9: Instance Resolution Not Threaded Through File Imports
+
+**What goes wrong:** LangThree has a file import system (`open "path.fun"`) with an import cache. The instance environment must be accumulated across imported files. If instance declarations from imported files are not added to the instance environment before processing the importing file, instance resolution fails for any type defined in the imported file.
+
+**Why it happens:** LangThree's existing import system passes `TypeEnv`, `ConstructorEnv`, `RecordEnv` from imported modules to the importer. A new `InstanceEnv` must be threaded through the same pipeline. If it is omitted, instance lookup is limited to the current file only.
+
+**Concrete example:**
+```
+(* types.fun *)
+type Color = Red | Green | Blue
+instance Show Color = ...
+
+(* main.fun *)
+open "types.fun"
+println (show Red)    (* fails: Show Color not in scope if InstanceEnv not propagated *)
 ```
 
-**Why it happens:** `|>` starts a line and is a binary operator that needs a left argument. Without a rule saying "lines starting with binary operators are continuations," the implicit sequencing would treat `|> List.map f` as a standalone expression — which is a parse error (binary operator without left operand).
-
-**Consequences:**
-- Pipe chains spanning multiple lines break
-- Standard F#-style operator chaining breaks
-- Users get confusing parse errors about unexpected `|>`
-
 **Prevention:**
-1. **Operator-continuation rule:** Do NOT emit implicit SEMICOLON if the next line starts with a binary operator token (`|>`, `>>`, `<<`, `+`, `-`, `*`, `/`, `|`, `&&`, `||`, `<`, `>`, `=`, infix operators generally).
-2. In the IndentFilter, check `nextToken` before emitting SEMICOLON: if next token is an infix operator, it is a continuation, not a new statement.
-3. This rule is additive with the terminator rule (Pitfall V6-3): both suppress SEMICOLON emission.
+- Add `InstanceEnv` as a return value from module type-checking, alongside existing `TypeEnv` etc.
+- Import caching must include `InstanceEnv` in the cached result.
+- Ensure `InstanceEnv` is passed through all call sites in `TypeCheck.fs` and `Cli.fs`.
 
-**Detection:**
-- Test: `let r = xs |> List.map f \n    |> List.filter g` — must parse as one pipeline.
-- Test: `let r = a + b \n    + c` — should this be continuation or sequence? Document the design decision explicitly. F# treats leading operators as continuation; this is the safer choice.
+**Warning signs:**
+- Instances defined in imported files produce "no instance" errors in the importing file.
+- Top-level instances work but instances in Prelude files do not.
 
-**Phase:** Phase 1 (newline sequencing) — design decision required upfront.
+**Phase:** P3/P6. Must be addressed before any multi-file programs with type classes work.
 
 ---
 
-### Pitfall V6-8: Option/Result Utility Functions Clash with Existing Prelude Names
+### Pitfall TC-10: Constrained Instance Context Reduction Incomplete
 
-**What goes wrong:** New Option/Result functions added to Prelude (`Option.map`, `Option.bind`, `Result.map`, etc.) conflict with existing user-defined functions in programs that already define their own `map` or `bind`.
+**What goes wrong:** `instance Show (Option 'a) where Show 'a` means: to resolve `Show (Option int)`, the resolver must also resolve `Show int` (a subgoal). If context reduction does not recursively resolve subgoals, the constrained instance is accepted at declaration time but fails at use time.
 
-**Why it happens:** The Prelude is loaded via `open "Prelude/Option.fun"` style directives. If a user program defines `let map f xs = ...` at module level and the Prelude also defines `map`, one of two bad things happens:
-1. User's `map` shadows Prelude's `map` — silently, with no warning
-2. Prelude's `map` shadows user's — wrong function is called
+**Concrete example:**
+```
+instance Show (Option 'a) where Show 'a =
+    fun x -> match x with
+             | None -> "None"
+             | Some v -> "Some(" ++ show v ++ ")"
 
-This is the standard "shadowing" problem in module systems. LangThree's existing Prelude already has this tension with `List.map`, `Array.map`, etc.
-
-**Consequences:**
-- Programs that define their own `map`/`bind` break after Prelude loading
-- Shadowing is silent — wrong function called with no type error if signatures match
-- Functions with same name but different arity produce confusing type errors
-
-**Prevention:**
-1. **Namespace all Prelude utilities:** Use `Option.map`, `Option.bind`, `Option.getOrDefault` (qualified names) not top-level `map`, `bind`. Users access them via `open Option` or `Option.map`.
-2. **Follow existing Prelude pattern:** `Array.fun` in `Prelude/Array.fun` exposes `array_iter`, `array_map` (with prefix). The Option/Result utilities should use a similar prefix (`option_map`, `result_bind`) OR be in their own module (`Option`).
-3. **Test:** Load Prelude, then define `let map f x = f x`, verify no unexpected behavior.
-
-**Detection:**
-- Warning sign: A user program with `let bind f x = ...` breaks after adding Option utilities.
-- Test: Open Prelude, call `Option.map`, then define local `let map = ...` — must coexist.
-
-**Phase:** Phase 3 (Option/Result Prelude) — namespace before implementing.
-
----
-
-### Pitfall V6-9: Result Type Defined in Prelude Conflicts with Exhaustiveness Checker
-
-**What goes wrong:** If `Result` type is defined in a Prelude file (`type Result<'a, 'e> = Ok of 'a | Error of 'e`), the exhaustiveness checker and pattern matching compilation may not recognize it as a sum type unless the ADT is properly registered in the constructor environment.
-
-**Why it happens:** LangThree's exhaustiveness checker (`Exhaustive.fs`, `MatchCompile.fs`) uses the constructor environment to check that all branches of a match are covered. ADTs defined in user code are registered when their `TypeDecl` is processed. But Prelude ADTs loaded via file import must also be registered — if the import pipeline does not fully evaluate type declarations from imported files (just values), the `Result` type's constructors `Ok` and `Error` are unknown to the exhaustiveness checker.
-
-**Consequences:**
-- `match r with | Ok v -> ... | Error e -> ...` produces spurious "non-exhaustive match" warnings
-- Pattern matching on `Result` requires a catch-all `| _ -> ...` even when it should be exhaustive
-- Developer confusion about whether their match is actually complete
-
-**Prevention:**
-1. **Verify Prelude type declarations are processed:** When `open "Prelude/Result.fun"` is executed, the `TypeDecl` for `Result` must be registered in the `ConstructorEnv`. Check that the existing file-import pipeline in `TypeCheck.fs` does this for type declarations, not just value bindings.
-2. **Test exhaustiveness after Prelude load:** After defining `Result` in a Prelude file, write a match that covers both `Ok` and `Error` — the checker must not warn.
-3. **Alternatively:** Define `Result` as a built-in type with built-in constructor info, similar to how `bool` is treated.
-
-**Detection:**
-- Write `match (Ok 1) with | Ok v -> v | Error _ -> 0` — must type-check without warning.
-- If exhaustiveness checker warns "non-exhaustive" on a complete two-arm match, type declarations are not registered.
-
-**Phase:** Phase 3 (Option/Result Prelude) — verify type registration.
-
----
-
-### Pitfall V6-10: `ForInExpr` Variable Captured by Closures Inside Loop Body
-
-**What goes wrong:** Closures defined inside a `for x in collection do body` capture `x` by reference rather than by value, causing all closures to see the last value of `x` when eventually called:
-
-```fsharp
-let handlers = [||]
-for x in [1; 2; 3] do
-    let h = fun () -> x    // intends to capture current x
-    handlers.[...] <- h
-// All handlers return 3, not 1, 2, 3
+show (Some 42)   (* must resolve: Show (Option int) -> Show int -> ok *)
+show (Some (fun x -> x))  (* must fail: no Show for function types *)
 ```
 
-**Why it happens:** In LangThree's evaluator, the loop variable `x` is bound via `Map.add var elem env` for each iteration. Each closure captures the immutable `env` at the time of its creation, which includes `x` as an `IntValue` (or whatever type). Since F# `Map` is immutable and the environment is a value (not a reference), each closure captures a DIFFERENT copy of the environment with the current value of `x`.
-
-This means LangThree **does not have** the classic closure-in-loop bug that JavaScript/Python have with `var` — because the environment is copied, not shared.
-
-However, if `x` were implemented as a `RefValue` (like mutable variables), ALL closures would share the same ref cell. For an immutable loop variable, this would be wrong.
-
-**The risk:** If during implementation the loop variable is accidentally added to `mutableVars` or implemented as a `RefValue`, this bug appears.
-
-**Consequences:**
-- All closures inside the loop see the final value of `x`
-- Logic errors that are hard to diagnose
-- Behavior difference between list iteration and integer iteration
+If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42)` may either crash or produce a type error that blames the wrong site.
 
 **Prevention:**
-1. **Loop variable is immutable, bound as value:** Use `Map.add var elem env` where `elem` is the actual value (not a `RefValue`). This guarantees each iteration gets its own value in a separate environment copy.
-2. **Do NOT add loop variable to `mutableVars`:** Same rule as integer for-loops.
-3. **Test closure capture:** Create closures inside a loop, collect them, call them all — each must return its iteration's value.
+- Implement context reduction as a recursive procedure that, when resolving `Show (Option int)`:
+  1. Matches against `instance Show (Option 'a) where Show 'a`
+  2. Emits the subgoal `Show int` (with `'a` = `int`)
+  3. Recursively resolves `Show int`
+  4. Builds the composite dictionary `{show = fun x -> ... show_dict_int ...}`
+- Termination: rely on the depth limit from TC-6.
 
-**Detection:**
-- Test: `let fs = ref [] in for x in [1; 2; 3] do fs := (fun () -> x) :: !fs; let results = List.map (fun f -> f ()) !fs` — must return `[3; 2; 1]` (reversed), not `[3; 3; 3]`.
+**Warning signs:**
+- `show (Some 42)` works, but `show (Some (fun x -> x))` does not produce a type error (it should).
+- Constrained instances resolve their head but pass dictionary holes to the body.
 
-**Phase:** Phase 2 (for-in evaluator) — correctness property.
+**Phase:** P6 (constrained instances). This is the hardest resolution case.
 
 ---
 
-### Pitfall V6-11: `option_map` / `option_bind` Need Correct Polymorphic Type Schemes
+## PART C: Minor Pitfalls (Annoying but Fixable)
 
-**What goes wrong:** `Option.map : ('a -> 'b) -> 'a option -> 'b option` requires a polymorphic type scheme in the type environment. If the type scheme is written incorrectly (e.g., monomorphic `(TVar 1 -> TVar 2) -> TData("Option", [TVar 1]) -> TData("Option", [TVar 2])` without proper generalization), the function works for the first use but fails for subsequent uses at different types.
+### Pitfall TC-11: Type Variable Index Collision in Instantiated Constraints
 
-**Why it happens:** LangThree's `TypeCheck.fs` maintains a `TypeEnv` (map from name to `Scheme`). Built-in functions are registered with their schemes. If the scheme for `option_map` uses specific `TVar` integers that are later used in unification, those "reused" type variable IDs clash with freshly allocated ones, causing spurious type errors.
-
-The existing Prelude built-ins (like `array_map`) work because they are either (a) polymorphically typed from a Prelude `.fun` file where the type is inferred, or (b) explicitly registered with correct `Scheme([0; 1], ...)` where `0` and `1` are the universally quantified variable IDs.
-
-**Consequences:**
-- `option_map to_string (Some 1)` works, but `option_map string_length (Some "x")` fails with a type unification error
-- First use "locks in" the type, second use fails
-- Confusing error messages about `int` vs `string` in Option context
+**What goes wrong:** `Infer.freshVar` starts at 1000 and increments. When a scheme with constraints is instantiated, fresh variables replace quantified variables in both the type AND the constraints. If the constraint instantiation uses a different fresh variable counter than the type instantiation (e.g., by calling freshVar separately), the constraint `Show ?1000` refers to a different variable than the type `?1001 -> string`, even though they should be the same `'a`.
 
 **Prevention:**
-1. **Define Option/Result in `.fun` files and let type inference handle polymorphism.** This is the safest approach — type inference generalizes correctly.
-2. **If registering as built-ins:** Use unique, high-numbered `TVar` IDs that are distinct from inference-generated IDs, OR ensure `freshVar()` in the unifier always generates IDs above any manually-assigned ones.
-3. **Test:** Call `option_map` with at least two different element types in the same program.
+- Instantiate the type and all constraints in a single pass using the same substitution mapping `{quantified_var -> fresh_var}`.
+- Never call `freshVar()` separately for constraint instantiation vs. type instantiation.
 
-**Detection:**
-- Test: `option_map to_string (Some 1)` then `option_map string_length (Some "hello")` in same program — both must work.
-- If second call fails, the scheme is not properly polymorphic.
+**Warning signs:**
+- Constraint errors reference type variables not present in the inferred type.
+- `show` works when the constrained variable is the only type variable, but fails when there are multiple type variables.
 
-**Phase:** Phase 3 (Option/Result Prelude) — type scheme correctness.
+**Phase:** P2 (constraint instantiation). Easy to get right if noticed early.
 
 ---
 
-## PART D: Minor Pitfalls for v6.0
+### Pitfall TC-12: `formatType` Does Not Display Constraints
 
-Mistakes that cause annoyance but are fixable.
-
-### Pitfall V6-12: `for x in string` Silently Accepted or Confusingly Rejected
-
-**What goes wrong:** Users write `for c in "hello" do ...` expecting character-by-character iteration (as in Python or F#). LangThree does not support string iteration — strings are not `TList(TChar)`. The type checker would reject this with a confusing error about `TString` not matching `TList('a)`.
-
-**Why it happens:** Strings in LangThree are `StringValue`, not `ListValue`. The `for-in` loop type-checks the collection and pattern-matches on `TList elemTy | TArray elemTy`. `TString` does not match either, so an error is produced.
+**What goes wrong:** `Type.formatTypeNormalized` and `Type.formatSchemeNormalized` do not show constraints. Error messages that reference constrained types will omit the constraint, producing confusing output like `expected: 'a -> string, got: int -> string` when the real message should be `expected: Show 'a => 'a -> string, got: int -> string`.
 
 **Prevention:**
-1. **Give a clear error message:** "for-in: `string` is not iterable; use `string_to_chars` to convert, or iterate indices with `for i = 0 to string_length s - 1 do`"
-2. **Do NOT silently accept:** Do not coerce `string` to `char list` implicitly.
-3. **Document the limitation:** Tutorial must show the workaround pattern.
+- Extend `formatSchemeNormalized` to format constraints as `(Show 'a, Eq 'a) => ...` when constraints are present.
+- Update all `Diagnostic.fs` error formatting that calls `formatType` or `formatScheme` to use the constraint-aware version.
 
-**Detection:**
-- Test: `for c in "abc" do ()` — must produce a clear type error, not a crash.
+**Warning signs:**
+- Type error messages reference `'a -> string` without constraint context, confusing users.
 
-**Phase:** Phase 2 (for-in type checker) — error message quality.
+**Phase:** P2. Fix immediately when Scheme is extended to carry constraints.
 
 ---
 
-### Pitfall V6-13: Implicit Newline Sequencing Breaks REPL Multi-Line Input
+### Pitfall TC-13: Parser AST for Typeclass/Instance Declarations Not Unified with Module Decl
 
-**What goes wrong:** In the REPL, a user types `f x` and presses Enter expecting to type `y` as an argument on the next line. If newline sequencing is active, Enter now terminates the expression. The REPL evaluates `f x` immediately, then `y` as a separate expression.
-
-**Why it happens:** The REPL (Repl.fs) reads lines and runs them through the same IndentFilter pipeline. If newline sequencing emits SEMICOLON between lines, multi-line expressions in the REPL break.
-
-**Consequences:**
-- REPL UX degrades significantly
-- Users cannot write multi-line expressions interactively
-- A previously-working pattern (multi-line function application in REPL) stops working
+**What goes wrong:** LangThree's top-level is a list of `Decl` items. If `TypeclassDecl` and `InstanceDecl` are added as new union cases but are not handled in all visitors — `TypeCheck.fs`, `Bidir.fs`/top-level processing, `Eval.fs`, `Program.fs` pretty-printer, `--emit-ast` output — the F# compiler will silently ignore them via incomplete match warnings (or worse, match-all catch cases will swallow them).
 
 **Prevention:**
-1. **The REPL may need a different IndentFilter configuration:** Use the BracketDepth mechanism (already in place) and require users to use explicit `;` or brackets for REPL multi-line input.
-2. **Alternatively:** In REPL mode, newline sequencing is disabled — explicit semicolons required. Document this difference clearly.
-3. **Pragmatic choice:** File mode gets implicit sequencing; REPL requires explicit `;;` or semicolons. This is the OCaml REPL convention.
+- After adding `TypeclassDecl` and `InstanceDecl` to `Ast.fs`, immediately run `dotnet build` and treat ALL new incomplete-match warnings as blocking errors.
+- Add a `failwith "TypeclassDecl not yet implemented"` stub in Eval.fs and TypeCheck.fs so that accidental paths through unimplemented code fail loudly at runtime rather than silently.
+- The `--emit-ast` flag should print the new AST nodes verbatim — add cases to the Format.fs/AST printer immediately.
 
-**Detection:**
-- Manual REPL test: type `List.fold \n    (fun acc x -> acc + x) \n    0 \n    [1; 2; 3]` — must either work or fail with a clear message about explicit semicolons needed.
+**Warning signs:**
+- `typeclass` or `instance` declarations in source files are silently ignored.
+- F# compiler emits "incomplete match" warnings that are suppressed by a catch-all.
 
-**Phase:** Phase 1 (newline sequencing) — REPL mode exception.
+**Phase:** P1. Structural issue that causes silent failures across all subsequent phases.
 
 ---
 
-### Pitfall V6-14: `option_getOrDefault` vs `option_defaultValue` Naming Convention
+### Pitfall TC-14: Orphan Instance Confusion from Prelude Instances
 
-**What goes wrong:** The new utility function is named inconsistently with the rest of the Prelude. Different functions use different styles:
-- `array_map`, `array_fold` (snake_case with module prefix)
-- `hashtable_get`, `hashtable_keys` (snake_case with module prefix)
-- `string_length`, `string_concat` (snake_case with module prefix)
-
-If Option/Result functions follow a DIFFERENT naming convention (`getOrDefault`, `defaultValue`, `mapOption`), users have to remember two styles.
+**What goes wrong:** The Prelude loads `Show int`, `Eq int`, etc. as default instances. If user code in a `.fun` file also declares `instance Show int = ...`, there are two instances for the same type-class/type pair. This is incoherence. LangThree must enforce: one instance per (class, type) pair globally.
 
 **Prevention:**
-1. Follow the established pattern: `option_map`, `option_bind`, `option_get_or_default`, `option_is_some`, `option_is_none`.
-2. If using module syntax: `Option.map`, `Option.bind` — which requires module support in Prelude loading.
-3. Pick one and document it clearly. Do not mix.
+- Maintain the `InstanceEnv` as a `Map<string * string, InstanceInfo>` keyed by `(class_name, type_name)`.
+- When adding a new instance, check for an existing entry and raise `E0XXX DuplicateInstance` if one exists.
+- The Prelude's instances are loaded first (before user code); user code that re-declares a Prelude instance gets a clear error.
 
-**Detection:**
-- Check existing Prelude files for naming convention before writing any new functions.
-- The convention is `module_verb` or `module_noun`, all snake_case.
+**Warning signs:**
+- User accidentally re-declares a builtin instance and does not get an error — instead the last-declared instance silently wins.
 
-**Phase:** Phase 3 (Option/Result Prelude) — naming convention.
-
----
-
-### Pitfall V6-15: `result_bind` Propagates `Error` Incorrectly in Chains
-
-**What goes wrong:** `result_bind f (Error e)` should return `Error e` unchanged. If implemented as `match r with | Ok v -> f v | Error e -> Error e`, it is correct. But if the error type is lost (e.g., `Error e` becomes `Error (Error e)` due to double-wrapping), monad chains fail silently.
-
-**Why it happens:** Copy-paste error in the Prelude implementation: `| Error e -> Error (f e)` instead of `| Error e -> Error e`.
-
-**Prevention:**
-1. Test the three monad laws: (a) `result_bind (fun x -> Ok x) (Ok v) = Ok v`, (b) `result_bind f (Ok v) = f v`, (c) associativity.
-2. Specifically test error propagation: `result_bind (fun x -> Ok (x + 1)) (Error "oops") = Error "oops"`.
-
-**Detection:**
-- Test: `(Error "fail") |> result_bind (fun x -> Ok (x + 1)) |> result_bind (fun x -> Ok (x * 2))` — must return `Error "fail"`, not `Error (Error "fail")`.
-
-**Phase:** Phase 3 (Option/Result Prelude) — correctness test.
+**Phase:** P3. Needs to be part of instance registration from the beginning.
 
 ---
 
-## Phase-Specific Warnings
+## PART D: Phase-Specific Warning Summary
 
-| Phase | Topic | Likely Pitfall | Mitigation |
-|-------|-------|---------------|------------|
-| Phase 1 | Newline sequencing in IndentFilter | Function application broken (V6-1) | Check `canBeFunction`/`isAtom` before emitting SEMICOLON |
-| Phase 1 | Newline sequencing in IndentFilter | Double-emission with offside rule (V6-2) | Mutual exclusion: IN emission suppresses SEMICOLON |
-| Phase 1 | Newline sequencing in IndentFilter | SEMICOLON before `else`/`with`/`|` (V6-3) | Terminator token list: skip SEMICOLON before structural closers |
-| Phase 1 | Newline sequencing in IndentFilter | Operator continuation breaks (V6-7) | Lines starting with infix operators are continuations, not statements |
-| Phase 1 | Newline sequencing in IndentFilter | REPL multi-line input breaks (V6-13) | REPL mode uses different config or explicit `;;` convention |
-| Phase 2 | for-in grammar | LALR conflict with `for i = ... to` (V6-4) | IDENT followed by IN vs EQUALS is 1-token-lookahead, should be fine; verify with build |
-| Phase 2 | for-in type checker | Element type extraction (V6-5) | Pattern-match synthesized type on TList/TArray; exclude from mutableVars |
-| Phase 2 | for-in type checker | String iteration (V6-12) | Clear error message pointing to workaround |
-| Phase 2 | for-in evaluator | Missing ArrayValue case (V6-6) | Handle both ListValue and ArrayValue; test empty collection |
-| Phase 2 | for-in evaluator | Closure capture (V6-10) | Use Map.add (immutable bind), not RefValue |
-| Phase 3 | Option/Result Prelude | Name collision with user code (V6-8) | Namespace with prefix or module; follow existing Prelude convention |
-| Phase 3 | Option/Result Prelude | Type declaration not registered (V6-9) | Verify ADT constructors enter ConstructorEnv when Prelude is loaded |
-| Phase 3 | Option/Result Prelude | Monomorphic type scheme (V6-11) | Define in .fun files for inferred polymorphism, or use correct Scheme(tvars, ty) |
-| Phase 3 | Option/Result Prelude | Naming convention (V6-14) | Use `option_X` snake_case consistent with existing builtins |
-| Phase 3 | Option/Result Prelude | `result_bind` error propagation (V6-15) | Test monad laws; specifically `Error e` unchanged through bind |
+| Phase | Topic | Most Likely Pitfall | Mitigation |
+|-------|-------|--------------------|-|
+| P1 | Parser/AST | LALR(1) conflicts from new keywords (TC-8) | Reserve keywords early; use `where` not `=` |
+| P1 | AST | Silent swallow of new Decl variants (TC-13) | Add `failwith` stubs; treat warnings as errors |
+| P2 | HM integration | Constraint not generalized with type vars (TC-1) | Extend Scheme to carry constraints from day one |
+| P2 | HM integration | Type variable collision in instantiation (TC-11) | Single substitution pass for type + constraints |
+| P2 | HM integration | Missing constraint formatting in errors (TC-12) | Extend formatSchemeNormalized immediately |
+| P2 | HM integration | Mutable variable constraint leak (TC-7) | Extend mutableVars check to constraint generalization |
+| P3 | Resolution | Eager resolution before unification (TC-2) | Deferred constraint solving; resolve after unification |
+| P3 | Resolution | Superclass infinite loop (TC-6) | No superclass for v10.0; add depth limit if later |
+| P3 | Resolution | Duplicate/orphan instances (TC-14) | InstanceEnv keyed by (class, type); error on duplicate |
+| P3 | Resolution | Import system missing InstanceEnv (TC-9) | Thread InstanceEnv through import pipeline |
+| P4 | Evaluator | Dictionary scope leak in higher-order functions (TC-3) | Elaboration or evidence-threaded call stack |
+| P5 | Builtins | Dual dispatch incoherence for to_string/= (TC-4) | Decide migration strategy before P1 syntax |
+| P6 | Constrained instances | Incomplete context reduction (TC-10) | Recursive subgoal resolution with depth limit |
+| P2/P3 | Diagnostics | Ambiguous type variable errors (TC-5) | AmbiguousType diagnostic with constraint name and span |
 
 ---
 
-## Risk Summary
+## PART E: LangThree-Specific Integration Risks
 
-**Highest risk area (likely needs deeper phase-specific research):**
-Phase 1 — Newline sequencing. The IndentFilter already has significant complexity (BracketDepth, InFunctionApp, InLetDecl offside, InExprBlock, InMatch, InTry). Adding newline sequencing to this state machine without breaking existing behavior requires careful specification of exactly when a newline becomes a SEMICOLON vs a continuation. The interaction with InFunctionApp (V6-1) is the most dangerous because it changes program semantics silently.
+These pitfalls are not general type-class pitfalls but arise specifically from LangThree's existing design decisions:
 
-**Medium risk area:**
-Phase 2 — for-in loop. The grammar addition is low-risk (LALR(1) should handle it), but the type checker integration (extracting element types from collection types) requires careful handling of TList vs TArray polymorphism.
+### Risk LT-1: `synth`/`check` Signature Explosion
 
-**Lower risk area:**
-Phase 3 — Option/Result Prelude. Following established patterns from Array.fun and Hashtable.fun reduces risk. Main danger is naming consistency and polymorphic type schemes.
+`Bidir.synth` already takes `ctorEnv`, `recEnv`, `ctx`, `env`. Adding a `classEnv: ClassEnv` and `instanceEnv: InstanceEnv` parameter means every call site in Bidir.fs must be updated. LangThree has 67+ call sites for synth/check (per PROJECT.md "mutableVars avoids threading through 67+ synth/check call sites"). The same problem will recur for class/instance environments.
+
+**Mitigation:** Use the same pattern as `mutableVars`: a module-level mutable ref for environments that do not change within a single inference pass. `let mutable classEnv: ClassEnv = Map.empty` in Bidir.fs, set at the top of each top-level binding check. Avoids threading through all call sites.
+
+### Risk LT-2: GADT Branch Isolation vs. Constraint Propagation
+
+LangThree's GADT support uses `isPolyExpected` per-branch isolation so each branch gets an independent expected type. If type class constraints are generated within a GADT branch, they must be solved with the GADT refinement in scope (the branch-local substitution). Constraints that escape a GADT branch may reference type variables that are only valid within that branch, causing resolution errors in the outer context.
+
+**Mitigation:** Solve constraints locally within each GADT branch before merging branches. Do not defer constraints from GADT branches to the outer wanted set without first applying the branch's local substitution.
+
+### Risk LT-3: `callValueRef` Pattern for Builtin Type Class Methods
+
+LangThree uses a mutable `callValueRef` forward reference to let built-in functions invoke user closures (e.g., `Array.map`). If type class method dispatch at runtime needs to call a user-defined instance method, the same forward-reference pattern is needed — the evaluator must be wired before the instance dictionary is built. Failing to use this pattern causes `NullReferenceException` or stack overflows in F#.
+
+**Mitigation:** When constructing the built-in instance dictionaries (e.g., a `DictValue` for `Show int`), the dictionary values must be `BuiltinValue` or `ClosureValue` that reference the evaluator via `callValueRef`, not direct F# functions that bypass the evaluator.
 
 ---
 
 ## Sources
 
-- Direct inspection of `IndentFilter.fs` — `canBeFunction`, `isAtom`, `processNewlineWithContext`, `isAtSameLevel`, BracketDepth mechanism
-- Direct inspection of `Parser.fsy` — `SeqExpr`, `ForExpr`, `InFunctionApp` grammar
-- Direct inspection of `Bidir.fs` — `ForExpr` type checker, `mutableVars` exclusion pattern
-- Direct inspection of `Eval.fs` — `ForExpr` evaluator, `ListValue`/`ArrayValue` handling
-- Direct inspection of `45-RESEARCH.md` — Phase 45 pitfalls (already resolved), offside interaction analysis
-- Project history via `PROJECT.md` Key Decisions table — closure capture, mutableVars, SeqExpr, DOTLBRACKET patterns
-- F# language reference: `for x in collection do` semantics (F# loop variable is immutable)
-- OCaml manual: sequence expression (`seq_expr` nonterminal), for-in semantics
+- [GHC Instance Declarations and Resolution](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/instances.html) — authoritative on instance resolution algorithm and Paterson conditions
+- [Implementing and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html) — dictionary passing mechanics, polymorphic recursion, constraint direction
+- [Type Classes: Confluence, Coherence and Global Uniqueness — ezyang's blog](http://blog.ezyang.com/2014/07/type-classes-confluence-coherence-global-uniqueness/) — orphan instances and coherence
+- [Type Classes in Haskell (Hall, Hammond, Peyton Jones)](https://dl.acm.org/doi/pdf/10.1145/227699.227700) — original qualified types + constraint generalization
+- [Learn From Errors: Overlapping Instances — Serokell](https://serokell.io/blog/learn-from-errors-overlapping-instances) — practical overlapping instance errors
+- [Coherence of Type Class Resolution (Bottu et al.)](https://xnning.github.io/papers/coherence-class.pdf) — formal treatment of superclass nondeterminism
+- [Hindley-Milner with Constraints — Kwang's Haskell Blog](https://kseo.github.io/posts/2017-01-02-hindley-milner-inference-with-constraints.html) — constraint-based HM formulation
+- [Monomorphism Restriction — HaskellWiki](https://wiki.haskell.org/Monomorphism_restriction) — constrained let generalization rules
