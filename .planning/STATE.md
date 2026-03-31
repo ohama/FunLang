@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** 실용적인 함수형 프로그래밍 언어 -- 인터프리터와 네이티브 컴파일러 모두에서 동일하게 동작
-**Current focus:** Planning next milestone
+**Current focus:** v8.1 Mutual Recursion Completion
 
 ## Current Position
 
-Milestone: v8.0 Declaration Type Annotations — ARCHIVED
-Phase: —
+Milestone: v8.1 Mutual Recursion Completion
+Phase: Not started (defining requirements)
 Plan: —
-Status: Ready for next milestone
-Last activity: 2026-03-30 — v8.0 milestone archived
+Status: Defining requirements
+Last activity: 2026-03-31 — Milestone v8.1 started
 
 Progress: [████████████████████] v1.0-v8.0 done (64 phases, 138 plans)
 
@@ -72,11 +72,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30
-Stopped at: v8.0 milestone archived
+Last session: 2026-03-31
+Stopped at: Defining v8.1 requirements
 Resume file: None
-Next action: /gsd:new-milestone for next version
+Next action: Define requirements → create roadmap
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-30 (v8.0 milestone archived)*
+*Last updated: 2026-03-31 (v8.1 milestone started)*
