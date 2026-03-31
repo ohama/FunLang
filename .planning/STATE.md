@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-31)
 
 Milestone: v10.0 Type Classes
 Phase: 70 of 74 (Core Type Infrastructure)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-31 — roadmap created for v10.0 (5 phases, 13 requirements)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-03-31 — Completed 70-01-PLAN.md (Scheme 3-field infrastructure)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [░░░░░░░░░░░░░░░░░░░░] v10.0: 0% (phases 70-74)
+         [█░░░░░░░░░░░░░░░░░░░] v10.0: 5% (phase 70 plan 1 of 2 done)
 
 ## Performance Metrics
 
@@ -40,6 +40,11 @@ Key context carried into v10.0:
 - `Scheme` shape change to `Scheme(vars, constraints, ty)` is most invasive single change — do it first so F# exhaustive matching flags all incomplete sites immediately
 - Constraint resolution deferred past unification (never resolve `TVar 1042` before it unifies) to avoid false "no instance" errors
 
+From Phase 70 Plan 01:
+- `InstanceInfo` defined WITHOUT `MethodBodies` for Phase 70 (avoids circular dep with Expr); Phase 71 adds bodies
+- Tasks 1+2 committed together (T1 alone won't compile due to F# exhaustive matching)
+- `mkScheme`/`schemeType` helpers added as zero-cost backward-compat for Phase 71+ gradual migration
+
 ### Pending Todos
 
 None.
@@ -52,10 +57,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Stopped at: Roadmap created for v10.0 (5 phases, phases 70-74)
+Last session: 2026-03-31T10:26:34Z
+Stopped at: Completed 70-01-PLAN.md (Scheme 3-field infrastructure)
 Resume file: None
-Next action: `/gsd:plan-phase 70`
+Next action: Execute Phase 70 Plan 02
 
 ---
 *State initialized: 2026-02-25*
