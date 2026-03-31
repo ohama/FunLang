@@ -7,11 +7,11 @@
 
 ### CLI 확장
 
-- [ ] **CLI-01**: `--check` 플래그 -- 타입 체크만 수행 (실행 없음), 모든 `open "file.fun"` 임포트 파일 포함, 결과를 stderr에 출력
-- [ ] **CLI-02**: `--deps` 플래그 -- 진입점 파일의 `open "file.fun"` 체인을 재귀적으로 추적하여 의존성 트리 출력
-- [ ] **CLI-03**: `--prelude` 플래그 -- Prelude 디렉토리 경로 명시적 지정 (기존 자동 탐색 대신)
-- [ ] **CLI-04**: `LANGTHREE_PRELUDE` 환경 변수 -- `--prelude` 미지정 시 환경 변수에서 Prelude 경로 읽기
-- [ ] **CLI-05**: 파일 임포트 캐싱 -- 동일 프로세스 내에서 이미 로드한 파일의 환경을 캐시하여 중복 파싱/타입 체크 방지
+- [x] **CLI-01**: `--check` 플래그 -- 타입 체크만 수행 (실행 없음), 모든 `open "file.fun"` 임포트 파일 포함, 결과를 stderr에 출력
+- [x] **CLI-02**: `--deps` 플래그 -- 진입점 파일의 `open "file.fun"` 체인을 재귀적으로 추적하여 의존성 트리 출력
+- [x] **CLI-03**: `--prelude` 플래그 -- Prelude 디렉토리 경로 명시적 지정 (기존 자동 탐색 대신)
+- [x] **CLI-04**: `LANGTHREE_PRELUDE` 환경 변수 -- `--prelude` 미지정 시 환경 변수에서 Prelude 경로 읽기
+- [x] **CLI-05**: 파일 임포트 캐싱 -- 동일 프로세스 내에서 이미 로드한 파일의 환경을 캐시하여 중복 파싱/타입 체크 방지
 
 ### 프로젝트 파일
 
@@ -37,11 +37,11 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 67 | Pending |
-| CLI-02 | Phase 67 | Pending |
-| CLI-03 | Phase 67 | Pending |
-| CLI-04 | Phase 67 | Pending |
-| CLI-05 | Phase 67 | Pending |
+| CLI-01 | Phase 67 | Complete |
+| CLI-02 | Phase 67 | Complete |
+| CLI-03 | Phase 67 | Complete |
+| CLI-04 | Phase 67 | Complete |
+| CLI-05 | Phase 67 | Complete |
 | PROJ-01 | Phase 68 | Pending |
 | PROJ-02 | Phase 68 | Pending |
 | PROJ-03 | Phase 68 | Pending |
