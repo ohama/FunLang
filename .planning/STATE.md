@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.0 Type Classes — Phase 70: Core Type Infrastructure
+**Current focus:** v10.0 Type Classes — Phase 71: Parsing and AST
 
 ## Current Position
 
 Milestone: v10.0 Type Classes
-Phase: 70 of 74 (Core Type Infrastructure)
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-03-31 — Completed 70-02-PLAN.md (ClassEnv/InstanceEnv threading)
+Phase: 71 of 74 (Parsing and AST)
+Plan: 1 of ? complete
+Status: In progress
+Last activity: 2026-03-31 — Completed 71-01-PLAN.md (typeclass/instance parsing and AST nodes)
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
-         [██░░░░░░░░░░░░░░░░░░] v10.0: 10% (phase 70 complete, 2/2 plans done)
+         [███░░░░░░░░░░░░░░░░░] v10.0: 15% (phases 70+71-01 complete)
 
 ## Performance Metrics
 
@@ -55,19 +55,25 @@ From Phase 70 Plan 02:
 
 None.
 
+From Phase 71 Plan 01:
+- FATARROW (`=>`) token placed after LARROW (`<-`) in Lexer.fsl — before the `op_char op_char+` catch-all, no conflict with GE (`>=`)
+- ConstraintList grammar uses bare `IDENT TYPE_VAR` (not parenthesized); FATARROW lookahead disambiguates from AtomicType in LALR(1) — no conflicts
+- Tasks 1+2 committed together — new Decl variants make TypeCheck/Eval pattern matches non-exhaustive if committed separately
+- formatToken in Format.fs must always cover all Parser.token variants (new tokens need entries there too)
+
 ### Blockers/Concerns
 
-- [Phase 71] Audit `where` keyword in `Lexer.fsl` before writing parser rules — may conflict with existing GADT syntax
+- [Phase 71] `where` keyword audit RESOLVED — `where` not used anywhere in Lexer.fsl, no conflict
 - [Phase 72] `synth` evidence representation decision needed before coding: recommended mutable ref accumulator (like `mutableVars`) to avoid call-site explosion
 - [Phase 72] GADT branch constraint isolation (LT-2): branch-local type refinements must be applied to constraints before they escape the branch
 
 ## Session Continuity
 
-Last session: 2026-03-31T10:36:00Z
-Stopped at: Completed 70-02-PLAN.md (ClassEnv/InstanceEnv threading) — Phase 70 fully complete
+Last session: 2026-03-31T00:15:00Z
+Stopped at: Completed 71-01-PLAN.md (typeclass/instance parsing and AST)
 Resume file: None
-Next action: Execute Phase 71 (Typeclass/Instance Parser)
+Next action: Execute Phase 71 Plan 02 (if exists) or Phase 72
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v10.0 roadmap created)*
+*Last updated: 2026-03-31 (phase 71 plan 01 complete)*
