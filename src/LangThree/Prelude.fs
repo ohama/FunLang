@@ -78,6 +78,14 @@ let private findPreludeDir () : string =
 /// Tracks file paths currently being loaded for cycle detection (single-threaded).
 let private fileLoadingStack = System.Collections.Generic.HashSet<string>()
 
+/// Cache for type-check results by absolute file path (single process lifetime).
+/// Stores file's OWN exports only (not merged with caller), so diamond deps are safe.
+let private tcCache = System.Collections.Generic.Dictionary<string, ConstructorEnv * RecordEnv * Map<string, ModuleExports> * TypeEnv>()
+
+/// Cache for eval results by absolute file path (single process lifetime).
+/// Stores file's OWN exports only (not merged with caller), so diamond deps are safe.
+let private evalCache = System.Collections.Generic.Dictionary<string, Env * Map<string, ModuleValueEnv>>()
+
 /// Load, parse, type-check, and evaluate a .fun file, merging its environments.
 /// Used as the implementation of TypeCheck.fileImportTypeChecker.
 let rec loadAndTypeCheckFileImpl
@@ -86,10 +94,22 @@ let rec loadAndTypeCheckFileImpl
     (rEnv: RecordEnv)
     (typeEnv: TypeEnv)
     (mods: Map<string, ModuleExports>) : TypeEnv * ConstructorEnv * RecordEnv * Map<string, ModuleExports> =
+    // 1. Cycle detection must happen before cache check
     if fileLoadingStack.Contains resolvedPath then
         raise (TypeException {
             Kind = CircularModuleDependency [resolvedPath]
             Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
+    // 2. Cache check (after cycle detection)
+    match tcCache.TryGetValue(resolvedPath) with
+    | true, (fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
+        // Return caller's env merged with cached file's own exports
+        let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
+        let mergedREnv = Map.fold (fun acc k v -> Map.add k v acc) rEnv fileREnv
+        let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) typeEnv fileTypeEnv
+        let mergedMods = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
+        (mergedTypeEnv, mergedCEnv, mergedREnv, mergedMods)
+    | false, _ ->
+    // 3. File existence check
     if not (File.Exists resolvedPath) then
         raise (TypeException {
             Kind = UnresolvedModule resolvedPath
@@ -102,6 +122,8 @@ let rec loadAndTypeCheckFileImpl
         let m = parseModuleFromString source resolvedPath
         match typeCheckModuleWithPrelude cEnv rEnv typeEnv mods m with
         | Ok (_warnings, fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
+            // Cache the file's own exports BEFORE merging with caller env
+            tcCache.[resolvedPath] <- (fileCEnv, fileREnv, fileMods, fileTypeEnv)
             let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
             let mergedREnv = Map.fold (fun acc k v -> Map.add k v acc) rEnv fileREnv
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) typeEnv fileTypeEnv
@@ -120,8 +142,15 @@ and loadAndEvalFileImpl
     (recEnv: RecordEnv)
     (modEnv: Map<string, ModuleValueEnv>)
     (env: Env) : Env * Map<string, ModuleValueEnv> =
-    // Note: fileLoadingStack guards are for TC phase; eval phase skips cycle check
-    // (TC phase would have already caught cycles)
+    // Eval skips cycle detection (TC phase catches cycles before eval runs).
+    // Cache check at top is safe for the same reason.
+    match evalCache.TryGetValue(resolvedPath) with
+    | true, (fileEnv, fileModEnv) ->
+        // Return caller's env merged with cached file's own exports
+        let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) env fileEnv
+        let mergedModEnv = Map.fold (fun acc k v -> Map.add k v acc) modEnv fileModEnv
+        (mergedEnv, mergedModEnv)
+    | false, _ ->
     if not (File.Exists resolvedPath) then
         failwithf "File not found during evaluation: %s" resolvedPath
     let prevFile = Eval.currentEvalFile
@@ -131,6 +160,8 @@ and loadAndEvalFileImpl
         let m = parseModuleFromString source resolvedPath
         let decls = getDecls m
         let (fileEnv, fileModEnv) = Eval.evalModuleDecls recEnv modEnv env decls
+        // Cache the file's own exports BEFORE merging with caller env
+        evalCache.[resolvedPath] <- (fileEnv, fileModEnv)
         // Merge all file bindings into the caller's env (shadowing is acceptable)
         let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) env fileEnv
         let mergedModEnv = Map.fold (fun acc k v -> Map.add k v acc) modEnv fileModEnv
