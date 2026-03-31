@@ -34,11 +34,12 @@ v9.0 delivers a Cargo-style project build system in two phases: first extending 
   3. `langthree --prelude /path/to/Prelude file.fun` uses the specified Prelude directory instead of auto-discovery
   4. When `--prelude` is not given, `LANGTHREE_PRELUDE` environment variable is used as Prelude path (falling back to existing auto-discovery if unset)
   5. Files imported via `open "file.fun"` are cached within a single process invocation -- importing the same file twice does not re-parse or re-typecheck it
-**Plans:** 3 plans
+**Plans:** 4 plans
 Plans:
 - [ ] 67-01-PLAN.md -- Argu flags + Prelude path resolution priority chain
 - [ ] 67-02-PLAN.md -- --check and --deps mode implementation
 - [ ] 67-03-PLAN.md -- File import caching
+- [ ] 67-04-PLAN.md -- flt integration tests for CLI features
 
 ### Phase 68: Project File
 **Goal**: Users can manage multi-target projects with a single `funproj.toml` configuration file
@@ -58,5 +59,5 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 67. CLI Extensions | 0/3 | Planned | - |
+| 67. CLI Extensions | 0/4 | Planned | - |
 | 68. Project File | 0/TBD | Not started | - |
