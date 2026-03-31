@@ -112,6 +112,7 @@
   <ItemGroup>
     <PackageReference Include="FsLexYacc" Version="11.3.0" />
     <PackageReference Include="Argu" Version="6.2.5" />
+    <PackageReference Include="Tomlyn" Version="2.3.0" />
   </ItemGroup>
 
 </Project>
