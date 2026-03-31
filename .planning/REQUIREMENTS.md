@@ -7,9 +7,9 @@
 
 ### LetRecDecl AST Refactoring
 
-- [ ] **AST-01**: `LetRecDecl` 바인딩 튜플에 첫 파라미터 타입 정보 보존 — `(string * string * Expr * Span)` → 타입 정보 포함 형태로 확장
-- [ ] **AST-02**: `LetRecDecl` AST 변경에 따른 TypeCheck.fs, Eval.fs, Format.fs, Exhaustive.fs 등 모든 패턴 매치 사이트 업데이트
-- [ ] **AST-03**: `let rec f (x : int) y = ... and g (z : bool) = ...` 에서 첫 파라미터 타입 어노테이션이 타입 체커에 전달되어 실제 검증됨
+- [x] **AST-01**: `LetRecDecl` 바인딩 튜플에 첫 파라미터 타입 정보 보존 — `(string * string * Expr * Span)` → 타입 정보 포함 형태로 확장
+- [x] **AST-02**: `LetRecDecl` AST 변경에 따른 TypeCheck.fs, Eval.fs, Format.fs, Exhaustive.fs 등 모든 패턴 매치 사이트 업데이트
+- [x] **AST-03**: `let rec f (x : int) y = ... and g (z : bool) = ...` 에서 첫 파라미터 타입 어노테이션이 타입 체커에 전달되어 실제 검증됨
 
 ### Expression-Level Mutual Recursion
 
@@ -31,9 +31,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AST-01 | Phase 65 | Pending |
-| AST-02 | Phase 65 | Pending |
-| AST-03 | Phase 65 | Pending |
+| AST-01 | Phase 65 | Complete |
+| AST-02 | Phase 65 | Complete |
+| AST-03 | Phase 65 | Complete |
 | EXPR-01 | Phase 66 | Pending |
 | EXPR-02 | Phase 66 | Pending |
 | EXPR-03 | Phase 66 | Pending |
