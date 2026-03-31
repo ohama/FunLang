@@ -77,17 +77,18 @@ Plans:
 ---
 
 ### Phase 73: Dictionary Construction and Elaboration
-**Goal:** Type-checked programs execute correctly — instance declarations produce `RecordValue` dictionaries and constrained call sites are elaborated with explicit dictionary arguments before reaching the evaluator.
+**Goal:** Type-checked programs execute correctly — instance declarations produce runtime-callable method bindings via a post-type-check AST elaboration pass that desugars InstanceDecl into ordinary LetDecl bindings.
 **Depends on:** Phase 72
 **Requirements:** TC-09, TC-10
 **Success Criteria** (what must be TRUE):
   1. Declaring `instance Show int` and then calling `show 42` evaluates to `"42"` at runtime with no changes to `Eval.fs`.
   2. A higher-order function `let map_show lst = List.map show lst` applied to `[1; 2; 3]` evaluates to `["1"; "2"; "3"]` — the dictionary is correctly threaded through the higher-order call.
   3. The evaluator sees only ordinary `App`/`Var` AST nodes — no `MethodCall` node or runtime class-dispatch machinery exists.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 73-01: TBD
+- [ ] 73-01-PLAN.md — AST elaboration pass (elaborateTypeclasses in Elaborate.fs) + Program.fs pipeline wiring
+- [ ] 73-02-PLAN.md — Runtime flt integration tests for typeclass method dispatch
 
 ---
 
@@ -113,5 +114,5 @@ Plans:
 | 70. Core Type Infrastructure | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
 | 71. Parsing and AST | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
 | 72. Type Checker and Constraint Inference | v10.0 | 3/3 | ✓ Complete | 2026-03-31 |
-| 73. Dictionary Construction and Elaboration | v10.0 | 0/TBD | Not started | - |
+| 73. Dictionary Construction and Elaboration | v10.0 | 0/2 | Not started | - |
 | 74. Built-in Instances and Tests | v10.0 | 0/TBD | Not started | - |
