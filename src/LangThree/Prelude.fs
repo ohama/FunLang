@@ -243,22 +243,25 @@ let private resolveLoadOrder (files: string array) : string array =
     // 4. Topological sort
     topoSort (Array.toList files) fileDeps |> List.toArray
 
-/// Resolve Prelude directory using priority chain: explicit > LANGTHREE_PRELUDE env > auto-discovery
-let resolvePreludeDir (explicitPath: string option) : string =
+/// Resolve Prelude directory using priority chain: explicit > LANGTHREE_PRELUDE env > funproj.toml > auto-discovery
+let resolvePreludeDir (explicitPath: string option) (projPrelude: string option) : string =
     match explicitPath with
     | Some path ->
         if Directory.Exists path then path
         else failwithf "Prelude directory not found: %s" path
     | None ->
         match System.Environment.GetEnvironmentVariable("LANGTHREE_PRELUDE") with
-        | null | "" -> findPreludeDir()
+        | null | "" ->
+            match projPrelude with
+            | Some p when p <> "" && Directory.Exists p -> p
+            | _ -> findPreludeDir()
         | envPath ->
             if Directory.Exists envPath then envPath
             else failwithf "LANGTHREE_PRELUDE directory not found: %s" envPath
 
 /// Load all Prelude/*.fun files and return accumulated environments
-let loadPrelude (explicitPath: string option) : PreludeResult =
-    let preludeDir = resolvePreludeDir explicitPath
+let loadPrelude (explicitPath: string option) (projPrelude: string option) : PreludeResult =
+    let preludeDir = resolvePreludeDir explicitPath projPrelude
     if preludeDir <> "" then
         let files = Directory.GetFiles(preludeDir, "*.fun") |> resolveLoadOrder
         if files.Length = 0 then
