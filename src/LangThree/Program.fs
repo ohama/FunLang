@@ -16,16 +16,20 @@ let parse (input: string) (filename: string) : Expr =
     Lexer.setInitialPos lexbuf filename
     Parser.start Lexer.tokenize lexbuf
 
-/// Tokenize input and apply IndentFilter
-let lexAndFilter (input: string) (filename: string) : Parser.token list =
+/// Tokenize input and apply IndentFilter, capturing lexbuf positions per token
+let lexAndFilter (input: string) (filename: string) : PositionedToken list =
     let lexbuf = LexBuffer<char>.FromString input
     Lexer.setInitialPos lexbuf filename
     let rec collect () =
+        let startPos = lexbuf.StartPos
         let tok = Lexer.tokenize lexbuf
-        if tok = Parser.EOF then [Parser.EOF]
-        else tok :: collect ()
+        let endPos = lexbuf.EndPos
+        if tok = Parser.EOF then
+            [{ Token = Parser.EOF; StartPos = startPos; EndPos = endPos }]
+        else
+            { Token = tok; StartPos = startPos; EndPos = endPos } :: collect ()
     let rawTokens = collect ()
-    filter defaultConfig rawTokens |> Seq.toList
+    filterPositioned defaultConfig rawTokens
 
 /// Parse a string input as module (with IndentFilter for indentation-based syntax)
 let parseModuleFromString (input: string) (filename: string) : Module =
@@ -33,11 +37,13 @@ let parseModuleFromString (input: string) (filename: string) : Module =
     let lexbuf = LexBuffer<char>.FromString input
     Lexer.setInitialPos lexbuf filename
     let mutable index = 0
-    let tokenizer (_lexbuf: LexBuffer<_>) =
+    let tokenizer (lb: LexBuffer<_>) =
         if index < filteredTokens.Length then
-            let tok = filteredTokens.[index]
+            let pt = filteredTokens.[index]
             index <- index + 1
-            tok
+            lb.StartPos <- pt.StartPos
+            lb.EndPos <- pt.EndPos
+            pt.Token
         else
             Parser.EOF
     Parser.parseModule tokenizer lexbuf
