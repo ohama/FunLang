@@ -1,0 +1,19 @@
+// Test: Show instance for user-defined ADT with multiple constructors
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Shape = | Circle | Square | Triangle
+
+instance Show Shape =
+    let show s =
+        match s with
+        | Circle -> "circle"
+        | Square -> "square"
+        | Triangle -> "triangle"
+
+let _ = println (show Circle)
+let _ = println (show Square)
+let result = show Triangle
+// --- Output:
+circle
+square
+"triangle"

@@ -1,0 +1,7 @@
+// Test: Qualified access to undefined module produces E0502 (not garbled E0313)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+let x = M.y
+// --- ExitCode: 1
+// --- Stderr:
+error[E0502]: Unresolved module: M

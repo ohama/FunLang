@@ -644,7 +644,10 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
                 Constructor(fieldName, None, span)
             else
                 Var(fieldName, span)
-        | None -> expr  // Let type checker report the error
+        | None ->
+            raise (TypeException {
+                Kind = UnresolvedModule (sprintf "%s.%s" modName subModName)
+                Span = span; Term = None; ContextStack = []; Trace = [] })
 
     // App(Module.Ctor, arg) -- constructor application via qualified access
     | App(FieldAccess(Constructor(modName, None, _), ctorName, s2), arg, appSpan)
@@ -1005,7 +1008,7 @@ let rec typeCheckDecls
                     match Map.tryFind name mods with
                     | None ->
                         raise (TypeException {
-                            Kind = ForwardModuleReference name
+                            Kind = UnresolvedModule name
                             Span = span; Term = None; ContextStack = []; Trace = [] })
                     | Some exports ->
                         let (env', cEnv', rEnv', clsEnv', iEnv') = openModuleExports exports env cEnv rEnv clsEnv iEnv
@@ -1015,13 +1018,18 @@ let rec typeCheckDecls
                     let (env', cEnv', rEnv', clsEnv', iEnv') = openModuleExports exports env cEnv rEnv clsEnv iEnv
                     (env', cEnv', rEnv', clsEnv', iEnv', mods, warns)
 
-            | FileImportDecl(path, _span) ->
+            | FileImportDecl(path, importSpan) ->
                 // Use currentTypeCheckingFile for path resolution since span.FileName
                 // may be empty (fsyacc positions use lexbuf.StartPos which isn't set)
                 let resolvedPath = resolveImportPath path currentTypeCheckingFile
-                let (env', cEnv', rEnv', fileMods) = fileImportTypeChecker resolvedPath cEnv rEnv env mods
-                let mods' = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
-                (env', cEnv', rEnv', clsEnv, iEnv, mods', warns)
+                try
+                    let (env', cEnv', rEnv', fileMods) = fileImportTypeChecker resolvedPath cEnv rEnv env mods
+                    let mods' = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
+                    (env', cEnv', rEnv', clsEnv, iEnv, mods', warns)
+                with
+                | TypeException err when err.Span = Ast.unknownSpan ->
+                    // Re-raise with the open statement's span for better error location (MERR-03/04)
+                    raise (TypeException { err with Span = importSpan })
 
             // Phase 72 (Type Classes): TypeClassDecl and InstanceDecl processing
             | TypeClassDecl(className, typeVarName, methods, span) ->

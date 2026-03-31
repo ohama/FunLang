@@ -148,12 +148,12 @@ let moduleTests = testList "Modules" [
     // =====================================================
 
     testList "SC5: Forward reference prevents cycles" [
-        test "forward module reference produces E0504" {
-            expectTypeError "open NotYetDefined\n\nmodule NotYetDefined =\n    let x = 1\n\nlet result = x\n" "E0504"
+        test "forward module reference produces E0502" {
+            expectTypeError "open NotYetDefined\n\nmodule NotYetDefined =\n    let x = 1\n\nlet result = x\n" "E0502"
         }
 
-        test "forward reference in nested module produces E0504" {
-            expectTypeError "module A =\n    open B\n    let x = 1\n\nmodule B =\n    let y = 2\n\nlet result = 0\n" "E0504"
+        test "forward reference in nested module produces E0502" {
+            expectTypeError "module A =\n    open B\n    let x = 1\n\nmodule B =\n    let y = 2\n\nlet result = 0\n" "E0502"
         }
 
         test "valid top-to-bottom ordering succeeds" {

@@ -679,11 +679,19 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let resultTy = apply (compose finalS paramSubst) recInfo.ResultType
             (finalS, resultTy)
         | [] ->
-            raise (TypeException { Kind = UnboundField("?", List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            let fieldNameStr = fields |> List.map fst |> String.concat ", "
+            raise (TypeException { Kind = UnboundField(sprintf "{%s}" fieldNameStr, List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
         | _ ->
             raise (TypeException { Kind = DuplicateFieldName(List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
 
     | FieldAccess (accessExpr, fieldName, span) ->
+        // Check for module-like qualified access on undefined module (MERR-01/02)
+        match accessExpr with
+        | Ast.Constructor(name, None, _) when System.Char.IsUpper(name.[0]) && not (Map.containsKey name ctorEnv) ->
+            raise (TypeException { Kind = UnresolvedModule name; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        | Ast.FieldAccess(Ast.Constructor(modName, None, _), _subName, _) when System.Char.IsUpper(modName.[0]) && not (Map.containsKey modName ctorEnv) ->
+            raise (TypeException { Kind = UnresolvedModule modName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+        | _ -> ()
         let s1, exprTy = synth ctorEnv recEnv ctx env accessExpr
         let resolvedTy = apply s1 exprTy
         match resolvedTy with

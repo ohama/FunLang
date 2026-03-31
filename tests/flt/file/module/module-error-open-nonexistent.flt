@@ -1,0 +1,8 @@
+// Test: Opening nonexistent module produces E0502 (not E0504 forward reference)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Input:
+open NonexistentModule
+let x = 1
+// --- ExitCode: 1
+// --- Stderr:
+error[E0502]: Unresolved module: NonexistentModule
