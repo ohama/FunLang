@@ -50,10 +50,11 @@ Plans:
   2. `instance Show int = let show x = to_string x` parses to an `InstanceDecl` AST node with correct class name, type, and method body.
   3. `Show 'a =>` constraint annotation in a type expression (`let f : Show 'a => 'a -> string = ...`) parses to a `TEConstrained` `TypeExpr` variant.
   4. `--emit-ast` renders `TypeClassDecl` and `InstanceDecl` nodes without crashing; `TypeCheck.fs` and `Eval.fs` have `failwith` stubs that surface unhandled cases instead of silently swallowing them.
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 71-01: TBD
+- [ ] 71-01-PLAN.md — AST nodes, lexer tokens, parser grammar, downstream stubs and --emit-ast rendering
+- [ ] 71-02-PLAN.md — flt integration tests validating typeclass/instance/constraint parsing via --emit-ast
 
 ---
 
@@ -108,7 +109,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 70. Core Type Infrastructure | v10.0 | 2/2 | ✓ Complete | 2026-03-31 |
-| 71. Parsing and AST | v10.0 | 0/TBD | Not started | - |
+| 71. Parsing and AST | v10.0 | 0/2 | Not started | - |
 | 72. Type Checker and Constraint Inference | v10.0 | 0/TBD | Not started | - |
 | 73. Dictionary Construction and Elaboration | v10.0 | 0/TBD | Not started | - |
 | 74. Built-in Instances and Tests | v10.0 | 0/TBD | Not started | - |
