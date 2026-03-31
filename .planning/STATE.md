@@ -5,17 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-03-31)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone
+**Current focus:** v10.0 Type Classes — researching domain
 
 ## Current Position
 
-Milestone: None active (v9.1 shipped 2026-03-31)
-Phase: N/A
-Plan: N/A
-Status: Between milestones
-Last activity: 2026-03-31 -- v9.1 milestone archived
+Milestone: v10.0 Type Classes
+Phase: Not started (defining requirements)
+Plan: —
+Status: Researching
+Last activity: 2026-03-31 -- v10.0 milestone started
 
 Progress: [████████████████████] v1.0-v9.1 done (69 phases, 150 plans)
+         [░░░░░░░░░░░░░░░░░░░░] v10.0: 0%
 
 ## Performance Metrics
 
@@ -53,10 +54,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: v9.1 milestone archived
+Stopped at: v10.0 milestone started, researching
 Resume file: None
-Next action: /gsd:new-milestone to start next milestone
+Next action: Research → Requirements → Roadmap
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v9.1 archived)*
+*Last updated: 2026-03-31 (v10.0 milestone started)*
