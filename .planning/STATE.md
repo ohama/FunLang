@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 Milestone: v9.0 Project Build System
 Phase: 67 of 68 (CLI Extensions)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-31 -- Roadmap created for v9.0
+Plan: 1 of TBD in current phase
+Status: In progress
+Last activity: 2026-03-31 -- Completed 67-01-PLAN.md (CLI flag foundation)
 
 Progress: [████████████████████] v1.0-v8.1 done (66 phases, 142 plans)
-         [░░░░░░░░░░░░░░░░░░░░] v9.0: 0% (0/2 phases)
+         [█░░░░░░░░░░░░░░░░░░░] v9.0: in progress (plan 67-01 done)
 
 ## Performance Metrics
 
@@ -54,10 +54,10 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-31
-Stopped at: Roadmap created for v9.0
+Stopped at: Completed 67-01-PLAN.md (CLI flag foundation, Check/Deps/Prelude flags + resolvePreludeDir)
 Resume file: None
-Next action: Plan Phase 67 (CLI Extensions)
+Next action: Execute Phase 67 Plan 02+ (--check, --deps implementation)
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-03-31 (v9.0 roadmap created)*
+*Last updated: 2026-03-31 (67-01 complete: CLI flag foundation)*
