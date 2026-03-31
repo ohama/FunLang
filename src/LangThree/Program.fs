@@ -42,6 +42,29 @@ let parseModuleFromString (input: string) (filename: string) : Module =
             Parser.EOF
     Parser.parseModule tokenizer lexbuf
 
+/// Collect recursive file import dependencies via AST walk (parse only, no type-check)
+let rec private collectDeps (filePath: string) (visited: Set<string>) (depth: int) : (string * int * bool) list =
+    let absPath = Path.GetFullPath(filePath)
+    if Set.contains absPath visited then
+        [(absPath, depth, true)]  // circular reference
+    elif not (File.Exists absPath) then
+        [(absPath, depth, false)]  // missing file (still show it)
+    else
+        let source = File.ReadAllText(absPath)
+        let m = parseModuleFromString source absPath
+        let decls =
+            match m with
+            | Module(ds, _) | NamedModule(_, ds, _) | NamespacedModule(_, ds, _) -> ds
+            | EmptyModule _ -> []
+        let imports = decls |> List.choose (function
+            | FileImportDecl(path, _) -> Some path
+            | _ -> None)
+        let childResults =
+            imports |> List.collect (fun importPath ->
+                let resolved = TypeCheck.resolveImportPath importPath absPath
+                collectDeps resolved (Set.add absPath visited) (depth + 1))
+        (absPath, depth, false) :: childResults
+
 [<EntryPoint>]
 let main argv =
     let parser = ArgumentParser.Create<CliArgs>(
@@ -127,6 +150,27 @@ let main argv =
         // --check without file
         elif results.Contains Check then
             eprintfn "Usage: langthree --check <file>"
+            1
+        // --deps with file (recursive dependency tree)
+        elif results.Contains Deps && results.Contains File then
+            let filename = results.GetResult File
+            if File.Exists filename then
+                try
+                    let deps = collectDeps filename Set.empty 0
+                    for (path, depth, isCircular) in deps do
+                        let indent = String.replicate (depth * 2) " "
+                        let marker = if isCircular then " (circular)" else ""
+                        printfn "%s%s%s" indent (Path.GetFileName path) marker
+                    0
+                with ex ->
+                    eprintfn "Error: %s" ex.Message
+                    1
+            else
+                eprintfn "File not found: %s" filename
+                1
+        // --deps without file
+        elif results.Contains Deps then
+            eprintfn "Usage: langthree --deps <file>"
             1
         // --emit-type with file (module pipeline)
         elif results.Contains Emit_Type && results.Contains File then
