@@ -15,7 +15,7 @@ $ cat op_basic.l3
 let (++) xs ys = append xs ys
 let result = [1; 2] ++ [3; 4]
 
-$ funlang op_basic.l3
+$ fn op_basic.l3
 [1; 2; 3; 4]
 ```
 
@@ -62,7 +62,7 @@ $ cat op_as_func.l3
 let (++) xs ys = append xs ys
 let result = fold (++) [] [[1; 2]; [3]; [4; 5]]
 
-$ funlang op_as_func.l3
+$ fn op_as_func.l3
 [1; 2; 3; 4; 5]
 ```
 
@@ -100,7 +100,7 @@ let rec qsort xs =
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
-$ funlang qsort_op.l3
+$ fn qsort_op.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -117,7 +117,7 @@ let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string 
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList
 
-$ funlang format_op.l3
+$ fn format_op.l3
 "[3, 4, 5]"
 ```
 
@@ -137,7 +137,7 @@ let tryParse s =
 
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 
-$ funlang fallback_op.l3
+$ fn fallback_op.l3
 Some 42
 ```
 
@@ -157,7 +157,7 @@ let r1 = 1 =? 1
 let r2 = 1 =? 2
 let result = r1 ^^ ", " ^^ r2
 
-$ funlang custom_op.l3
+$ fn custom_op.l3
 "equal, not equal"
 ```
 

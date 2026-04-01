@@ -14,7 +14,7 @@ let _ = write_file "/tmp/hello.txt" "hello world"
 let content = read_file "/tmp/hello.txt"
 let result = content
 
-$ funlang file_rw.l3
+$ fn file_rw.l3
 "hello world"
 ```
 
@@ -30,7 +30,7 @@ let _ = write_file "/tmp/log.txt" "line1"
 let _ = append_file "/tmp/log.txt" "\nline2"
 let result = read_file "/tmp/log.txt"
 
-$ funlang file_append.l3
+$ fn file_append.l3
 "line1\nline2"
 ```
 
@@ -44,7 +44,7 @@ let _ = write_lines "/tmp/data.txt" ["alice"; "bob"; "carol"]
 let names = read_lines "/tmp/data.txt"
 let result = length names
 
-$ funlang file_lines.l3
+$ fn file_lines.l3
 3
 ```
 
@@ -57,7 +57,7 @@ $ cat file_check.l3
 let _ = write_file "/tmp/exists.txt" "data"
 let result = file_exists "/tmp/exists.txt"
 
-$ funlang file_check.l3
+$ fn file_check.l3
 true
 ```
 
@@ -73,7 +73,7 @@ let result =
     with
     | e -> "file not found"
 
-$ funlang file_error.l3
+$ fn file_error.l3
 "file not found"
 ```
 
@@ -88,7 +88,7 @@ $ cat get_cwd.l3
 let cwd = get_cwd ()
 let result = String.length cwd > 0
 
-$ funlang get_cwd.l3
+$ fn get_cwd.l3
 true
 ```
 
@@ -102,7 +102,7 @@ let result =
     try get_env "NONEXISTENT_VAR_XYZ"
     with e -> "not set"
 
-$ funlang get_env.l3
+$ fn get_env.l3
 "not set"
 ```
 
@@ -115,7 +115,7 @@ $ cat show_args.l3
 let args = get_args ()
 let result = args
 
-$ funlang show_args.l3 -- foo bar
+$ fn show_args.l3 -- foo bar
 ["foo"; "bar"]
 ```
 
@@ -124,7 +124,7 @@ $ funlang show_args.l3 -- foo bar
 두 경로를 합칩니다:
 
 ```
-funlang> path_combine "/home/user" "file.txt"
+fn> path_combine "/home/user" "file.txt"
 "/home/user/file.txt"
 ```
 
@@ -137,7 +137,7 @@ $ cat dir_list.l3
 let files = dir_files "/tmp"
 let result = length files > 0
 
-$ funlang dir_list.l3
+$ fn dir_list.l3
 true
 ```
 
@@ -150,7 +150,7 @@ $ cat debug.l3
 let _ = eprint "debug: starting\n"
 let result = 42
 
-$ funlang debug.l3
+$ fn debug.l3
 42
 ```
 
@@ -167,7 +167,7 @@ let name = stdin_read_line ()
 let _ = println ("안녕하세요, " + name + "!")
 let result = ()
 
-$ echo "Alice" | funlang greet.l3
+$ echo "Alice" | fn greet.l3
 이름을 입력하세요: 안녕하세요, Alice!
 ```
 

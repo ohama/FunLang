@@ -7,23 +7,23 @@
 작은따옴표로 단일 문자를 표현합니다:
 
 ```
-funlang> 'a'
+fn> 'a'
 'a'
 
-funlang> 'Z'
+fn> 'Z'
 'Z'
 
-funlang> '0'
+fn> '0'
 '0'
 ```
 
 이스케이프 시퀀스도 지원합니다:
 
 ```
-funlang> '\n'
+fn> '\n'
 '\n'
 
-funlang> '\t'
+fn> '\t'
 '\t'
 ```
 
@@ -37,7 +37,7 @@ let code = char_to_int 'A'
 let back = int_to_char 65
 let result = code
 
-$ funlang char_conv.l3
+$ fn char_conv.l3
 65
 ```
 
@@ -55,7 +55,7 @@ let toLower c =
     else c
 let result = toLower 'H'
 
-$ funlang to_lower.l3
+$ fn to_lower.l3
 'h'
 ```
 
@@ -64,13 +64,13 @@ $ funlang to_lower.l3
 문자는 비교 연산자로 순서를 비교할 수 있습니다. ASCII 코드 값 기준으로 비교됩니다:
 
 ```
-funlang> 'a' < 'z'
+fn> 'a' < 'z'
 true
 
-funlang> 'A' > 'Z'
+fn> 'A' > 'Z'
 false
 
-funlang> 'a' = 'a'
+fn> 'a' = 'a'
 true
 ```
 
@@ -89,7 +89,7 @@ let classify c =
     | _ -> "other"
 let result = classify 'A'
 
-$ funlang char_match.l3
+$ fn char_match.l3
 "uppercase A"
 ```
 
@@ -104,7 +104,7 @@ let _ = println (to_string (Char.IsDigit 'a'))
 let _ = println (to_string (Char.IsLetter 'z'))
 let _ = println (to_string (Char.ToUpper 'a'))
 
-$ funlang char_module.l3
+$ fn char_module.l3
 true
 false
 true
@@ -120,7 +120,7 @@ let _ = println (to_string (Char.IsUpper 'A'))
 let _ = println (to_string (Char.IsLower 'a'))
 let _ = println (to_string (Char.ToLower 'Z'))
 
-$ funlang char_case.l3
+$ fn char_case.l3
 true
 true
 'z'

@@ -63,7 +63,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Type Classes** | `typeclass`/`instance` declarations, constraint inference (`Show 'a =>`), dictionary-passing elaboration, built-in `Show`/`Eq` instances | v10.0 |
 | **Typeclass Module Integration** | Instances in modules globally accessible, ClassEnv/InstanceEnv module export, ADT instance support | v10.1 |
 | **Module Error Quality** | Clear `E0502` for undefined modules, file import span, constraint annotation validation | v10.2 |
-| **Blank Line Tolerance** | Blank lines allowed in module bodies, let bodies, match arms; `--emit-filtered-tokens` CLI | v10.3 |
+| **Blank Line Tolerance** | Blank lines allowed in module bodies, let bodies, match arms; `fn --emit-filtered-tokens` CLI | v10.3 |
 | **Error Reporting** | Source snippets with `^^^` underlines, "Did you mean?" suggestions, parser errors with location, typeclass instance listing | v11.0 |
 | **Multi-Error Reporting** | Poison Type (`TError`) — multiple type errors per file, cascading prevention | v11.1 |
 | **Constrained Instances** | `instance Show 'a => Show ('a list)`, unification-based instance resolution, recursive subgoals | v12.0 |
@@ -83,19 +83,26 @@ git clone --recursive https://github.com/ohama/FunLang.git
 dotnet build src/FunLang/FunLang.fsproj -c Release
 
 # REPL
-src/FunLang/bin/Release/net10.0/FunLang
+src/FunLang/bin/Release/net10.0/fn
 
 # Expression mode
-src/FunLang/bin/Release/net10.0/FunLang --expr '1 + 2 * 3'
+src/FunLang/bin/Release/net10.0/fn --expr '1 + 2 * 3'
 # => 7
 
 # File mode
-src/FunLang/bin/Release/net10.0/FunLang myfile.l3
+src/FunLang/bin/Release/net10.0/fn myfile.l3
 
 # Type inference
-src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr 'fun x -> x + 1'
+src/FunLang/bin/Release/net10.0/fn --emit-type --expr 'fun x -> x + 1'
 # => int -> int
 ```
+
+## Binary Names
+
+| Binary | Description |
+|--------|-------------|
+| `fn` | FunLang interpreter / REPL |
+| `fnc` | FunLang compiler (separate repo) |
 
 ## Example
 

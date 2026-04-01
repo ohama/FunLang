@@ -12,7 +12,7 @@ FunLang는 명령형 스타일 코드를 더 자연스럽게 작성할 수 있�
 $ cat seq_basic.l3
 let _ = println "hello"; println "world"
 
-$ funlang seq_basic.l3
+$ fn seq_basic.l3
 hello
 world
 ()
@@ -24,7 +24,7 @@ world
 $ cat seq_chain.l3
 let result = let mut x = 0 in x <- 1; x <- x + 1; x <- x + 1; x
 
-$ funlang seq_chain.l3
+$ fn seq_chain.l3
 3
 ```
 
@@ -36,7 +36,7 @@ let f () =
     println "a"; println "b"; println "c"
 let result = f ()
 
-$ funlang seq_block.l3
+$ fn seq_block.l3
 a
 b
 c
@@ -57,7 +57,7 @@ let mut i = 0
 let _ = while i < 3 do i <- i + 1
 let _ = println (to_string i)
 
-$ funlang while_basic.l3
+$ fn while_basic.l3
 3
 ()
 ```
@@ -73,7 +73,7 @@ let _ =
         sum <- sum + count; count <- count + 1
 let _ = println (to_string sum)
 
-$ funlang while_body.l3
+$ fn while_body.l3
 6
 ()
 ```
@@ -94,7 +94,7 @@ let _ =
         total <- total + i
 let _ = println (to_string total)
 
-$ funlang for_asc.l3
+$ fn for_asc.l3
 6
 ()
 ```
@@ -111,7 +111,7 @@ let _ =
         total <- total + i
 let _ = println (to_string total)
 
-$ funlang for_desc.l3
+$ fn for_desc.l3
 6
 ()
 ```
@@ -128,7 +128,7 @@ let _ =
     for i = 0 to 9 do
         i <- 42
 
-$ funlang for_err.l3
+$ fn for_err.l3
 error[E0320]: Cannot assign to immutable variable 'i'. ...
  --> for_err.l3:3:8-15
     |
@@ -159,7 +159,7 @@ let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 let _ = println (to_string arr.[2])
 
-$ funlang arr_index_read.l3
+$ fn arr_index_read.l3
 10
 20
 30
@@ -176,7 +176,7 @@ let _ = arr.[1] <- 99
 let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 
-$ funlang arr_index_write.l3
+$ fn arr_index_write.l3
 42
 99
 ()
@@ -196,7 +196,7 @@ let _ = hashtable_set ht "y" 200
 let _ = println (to_string ht.["x"])
 let _ = println (to_string ht.["y"])
 
-$ funlang ht_index_read.l3
+$ fn ht_index_read.l3
 100
 200
 ()
@@ -212,7 +212,7 @@ let _ = ht.["score"] <- 95
 let _ = println ht.["name"]
 let _ = println (to_string ht.["score"])
 
-$ funlang ht_index_write.l3
+$ fn ht_index_write.l3
 Alice
 95
 ()
@@ -235,7 +235,7 @@ let _ = matrix.[1] <- row1
 let _ = println (to_string matrix.[0].[0])
 let _ = println (to_string matrix.[1].[1])
 
-$ funlang matrix.l3
+$ fn matrix.l3
 1
 4
 ()
@@ -254,7 +254,7 @@ $ cat if_then.l3
 let x = 5
 let _ = if x > 0 then println "positive"
 
-$ funlang if_then.l3
+$ fn if_then.l3
 positive
 ()
 ```
@@ -267,7 +267,7 @@ let mut x = 0
 let _ = if true then x <- 42
 let result = x
 
-$ funlang if_then_mut.l3
+$ fn if_then_mut.l3
 42
 ```
 
@@ -277,7 +277,7 @@ $ funlang if_then_mut.l3
 $ cat if_then_err.l3
 let _ = if true then 42
 
-$ funlang if_then_err.l3
+$ fn if_then_err.l3
 error[E0301]: Type mismatch: expected int but got unit
  --> if_then_err.l3:1:6-23
     |
@@ -305,7 +305,7 @@ let _ =
         if arr.[i] % 2 = 0 then even_count <- even_count + 1
 let result = even_count
 
-$ funlang imperative_example.l3
+$ fn imperative_example.l3
 3
 ```
 

@@ -13,13 +13,13 @@ FunLang는 세 가지 방식으로 실행할 수 있습니다. 각 방식은 서
 **REPL (대화형 모드)** 는 인자 없이 실행하면 대화형 세션을 시작합니다:
 
 ```
-$ funlang
+$ fn
 FunLang REPL v14.0
 Type :help for commands, #quit or Ctrl+D to exit.
 
-funlang> 1 + 2
+fn> 1 + 2
 - : int = 3
-funlang> let x = 42
+fn> let x = 42
 val x : int = 42
 ```
 
@@ -30,7 +30,7 @@ REPL은 언어를 탐험하기에 가장 좋은 방법입니다. Python의 `>>>`
 **표현식 모드(Expression mode)** 는 커맨드 라인에서 단일 표현식을 평가합니다:
 
 ```
-$ funlang --expr '1 + 2'
+$ fn --expr '1 + 2'
 3
 ```
 
@@ -43,7 +43,7 @@ $ cat hello.l3
 let greeting = "hello"
 let result = greeting + " world"
 
-$ funlang hello.l3
+$ fn hello.l3
 "hello world"
 ```
 
@@ -52,10 +52,10 @@ $ funlang hello.l3
 **진단 모드(Diagnostic modes)** 는 평가 없이 컴파일 결과를 검사합니다:
 
 ```
-$ funlang --emit-ast --expr '1 + 2'
+$ fn --emit-ast --expr '1 + 2'
 Add (Number 1, Number 2)
 
-$ funlang --emit-type --expr '1 + 2'
+$ fn --emit-type --expr '1 + 2'
 int
 ```
 
@@ -68,22 +68,22 @@ int
 표준 산술 연산자를 지원하며 일반적인 우선순위를 따릅니다. 나눗셈은 정수 나눗셈(integer division)입니다.
 
 ```
-funlang> 1 + 2 * 3
+fn> 1 + 2 * 3
 7
 
-funlang> 10 - 3
+fn> 10 - 3
 7
 
-funlang> 10 / 3
+fn> 10 / 3
 3
 
-funlang> -5
+fn> -5
 -5
 
-funlang> 10 % 3
+fn> 10 % 3
 1
 
-funlang> 7 % 2
+fn> 7 % 2
 1
 ```
 
@@ -98,20 +98,20 @@ funlang> 7 % 2
 `true`와 `false`를 지원하며, 단락 평가(short-circuit) 방식의 `&&`와 `||`를 사용합니다.
 
 ```
-funlang> true && false
+fn> true && false
 false
 
-funlang> true || false
+fn> true || false
 true
 ```
 
 단락 평가(short-circuit evaluation)란 불필요한 경우 오른쪽 피연산자를 평가하지 않는 것을 의미합니다:
 
 ```
-funlang> false && (1/0 = 0)
+fn> false && (1/0 = 0)
 false
 
-funlang> true || (1/0 = 0)
+fn> true || (1/0 = 0)
 true
 ```
 
@@ -120,7 +120,7 @@ true
 `not` 함수로 불리언을 부정할 수 있습니다:
 
 ```
-funlang> not true
+fn> not true
 false
 ```
 
@@ -132,10 +132,10 @@ false
 문자열 연결(concatenation)에는 `+` 연산자를 사용합니다.
 
 ```
-funlang> "hello" + " world"
+fn> "hello" + " world"
 "hello world"
 
-funlang> "line1\nline2"
+fn> "line1\nline2"
 "line1
 line2"
 ```
@@ -145,13 +145,13 @@ line2"
 내장 문자열 함수:
 
 ```
-funlang> String.length "hello"
+fn> String.length "hello"
 5
 
-funlang> String.substring "hello" 1 3
+fn> String.substring "hello" 1 3
 "ell"
 
-funlang> to_string 42
+fn> to_string 42
 "42"
 ```
 
@@ -164,16 +164,16 @@ funlang> to_string 42
 등호는 `=`입니다 (`==`가 아닙니다). 부등호는 `<>`입니다.
 
 ```
-funlang> 1 = 1
+fn> 1 = 1
 true
 
-funlang> 1 <> 2
+fn> 1 <> 2
 true
 
-funlang> 3 < 5
+fn> 3 < 5
 true
 
-funlang> 3 >= 3
+fn> 3 >= 3
 true
 ```
 
@@ -184,7 +184,7 @@ true
 FunLang에서 `if`는 문(statement)이 아니라 표현식(expression)입니다. 이 차이가 언어 전체를 관통하는 중요한 설계 원칙입니다.
 
 ```
-funlang> if 1 < 2 then "yes" else "no"
+fn> if 1 < 2 then "yes" else "no"
 "yes"
 ```
 
@@ -199,10 +199,10 @@ funlang> if 1 < 2 then "yes" else "no"
 `//`로 줄 주석을, `(* ... *)`로 블록 주석을 작성합니다:
 
 ```
-funlang> 1 + 2 // this is ignored
+fn> 1 + 2 // this is ignored
 3
 
-funlang> (* block comment *) 1 + 2
+fn> (* block comment *) 1 + 2
 3
 ```
 
@@ -215,10 +215,10 @@ funlang> (* block comment *) 1 + 2
 유닛 타입 `()`는 "의미 있는 값이 없음"을 나타내며, 부수 효과(side effects)에 사용됩니다:
 
 ```
-funlang> ()
+fn> ()
 ()
 
-funlang> println "hello"
+fn> println "hello"
 hello
 ()
 ```

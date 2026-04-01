@@ -111,7 +111,7 @@ type Expr 'a =
     | BoolLit : bool -> bool Expr
 let result = IntLit 42
 
-$ funlang expr.l3
+$ fn expr.l3
 IntLit 42
 ```
 
@@ -147,7 +147,7 @@ let eval e =
     : int)
 let result = eval (IntLit 42)
 
-$ funlang eval.l3
+$ fn eval.l3
 42
 ```
 
@@ -216,7 +216,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
-$ funlang calc.l3
+$ fn calc.l3
 42
 ```
 
@@ -246,7 +246,7 @@ let eval e =
 let _ = printf "%d\n" (eval (IntLit 42))
 let result = eval (BoolLit true)
 
-$ funlang poly-eval.l3
+$ fn poly-eval.l3
 42
 true
 ```
@@ -272,7 +272,7 @@ let eval_int e =
     : int)
 let result = eval_int (IntLit 7)
 
-$ funlang filter.l3
+$ fn filter.l3
 7
 ```
 
@@ -298,7 +298,7 @@ let show_int v =
     : string)
 let result = show_int (VInt 99)
 
-$ funlang typed.l3
+$ fn typed.l3
 "99"
 ```
 
@@ -336,7 +336,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Neg (IntLit 3)))
 
-$ funlang typed_eval.l3
+$ fn typed_eval.l3
 7
 ```
 

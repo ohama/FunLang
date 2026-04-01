@@ -7,7 +7,7 @@
 파이프 연산자 `|>`는 값을 함수의 인자로 전달합니다. 설명은 간단하지만, 이 연산자가 코드를 읽는 방향을 바꿔놓습니다.
 
 ```
-funlang> 5 |> (fun x -> x + 1)
+fn> 5 |> (fun x -> x + 1)
 6
 ```
 
@@ -21,7 +21,7 @@ let double x = x * 2
 let inc x = x + 1
 let result = 5 |> double |> inc
 
-$ funlang pipe_chain.l3
+$ fn pipe_chain.l3
 11
 ```
 
@@ -34,14 +34,14 @@ $ funlang pipe_chain.l3
 파이프는 사용자 정의 함수뿐만 아니라 내장 함수와도 함께 동작합니다:
 
 ```
-funlang> "hello" |> String.length
+fn> "hello" |> String.length
 5
 ```
 
 Prelude 연산자도 파이프와 자연스럽게 결합됩니다. 예를 들어 `^^` 연산자로 문자열을 연결할 수 있습니다:
 
 ```
-funlang> "hello " ^^ "world"
+fn> "hello " ^^ "world"
 "hello world"
 ```
 
@@ -52,7 +52,7 @@ funlang> "hello " ^^ "world"
 파이프 안에서 즉석으로 람다를 정의할 수도 있습니다:
 
 ```
-funlang> 10 |> (fun x -> x * x)
+fn> 10 |> (fun x -> x * x)
 100
 ```
 
@@ -69,7 +69,7 @@ let inc x = x + 1
 let f = double >> inc
 let result = f 5
 
-$ funlang compose_fwd.l3
+$ fn compose_fwd.l3
 11
 ```
 
@@ -88,7 +88,7 @@ let inc x = x + 1
 let g = inc << double
 let result = g 5
 
-$ funlang compose_bwd.l3
+$ fn compose_bwd.l3
 11
 ```
 
@@ -108,7 +108,7 @@ let sub3 x = x - 3
 let f = add1 >> mul2 >> sub3
 let result = f 5
 
-$ funlang compose_chain.l3
+$ fn compose_chain.l3
 9
 ```
 
@@ -128,7 +128,7 @@ let double x = x * 2
 let inc x = x + 1
 let result = 5 |> double |> inc
 
-$ funlang pipe_example.l3
+$ fn pipe_example.l3
 11
 ```
 
@@ -142,7 +142,7 @@ let transform = double >> inc
 let a = transform 5
 let result = transform 10
 
-$ funlang comp_example.l3
+$ fn comp_example.l3
 21
 ```
 
@@ -158,7 +158,7 @@ $ funlang comp_example.l3
 $ cat pipeline.l3
 let result = "answer: " ^^ to_string 42
 
-$ funlang pipeline.l3
+$ fn pipeline.l3
 "answer: 42"
 ```
 
@@ -169,7 +169,7 @@ $ cat formatter.l3
 let format_num x = "value=" ^^ to_string x
 let result = format_num 99
 
-$ funlang formatter.l3
+$ fn formatter.l3
 "value=99"
 ```
 
@@ -185,7 +185,7 @@ Prelude가 제공하는 연산자를 파이프라인과 결합하면 더 간결�
 $ cat pipeline_ops.l3
 let result = [1..3] ++ [10..13] ++ [20..22]
 
-$ funlang pipeline_ops.l3
+$ fn pipeline_ops.l3
 [1; 2; 3; 10; 11; 12; 13; 20; 21; 22]
 ```
 
@@ -198,7 +198,7 @@ $ cat string_ops.l3
 let greet name = "Hello, " ^^ name ^^ "!"
 let result = greet "Alice"
 
-$ funlang string_ops.l3
+$ fn string_ops.l3
 "Hello, Alice!"
 ```
 
@@ -214,7 +214,7 @@ let tryParse s =
     | _ -> None
 let result = tryParse "abc" <|> tryParse "42" <|> Some 0
 
-$ funlang option_ops.l3
+$ fn option_ops.l3
 Some 42
 ```
 
@@ -229,7 +229,7 @@ let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string 
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList
 
-$ funlang mixed_pipeline.l3
+$ fn mixed_pipeline.l3
 "[3, 4, 5]"
 ```
 

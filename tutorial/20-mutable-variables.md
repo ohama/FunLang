@@ -12,7 +12,7 @@ let mut x = 5
 let _ = x <- 10
 let result = x
 
-$ funlang mut_basic.l3
+$ fn mut_basic.l3
 10
 ```
 
@@ -24,7 +24,7 @@ let mut x = 5
 let r = x <- 10
 let result = r
 
-$ funlang mut_unit.l3
+$ fn mut_unit.l3
 ()
 ```
 
@@ -42,7 +42,7 @@ let _ = counter <- counter + 1
 let _ = counter <- counter + 1
 let result = counter
 
-$ funlang mut_toplevel.l3
+$ fn mut_toplevel.l3
 3
 ```
 
@@ -60,7 +60,7 @@ let mut greeting = "hello"
 let _ = greeting <- "world"
 let result = greeting
 
-$ funlang mut_string.l3
+$ fn mut_string.l3
 "world"
 ```
 
@@ -72,7 +72,7 @@ let mut flag = true
 let _ = flag <- false
 let result = flag
 
-$ funlang mut_bool.l3
+$ fn mut_bool.l3
 false
 ```
 
@@ -90,7 +90,7 @@ let _ = x <- 10
 let _ = y <- 20
 let result = (x, y)
 
-$ funlang mut_multi.l3
+$ fn mut_multi.l3
 (10, 20)
 ```
 
@@ -110,7 +110,7 @@ let counter () =
     n
 let result = counter ()
 
-$ funlang mut_func.l3
+$ fn mut_func.l3
 3
 ```
 
@@ -129,7 +129,7 @@ let _ = inc ()
 let _ = inc ()
 let result = count
 
-$ funlang mut_closure.l3
+$ fn mut_closure.l3
 3
 ```
 
@@ -146,7 +146,7 @@ let _ = add 20
 let _ = add 30
 let result = total
 
-$ funlang mut_closure2.l3
+$ fn mut_closure2.l3
 60
 ```
 
@@ -164,7 +164,7 @@ let _ = inc 0
 let _ = dec 0
 let result = get 0
 
-$ funlang mut_shared.l3
+$ fn mut_shared.l3
 2
 ```
 
@@ -184,7 +184,7 @@ let rec sum_list lst =
 let _ = sum_list [1; 2; 3; 4; 5]
 let result = total
 
-$ funlang mut_recursive.l3
+$ fn mut_recursive.l3
 15
 ```
 
@@ -203,7 +203,7 @@ let result =
     let _ = x <- 20
     (inner, x)
 
-$ funlang mut_shadow.l3
+$ fn mut_shadow.l3
 (200, 20)
 ```
 
@@ -227,7 +227,7 @@ let result =
         | E -> x <- x + 1
     x
 
-$ funlang mut_try.l3
+$ fn mut_try.l3
 43
 ```
 
@@ -248,7 +248,7 @@ let _ = Counter.inc 0
 let _ = Counter.inc 0
 let result = Counter.get 0
 
-$ funlang mut_module.l3
+$ fn mut_module.l3
 2
 ```
 
@@ -272,7 +272,7 @@ let mut arr = Array.create 2 0
 let _ = arr <- Array.ofList [100; 200]
 let _ = println (to_string (Array.get arr 0))
 
-$ funlang mut_collections.l3
+$ fn mut_collections.l3
 [10; 20]
 (10, 20)
 100
@@ -293,7 +293,7 @@ let _ = x <- 99
 let _ = println (to_string y)
 let _ = println (to_string x)
 
-$ funlang mut_passval.l3
+$ fn mut_passval.l3
 15
 99
 ```
@@ -310,7 +310,7 @@ let mut x = 5
 let _ = x <- x |> (fun n -> n * 2)
 let result = x
 
-$ funlang mut_pipe.l3
+$ fn mut_pipe.l3
 10
 ```
 
@@ -326,7 +326,7 @@ let mut x = 0
 let _ = x <- if true then 42 else 0
 let result = x
 
-$ funlang mut_cond.l3
+$ fn mut_cond.l3
 42
 ```
 
@@ -343,7 +343,7 @@ let _ = label <-
     | _ -> "other"
 let result = label
 
-$ funlang mut_match.l3
+$ fn mut_match.l3
 "one"
 ```
 
@@ -360,7 +360,7 @@ $ cat mut_err_immutable.l3
 let x = 5
 let _ = x <- 10
 
-$ funlang mut_err_immutable.l3
+$ fn mut_err_immutable.l3
 error[E0320]: Cannot assign to immutable variable 'x'. ...
  --> mut_err_immutable.l3:2:6-14
     |
@@ -380,7 +380,7 @@ $ cat mut_err_type.l3
 let mut x = 5
 let _ = x <- "hello"
 
-$ funlang mut_err_type.l3
+$ fn mut_err_type.l3
 error[E0301]: Type mismatch: expected int but got string
  --> mut_err_type.l3:2:6-20
     |

@@ -17,7 +17,7 @@ with
 | NotFound -> 42
 | _ -> 0
 
-$ funlang exc_basic.l3
+$ fn exc_basic.l3
 42
 ```
 
@@ -38,7 +38,7 @@ with
 | InvalidArg msg -> "error: " + msg
 | _ -> "unknown"
 
-$ funlang exc_data.l3
+$ fn exc_data.l3
 "error: bad input"
 ```
 
@@ -61,7 +61,7 @@ with
 | Timeout secs -> "timeout after " + to_string secs + "s"
 | _ -> "unknown"
 
-$ funlang exc_multi.l3
+$ fn exc_multi.l3
 "timeout after 30s"
 ```
 
@@ -81,7 +81,7 @@ with
 | Error x -> "error: " + to_string x
 | _ -> "unknown"
 
-$ funlang exc_guard.l3
+$ fn exc_guard.l3
 "error: 42"
 ```
 
@@ -107,7 +107,7 @@ with
 | Inner -> "outer caught"
 | _ -> "fallback"
 
-$ funlang exc_nested.l3
+$ fn exc_nested.l3
 "inner caught"
 ```
 
@@ -135,7 +135,7 @@ with
 | First -> "outer caught first"
 | _ -> "outer fallback"
 
-$ funlang exc_reraise.l3
+$ fn exc_reraise.l3
 "inner fallback"
 ```
 
@@ -155,7 +155,7 @@ let result = try
 with
 | NotFound -> 42
 
-$ funlang exc_warn.l3
+$ fn exc_warn.l3
 Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
  --> :0:0-1:0
    = hint: Add a catch-all handler or handle all possible exceptions
@@ -175,7 +175,7 @@ with
 | NotFound -> 42
 | _ -> 0
 
-$ funlang exc_nowarn.l3
+$ fn exc_nowarn.l3
 42
 ```
 
@@ -197,7 +197,7 @@ with
 | DivByZero -> -1
 | _ -> -2
 
-$ funlang safe_div.l3
+$ fn safe_div.l3
 -1
 ```
 
@@ -220,7 +220,7 @@ let result =
     with
     | e -> 0
 
-$ funlang failwith_demo.l3
+$ fn failwith_demo.l3
 0
 ```
 
@@ -234,7 +234,7 @@ $ funlang failwith_demo.l3
 $ cat inline_try.l3
 let result = try failwith "boom" with e -> "caught"
 
-$ funlang inline_try.l3
+$ fn inline_try.l3
 "caught"
 ```
 

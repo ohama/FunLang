@@ -9,10 +9,10 @@
 리스트는 순서가 있는 동질적(homogeneous) 컬렉션입니다:
 
 ```
-funlang> [1; 2; 3]
+fn> [1; 2; 3]
 [1; 2; 3]
 
-funlang> []
+fn> []
 []
 ```
 
@@ -21,10 +21,10 @@ funlang> []
 cons 연산자 `::`는 요소를 앞에 추가합니다:
 
 ```
-funlang> 1 :: [2; 3]
+fn> 1 :: [2; 3]
 [1; 2; 3]
 
-funlang> 1 :: 2 :: 3 :: []
+fn> 1 :: 2 :: 3 :: []
 [1; 2; 3]
 ```
 
@@ -39,20 +39,20 @@ funlang> 1 :: 2 :: 3 :: []
 `[start..stop]` 구문으로 정수 리스트를 생성할 수 있습니다:
 
 ```
-funlang> [1..5]
+fn> [1..5]
 [1; 2; 3; 4; 5]
 
-funlang> [1..10]
+fn> [1..10]
 [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 ```
 
 스텝(증가값)을 지정할 수도 있습니다. `[start..step..stop]` 형태입니다:
 
 ```
-funlang> [1..2..10]
+fn> [1..2..10]
 [1; 3; 5; 7; 9]
 
-funlang> [0..5..20]
+fn> [0..5..20]
 [0; 5; 10; 15; 20]
 ```
 
@@ -61,14 +61,14 @@ F#의 `[1..2..10]` 문법과 동일합니다. Python의 `range(1, 11, 2)`와 비
 `stop`이 `start`보다 작으면 빈 리스트를 반환합니다 (F# 동작과 동일):
 
 ```
-funlang> [5..1]
+fn> [5..1]
 []
 ```
 
 단일 원소 범위:
 
 ```
-funlang> [3..3]
+fn> [3..3]
 [3]
 ```
 
@@ -85,7 +85,7 @@ let result =
         | h :: t -> fold f (f acc h) t
     fold (fun acc -> fun x -> acc + x) 0 [1..100]
 
-$ funlang range_sum.l3
+$ fn range_sum.l3
 5050
 ```
 
@@ -100,10 +100,10 @@ $ funlang range_sum.l3
 튜플은 고정 크기의 이질적(heterogeneous) 컬렉션입니다:
 
 ```
-funlang> (1, "hello")
+fn> (1, "hello")
 (1, "hello")
 
-funlang> (1, "hello", true)
+fn> (1, "hello", true)
 (1, "hello", true)
 ```
 
@@ -112,10 +112,10 @@ funlang> (1, "hello", true)
 패턴 바인딩으로 튜플을 분해할 수 있습니다:
 
 ```
-funlang> let (x, y) = (1, 2) in x + y
+fn> let (x, y) = (1, 2) in x + y
 3
 
-funlang> let (a, b, c) = (1, 2, 3) in a + b + c
+fn> let (a, b, c) = (1, 2, 3) in a + b + c
 6
 ```
 
@@ -130,7 +130,7 @@ funlang> let (a, b, c) = (1, 2, 3) in a + b + c
 유닛 타입 `()`는 "값 없음"을 나타냅니다:
 
 ```
-funlang> ()
+fn> ()
 ()
 ```
 
@@ -143,7 +143,7 @@ funlang> ()
 튜플의 리스트:
 
 ```
-funlang> [(1, "a"); (2, "b")]
+fn> [(1, "a"); (2, "b")]
 [(1, "a"); (2, "b")]
 ```
 
@@ -159,19 +159,19 @@ funlang> [(1, "a"); (2, "b")]
 Prelude 표준 라이브러리에서 제공됩니다. 별도의 정의 없이 바로 사용할 수 있습니다. 각 함수의 상세한 설명과 Option/Result 타입은 [9장: Prelude 표준 라이브러리](09-prelude.md)에서 다룹니다. 여기서는 리스트 처리에 필요한 핵심만 소개합니다:
 
 ```
-funlang> map (fun x -> x * 2) [1; 2; 3]
+fn> map (fun x -> x * 2) [1; 2; 3]
 [2; 4; 6]
 
-funlang> filter (fun x -> x > 2) [1; 2; 3; 4; 5]
+fn> filter (fun x -> x > 2) [1; 2; 3; 4; 5]
 [3; 4; 5]
 
-funlang> fold (fun acc -> fun x -> acc + x) 0 [1..5]
+fn> fold (fun acc -> fun x -> acc + x) 0 [1..5]
 15
 
-funlang> length [1; 2; 3; 4]
+fn> length [1; 2; 3; 4]
 4
 
-funlang> append [1; 2] [3; 4]
+fn> append [1; 2] [3; 4]
 [1; 2; 3; 4]
 ```
 
@@ -184,17 +184,17 @@ funlang> append [1; 2] [3; 4]
 `++` 연산자는 `append`의 별칭입니다. 더 자연스러운 중위 표기를 제공합니다:
 
 ```
-funlang> [1; 2] ++ [3; 4]
+fn> [1; 2] ++ [3; 4]
 [1; 2; 3; 4]
 
-funlang> [1..3] ++ [10..12]
+fn> [1..3] ++ [10..12]
 [1; 2; 3; 10; 11; 12]
 ```
 
 `(++)`를 고차 함수로도 사용할 수 있습니다:
 
 ```
-funlang> fold (++) [] [[1; 2]; [3]; [4; 5]]
+fn> fold (++) [] [[1; 2]; [3]; [4; 5]]
 [1; 2; 3; 4; 5]
 ```
 
@@ -220,7 +220,7 @@ let rec sum xs =
 let result = sum [1; 2; 3; 4; 5]
 let _ = println (to_string result)
 
-$ funlang sum.l3
+$ fn sum.l3
 15
 ```
 
@@ -236,7 +236,7 @@ let rec go xs =
 let result = go [1; 2; 3]
 let _ = println (to_string result)
 
-$ funlang map10.l3
+$ fn map10.l3
 [10; 20; 30]
 ```
 
@@ -259,7 +259,7 @@ let _ = println (to_string doubled)
 let strs = [for s in ["a";"b";"c"] -> s ^^ "!"]
 let _ = println (to_string strs)
 
-$ funlang comp_basic.l3
+$ fn comp_basic.l3
 [2; 4; 6]
 ["a!"; "b!"; "c!"]
 ()
@@ -278,7 +278,7 @@ let _ = println (to_string squares)
 let tens = [for i in 1..3 -> i * 10]
 let _ = println (to_string tens)
 
-$ funlang comp_range.l3
+$ fn comp_range.l3
 [0; 1; 4; 9; 16]
 [10; 20; 30]
 ()
@@ -299,7 +299,7 @@ let _ = println (to_string single)
 let nested = [for x in [1;2;3] -> to_string (x * x)]
 let _ = println (to_string nested)
 
-$ funlang comp_edge.l3
+$ fn comp_edge.l3
 []
 [43]
 ["1"; "4"; "9"]
@@ -313,14 +313,14 @@ $ funlang comp_edge.l3
 4장 미리보기 -- 리스트 패턴을 사용한 `match`:
 
 ```
-funlang> match [1; 2; 3] with | [] -> "empty" | x :: _ -> to_string x
+fn> match [1; 2; 3] with | [] -> "empty" | x :: _ -> to_string x
 "1"
 ```
 
 중첩 구조 분해(nested destructuring):
 
 ```
-funlang> match [1; 2; 3] with | a :: b :: _ -> a + b | _ -> 0
+fn> match [1; 2; 3] with | a :: b :: _ -> a + b | _ -> 0
 3
 ```
 

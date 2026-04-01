@@ -22,7 +22,7 @@ let v = Array.get arr 2
 let n = Array.length arr
 let result = (arr, v, n)
 
-$ funlang arr_basic.l3
+$ fn arr_basic.l3
 ([|10; 20; 30; 0; 0|], 30, 5)
 ```
 
@@ -40,7 +40,7 @@ let _ = Array.set arr 2 99
 let back = Array.toList arr
 let result = back
 
-$ funlang arr_conv.l3
+$ fn arr_conv.l3
 [1; 2; 99; 4; 5]
 ```
 
@@ -58,7 +58,7 @@ let arr = Array.ofList [10; 20; 30]
 let _ = Array.iter (fun x -> println (to_string x)) arr
 let result = "완료"
 
-$ funlang arr_iter.l3
+$ fn arr_iter.l3
 10
 20
 30
@@ -73,7 +73,7 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let squared = Array.map (fun x -> x * x) arr
 let result = squared
 
-$ funlang arr_map.l3
+$ fn arr_map.l3
 [|1; 4; 9; 16; 25|]
 ```
 
@@ -85,7 +85,7 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let total = Array.fold (fun acc -> fun x -> acc + x) 0 arr
 let result = total
 
-$ funlang arr_fold.l3
+$ fn arr_fold.l3
 15
 ```
 
@@ -98,7 +98,7 @@ $ cat arr_init.l3
 let arr = Array.init 6 (fun i -> i * i)
 let result = arr
 
-$ funlang arr_init.l3
+$ fn arr_init.l3
 [|0; 1; 4; 9; 16; 25|]
 ```
 
@@ -117,7 +117,7 @@ let result =
     with
     | e -> -1
 
-$ funlang arr_oob.l3
+$ fn arr_oob.l3
 -1
 ```
 
@@ -144,7 +144,7 @@ let v = Hashtable.get ht "name"
 let has = Hashtable.containsKey ht "score"
 let result = (v, has)
 
-$ funlang ht_basic.l3
+$ fn ht_basic.l3
 ("Alice", true)
 ```
 
@@ -159,7 +159,7 @@ let _ = Hashtable.set ht "score" 10
 let _ = Hashtable.set ht "score" 99
 let result = Hashtable.get ht "score"
 
-$ funlang ht_overwrite.l3
+$ fn ht_overwrite.l3
 99
 ```
 
@@ -178,7 +178,7 @@ let _ = Hashtable.remove ht "b"
 let count_after = length (Hashtable.keys ht)
 let result = (count_before, count_after)
 
-$ funlang ht_keys.l3
+$ fn ht_keys.l3
 (3, 2)
 ```
 
@@ -204,7 +204,7 @@ let _ = for (k, v) in ht do
   let _ = println k
   println v
 
-$ funlang ht_forin.l3
+$ fn ht_forin.l3
 name
 Alice
 ()
@@ -226,7 +226,7 @@ let _ = println (to_string (HashSet.contains hs 1))
 let _ = println (to_string (HashSet.contains hs 9))
 let _ = println (to_string (HashSet.count hs))
 
-$ funlang hashset_basic.l3
+$ fn hashset_basic.l3
 true
 true
 false
@@ -244,7 +244,7 @@ let hs = HashSet.create ()
 let _ = HashSet.add hs 42
 let _ = for x in hs do println (to_string x)
 
-$ funlang hashset_forin.l3
+$ fn hashset_forin.l3
 42
 ()
 ```
@@ -275,7 +275,7 @@ let v2 = Queue.dequeue q ()
 let _ = println (to_string v2)
 let _ = println (to_string (Queue.count q))
 
-$ funlang queue_basic.l3
+$ fn queue_basic.l3
 3
 10
 20
@@ -295,7 +295,7 @@ let _ = Queue.enqueue q 2
 let _ = Queue.enqueue q 3
 let _ = for x in q do println (to_string x)
 
-$ funlang queue_forin.l3
+$ fn queue_forin.l3
 1
 2
 3
@@ -326,7 +326,7 @@ let _ = println (to_string ml.[0])
 let _ = println (to_string ml.[1])
 let _ = println (to_string ml.[2])
 
-$ funlang ml_basic.l3
+$ fn ml_basic.l3
 3
 10
 20
@@ -345,7 +345,7 @@ let _ = println (to_string ml.[0])
 let _ = ml.[0] <- 999
 let _ = println (to_string ml.[0])
 
-$ funlang ml_index.l3
+$ fn ml_index.l3
 100
 999
 ()
@@ -361,7 +361,7 @@ let _ = MutableList.add ml 10
 let _ = MutableList.add ml 15
 let _ = for x in ml do println (to_string x)
 
-$ funlang ml_forin.l3
+$ fn ml_forin.l3
 5
 10
 15

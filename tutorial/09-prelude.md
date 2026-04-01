@@ -44,13 +44,13 @@ type Option 'a =
 `Some`과 `None` 생성자는 REPL과 파일 모드 모두에서 동작합니다:
 
 ```
-funlang> Some 42
+fn> Some 42
 Some 42
 
-funlang> Some "hello"
+fn> Some "hello"
 Some "hello"
 
-funlang> None
+fn> None
 None
 ```
 
@@ -62,7 +62,7 @@ None
 $ cat check_option.l3
 let x = Some 42
 
-$ funlang --emit-type check_option.l3
+$ fn --emit-type check_option.l3
 x : Option<int>
 ```
 
@@ -80,7 +80,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ funlang option_match.l3
+$ fn option_match.l3
 42
 ```
 
@@ -96,7 +96,7 @@ let getOrDefault default opt =
     | None -> default
 let result = getOrDefault 0 None
 
-$ funlang option_default.l3
+$ fn option_default.l3
 0
 ```
 
@@ -120,7 +120,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ funlang option_map.l3
+$ fn option_map.l3
 10
 ```
 
@@ -141,7 +141,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ funlang option_bind.l3
+$ fn option_bind.l3
 20
 ```
 
@@ -163,7 +163,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ funlang option_pipe.l3
+$ fn option_pipe.l3
 10
 ```
 
@@ -193,7 +193,7 @@ let result =
     | Ok v -> v
     | Error _ -> 0
 
-$ funlang result_demo.l3
+$ fn result_demo.l3
 3
 ```
 
@@ -217,17 +217,17 @@ let n = List.length [1; 2; 3]
 let doubled = List.map (fun x -> x * 2) [1; 2; 3]
 let result = doubled
 
-$ funlang qualified_prelude.l3
+$ fn qualified_prelude.l3
 [2; 4; 6]
 ```
 
 한정된 접근과 비한정된 접근을 섞어 쓸 수도 있습니다. `map`과 `List.map`은 같은 함수입니다:
 
 ```
-funlang> length [1; 2; 3]
+fn> length [1; 2; 3]
 3
 
-funlang> List.length [1; 2; 3]
+fn> List.length [1; 2; 3]
 3
 ```
 
@@ -238,14 +238,14 @@ funlang> List.length [1; 2; 3]
 `map`은 리스트의 각 요소에 함수를 적용합니다. 리스트 처리의 가장 기본적인 패턴으로, 각 원소를 독립적으로 변환할 때 씁니다:
 
 ```
-funlang> map (fun x -> x * 2) [1..5]
+fn> map (fun x -> x * 2) [1..5]
 [2; 4; 6; 8; 10]
 ```
 
 `filter`는 조건을 만족하는 요소만 남깁니다. `map`이 "모든 원소를 변환"한다면 `filter`는 "일부 원소만 선택"합니다:
 
 ```
-funlang> filter (fun x -> x > 3) [1..6]
+fn> filter (fun x -> x > 3) [1..6]
 [4; 5; 6]
 ```
 
@@ -256,7 +256,7 @@ funlang> filter (fun x -> x > 3) [1..6]
 `fold`는 리스트를 하나의 값으로 축약합니다. 합계, 최댓값, 문자열 합치기 등 리스트를 단일 결과로 만드는 모든 연산이 `fold`로 표현됩니다:
 
 ```
-funlang> fold (fun acc -> fun x -> acc + x) 0 [1..10]
+fn> fold (fun acc -> fun x -> acc + x) 0 [1..10]
 55
 ```
 
@@ -267,13 +267,13 @@ funlang> fold (fun acc -> fun x -> acc + x) 0 [1..10]
 ### 리스트 정보: length, hd, tl
 
 ```
-funlang> length [1; 2; 3]
+fn> length [1; 2; 3]
 3
 
-funlang> hd [10; 20]
+fn> hd [10; 20]
 10
 
-funlang> tl [10; 20]
+fn> tl [10; 20]
 [20]
 ```
 
@@ -282,10 +282,10 @@ funlang> tl [10; 20]
 ### 리스트 조작: reverse, append
 
 ```
-funlang> reverse [] [1; 2; 3]
+fn> reverse [] [1; 2; 3]
 [3; 2; 1]
 
-funlang> append [1; 2] [3; 4]
+fn> append [1; 2] [3; 4]
 [1; 2; 3; 4]
 ```
 
@@ -302,7 +302,7 @@ let r2 = List.sortBy (fun x -> 0 - x) [1; 2; 3]
 let _ = println (to_string r1)
 let _ = println (to_string r2)
 
-$ funlang list_sort.l3
+$ fn list_sort.l3
 [1; 2; 3]
 [3; 2; 1]
 ()
@@ -322,7 +322,7 @@ let _ = println (to_string r)
 let d = List.distinctBy (fun x -> x % 2) [1; 2; 3; 4; 5]
 let _ = println (to_string d)
 
-$ funlang list_search.l3
+$ fn list_search.l3
 true
 Some 3
 None
@@ -348,7 +348,7 @@ let _ = println (to_string (List.item 1 [10; 20; 30]))
 let _ = println (to_string (List.isEmpty []))
 let _ = println (to_string (List.isEmpty [1]))
 
-$ funlang list_transform.l3
+$ fn list_transform.l3
 [10; 21; 32]
 20
 true
@@ -377,7 +377,7 @@ let _ = HashSet.add hs 2
 let sorted = List.sort (List.ofSeq hs)
 let _ = println (to_string sorted)
 
-$ funlang list_ofseq.l3
+$ fn list_ofseq.l3
 [1; 2; 3]
 ()
 ```
@@ -395,7 +395,7 @@ $ funlang list_ofseq.l3
 입력값을 그대로 반환합니다:
 
 ```
-funlang> id 42
+fn> id 42
 42
 ```
 
@@ -406,7 +406,7 @@ funlang> id 42
 첫 번째 인자를 반환하고 두 번째 인자를 무시합니다:
 
 ```
-funlang> const 42 "ignored"
+fn> const 42 "ignored"
 42
 ```
 
@@ -417,7 +417,7 @@ funlang> const 42 "ignored"
 두 함수를 합성합니다. `compose f g x`는 `f (g x)`와 같습니다:
 
 ```
-funlang> compose inc double 5
+fn> compose inc double 5
 11
 ```
 
@@ -426,19 +426,19 @@ funlang> compose inc double 5
 ### 유틸리티 함수
 
 ```
-funlang> not true
+fn> not true
 false
 
-funlang> (min 3 5, max 3 5)
+fn> (min 3 5, max 3 5)
 (3, 5)
 
-funlang> abs (0 - 42)
+fn> abs (0 - 42)
 42
 
-funlang> (fst (1, 2), snd (1, 2))
+fn> (fst (1, 2), snd (1, 2))
 (1, 2)
 
-funlang> ignore 42
+fn> ignore 42
 ()
 ```
 
@@ -455,7 +455,7 @@ let result =
     |> filter (fun x -> x % 2 = 0)
     |> map (fun x -> x * x)
 
-$ funlang pipeline.l3
+$ fn pipeline.l3
 [4; 16; 36; 64; 100]
 ```
 
@@ -470,14 +470,14 @@ Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다. �
 `append`의 중위 연산자 버전입니다:
 
 ```
-funlang> [1; 2] ++ [3; 4; 5]
+fn> [1; 2] ++ [3; 4; 5]
 [1; 2; 3; 4; 5]
 ```
 
 `(++)`를 함수로 사용할 수도 있습니다. 괄호로 감싸면 일반 함수처럼 고차 함수에 넘길 수 있습니다:
 
 ```
-funlang> fold (++) [] [[1; 2]; [3]; [4; 5]]
+fn> fold (++) [] [[1; 2]; [3]; [4; 5]]
 [1; 2; 3; 4; 5]
 ```
 
@@ -490,13 +490,13 @@ funlang> fold (++) [] [[1; 2]; [3]; [4; 5]]
 첫 번째 `Some` 값을 반환하거나, 모두 `None`이면 `None`을 반환합니다. 여러 소스에서 값을 찾을 때 fallback 체인을 표현하기에 딱 맞습니다:
 
 ```
-funlang> Some 1 <|> Some 2
+fn> Some 1 <|> Some 2
 Some 1
 
-funlang> None <|> Some 42
+fn> None <|> Some 42
 Some 42
 
-funlang> None <|> None
+fn> None <|> None
 None
 ```
 
@@ -511,7 +511,7 @@ let tryParse s =
     | _ -> None
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 
-$ funlang fallback.l3
+$ fn fallback.l3
 Some 42
 ```
 
@@ -522,7 +522,7 @@ Some 42
 `string_concat`의 중위 연산자 버전입니다:
 
 ```
-funlang> "hello" ^^ " " ^^ "world"
+fn> "hello" ^^ " " ^^ "world"
 "hello world"
 ```
 
@@ -533,7 +533,7 @@ $ cat string_build.l3
 let formatPair key = fun value -> key ^^ "=" ^^ value
 let result = formatPair "name" "Alice"
 
-$ funlang string_build.l3
+$ fn string_build.l3
 "name=Alice"
 ```
 
@@ -563,13 +563,13 @@ Prelude 함수와는 별도로, FunLang에는 내장 환경(`initialBuiltinEnv`)
 이들은 REPL과 파일 모드 모두에서 동작합니다:
 
 ```
-funlang> String.length "hello"
+fn> String.length "hello"
 5
 
-funlang> to_string 42
+fn> to_string 42
 "42"
 
-funlang> to_string (Some [1; 2; 3])
+fn> to_string (Some [1; 2; 3])
 "Some [1; 2; 3]"
 ```
 

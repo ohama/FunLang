@@ -16,7 +16,7 @@ module Config =
     let title = "My App"
 let result = Config.title + " (" + to_string Config.width + "x" + to_string Config.height + ")"
 
-$ funlang config.l3
+$ fn config.l3
 "My App (800x600)"
 ```
 
@@ -35,7 +35,7 @@ module Math =
     let triple x = x * 3
 let result = Math.double 5 + Math.triple 3
 
-$ funlang qualified.l3
+$ fn qualified.l3
 19
 ```
 
@@ -53,7 +53,7 @@ module M =
 open M
 let result = x + y
 
-$ funlang open_mod.l3
+$ fn open_mod.l3
 30
 ```
 
@@ -72,7 +72,7 @@ module Outer =
         let value = 42
 let result = Outer.Inner.value
 
-$ funlang nested.l3
+$ fn nested.l3
 42
 ```
 
@@ -92,7 +92,7 @@ module B =
     let y = 20
 let result = A.x + B.y
 
-$ funlang multi_mod.l3
+$ fn multi_mod.l3
 30
 ```
 
@@ -116,7 +116,7 @@ let result =
     | Green -> "green"
     | Blue -> "blue"
 
-$ funlang mod_type.l3
+$ fn mod_type.l3
 "green"
 ```
 
@@ -130,7 +130,7 @@ module M =
         | MSome of int
 let result = M.MSome 42
 
-$ funlang mod_ctor.l3
+$ fn mod_ctor.l3
 MSome 42
 ```
 
@@ -152,7 +152,7 @@ module M =
         | MNone -> 0
 let result = M.unwrap (M.MSome 42)
 
-$ funlang mod_fn.l3
+$ fn mod_fn.l3
 42
 ```
 
@@ -172,7 +172,7 @@ module App =
     let version = 1
 let result = App.name + " v" + to_string App.version + " -> " + DB.host + ":" + to_string DB.port
 
-$ funlang layers.l3
+$ fn layers.l3
 "MyService v1 -> localhost:5432"
 ```
 
@@ -191,7 +191,7 @@ $ cat main.l3
 open "lib.fun"
 let result = add 3 (double 4)
 
-$ funlang main.l3
+$ fn main.l3
 11
 ```
 
@@ -228,7 +228,7 @@ $ cat main.l3
 open "utils/format.fun"
 let result = formatSquare 7
 
-$ funlang main.l3
+$ fn main.l3
 "49"
 ```
 
@@ -248,7 +248,7 @@ $ cat main.l3
 open "mathlib.fun"
 let result = Math.square 5 + Math.cube 2
 
-$ funlang main.l3
+$ fn main.l3
 33
 ```
 
@@ -279,7 +279,7 @@ module Config =
 
 let result = Config.host + ":" + to_string Config.port
 
-$ funlang readable.l3
+$ fn readable.l3
 "localhost:5432"
 ```
 
@@ -304,7 +304,7 @@ module Colors =
 open Colors
 let result = show Green
 
-$ funlang mod_tc.l3
+$ fn mod_tc.l3
 "green"
 ```
 

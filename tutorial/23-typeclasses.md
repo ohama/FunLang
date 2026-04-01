@@ -20,7 +20,7 @@ instance Show int =
 
 let result = show 42
 
-$ funlang show_class.l3
+$ fn show_class.l3
 "42"
 ```
 
@@ -44,7 +44,7 @@ instance Describable int =
 
 let result = describe 42 + ":" + tag 42
 
-$ funlang describable.l3
+$ fn describable.l3
 "42:int"
 ```
 
@@ -65,7 +65,7 @@ let _ = println (show true)
 let _ = println (show 'x')
 let _ = println (show "hello")
 
-$ funlang show_builtin.l3
+$ fn show_builtin.l3
 42
 true
 x
@@ -85,7 +85,7 @@ let _ = println (to_string (eq 1 2))
 let _ = println (to_string (eq "hello" "hello"))
 let _ = println (to_string (eq 'a' 'b'))
 
-$ funlang eq_builtin.l3
+$ fn eq_builtin.l3
 true
 false
 true
@@ -101,7 +101,7 @@ $ cat show_twice.l3
 let show_twice x = show x + show x
 let result = show_twice 42
 
-$ funlang show_twice.l3
+$ fn show_twice.l3
 "4242"
 ```
 
@@ -115,7 +115,7 @@ let show_twice x = show x + show x
 let _ = println (show_twice 42)
 let _ = println (show_twice true)
 
-$ funlang show_poly.l3
+$ fn show_poly.l3
 4242
 truetrue
 ```
@@ -132,7 +132,7 @@ let f : Show 'a => 'a -> string = fun x -> show x
 
 let result = f 42
 
-$ funlang constrained_annot.l3
+$ fn constrained_annot.l3
 "42"
 ```
 
@@ -147,7 +147,7 @@ $ cat show_map.l3
 let map_show lst = List.map show lst
 let result = map_show [1; 2; 3]
 
-$ funlang show_map.l3
+$ fn show_map.l3
 ["1"; "2"; "3"]
 ```
 
@@ -163,7 +163,7 @@ $ funlang show_map.l3
 $ cat no_instance.l3
 let bad = show (fun x -> x)
 
-$ funlang no_instance.l3
+$ fn no_instance.l3
 error[E0701]: No instance of Show for 'x -> 'x
  --> no_instance.l3:1:8-14
     |
@@ -186,7 +186,7 @@ instance Show int =
 instance Show int =
     let show x = to_string x
 
-$ funlang dup_instance.l3
+$ fn dup_instance.l3
 error[E0702]: Duplicate instance declaration: Show int
  --> dup_instance.l3:3:0-4:28
     |
@@ -202,7 +202,7 @@ error[E0702]: Duplicate instance declaration: Show int
 $ cat eq_error.l3
 let result = eq (fun x -> x) (fun x -> x)
 
-$ funlang eq_error.l3
+$ fn eq_error.l3
 error[E0701]: No instance of Eq for 'z -> 'z
  --> eq_error.l3:1:11-15
     |
@@ -232,7 +232,7 @@ instance Show Color =
 
 let result = show Green
 
-$ funlang custom_show.l3
+$ fn custom_show.l3
 "Green"
 ```
 
@@ -256,7 +256,7 @@ instance Eq Direction =
 let _ = println (to_string (eq North North))
 let result = eq North South
 
-$ funlang custom_eq.l3
+$ fn custom_eq.l3
 true
 false
 ```
@@ -282,7 +282,7 @@ let _ = println (show Circle)
 let _ = println (show Square)
 let result = show Triangle
 
-$ funlang mod_typeclass.l3
+$ fn mod_typeclass.l3
 circle
 square
 "triangle"
@@ -304,7 +304,7 @@ instance Renderable int =
 
 let result = render 42
 
-$ funlang mod_class.l3
+$ fn mod_class.l3
 "[42]"
 ```
 

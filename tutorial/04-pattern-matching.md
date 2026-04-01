@@ -11,7 +11,7 @@ FunLang의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니�
 Match 표현식은 `match` 키워드에 맞춰 정렬된 `|` 파이프를 사용합니다:
 
 ```
-funlang> match 2 with | 0 -> "zero" | 1 -> "one" | _ -> "other"
+fn> match 2 with | 0 -> "zero" | 1 -> "one" | _ -> "other"
 "other"
 ```
 
@@ -26,7 +26,7 @@ let classify x =
     | _ -> "other"
 let result = classify 1
 
-$ funlang classify.l3
+$ fn classify.l3
 "one"
 ```
 
@@ -39,17 +39,17 @@ $ funlang classify.l3
 정수 및 불리언 리터럴:
 
 ```
-funlang> match true with | true -> "yes" | false -> "no"
+fn> match true with | true -> "yes" | false -> "no"
 "yes"
 
-funlang> match 3 with | 1 -> "one" | 2 -> "two" | 3 -> "three" | _ -> "other"
+fn> match 3 with | 1 -> "one" | 2 -> "two" | 3 -> "three" | _ -> "other"
 "three"
 ```
 
 음수 정수도 패턴으로 사용할 수 있습니다:
 
 ```
-funlang> match (0 - 1) with | -1 -> "neg one" | 0 -> "zero" | _ -> "other"
+fn> match (0 - 1) with | -1 -> "neg one" | 0 -> "zero" | _ -> "other"
 "neg one"
 ```
 
@@ -69,7 +69,7 @@ let dayType d =
     | _ -> "invalid"
 let result = dayType 3
 
-$ funlang daytype.l3
+$ fn daytype.l3
 "Wednesday"
 ```
 
@@ -86,7 +86,7 @@ let greet name =
     | _ -> "Who are you, " + name + "?"
 let result = greet "Alice"
 
-$ funlang string_match.l3
+$ fn string_match.l3
 "Hello, Alice!"
 ```
 
@@ -101,7 +101,7 @@ let classify cmd =
     | _ -> "unknown: " + cmd
 let result = classify "quit"
 
-$ funlang cmd_dispatch.l3
+$ fn cmd_dispatch.l3
 "exit command"
 ```
 
@@ -112,10 +112,10 @@ $ funlang cmd_dispatch.l3
 변수 패턴은 매칭된 값을 이름에 바인딩합니다. `_`는 값을 버리는 와일드카드(wildcard)입니다:
 
 ```
-funlang> match 42 with | x -> x + 1
+fn> match 42 with | x -> x + 1
 43
 
-funlang> match 42 with | _ -> 0
+fn> match 42 with | _ -> 0
 0
 ```
 
@@ -130,14 +130,14 @@ let sign x =
     | _ -> 0 - 1
 let result = (sign 5, sign 0, sign (0 - 3))
 
-$ funlang sign.l3
+$ fn sign.l3
 (1, 0, -1)
 ```
 
 **섀도잉(Shadowing):** 패턴 내의 변수는 같은 이름의 외부 바인딩을 가립니다:
 
 ```
-funlang> let x = 10 in match 5 with | x -> x
+fn> let x = 10 in match 5 with | x -> x
 5
 ```
 
@@ -148,14 +148,14 @@ funlang> let x = 10 in match 5 with | x -> x
 튜플을 제자리에서 분해합니다:
 
 ```
-funlang> match (1, 2) with | (a, b) -> a + b
+fn> match (1, 2) with | (a, b) -> a + b
 3
 ```
 
 중첩 튜플 패턴:
 
 ```
-funlang> match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -> a + b + c + d
+fn> match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -> a + b + c + d
 10
 ```
 
@@ -170,7 +170,7 @@ let classify pair =
     | (false, _) -> "false"
 let result = classify (true, 42)
 
-$ funlang classify_pair.l3
+$ fn classify_pair.l3
 "positive-true: 42"
 ```
 
@@ -179,10 +179,10 @@ $ funlang classify_pair.l3
 빈 리스트, cons, 또는 특정 길이에 대해 매칭합니다:
 
 ```
-funlang> match [1; 2; 3] with | [] -> "empty" | x :: _ -> to_string x
+fn> match [1; 2; 3] with | [] -> "empty" | x :: _ -> to_string x
 "1"
 
-funlang> match [1; 2; 3] with | a :: b :: _ -> a + b | _ -> 0
+fn> match [1; 2; 3] with | a :: b :: _ -> a + b | _ -> 0
 3
 ```
 
@@ -203,7 +203,7 @@ let r3 = describe [1; 2]
 let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ funlang list_describe.l3
+$ fn list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 ```
 
@@ -223,7 +223,7 @@ let area s =
     | Rect (w, h) -> w * h
 let result = area (Circle 5)
 
-$ funlang shape.l3
+$ fn shape.l3
 75
 ```
 
@@ -248,7 +248,7 @@ let value c =
 
 let result = value Ace + value King + value (Num 5)
 
-$ funlang card.l3
+$ fn card.l3
 26
 ```
 
@@ -267,7 +267,7 @@ let isLeaf t =
 
 let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
 
-$ funlang is_leaf.l3
+$ fn is_leaf.l3
 (true, false)
 ```
 
@@ -292,7 +292,7 @@ let r3 = deepGet (Some None)
 let r4 = deepGet None
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ funlang deep_option.l3
+$ fn deep_option.l3
 "42 | inner none | mid none | outer none"
 ```
 
@@ -308,7 +308,7 @@ let rec sumFirst xs =
 let result = sumFirst [(1, "a"); (2, "b"); (3, "c")]
 let _ = println (to_string result)
 
-$ funlang sum_first.l3
+$ fn sum_first.l3
 6
 ```
 
@@ -325,7 +325,7 @@ let result =
     | Some [] -> 0
     | None -> 0
 
-$ funlang nested_complex.l3
+$ fn nested_complex.l3
 1
 ```
 
@@ -341,7 +341,7 @@ let result =
     match p with
     | { x = a; y = b } -> a + b
 
-$ funlang record_match.l3
+$ fn record_match.l3
 3
 ```
 
@@ -357,7 +357,7 @@ let greet p =
 
 let result = greet { name = "Alice"; age = 30; active = true }
 
-$ funlang record_partial.l3
+$ fn record_partial.l3
 "Alice is 30"
 ```
 
@@ -366,7 +366,7 @@ $ funlang record_partial.l3
 여러 패턴이 같은 본문을 공유할 때 `|`로 결합합니다:
 
 ```
-funlang> match 2 with | 1 | 2 | 3 -> "small" | _ -> "big"
+fn> match 2 with | 1 | 2 | 3 -> "small" | _ -> "big"
 "small"
 ```
 
@@ -382,7 +382,7 @@ let classify n =
     | _ -> "large"
 let result = classify 5
 
-$ funlang or_pattern.l3
+$ fn or_pattern.l3
 "medium"
 ```
 
@@ -404,7 +404,7 @@ let isVertical d =
     | East | West -> false
 let result = (isVertical North, isVertical East)
 
-$ funlang or_ctor.l3
+$ fn or_ctor.l3
 (true, false)
 ```
 
@@ -421,7 +421,7 @@ let respond input =
     | _ -> false
 let result = (respond "yes", respond "n", respond "maybe")
 
-$ funlang or_string.l3
+$ fn or_string.l3
 (true, false, false)
 ```
 
@@ -443,7 +443,7 @@ let name c =
     | Green | Blue -> "cool"
 let result = name Red
 
-$ funlang or_exhaust.l3
+$ fn or_exhaust.l3
 "red"
 ```
 
@@ -469,7 +469,7 @@ let classify n =
     | _ -> "negative"
 let result = classify 5
 
-$ funlang guard.l3
+$ fn guard.l3
 "positive"
 ```
 
@@ -488,7 +488,7 @@ let grade score =
     | _ -> "F"
 let result = grade 85
 
-$ funlang grade.l3
+$ fn grade.l3
 "B"
 ```
 
@@ -513,7 +513,7 @@ let r2 = isLarge (Circle 5)
 let r3 = isLarge (Rect (20, 10))
 let result = (r1, r2, r3)
 
-$ funlang shape_guard.l3
+$ fn shape_guard.l3
 (true, false, true)
 ```
 
@@ -533,7 +533,7 @@ let classify x =
     | _ -> "negative"
 let result = classify 50
 
-$ funlang fallthrough.l3
+$ fn fallthrough.l3
 "medium"
 ```
 
@@ -552,7 +552,7 @@ let classify x =
     | _ -> "large"
 let result = classify (0 - 42)
 
-$ funlang match_expr.l3
+$ fn match_expr.l3
 "medium"
 ```
 
@@ -571,7 +571,7 @@ let result =
     | Red -> 1
     | Green -> 2
 
-$ funlang exhaustive.l3
+$ fn exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --> :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -589,7 +589,7 @@ let result =
     | _ -> "catch all"
     | 1 -> "one"
 
-$ funlang redundant.l3
+$ fn redundant.l3
 Warning: warning[W0002]: Redundant pattern match clause. This pattern is never reached
  --> :0:0-1:0
    = hint: Remove this clause or reorder the patterns
@@ -621,7 +621,7 @@ let mix a b =
 
 let result = mix Red Blue
 
-$ funlang color_mix.l3
+$ fn color_mix.l3
 "purple"
 ```
 
@@ -630,10 +630,10 @@ $ funlang color_mix.l3
 전체 `match` 없이 구조 분해할 수 있습니다:
 
 ```
-funlang> let (x, y) = (1, 2) in x + y
+fn> let (x, y) = (1, 2) in x + y
 3
 
-funlang> let (a, b, c) = (1, 2, 3) in a + b + c
+fn> let (a, b, c) = (1, 2, 3) in a + b + c
 6
 ```
 
@@ -666,7 +666,7 @@ let rec sum xs =
 
 let _ = println (to_string (sum [1; 2; 3; 4; 5]))
 
-$ funlang list_sum.l3
+$ fn list_sum.l3
 15
 ```
 
@@ -681,7 +681,7 @@ let rec length xs =
 
 let _ = println (to_string (length [10; 20; 30]))
 
-$ funlang list_length.l3
+$ fn list_length.l3
 3
 ```
 
@@ -696,7 +696,7 @@ let rec filter pred = fun xs ->
 
 let _ = println (to_string (filter (fun x -> x > 3) [1; 2; 3; 4; 5; 6]))
 
-$ funlang list_filter.l3
+$ fn list_filter.l3
 [4; 5; 6]
 ```
 
@@ -711,7 +711,7 @@ let result =
         | h :: t -> if pred h then h :: takeWhile pred t else []
     takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
 
-$ funlang take_while.l3
+$ fn take_while.l3
 [1; 2; 3; 4]
 ```
 
@@ -734,7 +734,7 @@ let result =
         | Mul (a, b) -> eval a * eval b
     eval (Add (Mul (Num 3, Num 4), Num 5))
 
-$ funlang expr_eval.l3
+$ fn expr_eval.l3
 17
 ```
 
@@ -756,7 +756,7 @@ let result =
     let r2 = lookup 9 env
     (r1, r2)
 
-$ funlang lookup.l3
+$ fn lookup.l3
 (Some "two", None)
 ```
 
@@ -789,7 +789,7 @@ let result =
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
     (depth t, size t, sumTree t)
 
-$ funlang tree_ops.l3
+$ fn tree_ops.l3
 (3, 4, 10)
 ```
 
@@ -812,7 +812,7 @@ let sorted =
 
 let result = sorted
 
-$ funlang isort.l3
+$ fn isort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 

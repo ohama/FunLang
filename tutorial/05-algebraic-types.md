@@ -20,7 +20,7 @@ let result =
     | Green -> "green"
     | Blue -> "blue"
 
-$ funlang color.l3
+$ fn color.l3
 "green"
 ```
 
@@ -44,7 +44,7 @@ let result =
     | East -> "right"
     | West -> "left"
 
-$ funlang direction.l3
+$ fn direction.l3
 "up"
 ```
 
@@ -65,7 +65,7 @@ let area s =
     | Rect (w, h) -> w * h
 let result = area (Rect (3, 4))
 
-$ funlang shape.l3
+$ fn shape.l3
 12
 ```
 
@@ -88,7 +88,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ funlang option.l3
+$ fn option.l3
 42
 ```
 
@@ -97,7 +97,7 @@ $ funlang option.l3
 `--emit-type`으로 추론된 타입을 확인할 수 있습니다:
 
 ```
-$ funlang --emit-type option.l3
+$ fn --emit-type option.l3
 result : int
 x : Option<int>
 ```
@@ -116,7 +116,7 @@ let result =
     | Left n -> n
     | Right s -> String.length s
 
-$ funlang either.l3
+$ fn either.l3
 42
 ```
 
@@ -140,7 +140,7 @@ let result =
     in
     sum xs
 
-$ funlang intlist.l3
+$ fn intlist.l3
 6
 ```
 
@@ -163,7 +163,7 @@ let result =
     in
     depth t
 
-$ funlang tree.l3
+$ fn tree.l3
 3
 ```
 
@@ -184,7 +184,7 @@ type Tree =
 and Forest = Empty | Trees of Tree * Forest
 let result = Node (Trees (Leaf 1, Trees (Leaf 2, Empty)))
 
-$ funlang mutual.l3
+$ fn mutual.l3
 Node (Trees ((Leaf 1, Trees ((Leaf 2, Empty)))))
 ```
 
@@ -205,7 +205,7 @@ let result =
     | Red -> 1
     | Green -> 2
 
-$ funlang exhaustive.l3
+$ fn exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --> :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -237,7 +237,7 @@ let result =
     in
     eval e
 
-$ funlang calc.l3
+$ fn calc.l3
 14
 ```
 
@@ -255,7 +255,7 @@ type Age = int
 let greet name age = name + " is " + to_string age
 let result = greet "Alice" 30
 
-$ funlang alias_basic.l3
+$ fn alias_basic.l3
 "Alice is 30"
 ```
 
@@ -280,7 +280,7 @@ let swap p =
 
 let result = swap (1, 2)
 
-$ funlang alias_complex.l3
+$ fn alias_complex.l3
 (2, 1)
 ```
 
@@ -302,7 +302,7 @@ $ cat alias_emit.l3
 type Name = string
 let x = "hello"
 
-$ funlang --emit-type alias_emit.l3
+$ fn --emit-type alias_emit.l3
 x : string
 ```
 

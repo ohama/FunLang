@@ -17,7 +17,7 @@ let greet name =
     println "Welcome to FunLang"
 let _ = greet "Alice"
 
-$ funlang greet.l3
+$ fn greet.l3
 Hello, Alice
 Welcome to FunLang
 ()
@@ -40,7 +40,7 @@ let check x =
         0
 let result = check 5
 
-$ funlang check.l3
+$ fn check.l3
 positive
 10
 ```
@@ -62,7 +62,7 @@ let _ =
     for n in nums do
         println (to_string n)
 
-$ funlang list_iter.l3
+$ fn list_iter.l3
 1
 2
 3
@@ -83,7 +83,7 @@ let _ =
     for x in arr do
         println (to_string x)
 
-$ funlang arr_iter.l3
+$ fn arr_iter.l3
 10
 20
 30
@@ -104,7 +104,7 @@ let _ = for (k, v) in ht do
   let _ = println k
   println v
 
-$ funlang ht_forin.l3
+$ fn ht_forin.l3
 name
 Alice
 ()
@@ -131,7 +131,7 @@ let chained = optionBind (fun x -> if x > 10 then Some (x + 1) else None) double
 let _ = println (to_string doubled)
 let _ = println (to_string chained)
 
-$ funlang option_map_bind.l3
+$ fn option_map_bind.l3
 Some 42
 Some 43
 ()
@@ -154,7 +154,7 @@ let _ = println (to_string fallback)
 let _ = println (to_string filtered)
 let _ = println (to_string rejected)
 
-$ funlang option_default_filter.l3
+$ fn option_default_filter.l3
 42
 0
 Some 10
@@ -178,7 +178,7 @@ let _ = println (to_string mapped)
 let _ = println (to_string asOption)
 let _ = println (to_string errCase)
 
-$ funlang result_map_opt.l3
+$ fn result_map_opt.l3
 Ok 84
 Some 84
 None
@@ -217,7 +217,7 @@ let process items =
     ()
 let _ = process [Some 1; None; Some 3]
 
-$ funlang process.l3
+$ fn process.l3
 Some 2
 None
 Some 6

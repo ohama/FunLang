@@ -25,7 +25,7 @@ let rec find pred = fun xs ->
 
 let result = try find (fun x -> x > 3) [1; 2; 3; 4; 5] with | NotFound -> 0 - 1
 
-$ funlang find_exc.l3
+$ fn find_exc.l3
 4
 ```
 
@@ -41,7 +41,7 @@ let rec find pred = fun xs ->
 
 let result = optionDefault (0 - 1) (find (fun x -> x > 3) [1; 2; 3; 4; 5])
 
-$ funlang find_opt.l3
+$ fn find_opt.l3
 4
 ```
 
@@ -57,7 +57,7 @@ let rec find pred = fun xs ->
 
 let result = resultDefault (0 - 1) (find (fun x -> x > 3) [1; 2; 3; 4; 5])
 
-$ funlang find_res.l3
+$ fn find_res.l3
 4
 ```
 
@@ -122,7 +122,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ funlang chain_exc.l3
+$ fn chain_exc.l3
 (2, -1, -2)
 ```
 
@@ -144,7 +144,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ funlang chain_res.l3
+$ fn chain_res.l3
 (Ok 3, Error "div/0", Error "invalid: abc")
 ```
 
@@ -180,7 +180,7 @@ let rec searchList pred = fun xs -> fun i ->
 
 let result = searchList (fun x -> x = 999999) [1..1000000] 0
 
-$ funlang tco_result.l3
+$ fn tco_result.l3
 Ok 999998
 ```
 
@@ -202,7 +202,7 @@ let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |> optionBind safeHead |> optionBind (safeDivide 100) |> optionDefault 0
 
-$ funlang option_use.l3
+$ fn option_use.l3
 10
 ```
 
@@ -224,7 +224,7 @@ let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 <|> safeDivide 10 2 <|> Some 0
 
-$ funlang fallback.l3
+$ fn fallback.l3
 Some 5
 ```
 
@@ -246,7 +246,7 @@ let r2 = validate "" 25
 let r3 = validate "Bob" (0 - 5)
 let result = (r1, r2, r3)
 
-$ funlang result_use.l3
+$ fn result_use.l3
 (Ok "Alice (30)", Error "name cannot be empty", Error "age cannot be negative")
 ```
 
@@ -273,7 +273,7 @@ let rec processAll xs =
 
 let result = processAll [1; 2; 3; 4; 5]
 
-$ funlang exception_use.l3
+$ fn exception_use.l3
 15
 ```
 

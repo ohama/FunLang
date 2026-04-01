@@ -45,7 +45,7 @@ let rec map f = fun xs ->
 
 let result = map (fun x -> x * x) [1; 2; 3; 4; 5]
 
-$ funlang map.l3
+$ fn map.l3
 [1; 4; 9; 16; 25]
 ```
 
@@ -66,7 +66,7 @@ let rec filter pred = fun xs ->
 
 let result = filter (fun x -> x % 2 = 0) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 
-$ funlang filter.l3
+$ fn filter.l3
 [2; 4; 6; 8; 10]
 ```
 
@@ -86,7 +86,7 @@ let rec fold f = fun acc -> fun xs ->
 
 let result = fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
 
-$ funlang fold.l3
+$ fn fold.l3
 55
 ```
 
@@ -107,7 +107,7 @@ let rec sieve xs =
 
 let result = sieve [2..50]
 
-$ funlang sieve_prelude.l3
+$ fn sieve_prelude.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -126,7 +126,7 @@ let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
 
 let result = fact 10
 
-$ funlang factorial.l3
+$ fn factorial.l3
 3628800
 ```
 
@@ -147,7 +147,7 @@ let rec map f = fun xs ->
 
 let result = map fib [0..15]
 
-$ funlang fibonacci.l3
+$ fn fibonacci.l3
 [0; 1; 1; 2; 3; 5; 8; 13; 21; 34; 55; 89; 144; 233; 377; 610]
 ```
 
@@ -168,7 +168,7 @@ let lcm a = fun b ->
 
 let result = (gcd 48 36, lcm 12 18)
 
-$ funlang gcd_lcm.l3
+$ fn gcd_lcm.l3
 (12, 36)
 ```
 
@@ -194,7 +194,7 @@ let rec filter pred = fun xs ->
 let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
 let result = coprimes 12
 
-$ funlang coprimes.l3
+$ fn coprimes.l3
 [1; 5; 7; 11]
 ```
 
@@ -217,7 +217,7 @@ let isPrime n = if n < 2 then false else checkPrime n 2
 
 let result = filter (fun n -> isPrime n) [2..50]
 
-$ funlang is_prime.l3
+$ fn is_prime.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -236,7 +236,7 @@ let rec power base = fun exp ->
 
 let result = power 2 10
 
-$ funlang power.l3
+$ fn power.l3
 1024
 ```
 
@@ -265,7 +265,7 @@ let rec sort xs =
 
 let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang insertion_sort.l3
+$ fn insertion_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -299,7 +299,7 @@ let rec qsort xs =
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang quicksort.l3
+$ fn quicksort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -320,7 +320,7 @@ let rec qsort xs =
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
-$ funlang qsort_prelude.l3
+$ fn qsort_prelude.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -362,7 +362,7 @@ let rec msort xs =
 
 let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang merge_sort.l3
+$ fn merge_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -404,7 +404,7 @@ let rec inorder t =
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
-$ funlang tree_sort.l3
+$ fn tree_sort.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -441,7 +441,7 @@ let three = Succ (Succ (Succ Zero))
 let four = Succ (Succ (Succ (Succ Zero)))
 let result = toInt (mul three four)
 
-$ funlang peano.l3
+$ fn peano.l3
 12
 ```
 
@@ -474,7 +474,7 @@ let rec sieve xs =
 
 let result = sieve [2..50]
 
-$ funlang sieve.l3
+$ fn sieve.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -503,7 +503,7 @@ let rec rev acc = fun xs ->
 let seq = rev [] (collatz 27 [])
 let result = length seq
 
-$ funlang collatz.l3
+$ fn collatz.l3
 112
 ```
 
@@ -533,7 +533,7 @@ let fizzbuzz n =
 
 let result = map fizzbuzz [1..20]
 
-$ funlang fizzbuzz.l3
+$ fn fizzbuzz.l3
 ["1"; "2"; "Fizz"; "4"; "Buzz"; "Fizz"; "7"; "8"; "Fizz"; "Buzz"; "11"; "Fizz"; "13"; "14"; "FizzBuzz"; "16"; "17"; "Fizz"; "19"; "Buzz"]
 ```
 
@@ -564,7 +564,7 @@ let r1 = stateA [1; 0; 1; 0]
 let r2 = stateA [1; 0; 0]
 let result = (r1, r2)
 
-$ funlang state_machine.l3
+$ fn state_machine.l3
 (ended in B, ended in B)
 ```
 

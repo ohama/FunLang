@@ -7,10 +7,10 @@
 문자열 리터럴은 큰따옴표와 표준 이스케이프 시퀀스를 사용합니다:
 
 ```
-funlang> "hello world"
+fn> "hello world"
 "hello world"
 
-funlang> "tab\there"
+fn> "tab\there"
 "tab	here"
 ```
 
@@ -21,7 +21,7 @@ funlang> "tab\there"
 `+` 연산자로 문자열을 연결합니다:
 
 ```
-funlang> "hello" + " " + "world"
+fn> "hello" + " " + "world"
 "hello world"
 ```
 
@@ -38,10 +38,10 @@ FunLang는 자주 쓰이는 문자열 연산을 Prelude의 `String` 모듈과 `^
 문자 수를 반환합니다:
 
 ```
-funlang> String.length "hello"
+fn> String.length "hello"
 5
 
-funlang> String.length ""
+fn> String.length ""
 0
 ```
 
@@ -52,7 +52,7 @@ funlang> String.length ""
 `^^` 연산자로 두 문자열을 연결합니다 (Core 모듈에서 제공):
 
 ```
-funlang> "hello" ^^ " world"
+fn> "hello" ^^ " world"
 "hello world"
 ```
 
@@ -63,7 +63,7 @@ $ cat prefix.l3
 let add_prefix = fun s -> "prefix:" ^^ s
 let result = add_prefix "value"
 
-$ funlang prefix.l3
+$ fn prefix.l3
 "prefix:value"
 ```
 
@@ -74,7 +74,7 @@ $ funlang prefix.l3
 시작 인덱스와 길이로 부분 문자열을 추출합니다:
 
 ```
-funlang> String.substring "hello" 1 3
+fn> String.substring "hello" 1 3
 "ell"
 ```
 
@@ -88,10 +88,10 @@ Python의 슬라이싱 `s[1:4]`와 비슷하지만, 끝 인덱스가 아니라 �
 문자열이 부분 문자열을 포함하는지 확인합니다:
 
 ```
-funlang> String.contains "hello world" "world"
+fn> String.contains "hello world" "world"
 true
 
-funlang> String.contains "hello" "xyz"
+fn> String.contains "hello" "xyz"
 false
 ```
 
@@ -102,26 +102,26 @@ false
 모든 타입의 값을 문자열 표현으로 변환합니다:
 
 ```
-funlang> to_string 42
+fn> to_string 42
 "42"
 
-funlang> to_string true
+fn> to_string true
 "true"
 
-funlang> to_string "already a string"
+fn> to_string "already a string"
 "already a string"
 ```
 
 ADT, 리스트, 튜플, 레코드 등 모든 복합 타입도 지원합니다:
 
 ```
-funlang> to_string (Some 42)
+fn> to_string (Some 42)
 "Some 42"
 
-funlang> to_string [1; 2; 3]
+fn> to_string [1; 2; 3]
 "[1; 2; 3]"
 
-funlang> to_string (1, true)
+fn> to_string (1, true)
 "(1, true)"
 ```
 
@@ -137,7 +137,7 @@ funlang> to_string (1, true)
 문자열을 정수로 파싱합니다:
 
 ```
-funlang> string_to_int "123"
+fn> string_to_int "123"
 123
 ```
 
@@ -152,7 +152,7 @@ FunLang는 네 가지 출력 함수를 제공합니다. 각각 줄바꿈과 형�
 줄바꿈 없이 문자열을 출력하고, unit을 반환합니다:
 
 ```
-funlang> print "hello"
+fn> print "hello"
 hello()
 ```
 
@@ -163,7 +163,7 @@ hello()
 줄바꿈을 포함하여 문자열을 출력하고, unit을 반환합니다:
 
 ```
-funlang> println "hello"
+fn> println "hello"
 hello
 ()
 ```
@@ -188,7 +188,7 @@ $ cat printf_demo.l3
 let _ = printf "%s is %d years old\n" "Alice" 30
 let result = 0
 
-$ funlang printf_demo.l3
+$ fn printf_demo.l3
 Alice is 30 years old
 0
 ```
@@ -201,7 +201,7 @@ C의 `printf`나 Python의 `%` 포맷팅에 익숙하다면 자연스럽게 느�
 $ cat printf_multi.l3
 let _ = printf "name=%s, active=%b\n" "Bob" true
 
-$ funlang printf_multi.l3
+$ fn printf_multi.l3
 name=Bob, active=true
 0
 ```
@@ -217,7 +217,7 @@ $ cat printfn_demo.l3
 let _ = printfn "name=%s, age=%d" "Alice" 30
 let result = 0
 
-$ funlang printfn_demo.l3
+$ fn printfn_demo.l3
 name=Alice, age=30
 0
 ```
@@ -229,10 +229,10 @@ name=Alice, age=30
 형식화된 문자열을 **반환**합니다 (출력하지 않음):
 
 ```
-funlang> sprintf "%d + %d = %d" 1 2 3
+fn> sprintf "%d + %d = %d" 1 2 3
 "1 + 2 = 3"
 
-funlang> sprintf "name=%s" "Alice"
+fn> sprintf "name=%s" "Alice"
 "name=Alice"
 ```
 
@@ -250,7 +250,7 @@ let new_ = sprintf "result=%d" 42
 
 let result = (old, new_)
 
-$ funlang sprintf_vs.l3
+$ fn sprintf_vs.l3
 ("result=42", "result=42")
 ```
 
@@ -269,7 +269,7 @@ let t = "abcdef"
 let _ = println (t.[0..2])
 let _ = println (t.[3..5])
 
-$ funlang str_slice.l3
+$ fn str_slice.l3
 ell
 h
 abc
@@ -285,7 +285,7 @@ let s = "hello"
 let _ = println (s.[2..])
 let _ = println ("hello world".[6..])
 
-$ funlang str_slice_open.l3
+$ fn str_slice_open.l3
 llo
 world
 ()
@@ -305,7 +305,7 @@ let _ = println (to_string (String.startsWith "hello" "he"))
 let _ = println (to_string (String.startsWith "hello" "wo"))
 let _ = println (String.trim "  spaces  ")
 
-$ funlang str_module.l3
+$ fn str_module.l3
 true
 false
 true
@@ -336,7 +336,7 @@ let _ = StringBuilder.add sb " "
 let _ = StringBuilder.add sb "world"
 let _ = println (StringBuilder.toString sb)
 
-$ funlang sb_basic.l3
+$ fn sb_basic.l3
 hello world
 ()
 ```
@@ -351,7 +351,7 @@ let _ = StringBuilder.add sb ' '
 let _ = StringBuilder.add sb '!'
 let _ = println (StringBuilder.toString sb)
 
-$ funlang sb_char.l3
+$ fn sb_char.l3
 hi !
 ()
 ```
@@ -375,7 +375,7 @@ let _ = println "second"
 let _ = println "third"
 let result = "done"
 
-$ funlang sequence.l3
+$ fn sequence.l3
 first
 second
 third
@@ -392,7 +392,7 @@ third
 문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:
 
 ```
-funlang> "hello" |> String.length
+fn> "hello" |> String.length
 5
 ```
 
@@ -402,7 +402,7 @@ funlang> "hello" |> String.length
 $ cat string_pipe.l3
 let result = 42 |> to_string |> fun s -> "answer: " ^^ s
 
-$ funlang string_pipe.l3
+$ fn string_pipe.l3
 "answer: 42"
 ```
 
@@ -420,7 +420,7 @@ let _ = println (format_line "width" 800)
 let _ = println (format_line "height" 600)
 let result = "report complete"
 
-$ funlang report.l3
+$ fn report.l3
 width: 800
 height: 600
 "report complete"

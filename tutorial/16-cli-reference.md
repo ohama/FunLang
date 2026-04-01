@@ -7,7 +7,7 @@
 `--expr`로 단일 표현식을 평가합니다:
 
 ```
-$ funlang --expr '1 + 2'
+$ fn --expr '1 + 2'
 3
 ```
 
@@ -16,32 +16,32 @@ $ funlang --expr '1 + 2'
 다양한 결과 타입:
 
 ```
-$ funlang --expr '42'
+$ fn --expr '42'
 42
 
-$ funlang --expr '"hello"'
+$ fn --expr '"hello"'
 "hello"
 
-$ funlang --expr 'true'
+$ fn --expr 'true'
 true
 
-$ funlang --expr '[1; 2; 3]'
+$ fn --expr '[1; 2; 3]'
 [1; 2; 3]
 
-$ funlang --expr '(1, "hello", true)'
+$ fn --expr '(1, "hello", true)'
 (1, "hello", true)
 
-$ funlang --expr '()'
+$ fn --expr '()'
 ()
 
-$ funlang --expr 'fun x -> x + 1'
+$ fn --expr 'fun x -> x + 1'
 <function>
 ```
 
 표현식 모드에서는 `let ... in` 구문으로 로컬 바인딩을 사용합니다:
 
 ```
-$ funlang --expr 'let x = 5 in let y = 10 in x + y'
+$ fn --expr 'let x = 5 in let y = 10 in x + y'
 15
 ```
 
@@ -56,7 +56,7 @@ $ cat hello.l3
 let greeting = "hello"
 let result = greeting + " world"
 
-$ funlang hello.l3
+$ fn hello.l3
 "hello world"
 ```
 
@@ -69,7 +69,7 @@ let _ = println "starting..."
 let name = "world"
 let result = "hello " + name
 
-$ funlang greet.l3
+$ fn greet.l3
 starting...
 "hello world"
 ```
@@ -84,13 +84,13 @@ starting...
 `--emit-ast`로 파싱된 추상 구문 트리를 확인합니다:
 
 ```
-$ funlang --emit-ast --expr '1 + 2'
+$ fn --emit-ast --expr '1 + 2'
 Add (Number 1, Number 2)
 
-$ funlang --emit-ast --expr 'fun x -> x + 1'
+$ fn --emit-ast --expr 'fun x -> x + 1'
 Lambda ("x", Add (Var "x", Number 1))
 
-$ funlang --emit-ast --expr 'let x = 5 in x + 1'
+$ fn --emit-ast --expr 'let x = 5 in x + 1'
 Let ("x", Number 5, Add (Var "x", Number 1))
 ```
 
@@ -101,7 +101,7 @@ $ cat ast_demo.l3
 let x = 42
 let add a b = a + b
 
-$ funlang --emit-ast ast_demo.l3
+$ fn --emit-ast ast_demo.l3
 LetDecl ("x", Number 42)
 LetDecl ("add", Lambda ("a", Lambda ("b", Add (Var "a", Var "b"))))
 ```
@@ -113,13 +113,13 @@ LetDecl ("add", Lambda ("a", Lambda ("b", Add (Var "a", Var "b"))))
 `--emit-type`으로 추론된 타입을 확인합니다:
 
 ```
-$ funlang --emit-type --expr '1 + 2'
+$ fn --emit-type --expr '1 + 2'
 int
 
-$ funlang --emit-type --expr 'fun x -> x + 1'
+$ fn --emit-type --expr 'fun x -> x + 1'
 int -> int
 
-$ funlang --emit-type --expr '"hello"'
+$ fn --emit-type --expr '"hello"'
 string
 ```
 
@@ -132,7 +132,7 @@ let x = 42
 let greet name = "hello " + name
 let result = greet "world"
 
-$ funlang --emit-type types_demo.l3
+$ fn --emit-type types_demo.l3
 greet : string -> string
 result : string
 x : int
@@ -141,10 +141,10 @@ x : int
 다형 타입은 타입 변수를 표시합니다:
 
 ```
-$ funlang --emit-type --expr 'fun x -> x'
+$ fn --emit-type --expr 'fun x -> x'
 'a -> 'a
 
-$ funlang --emit-type --expr 'fun f -> fun x -> f x'
+$ fn --emit-type --expr 'fun f -> fun x -> f x'
 ('a -> 'b) -> 'a -> 'b
 ```
 
@@ -153,7 +153,7 @@ $ funlang --emit-type --expr 'fun f -> fun x -> f x'
 `--emit-tokens`로 렉서의 원시 토큰을 확인합니다 (IndentFilter 적용 전):
 
 ```
-$ funlang --emit-tokens --expr '1 + 2'
+$ fn --emit-tokens --expr '1 + 2'
 NUMBER(1) PLUS NUMBER(2) EOF
 ```
 
@@ -165,7 +165,7 @@ let result =
     if true then 1
     else 2
 
-$ funlang --emit-tokens tokens_demo.l3
+$ fn --emit-tokens tokens_demo.l3
 LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBER(2) NEWLINE(0) EOF
 ```
 
@@ -180,7 +180,7 @@ module M =
     let y = 2
 let result = M.x + M.y
 
-$ funlang --emit-filtered-tokens filtered_demo.l3
+$ fn --emit-filtered-tokens filtered_demo.l3
 MODULE IDENT(M) EQUALS INDENT LET IDENT(x) EQUALS NUMBER(1) LET IDENT(y) EQUALS NUMBER(2) DEDENT LET IDENT(result) EQUALS IDENT(M) DOT IDENT(x) PLUS IDENT(M) DOT IDENT(y) EOF
 ```
 
@@ -195,7 +195,7 @@ $ cat good.l3
 let x = 1 + 2
 let y = x * 3
 
-$ funlang --check good.l3
+$ fn --check good.l3
 OK (0 warnings)
 ```
 
@@ -205,7 +205,7 @@ OK (0 warnings)
 $ cat bad.l3
 let x = 1 + "hello"
 
-$ funlang --check bad.l3
+$ fn --check bad.l3
 error[E0301]: Type mismatch: expected int but got string
  --> bad.l3:1:6-18
    = hint: Check that all branches of your expression return the same type
@@ -218,7 +218,7 @@ CI/CD 파이프라인이나 에디터 통합에서 코드를 실행하지 않고
 `--deps`는 파일의 임포트 의존성 트리를 출력합니다:
 
 ```
-$ funlang --deps main.l3
+$ fn --deps main.l3
 main.l3
   lib/math.fun
     lib/helpers.fun
@@ -233,7 +233,7 @@ main.l3
 `--prelude`로 Prelude 디렉토리 경로를 지정합니다:
 
 ```
-$ funlang --prelude /path/to/my/Prelude myfile.l3
+$ fn --prelude /path/to/my/Prelude myfile.l3
 ```
 
 Prelude 경로 우선순위: `--prelude` > `LANGTHREE_PRELUDE` 환경 변수 > `funproj.toml` 설정 > 자동 탐색.
@@ -243,10 +243,10 @@ Prelude 경로 우선순위: `--prelude` > `LANGTHREE_PRELUDE` 환경 변수 > `
 `funproj.toml` 파일이 있는 디렉토리에서 `build`와 `test` 서브커맨드를 사용할 수 있습니다:
 
 ```
-$ funlang build          # 모든 [[executable]] 타겟 타입 체크
-$ funlang build myapp    # 특정 타겟만 타입 체크
-$ funlang test           # 모든 [[test]] 타겟 실행
-$ funlang test mytest    # 특정 테스트만 실행
+$ fn build          # 모든 [[executable]] 타겟 타입 체크
+$ fn build myapp    # 특정 타겟만 타입 체크
+$ fn test           # 모든 [[test]] 타겟 실행
+$ fn test mytest    # 특정 테스트만 실행
 ```
 
 `funproj.toml` 형식:
@@ -270,19 +270,19 @@ main = "tests/test.l3"
 인자 없이 `langthree`를 실행하여 대화형 세션을 시작합니다:
 
 ```
-$ funlang
+$ fn
 FunLang REPL v14.0
 Type :help for commands, #quit or Ctrl+D to exit.
 
-funlang> 1 + 2
+fn> 1 + 2
 - : int = 3
-funlang> let x = 42
+fn> let x = 42
 val x : int = 42
-funlang> let y = x * 2
+fn> let y = x * 2
 val y : int = 84
-funlang> x + y
+fn> x + y
 - : int = 126
-funlang> #quit
+fn> #quit
 ```
 
 ### 영속적 바인딩
@@ -290,11 +290,11 @@ funlang> #quit
 REPL에서 `let` 바인딩은 다음 줄에서도 유지됩니다. 타입 선언, 모듈, 타입 클래스 인스턴스도 영속적입니다:
 
 ```
-funlang> type Color = | Red | Green | Blue
+fn> type Color = | Red | Green | Blue
 type defined
-funlang> deriving Show Color
+fn> deriving Show Color
 deriving applied
-funlang> show Green
+fn> show Green
 - : string = "Green"
 ```
 
@@ -308,9 +308,9 @@ funlang> show Green
 | `#quit` / `#exit` | REPL 종료 (Ctrl+D도 가능) |
 
 ```
-funlang> :type fun x y -> x + y
+fn> :type fun x y -> x + y
 int -> int -> int
-funlang> :type map
+fn> :type map
 ('a -> 'b) -> 'a list -> 'b list
 ```
 
@@ -341,10 +341,10 @@ funlang> :type map
 진단 플래그는 `--expr` 또는 파일 이름과 함께 사용합니다:
 
 ```
-$ funlang --emit-type --expr '1 + 2'
+$ fn --emit-type --expr '1 + 2'
 int
 
-$ funlang --emit-type types_demo.l3
+$ fn --emit-type types_demo.l3
 greet : string -> string
 result : string
 x : int
@@ -359,7 +359,7 @@ $ cat type_error.l3
 let x = 1
 let y = x + "hello"
 
-$ funlang type_error.l3
+$ fn type_error.l3
 error[E0301]: Type mismatch: expected int but got string
  --> type_error.l3:2:6-19
     |
@@ -371,7 +371,7 @@ error[E0301]: Type mismatch: expected int but got string
 표현식 모드에서는 소스 파일이 없으므로 위치만 표시됩니다:
 
 ```
-$ funlang --expr '"hello" + 1'
+$ fn --expr '"hello" + 1'
 error[E0301]: Type mismatch: expected string but got int
  --> <expr>:1:6-11
    = hint: Check that all branches of your expression return the same type
@@ -386,7 +386,7 @@ $ cat typo.l3
 let x = 1
 let result = prnt (to_string x)
 
-$ funlang typo.l3
+$ fn typo.l3
 error[E0303]: Unbound variable: prnt
  --> typo.l3:2:11-17
     |
@@ -405,7 +405,7 @@ error[E0303]: Unbound variable: prnt
 $ cat parse_err.l3
 let f x = = y
 
-$ funlang parse_err.l3
+$ fn parse_err.l3
 Error: parse error: unexpected EQUALS at parse_err.l3:1:8
     |
   1 | let f x = = y
@@ -415,7 +415,7 @@ Error: parse error: unexpected EQUALS at parse_err.l3:1:8
 표현식 모드의 파싱 오류는 위치 정보 없이 표시됩니다:
 
 ```
-$ funlang --expr '1 +'
+$ fn --expr '1 +'
 Error: parse error
 ```
 
@@ -439,7 +439,7 @@ let result =
     | Red -> 1
     | Green -> 2
 
-$ funlang incomplete.l3
+$ fn incomplete.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --> incomplete.l3:6:4-8:16
     |
@@ -466,7 +466,7 @@ let result =
     | Blue -> 3
     | Red -> 4
 
-$ funlang redundant.l3
+$ fn redundant.l3
 Warning: warning[W0002]: Redundant pattern in clause 4. This case will never be reached.
  --> redundant.l3:6:4-11:10
     |
@@ -489,7 +489,7 @@ let result =
     with
     | MyError msg -> msg
 
-$ funlang handler.l3
+$ fn handler.l3
 Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
  --> :0:0-1:0
    = hint: Add a catch-all handler or handle all possible exceptions

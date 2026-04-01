@@ -9,7 +9,7 @@
 람다 구문은 `fun`을 사용합니다:
 
 ```
-funlang> (fun x -> x + 1) 10
+fn> (fun x -> x + 1) 10
 11
 ```
 
@@ -18,7 +18,7 @@ funlang> (fun x -> x + 1) 10
 타입 어노테이션을 포함하는 경우:
 
 ```
-funlang> (fun (x: int) -> x + 1) 10
+fn> (fun (x: int) -> x + 1) 10
 11
 ```
 
@@ -27,10 +27,10 @@ FunLang는 타입을 자동으로 추론하기 때문에 보통은 타입 어노
 튜플 파라미터를 직접 구조 분해할 수 있습니다:
 
 ```
-funlang> (fun (x, y) -> x + y) (1, 2)
+fn> (fun (x, y) -> x + y) (1, 2)
 3
 
-funlang> (fun (a, b, c) -> a + b + c) (1, 2, 3)
+fn> (fun (a, b, c) -> a + b + c) (1, 2, 3)
 6
 ```
 
@@ -43,7 +43,7 @@ funlang> (fun (a, b, c) -> a + b + c) (1, 2, 3)
 REPL에서는 `let ... in`으로 값을 바인딩합니다:
 
 ```
-funlang> let x = 5 in x + 1
+fn> let x = 5 in x + 1
 6
 ```
 
@@ -52,7 +52,7 @@ funlang> let x = 5 in x + 1
 바인딩을 연쇄적으로 사용할 수 있습니다:
 
 ```
-funlang> let x = 5 in let y = x + 1 in y * 2
+fn> let x = 5 in let y = x + 1 in y * 2
 12
 ```
 
@@ -71,7 +71,7 @@ let a = 10
 let b = 20
 let result = a + b
 
-$ funlang add.l3
+$ fn add.l3
 30
 ```
 
@@ -89,7 +89,7 @@ $ cat multi.l3
 let add x y = x + y
 let result = add 3 4
 
-$ funlang multi.l3
+$ fn multi.l3
 7
 ```
 
@@ -100,7 +100,7 @@ $ cat multi2.l3
 let add = fun x -> fun y -> x + y
 let result = add 3 4
 
-$ funlang multi2.l3
+$ fn multi2.l3
 7
 ```
 
@@ -115,7 +115,7 @@ $ funlang multi2.l3
 재귀에는 `let rec`를 사용합니다. 표현식 레벨(`in`과 함께)과 모듈 레벨(파일 최상위) 모두에서 사용할 수 있습니다.
 
 ```
-funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
+fn> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
 120
 ```
 
@@ -134,7 +134,7 @@ let rec len xs =
 let result = len [1; 2; 3]
 let _ = println (to_string result)
 
-$ funlang len.l3
+$ fn len.l3
 3
 ```
 
@@ -148,7 +148,7 @@ let result =
     let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
     fact 10
 
-$ funlang factorial.l3
+$ fn factorial.l3
 3628800
 ```
 
@@ -163,7 +163,7 @@ $ cat fact_module.l3
 let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
 let result = fact 10
 
-$ funlang fact_module.l3
+$ fn fact_module.l3
 3628800
 ```
 
@@ -184,7 +184,7 @@ and odd n = if n = 0 then false else even (n - 1)
 
 let result = (even 10, odd 7)
 
-$ funlang even_odd.l3
+$ fn even_odd.l3
 (true, true)
 ```
 
@@ -205,7 +205,7 @@ let r1 = isEven 100
 let r2 = isOdd 99
 let result = (r1, r2)
 
-$ funlang mutrec_multi.l3
+$ fn mutrec_multi.l3
 (true, true)
 ```
 
@@ -223,7 +223,7 @@ $ cat tco_loop.l3
 let rec loop n = if n = 0 then 0 else loop (n - 1)
 let result = loop 1000000
 
-$ funlang tco_loop.l3
+$ fn tco_loop.l3
 0
 ```
 
@@ -235,7 +235,7 @@ $ funlang tco_loop.l3
 
 ```
 -- 꼬리 재귀가 아닌 버전 (n * fact(n-1)에서 곱셈이 남음):
-funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 10
+fn> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 10
 3628800
 
 -- 꼬리 재귀 버전 (acc에 결과 누적):
@@ -243,7 +243,7 @@ $ cat tco_fact.l3
 let rec factTail n = fun acc -> if n <= 1 then acc else factTail (n - 1) (acc * n)
 let result = factTail 10 1
 
-$ funlang tco_fact.l3
+$ fn tco_fact.l3
 3628800
 ```
 
@@ -269,7 +269,7 @@ $ cat hof.l3
 let apply f x = f x
 let result = apply (fun x -> x + 1) 10
 
-$ funlang hof.l3
+$ fn hof.l3
 11
 ```
 
@@ -283,7 +283,7 @@ let make_adder n = fun x -> x + n
 let add10 = make_adder 10
 let result = add10 5
 
-$ funlang hof2.l3
+$ fn hof2.l3
 15
 ```
 
@@ -301,7 +301,7 @@ let x = 10
 let add_x y = x + y
 let result = add_x 5
 
-$ funlang closure.l3
+$ fn closure.l3
 15
 ```
 
@@ -323,7 +323,7 @@ let add x y = x + y
 let add5 = add 5
 let result = add5 3
 
-$ funlang curry.l3
+$ fn curry.l3
 8
 ```
 
@@ -346,7 +346,7 @@ let g = f 1
 let h = g 2
 let result = h 3
 
-$ funlang curry3.l3
+$ fn curry3.l3
 6
 ```
 
@@ -363,7 +363,7 @@ let double = mul 2
 let triple = mul 3
 let result = (double 5, triple 5)
 
-$ funlang specialization.l3
+$ fn specialization.l3
 (10, 15)
 ```
 
@@ -378,7 +378,7 @@ let hello = greet "Hello"
 let hi = greet "Hi"
 let result = (hello "Alice", hi "Bob")
 
-$ funlang config_pattern.l3
+$ fn config_pattern.l3
 ("Hello Alice", "Hi Bob")
 ```
 
@@ -402,7 +402,7 @@ let r1 = map (add 10) [1; 2; 3]
 let r2 = filter (gt 3) [1; 2; 3; 4; 5; 6]
 let result = (r1, r2)
 
-$ funlang partial_hof.l3
+$ fn partial_hof.l3
 ([11; 12; 13], [4; 5; 6])
 ```
 
@@ -419,7 +419,7 @@ let r1 = sum [1; 2; 3; 4; 5]
 let r2 = product [1; 2; 3; 4; 5]
 let result = (r1, r2)
 
-$ funlang partial_fold.l3
+$ fn partial_fold.l3
 (15, 120)
 ```
 
@@ -440,7 +440,7 @@ let result =
     |> map (mul 10)
     |> fold (fun acc -> fun x -> acc + x) 0
 
-$ funlang partial_pipeline.l3
+$ fn partial_pipeline.l3
 490
 ```
 
@@ -469,7 +469,7 @@ let r2 = map (fun s -> "item: " ^^ s) ["apple"; "banana"; "cherry"]
 
 let result = (r1, r2)
 
-$ funlang partial_builtin.l3
+$ fn partial_builtin.l3
 ("Hello World", ["item: apple"; "item: banana"; "item: cherry"])
 ```
 
@@ -492,7 +492,7 @@ let r1 = map pow2 [0; 1; 2; 3; 4; 5]
 let r2 = map pow3 [0; 1; 2; 3]
 let result = (r1, r2)
 
-$ funlang partial_rec.l3
+$ fn partial_rec.l3
 ([1; 2; 4; 8; 16; 32], [1; 3; 9; 27])
 ```
 
@@ -512,7 +512,7 @@ let transforms = [add 1; add 10; mul 2; mul 100]
 let apply_all fs = fun x -> map (fun f -> f x) fs
 let result = apply_all transforms 5
 
-$ funlang partial_list.l3
+$ fn partial_list.l3
 [6; 15; 10; 500]
 ```
 
@@ -541,7 +541,7 @@ Prelude의 `map`, `filter`, `fold`가 모두 함수를 먼저 받고 리스트�
 파이프 연산자(pipe operator) `|>`는 값을 마지막 인자로 전달합니다:
 
 ```
-funlang> 5 |> (fun x -> x + 1)
+fn> 5 |> (fun x -> x + 1)
 6
 ```
 
@@ -550,7 +550,7 @@ funlang> 5 |> (fun x -> x + 1)
 합성 연산자(composition operators) `>>`(왼쪽에서 오른쪽)와 `<<`(오른쪽에서 왼쪽):
 
 ```
-funlang> let f = (fun x -> x + 1) >> (fun x -> x * 2) in f 3
+fn> let f = (fun x -> x + 1) >> (fun x -> x * 2) in f 3
 8
 ```
 

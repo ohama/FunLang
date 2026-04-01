@@ -22,8 +22,8 @@ main = "tests/basic.fun"
 ```
 
 ```bash
-funlang build          # 모든 executable 타입 체크
-funlang test           # 모든 test 실행
+fn build          # 모든 executable 타입 체크
+fn test           # 모든 test 실행
 ```
 
 ---
@@ -69,7 +69,7 @@ main = "src/tool.fun"
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| `name` | string | 필수 | 타겟 이름 (`funlang build <name>`으로 지정) |
+| `name` | string | 필수 | 타겟 이름 (`fn build <name>`으로 지정) |
 | `main` | string | 필수 | 엔트리 포인트 파일 (`funproj.toml` 기준 상대 경로) |
 
 ### [[test]] Section
@@ -88,18 +88,18 @@ main = "tests/integration.fun"
 
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
-| `name` | string | 필수 | 테스트 이름 (`funlang test <name>`으로 지정) |
+| `name` | string | 필수 | 테스트 이름 (`fn test <name>`으로 지정) |
 | `main` | string | 필수 | 테스트 파일 (`funproj.toml` 기준 상대 경로) |
 
 ---
 
 ## CLI Commands
 
-### funlang build
+### fn build
 
 ```bash
-funlang build              # 모든 [[executable]] 타겟 타입 체크
-funlang build myapp        # 'myapp' 타겟만 타입 체크
+fn build              # 모든 [[executable]] 타겟 타입 체크
+fn build myapp        # 'myapp' 타겟만 타입 체크
 ```
 
 **동작:**
@@ -111,7 +111,7 @@ funlang build myapp        # 'myapp' 타겟만 타입 체크
 **출력 예시:**
 
 ```
-$ funlang build
+$ fn build
 OK: myapp (0 warnings)
 OK: tool (0 warnings)
 ```
@@ -119,7 +119,7 @@ OK: tool (0 warnings)
 타입 에러가 있는 경우:
 
 ```
-$ funlang build
+$ fn build
 Error in myapp: error[E0301]: Type mismatch: expected int but got string
 ```
 
@@ -127,11 +127,11 @@ Error in myapp: error[E0301]: Type mismatch: expected int but got string
 - `0`: 모든 타겟 성공
 - `1`: 에러 발생 (`funproj.toml` 없음, 타겟 없음, 타입 에러)
 
-### funlang test
+### fn test
 
 ```bash
-funlang test               # 모든 [[test]] 타겟 실행
-funlang test unit          # 'unit' 테스트만 실행
+fn test               # 모든 [[test]] 타겟 실행
+fn test unit          # 'unit' 테스트만 실행
 ```
 
 **동작:**
@@ -248,15 +248,15 @@ let _ = assert_eq "cube 3" 27 (cube 3)
 ```bash
 $ cd calculator
 
-$ funlang build
+$ fn build
 OK: calc (0 warnings)
 
-$ funlang test
+$ fn test
 PASS: square 5
 PASS: cube 3
 OK: test-calc (0 warnings)
 
-$ funlang src/calc.fun
+$ fn src/calc.fun
 result = 33
 ```
 

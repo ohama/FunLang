@@ -14,7 +14,7 @@ type Point = { px: int; py: int }
 let p = { px = 3; py = 4 }
 let result = p.px + p.py
 
-$ funlang point.l3
+$ fn point.l3
 7
 ```
 
@@ -33,7 +33,7 @@ type Person = { name: string; age: int }
 let alice = { name = "Alice"; age = 30 }
 let result = alice.name + " is " + to_string alice.age
 
-$ funlang access.l3
+$ fn access.l3
 "Alice is 30"
 ```
 
@@ -50,7 +50,7 @@ type Outer = { inner: Inner }
 let o = { inner = { val = 42 } }
 let result = o.inner.val
 
-$ funlang nested.l3
+$ fn nested.l3
 42
 ```
 
@@ -67,7 +67,7 @@ let p = { px = 1; py = 2 }
 let moved = { p with px = 10 }
 let result = moved
 
-$ funlang update.l3
+$ fn update.l3
 { px = 10; py = 2 }
 ```
 
@@ -81,7 +81,7 @@ type Vec3 = { vx: int; vy: int; vz: int }
 let v = { vx = 1; vy = 2; vz = 3 }
 let result = { v with vx = 10; vy = 20 }
 
-$ funlang multi_update.l3
+$ fn multi_update.l3
 { vx = 10; vy = 20; vz = 3 }
 ```
 
@@ -101,7 +101,7 @@ let result =
     match p with
     | { px = a; py = b } -> a + b
 
-$ funlang record_match.l3
+$ fn record_match.l3
 7
 ```
 
@@ -120,7 +120,7 @@ let _ = c.count <- c.count + 1
 let _ = c.count <- c.count + 1
 let result = c.count
 
-$ funlang counter.l3
+$ fn counter.l3
 3
 ```
 
@@ -139,7 +139,7 @@ type Pair 'a = { fst: 'a; snd: 'a }
 let p = { fst = 1; snd = 2 }
 let result = p.fst + p.snd
 
-$ funlang pair.l3
+$ fn pair.l3
 3
 ```
 
@@ -158,7 +158,7 @@ let p3 = { px = 1; py = 3 }
 let r1 = if p1 = p2 then "equal" else "not equal"
 let result = if p1 = p3 then "equal" else "not equal"
 
-$ funlang equality.l3
+$ fn equality.l3
 "not equal"
 ```
 
@@ -176,7 +176,7 @@ let _ = acct.balance <- acct.balance + 50
 let _ = acct.balance <- acct.balance - 30
 let result = acct.balance
 
-$ funlang account.l3
+$ fn account.l3
 120
 ```
 
