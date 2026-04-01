@@ -1,0 +1,38 @@
+// Test: multiline expression-level let rec ... and ... in (indented form)
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+// Two mutually recursive functions (multiline)
+let result1 =
+    let rec even n = if n = 0 then true else odd (n - 1)
+    and odd n = if n = 0 then false else even (n - 1)
+    in even 10
+let _ = println (to_string result1)
+
+// Implicit in (no explicit 'in' keyword)
+let result2 =
+    let rec even n = if n = 0 then true else odd (n - 1)
+    and odd n = if n = 0 then false else even (n - 1)
+    odd 10
+let _ = println (to_string result2)
+
+// Three mutually recursive functions (multiline)
+let result3 =
+    let rec a n = if n = 0 then 0 else b (n - 1)
+    and b n = if n = 0 then 1 else c (n - 1)
+    and c n = if n = 0 then 2 else a (n - 1)
+    in a 7
+let _ = println (to_string result3)
+
+// Nested inside a function body (multiline)
+let test x =
+    let rec even n = if n = 0 then true else odd (n - 1)
+    and odd n = if n = 0 then false else even (n - 1)
+    in even x
+let _ = println (to_string (test 6))
+let _ = println (to_string (test 5))
+// --- Output:
+true
+false
+1
+true
+false

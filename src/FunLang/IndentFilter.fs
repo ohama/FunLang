@@ -104,7 +104,7 @@ let canBeFunction (token: Parser.token) : bool =
 let isContinuationStart (token: Parser.token) : bool =
     match token with
     | Parser.PIPE_RIGHT | Parser.COMPOSE_RIGHT | Parser.COMPOSE_LEFT -> true
-    | Parser.AND | Parser.OR | Parser.CONS -> true
+    | Parser.AND | Parser.OR | Parser.CONS | Parser.AND_KW -> true
     | Parser.INFIXOP0 _ | Parser.INFIXOP1 _ | Parser.INFIXOP2 _
     | Parser.INFIXOP3 _ | Parser.INFIXOP4 _ -> true
     | _ -> false
@@ -287,10 +287,12 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                 // This applies at same level (no INDENT/DEDENT emitted) and when not in
                 // match/try pipe context.
                 let nextIsExplicitIn = match nextToken with | Some Parser.IN -> true | _ -> false
+                let nextIsAndKw = match nextToken with | Some Parser.AND_KW -> true | _ -> false
                 let isAtSameLevel =
                     List.isEmpty emitted &&
                     newState.IndentStack.Length > 1 &&
                     not nextIsExplicitIn &&  // Don't insert implicit IN when explicit IN follows
+                    not nextIsAndKw &&       // Don't insert implicit IN when 'and' continues let rec
                     (match state.PrevToken with
                      | Some Parser.IN -> false
                      | _ -> true) &&
@@ -498,10 +500,12 @@ let filterPositioned (config: IndentConfig) (tokens: PositionedToken list) : Pos
             let newState = { newState_ with LineNum = state.LineNum + 1 }
 
             let nextIsExplicitIn = match nextToken with | Some Parser.IN -> true | _ -> false
+            let nextIsAndKw = match nextToken with | Some Parser.AND_KW -> true | _ -> false
             let isAtSameLevel =
                 List.isEmpty emitted &&
                 newState.IndentStack.Length > 1 &&
                 not nextIsExplicitIn &&
+                not nextIsAndKw &&
                 (match state.PrevToken with
                  | Some Parser.IN -> false
                  | _ -> true) &&
