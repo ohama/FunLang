@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -182,7 +182,7 @@
 <pre><code>$ cat seq_basic.l3
 let _ = println "hello"; println "world"
 
-$ funlang seq_basic.l3
+$ fn seq_basic.l3
 hello
 world
 ()
@@ -191,7 +191,7 @@ world
 <pre><code>$ cat seq_chain.l3
 let result = let mut x = 0 in x &lt;- 1; x &lt;- x + 1; x &lt;- x + 1; x
 
-$ funlang seq_chain.l3
+$ fn seq_chain.l3
 3
 </code></pre>
 <p>함수 본체 안에서도 동일하게 사용할 수 있습니다:</p>
@@ -200,7 +200,7 @@ let f () =
     println "a"; println "b"; println "c"
 let result = f ()
 
-$ funlang seq_block.l3
+$ fn seq_block.l3
 a
 b
 c
@@ -215,7 +215,7 @@ let mut i = 0
 let _ = while i &lt; 3 do i &lt;- i + 1
 let _ = println (to_string i)
 
-$ funlang while_basic.l3
+$ fn while_basic.l3
 3
 ()
 </code></pre>
@@ -228,7 +228,7 @@ let _ =
         sum &lt;- sum + count; count &lt;- count + 1
 let _ = println (to_string sum)
 
-$ funlang while_body.l3
+$ fn while_body.l3
 6
 ()
 </code></pre>
@@ -243,7 +243,7 @@ let _ =
         total &lt;- total + i
 let _ = println (to_string total)
 
-$ funlang for_asc.l3
+$ fn for_asc.l3
 6
 ()
 </code></pre>
@@ -256,7 +256,7 @@ let _ =
         total &lt;- total + i
 let _ = println (to_string total)
 
-$ funlang for_desc.l3
+$ fn for_desc.l3
 6
 ()
 </code></pre>
@@ -268,7 +268,7 @@ let _ =
     for i = 0 to 9 do
         i &lt;- 42
 
-$ funlang for_err.l3
+$ fn for_err.l3
 error[E0320]: Cannot assign to immutable variable 'i'. ...
  --&gt; for_err.l3:3:8-15
     |
@@ -291,7 +291,7 @@ let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 let _ = println (to_string arr.[2])
 
-$ funlang arr_index_read.l3
+$ fn arr_index_read.l3
 10
 20
 30
@@ -305,7 +305,7 @@ let _ = arr.[1] &lt;- 99
 let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 
-$ funlang arr_index_write.l3
+$ fn arr_index_write.l3
 42
 99
 ()
@@ -320,7 +320,7 @@ let _ = hashtable_set ht "y" 200
 let _ = println (to_string ht.["x"])
 let _ = println (to_string ht.["y"])
 
-$ funlang ht_index_read.l3
+$ fn ht_index_read.l3
 100
 200
 ()
@@ -333,7 +333,7 @@ let _ = ht.["score"] &lt;- 95
 let _ = println ht.["name"]
 let _ = println (to_string ht.["score"])
 
-$ funlang ht_index_write.l3
+$ fn ht_index_write.l3
 Alice
 95
 ()
@@ -352,7 +352,7 @@ let _ = matrix.[1] &lt;- row1
 let _ = println (to_string matrix.[0].[0])
 let _ = println (to_string matrix.[1].[1])
 
-$ funlang matrix.l3
+$ fn matrix.l3
 1
 4
 ()
@@ -365,7 +365,7 @@ $ funlang matrix.l3
 let x = 5
 let _ = if x &gt; 0 then println "positive"
 
-$ funlang if_then.l3
+$ fn if_then.l3
 positive
 ()
 </code></pre>
@@ -375,14 +375,14 @@ let mut x = 0
 let _ = if true then x &lt;- 42
 let result = x
 
-$ funlang if_then_mut.l3
+$ fn if_then_mut.l3
 42
 </code></pre>
 <p>암묵적 <code>else ()</code>가 붙으므로, then 브랜치가 unit이 아닌 값을 반환하면 타입 불일치 에러가 발생합니다:</p>
 <pre><code>$ cat if_then_err.l3
 let _ = if true then 42
 
-$ funlang if_then_err.l3
+$ fn if_then_err.l3
 error[E0301]: Type mismatch: expected int but got unit
  --&gt; if_then_err.l3:1:6-23
     |
@@ -405,7 +405,7 @@ let _ =
         if arr.[i] % 2 = 0 then even_count &lt;- even_count + 1
 let result = even_count
 
-$ funlang imperative_example.l3
+$ fn imperative_example.l3
 3
 </code></pre>
 <ul>

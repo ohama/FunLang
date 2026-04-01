@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -183,7 +183,7 @@ let mut x = 5
 let _ = x &lt;- 10
 let result = x
 
-$ funlang mut_basic.l3
+$ fn mut_basic.l3
 10
 </code></pre>
 <p><code>let mut x = 5</code>는 <code>x</code>를 가변으로 선언합니다. <code>x &lt;- 10</code>은 <code>x</code>의 값을 10으로 변경합니다. 대입 연산(<code>&lt;-</code>)은 unit을 반환하므로 <code>let _ =</code>로 받습니다:</p>
@@ -192,7 +192,7 @@ let mut x = 5
 let r = x &lt;- 10
 let result = r
 
-$ funlang mut_unit.l3
+$ fn mut_unit.l3
 ()
 </code></pre>
 <p><code>x &lt;- 10</code>의 반환값이 <code>()</code>(unit)임을 확인할 수 있습니다. 이는 대입이 부수 효과(side effect)임을 명시합니다.</p>
@@ -205,7 +205,7 @@ let _ = counter &lt;- counter + 1
 let _ = counter &lt;- counter + 1
 let result = counter
 
-$ funlang mut_toplevel.l3
+$ fn mut_toplevel.l3
 3
 </code></pre>
 <p>매번 <code>counter &lt;- counter + 1</code>로 현재 값에 1을 더한 결과를 다시 대입합니다.</p>
@@ -217,7 +217,7 @@ let mut greeting = "hello"
 let _ = greeting &lt;- "world"
 let result = greeting
 
-$ funlang mut_string.l3
+$ fn mut_string.l3
 "world"
 </code></pre>
 <p><strong>불리언(bool):</strong></p>
@@ -226,7 +226,7 @@ let mut flag = true
 let _ = flag &lt;- false
 let result = flag
 
-$ funlang mut_bool.l3
+$ fn mut_bool.l3
 false
 </code></pre>
 <p>단, 한 번 선언된 가변 변수의 타입은 바꿀 수 없습니다. <code>let mut x = 5</code> 이후 <code>x &lt;- "hello"</code>를 시도하면 타입 에러가 발생합니다 (에러 케이스 섹션 참조).</p>
@@ -239,7 +239,7 @@ let _ = x &lt;- 10
 let _ = y &lt;- 20
 let result = (x, y)
 
-$ funlang mut_multi.l3
+$ fn mut_multi.l3
 (10, 20)
 </code></pre>
 <p>각 가변 변수는 독립적으로 관리됩니다. <code>x</code>를 바꿔도 <code>y</code>에는 영향이 없습니다.</p>
@@ -254,7 +254,7 @@ let counter () =
     n
 let result = counter ()
 
-$ funlang mut_func.l3
+$ fn mut_func.l3
 3
 </code></pre>
 <p><code>counter</code>를 호출할 때마다 <code>n</code>은 0에서 시작하여 3번 증가한 뒤 최종값 3을 반환합니다.</p>
@@ -268,7 +268,7 @@ let _ = inc ()
 let _ = inc ()
 let result = count
 
-$ funlang mut_closure.l3
+$ fn mut_closure.l3
 3
 </code></pre>
 <p><code>inc</code> 함수는 바깥의 <code>count</code>를 캡처하여 호출될 때마다 값을 1씩 증가시킵니다. 가변 변수에 대한 클로저 캡처는 참조(reference)로 이루어지므로 함수 안에서의 변경이 바깥에도 반영됩니다.</p>
@@ -281,7 +281,7 @@ let _ = add 20
 let _ = add 30
 let result = total
 
-$ funlang mut_closure2.l3
+$ fn mut_closure2.l3
 60
 </code></pre>
 <p>여러 클로저가 하나의 가변 변수를 공유할 수도 있습니다:</p>
@@ -296,7 +296,7 @@ let _ = inc 0
 let _ = dec 0
 let result = get 0
 
-$ funlang mut_shared.l3
+$ fn mut_shared.l3
 2
 </code></pre>
 <p><code>inc</code>, <code>dec</code>, <code>get</code> 세 함수가 동일한 <code>x</code>를 공유합니다. 이 패턴은 간단한 상태 관리에 유용합니다.</p>
@@ -312,7 +312,7 @@ let rec sum_list lst =
 let _ = sum_list [1; 2; 3; 4; 5]
 let result = total
 
-$ funlang mut_recursive.l3
+$ fn mut_recursive.l3
 15
 </code></pre>
 <h2 id="변수-섀도잉"><a class="header" href="#변수-섀도잉">변수 섀도잉</a></h2>
@@ -327,7 +327,7 @@ let result =
     let _ = x &lt;- 20
     (inner, x)
 
-$ funlang mut_shadow.l3
+$ fn mut_shadow.l3
 (200, 20)
 </code></pre>
 <p>안쪽 <code>x</code>는 200으로, 바깥 <code>x</code>는 20으로 각각 독립 변경되었습니다. 이름이 같지만 서로 다른 변수입니다.</p>
@@ -346,7 +346,7 @@ let result =
         | E -&gt; x &lt;- x + 1
     x
 
-$ funlang mut_try.l3
+$ fn mut_try.l3
 43
 </code></pre>
 <p><code>x &lt;- 42</code>로 값이 바뀐 뒤 예외가 발생했지만, <code>with</code> 블록에서 <code>x</code>는 이미 42입니다. <code>x &lt;- x + 1</code>로 43이 됩니다.</p>
@@ -362,7 +362,7 @@ let _ = Counter.inc 0
 let _ = Counter.inc 0
 let result = Counter.get 0
 
-$ funlang mut_module.l3
+$ fn mut_module.l3
 2
 </code></pre>
 <p><code>Counter.value</code>는 모듈 외부에서 직접 접근할 수 있지만, <code>Counter.inc</code>과 <code>Counter.get</code>을 통해 제어된 인터페이스를 제공하는 패턴이 일반적입니다.</p>
@@ -381,7 +381,7 @@ let mut arr = Array.create 2 0
 let _ = arr &lt;- Array.ofList [100; 200]
 let _ = println (to_string (Array.get arr 0))
 
-$ funlang mut_collections.l3
+$ fn mut_collections.l3
 [10; 20]
 (10, 20)
 100
@@ -397,7 +397,7 @@ let _ = x &lt;- 99
 let _ = println (to_string y)
 let _ = println (to_string x)
 
-$ funlang mut_passval.l3
+$ fn mut_passval.l3
 15
 99
 </code></pre>
@@ -409,7 +409,7 @@ let mut x = 5
 let _ = x &lt;- x |&gt; (fun n -&gt; n * 2)
 let result = x
 
-$ funlang mut_pipe.l3
+$ fn mut_pipe.l3
 10
 </code></pre>
 <p><code>x |&gt; (fun n -&gt; n * 2)</code>는 현재 <code>x</code>(5)를 2배로 만들어 10을 반환하고, 이 결과가 <code>x</code>에 대입됩니다.</p>
@@ -420,7 +420,7 @@ let mut x = 0
 let _ = x &lt;- if true then 42 else 0
 let result = x
 
-$ funlang mut_cond.l3
+$ fn mut_cond.l3
 42
 </code></pre>
 <p><code>match</code> 표현식도 동일하게 사용할 수 있습니다:</p>
@@ -434,7 +434,7 @@ let _ = label &lt;-
     | _ -&gt; "other"
 let result = label
 
-$ funlang mut_match.l3
+$ fn mut_match.l3
 "one"
 </code></pre>
 <p><code>match</code>를 <code>&lt;-</code> 오른쪽에 쓸 때는 다음 줄로 내려서 들여쓰기합니다.</p>
@@ -445,7 +445,7 @@ $ funlang mut_match.l3
 let x = 5
 let _ = x &lt;- 10
 
-$ funlang mut_err_immutable.l3
+$ fn mut_err_immutable.l3
 error[E0320]: Cannot assign to immutable variable 'x'. ...
  --&gt; mut_err_immutable.l3:2:6-14
     |
@@ -460,7 +460,7 @@ error[E0320]: Cannot assign to immutable variable 'x'. ...
 let mut x = 5
 let _ = x &lt;- "hello"
 
-$ funlang mut_err_type.l3
+$ fn mut_err_type.l3
 error[E0301]: Type mismatch: expected int but got string
  --&gt; mut_err_type.l3:2:6-20
     |

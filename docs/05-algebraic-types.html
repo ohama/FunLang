@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -190,7 +190,7 @@ let result =
     | Green -&gt; "green"
     | Blue -&gt; "blue"
 
-$ funlang color.l3
+$ fn color.l3
 "green"
 </code></pre>
 <p><code>Red</code>, <code>Green</code>, <code>Blue</code>는 단순히 <code>Color</code> 타입의 값입니다. Python에서 <code>class Color(Enum)</code>으로 만드는 것과 비슷하지만, <code>match</code> 표현식이 함께 쓰일 때 진가가 드러납니다. 컴파일러가 모든 케이스를 다뤘는지 확인해 주기 때문입니다.</p>
@@ -209,7 +209,7 @@ let result =
     | East -&gt; "right"
     | West -&gt; "left"
 
-$ funlang direction.l3
+$ fn direction.l3
 "up"
 </code></pre>
 <p>선행 파이프는 단순히 스타일의 문제입니다 — 두 방식 모두 동일하게 동작합니다. 하지만 케이스가 4개 이상이라면 선행 파이프 방식이 훨씬 읽기 좋습니다. F#이나 OCaml 코드베이스에서도 이 관례를 자주 볼 수 있습니다.</p>
@@ -225,7 +225,7 @@ let area s =
     | Rect (w, h) -&gt; w * h
 let result = area (Rect (3, 4))
 
-$ funlang shape.l3
+$ fn shape.l3
 12
 </code></pre>
 <p><code>Circle</code>은 반지름 하나를 담고, <code>Rect</code>는 너비와 높이 두 개를 담습니다. 서로 다른 케이스가 서로 다른 구조를 가질 수 있다는 것이 ADT의 힘입니다. Python에서 이를 표현하려면 별도의 클래스를 만들고 공통 기반 클래스를 상속받아야 하지만, FunLang에서는 한 줄로 끝납니다.</p>
@@ -242,12 +242,12 @@ let result =
     | Some v -&gt; v
     | None -&gt; 0
 
-$ funlang option.l3
+$ fn option.l3
 42
 </code></pre>
 <p><code>Option</code>은 함수형 프로그래밍에서 가장 중요한 타입 중 하나입니다. “값이 있을 수도 있고 없을 수도 있는” 상황을 null 없이 표현합니다. <code>'a</code>는 타입 변수 — 어떤 타입이든 담을 수 있다는 의미입니다. <code>Option 'a</code>라고 선언하면, 실제로 <code>Some 42</code>를 만들 때 컴파일러가 <code>'a</code>가 <code>int</code>임을 자동으로 추론합니다.</p>
 <p><code>--emit-type</code>으로 추론된 타입을 확인할 수 있습니다:</p>
-<pre><code>$ funlang --emit-type option.l3
+<pre><code>$ fn --emit-type option.l3
 result : int
 x : Option&lt;int&gt;
 </code></pre>
@@ -262,7 +262,7 @@ let result =
     | Left n -&gt; n
     | Right s -&gt; String.length s
 
-$ funlang either.l3
+$ fn either.l3
 42
 </code></pre>
 <p><code>Either</code>는 두 가지 가능성을 표현합니다. Haskell에서는 오류 처리에 자주 쓰이는 패턴으로, <code>Left</code>는 보통 실패를, <code>Right</code>는 성공을 나타냅니다. 여기서는 <code>Left</code>에 <code>int</code>, <code>Right</code>에 <code>string</code>을 담을 수 있는 타입을 한 줄로 정의했습니다.</p>
@@ -281,7 +281,7 @@ let result =
     in
     sum xs
 
-$ funlang intlist.l3
+$ fn intlist.l3
 6
 </code></pre>
 <p><code>Cons (1, Cons (2, Cons (3, Nil)))</code>는 [1; 2; 3] 리스트를 직접 구현한 것입니다. FunLang의 내장 리스트도 사실 이런 식으로 동작합니다. 재귀 타입은 재귀 함수와 자연스럽게 짝을 이룹니다 — 타입의 구조가 함수의 구조를 그대로 반영합니다.</p>
@@ -300,7 +300,7 @@ let result =
     in
     depth t
 
-$ funlang tree.l3
+$ fn tree.l3
 3
 </code></pre>
 <p>이진 트리를 두 줄로 정의하고, 깊이 함수까지 자연스럽게 작성했습니다. 객체지향 언어에서 이와 동등한 코드를 작성하려면 추상 기반 클래스와 두 개의 서브클래스가 필요합니다. ADT는 이런 상황에서 코드를 극적으로 줄여줍니다.</p>
@@ -315,7 +315,7 @@ type Tree =
 and Forest = Empty | Trees of Tree * Forest
 let result = Node (Trees (Leaf 1, Trees (Leaf 2, Empty)))
 
-$ funlang mutual.l3
+$ fn mutual.l3
 Node (Trees ((Leaf 1, Trees ((Leaf 2, Empty)))))
 </code></pre>
 <p><code>Tree</code>는 <code>Forest</code>를 참조하고, <code>Forest</code>는 <code>Tree</code>를 참조합니다. 두 타입을 별도로 선언하면 컴파일러가 먼저 선언된 타입을 아직 모르는 상태에서 후자를 정의해야 하는 문제가 생깁니다. <code>and</code> 키워드는 “이 두 타입을 동시에 정의한다“는 의미로, 이 문제를 깔끔하게 해결합니다. F#과 OCaml에서도 동일한 <code>and</code> 키워드를 사용합니다.</p>
@@ -331,7 +331,7 @@ let result =
     | Red -&gt; 1
     | Green -&gt; 2
 
-$ funlang exhaustive.l3
+$ fn exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --&gt; :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -357,7 +357,7 @@ let result =
     in
     eval e
 
-$ funlang calc.l3
+$ fn calc.l3
 14
 </code></pre>
 <p><code>Plus (Num 2, Mul (Num 3, Num 4))</code>는 <code>2 + (3 * 4)</code>를 트리로 표현한 것입니다. <code>eval</code> 함수는 이 트리를 순회하며 실제 값을 계산합니다. 실제 프로그래밍 언어 인터프리터도 이와 같은 방식으로 동작합니다 — AST(Abstract Syntax Tree)를 ADT로 정의하고, 각 케이스를 패턴 매칭으로 처리합니다. 이 예제에서 ADT가 “왜” 유용한지가 가장 잘 드러납니다.</p>
@@ -370,7 +370,7 @@ type Age = int
 let greet name age = name + " is " + to_string age
 let result = greet "Alice" 30
 
-$ funlang alias_basic.l3
+$ fn alias_basic.l3
 "Alice is 30"
 </code></pre>
 <p><code>Name</code>과 <code>Age</code>는 코드를 읽는 사람에게 “이 문자열은 이름이고, 이 정수는 나이입니다“라는 의도를 전달합니다. 함수 시그니처에서 <code>string -&gt; int -&gt; string</code> 대신 <code>Name -&gt; Age -&gt; string</code>처럼 읽히면 훨씬 명확해집니다.</p>
@@ -389,7 +389,7 @@ let swap p =
 
 let result = swap (1, 2)
 
-$ funlang alias_complex.l3
+$ fn alias_complex.l3
 (2, 1)
 </code></pre>
 <p><code>Transform = int -&gt; int</code>처럼 함수 타입에 별칭을 붙이면 특히 유용합니다. 고차 함수를 많이 사용하는 코드에서 <code>(int -&gt; int) -&gt; (int -&gt; int)</code> 같은 타입보다 <code>Transform -&gt; Transform</code>이 훨씬 읽기 좋습니다.</p>
@@ -405,7 +405,7 @@ $ funlang alias_complex.l3
 type Name = string
 let x = "hello"
 
-$ funlang --emit-type alias_emit.l3
+$ fn --emit-type alias_emit.l3
 x : string
 </code></pre>
 <p><code>Name</code>이 아닌 <code>string</code>으로 표시됩니다. 컴파일러 입장에서 별칭은 완전히 투명하기 때문입니다. 이 점이 Haskell의 <code>newtype</code>과 다른 부분입니다 — <code>newtype</code>은 별도의 타입으로 취급되지만, FunLang의 타입 별칭은 단순히 다른 이름일 뿐입니다.</p>

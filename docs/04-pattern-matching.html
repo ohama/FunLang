@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -180,7 +180,7 @@
 <p>FunLang의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.</p>
 <h2 id="기본-match-구문"><a class="header" href="#기본-match-구문">기본 Match 구문</a></h2>
 <p>Match 표현식은 <code>match</code> 키워드에 맞춰 정렬된 <code>|</code> 파이프를 사용합니다:</p>
-<pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
+<pre><code>fn&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
 "other"
 </code></pre>
 <p>파일 모드에서 여러 줄의 match는 들여쓰기를 사용합니다:</p>
@@ -192,21 +192,21 @@ let classify x =
     | _ -&gt; "other"
 let result = classify 1
 
-$ funlang classify.l3
+$ fn classify.l3
 "one"
 </code></pre>
 <p>파이프는 <code>match</code> 키워드의 열(column)에 맞춰야 하며, 그보다 들여쓰기하면 안 됩니다.</p>
 <h2 id="패턴-종류"><a class="header" href="#패턴-종류">패턴 종류</a></h2>
 <h3 id="상수-패턴-constant-patterns"><a class="header" href="#상수-패턴-constant-patterns">상수 패턴 (Constant Patterns)</a></h3>
 <p>정수 및 불리언 리터럴:</p>
-<pre><code>funlang&gt; match true with | true -&gt; "yes" | false -&gt; "no"
+<pre><code>fn&gt; match true with | true -&gt; "yes" | false -&gt; "no"
 "yes"
 
-funlang&gt; match 3 with | 1 -&gt; "one" | 2 -&gt; "two" | 3 -&gt; "three" | _ -&gt; "other"
+fn&gt; match 3 with | 1 -&gt; "one" | 2 -&gt; "two" | 3 -&gt; "three" | _ -&gt; "other"
 "three"
 </code></pre>
 <p>음수 정수도 패턴으로 사용할 수 있습니다:</p>
-<pre><code>funlang&gt; match (0 - 1) with | -1 -&gt; "neg one" | 0 -&gt; "zero" | _ -&gt; "other"
+<pre><code>fn&gt; match (0 - 1) with | -1 -&gt; "neg one" | 0 -&gt; "zero" | _ -&gt; "other"
 "neg one"
 </code></pre>
 <p>디스패치 테이블을 위한 다중 상수 사용:</p>
@@ -223,7 +223,7 @@ let dayType d =
     | _ -&gt; "invalid"
 let result = dayType 3
 
-$ funlang daytype.l3
+$ fn daytype.l3
 "Wednesday"
 </code></pre>
 <h3 id="문자열-패턴-string-patterns"><a class="header" href="#문자열-패턴-string-patterns">문자열 패턴 (String Patterns)</a></h3>
@@ -236,7 +236,7 @@ let greet name =
     | _ -&gt; "Who are you, " + name + "?"
 let result = greet "Alice"
 
-$ funlang string_match.l3
+$ fn string_match.l3
 "Hello, Alice!"
 </code></pre>
 <p>커맨드 디스패치에 유용합니다:</p>
@@ -248,16 +248,16 @@ let classify cmd =
     | _ -&gt; "unknown: " + cmd
 let result = classify "quit"
 
-$ funlang cmd_dispatch.l3
+$ fn cmd_dispatch.l3
 "exit command"
 </code></pre>
 <p>위 예제는 or-패턴과 문자열 패턴을 함께 사용합니다. or-패턴은 아래에서 설명합니다.</p>
 <h3 id="변수-및-와일드카드-패턴-variable-and-wildcard-patterns"><a class="header" href="#변수-및-와일드카드-패턴-variable-and-wildcard-patterns">변수 및 와일드카드 패턴 (Variable and Wildcard Patterns)</a></h3>
 <p>변수 패턴은 매칭된 값을 이름에 바인딩합니다. <code>_</code>는 값을 버리는 와일드카드(wildcard)입니다:</p>
-<pre><code>funlang&gt; match 42 with | x -&gt; x + 1
+<pre><code>fn&gt; match 42 with | x -&gt; x + 1
 43
 
-funlang&gt; match 42 with | _ -&gt; 0
+fn&gt; match 42 with | _ -&gt; 0
 0
 </code></pre>
 <p>변수 패턴은 항상 매칭됩니다 – 모든 값을 잡는 기본 케이스(catch-all) 역할을 합니다:</p>
@@ -269,21 +269,21 @@ let sign x =
     | _ -&gt; 0 - 1
 let result = (sign 5, sign 0, sign (0 - 3))
 
-$ funlang sign.l3
+$ fn sign.l3
 (1, 0, -1)
 </code></pre>
 <p><strong>섀도잉(Shadowing):</strong> 패턴 내의 변수는 같은 이름의 외부 바인딩을 가립니다:</p>
-<pre><code>funlang&gt; let x = 10 in match 5 with | x -&gt; x
+<pre><code>fn&gt; let x = 10 in match 5 with | x -&gt; x
 5
 </code></pre>
 <p>내부 <code>x</code>는 10이 아닌 5에 바인딩됩니다.</p>
 <h3 id="튜플-패턴-tuple-patterns"><a class="header" href="#튜플-패턴-tuple-patterns">튜플 패턴 (Tuple Patterns)</a></h3>
 <p>튜플을 제자리에서 분해합니다:</p>
-<pre><code>funlang&gt; match (1, 2) with | (a, b) -&gt; a + b
+<pre><code>fn&gt; match (1, 2) with | (a, b) -&gt; a + b
 3
 </code></pre>
 <p>중첩 튜플 패턴:</p>
-<pre><code>funlang&gt; match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -&gt; a + b + c + d
+<pre><code>fn&gt; match ((1, 2), (3, 4)) with | ((a, b), (c, d)) -&gt; a + b + c + d
 10
 </code></pre>
 <p>튜플을 상수 및 와일드카드와 결합:</p>
@@ -295,15 +295,15 @@ let classify pair =
     | (false, _) -&gt; "false"
 let result = classify (true, 42)
 
-$ funlang classify_pair.l3
+$ fn classify_pair.l3
 "positive-true: 42"
 </code></pre>
 <h3 id="리스트-패턴-list-patterns"><a class="header" href="#리스트-패턴-list-patterns">리스트 패턴 (List Patterns)</a></h3>
 <p>빈 리스트, cons, 또는 특정 길이에 대해 매칭합니다:</p>
-<pre><code>funlang&gt; match [1; 2; 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
+<pre><code>fn&gt; match [1; 2; 3] with | [] -&gt; "empty" | x :: _ -&gt; to_string x
 "1"
 
-funlang&gt; match [1; 2; 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
+fn&gt; match [1; 2; 3] with | a :: b :: _ -&gt; a + b | _ -&gt; 0
 3
 </code></pre>
 <p>정확한 길이 매칭:</p>
@@ -321,7 +321,7 @@ let r3 = describe [1; 2]
 let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ funlang list_describe.l3
+$ fn list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 </code></pre>
 <h3 id="생성자-패턴-constructor-patterns"><a class="header" href="#생성자-패턴-constructor-patterns">생성자 패턴 (Constructor Patterns)</a></h3>
@@ -337,7 +337,7 @@ let area s =
     | Rect (w, h) -&gt; w * h
 let result = area (Circle 5)
 
-$ funlang shape.l3
+$ fn shape.l3
 75
 </code></pre>
 <p>데이터가 없는 생성자 (nullary):</p>
@@ -359,7 +359,7 @@ let value c =
 
 let result = value Ace + value King + value (Num 5)
 
-$ funlang card.l3
+$ fn card.l3
 26
 </code></pre>
 <p>생성자 내부에서 와일드카드 사용:</p>
@@ -375,7 +375,7 @@ let isLeaf t =
 
 let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
 
-$ funlang is_leaf.l3
+$ fn is_leaf.l3
 (true, false)
 </code></pre>
 <h3 id="중첩-패턴-nested-patterns"><a class="header" href="#중첩-패턴-nested-patterns">중첩 패턴 (Nested Patterns)</a></h3>
@@ -395,7 +395,7 @@ let r3 = deepGet (Some None)
 let r4 = deepGet None
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ funlang deep_option.l3
+$ fn deep_option.l3
 "42 | inner none | mid none | outer none"
 </code></pre>
 <p><strong>튜플의 리스트:</strong></p>
@@ -408,7 +408,7 @@ let rec sumFirst xs =
 let result = sumFirst [(1, "a"); (2, "b"); (3, "c")]
 let _ = println (to_string result)
 
-$ funlang sum_first.l3
+$ fn sum_first.l3
 6
 </code></pre>
 <p><strong>리스트 안의 튜플을 포함하는 생성자:</strong></p>
@@ -422,7 +422,7 @@ let result =
     | Some [] -&gt; 0
     | None -&gt; 0
 
-$ funlang nested_complex.l3
+$ fn nested_complex.l3
 1
 </code></pre>
 <h3 id="레코드-패턴-record-patterns"><a class="header" href="#레코드-패턴-record-patterns">레코드 패턴 (Record Patterns)</a></h3>
@@ -434,7 +434,7 @@ let result =
     match p with
     | { x = a; y = b } -&gt; a + b
 
-$ funlang record_match.l3
+$ fn record_match.l3
 3
 </code></pre>
 <p>부분 레코드 패턴 – 일부 필드만 매칭:</p>
@@ -447,12 +447,12 @@ let greet p =
 
 let result = greet { name = "Alice"; age = 30; active = true }
 
-$ funlang record_partial.l3
+$ fn record_partial.l3
 "Alice is 30"
 </code></pre>
 <h2 id="or-패턴-or-patterns"><a class="header" href="#or-패턴-or-patterns">Or-패턴 (Or-Patterns)</a></h2>
 <p>여러 패턴이 같은 본문을 공유할 때 <code>|</code>로 결합합니다:</p>
-<pre><code>funlang&gt; match 2 with | 1 | 2 | 3 -&gt; "small" | _ -&gt; "big"
+<pre><code>fn&gt; match 2 with | 1 | 2 | 3 -&gt; "small" | _ -&gt; "big"
 "small"
 </code></pre>
 <p>각 대안은 같은 결과 표현식으로 이어집니다. 파일 모드에서:</p>
@@ -465,7 +465,7 @@ let classify n =
     | _ -&gt; "large"
 let result = classify 5
 
-$ funlang or_pattern.l3
+$ fn or_pattern.l3
 "medium"
 </code></pre>
 <h3 id="생성자와-or-패턴"><a class="header" href="#생성자와-or-패턴">생성자와 Or-패턴</a></h3>
@@ -483,7 +483,7 @@ let isVertical d =
     | East | West -&gt; false
 let result = (isVertical North, isVertical East)
 
-$ funlang or_ctor.l3
+$ fn or_ctor.l3
 (true, false)
 </code></pre>
 <h3 id="문자열-or-패턴"><a class="header" href="#문자열-or-패턴">문자열 Or-패턴</a></h3>
@@ -496,7 +496,7 @@ let respond input =
     | _ -&gt; false
 let result = (respond "yes", respond "n", respond "maybe")
 
-$ funlang or_string.l3
+$ fn or_string.l3
 (true, false, false)
 </code></pre>
 <h3 id="소진-검사와-or-패턴"><a class="header" href="#소진-검사와-or-패턴">소진 검사와 Or-패턴</a></h3>
@@ -514,7 +514,7 @@ let name c =
     | Green | Blue -&gt; "cool"
 let result = name Red
 
-$ funlang or_exhaust.l3
+$ fn or_exhaust.l3
 "red"
 </code></pre>
 <p>위 예제에서 <code>Green | Blue</code>가 나머지 모든 경우를 커버하므로 소진 경고가 없습니다.</p>
@@ -535,7 +535,7 @@ let classify n =
     | _ -&gt; "negative"
 let result = classify 5
 
-$ funlang guard.l3
+$ fn guard.l3
 "positive"
 </code></pre>
 <h3 id="범위-분류를-위한-가드-guards-for-range-classification"><a class="header" href="#범위-분류를-위한-가드-guards-for-range-classification">범위 분류를 위한 가드 (Guards for Range Classification)</a></h3>
@@ -550,7 +550,7 @@ let grade score =
     | _ -&gt; "F"
 let result = grade 85
 
-$ funlang grade.l3
+$ fn grade.l3
 "B"
 </code></pre>
 <h3 id="생성자와-가드-결합"><a class="header" href="#생성자와-가드-결합">생성자와 가드 결합</a></h3>
@@ -571,7 +571,7 @@ let r2 = isLarge (Circle 5)
 let r3 = isLarge (Rect (20, 10))
 let result = (r1, r2, r3)
 
-$ funlang shape_guard.l3
+$ fn shape_guard.l3
 (true, false, true)
 </code></pre>
 <h3 id="가드-폴스루-guard-fallthrough"><a class="header" href="#가드-폴스루-guard-fallthrough">가드 폴스루 (Guard Fallthrough)</a></h3>
@@ -587,7 +587,7 @@ let classify x =
     | _ -&gt; "negative"
 let result = classify 50
 
-$ funlang fallthrough.l3
+$ fn fallthrough.l3
 "medium"
 </code></pre>
 <h2 id="계산된-값에-대한-match"><a class="header" href="#계산된-값에-대한-match">계산된 값에 대한 Match</a></h2>
@@ -602,7 +602,7 @@ let classify x =
     | _ -&gt; "large"
 let result = classify (0 - 42)
 
-$ funlang match_expr.l3
+$ fn match_expr.l3
 "medium"
 </code></pre>
 <h2 id="완전성-검사-exhaustiveness-checking"><a class="header" href="#완전성-검사-exhaustiveness-checking">완전성 검사 (Exhaustiveness Checking)</a></h2>
@@ -617,7 +617,7 @@ let result =
     | Red -&gt; 1
     | Green -&gt; 2
 
-$ funlang exhaustive.l3
+$ fn exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --&gt; :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -631,7 +631,7 @@ let result =
     | _ -&gt; "catch all"
     | 1 -&gt; "one"
 
-$ funlang redundant.l3
+$ fn redundant.l3
 Warning: warning[W0002]: Redundant pattern match clause. This pattern is never reached
  --&gt; :0:0-1:0
    = hint: Remove this clause or reorder the patterns
@@ -658,15 +658,15 @@ let mix a b =
 
 let result = mix Red Blue
 
-$ funlang color_mix.l3
+$ fn color_mix.l3
 "purple"
 </code></pre>
 <h2 id="let-패턴-구조-분해-let-pattern-destructuring"><a class="header" href="#let-패턴-구조-분해-let-pattern-destructuring">Let 패턴 구조 분해 (Let-Pattern Destructuring)</a></h2>
 <p>전체 <code>match</code> 없이 구조 분해할 수 있습니다:</p>
-<pre><code>funlang&gt; let (x, y) = (1, 2) in x + y
+<pre><code>fn&gt; let (x, y) = (1, 2) in x + y
 3
 
-funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
+fn&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="결정-트리-컴파일-decision-tree-compilation"><a class="header" href="#결정-트리-컴파일-decision-tree-compilation">결정 트리 컴파일 (Decision Tree Compilation)</a></h2>
@@ -691,7 +691,7 @@ let rec sum xs =
 
 let _ = println (to_string (sum [1; 2; 3; 4; 5]))
 
-$ funlang list_sum.l3
+$ fn list_sum.l3
 15
 </code></pre>
 <p><strong>요소 개수 세기:</strong></p>
@@ -703,7 +703,7 @@ let rec length xs =
 
 let _ = println (to_string (length [10; 20; 30]))
 
-$ funlang list_length.l3
+$ fn list_length.l3
 3
 </code></pre>
 <p><strong>조건 함수로 필터링 (클로저 캡처):</strong></p>
@@ -715,7 +715,7 @@ let rec filter pred = fun xs -&gt;
 
 let _ = println (to_string (filter (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5; 6]))
 
-$ funlang list_filter.l3
+$ fn list_filter.l3
 [4; 5; 6]
 </code></pre>
 <p><strong>조건이 참인 동안 가져오기(take while):</strong></p>
@@ -727,7 +727,7 @@ let result =
         | h :: t -&gt; if pred h then h :: takeWhile pred t else []
     takeWhile (fun x -&gt; x &lt; 5) [1; 2; 3; 4; 5; 6; 7]
 
-$ funlang take_while.l3
+$ fn take_while.l3
 [1; 2; 3; 4]
 </code></pre>
 <h3 id="adt-표현식-평가기-adt-expression-evaluator"><a class="header" href="#adt-표현식-평가기-adt-expression-evaluator">ADT 표현식 평가기 (ADT Expression Evaluator)</a></h3>
@@ -746,7 +746,7 @@ let result =
         | Mul (a, b) -&gt; eval a * eval b
     eval (Add (Mul (Num 3, Num 4), Num 5))
 
-$ funlang expr_eval.l3
+$ fn expr_eval.l3
 17
 </code></pre>
 <p><code>eval (Add (Mul (Num 3, Num 4), Num 5))</code>는 <code>(3 * 4) + 5 = 17</code>을 계산합니다.</p>
@@ -763,7 +763,7 @@ let result =
     let r2 = lookup 9 env
     (r1, r2)
 
-$ funlang lookup.l3
+$ fn lookup.l3
 (Some "two", None)
 </code></pre>
 <h3 id="패턴-매칭을-이용한-트리-순회"><a class="header" href="#패턴-매칭을-이용한-트리-순회">패턴 매칭을 이용한 트리 순회</a></h3>
@@ -792,7 +792,7 @@ let result =
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
     (depth t, size t, sumTree t)
 
-$ funlang tree_ops.l3
+$ fn tree_ops.l3
 (3, 4, 10)
 </code></pre>
 <h3 id="패턴-매칭을-이용한-삽입-정렬-insertion-sort"><a class="header" href="#패턴-매칭을-이용한-삽입-정렬-insertion-sort">패턴 매칭을 이용한 삽입 정렬 (Insertion Sort)</a></h3>
@@ -811,7 +811,7 @@ let sorted =
 
 let result = sorted
 
-$ funlang isort.l3
+$ fn isort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 </code></pre>
 <h2 id="요약"><a class="header" href="#요약">요약</a></h2>

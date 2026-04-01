@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -206,13 +206,13 @@
 <p>함수형 프로그래밍에서 <code>Option</code> (또는 <code>Maybe</code>, <code>Optional</code>)은 아마 가장 중요한 타입일 것입니다. <code>null</code>을 사용하는 대신, 값의 부재를 타입 수준에서 명시함으로써 null 참조 오류를 컴파일 타임에 방지할 수 있습니다. 토니 호아르가 <code>null</code>을 “10억 달러짜리 실수“라고 부른 것을 기억하나요? <code>Option</code>은 그 실수를 타입 시스템으로 고치는 방법입니다.</p>
 <h3 id="option-값-생성"><a class="header" href="#option-값-생성">Option 값 생성</a></h3>
 <p><code>Some</code>과 <code>None</code> 생성자는 REPL과 파일 모드 모두에서 동작합니다:</p>
-<pre><code>funlang&gt; Some 42
+<pre><code>fn&gt; Some 42
 Some 42
 
-funlang&gt; Some "hello"
+fn&gt; Some "hello"
 Some "hello"
 
-funlang&gt; None
+fn&gt; None
 None
 </code></pre>
 <p><code>Some</code>은 어떤 타입이든 감쌀 수 있습니다. <code>None</code>은 값이 없다는 의미입니다. 타입 파라미터 <code>'a</code>가 있어서 <code>Option&lt;int&gt;</code>, <code>Option&lt;string&gt;</code>, <code>Option&lt;Option&lt;int&gt;&gt;</code> 같은 타입이 모두 가능합니다.</p>
@@ -220,7 +220,7 @@ None
 <pre><code>$ cat check_option.l3
 let x = Some 42
 
-$ funlang --emit-type check_option.l3
+$ fn --emit-type check_option.l3
 x : Option&lt;int&gt;
 </code></pre>
 <p>컴파일러가 <code>42</code>가 <code>int</code>임을 보고 <code>Option&lt;int&gt;</code>로 타입을 추론합니다. 별도로 타입을 적어줄 필요가 없습니다.</p>
@@ -233,7 +233,7 @@ let result =
     | Some v -&gt; v
     | None -&gt; 0
 
-$ funlang option_match.l3
+$ fn option_match.l3
 42
 </code></pre>
 <p>Java나 Python에서 <code>null</code> 체크를 빠뜨리면 런타임에야 NPE나 AttributeError가 발생합니다. FunLang에서는 패턴 매칭이 불완전하면 컴파일러가 경고하므로, 실수가 훨씬 일찍 잡힙니다.</p>
@@ -245,7 +245,7 @@ let getOrDefault default opt =
     | None -&gt; default
 let result = getOrDefault 0 None
 
-$ funlang option_default.l3
+$ fn option_default.l3
 0
 </code></pre>
 <p><code>getOrDefault</code>는 매우 자주 쓰이는 패턴이므로 직접 정의해두면 편리합니다. Haskell의 <code>fromMaybe</code>, Rust의 <code>unwrap_or</code>와 같은 개념입니다.</p>
@@ -263,7 +263,7 @@ let result =
     | Some v -&gt; v
     | None -&gt; 0
 
-$ funlang option_map.l3
+$ fn option_map.l3
 10
 </code></pre>
 <p><code>None</code>인지 먼저 확인할 필요 없이, <code>optionMap</code>은 값이 있을 때만 <code>double</code>을 적용합니다. “값이 있으면 변환하고, 없으면 없는 채로 둔다” — 이것이 functor 패턴의 핵심입니다.</p>
@@ -280,7 +280,7 @@ let result =
     | Some v -&gt; v
     | None -&gt; 0
 
-$ funlang option_bind.l3
+$ fn option_bind.l3
 20
 </code></pre>
 <p><code>optionBind</code>와 <code>optionMap</code>의 차이는 <code>f</code>의 반환 타입입니다. <code>map</code>에서 <code>f</code>는 일반 값을 반환하고, <code>bind</code>에서 <code>f</code>는 <code>Option</code>을 반환합니다. 이를 통해 여러 개의 실패 가능한 연산을 체이닝할 때 이중 중첩(<code>Option&lt;Option&lt;a&gt;&gt;</code>)을 피할 수 있습니다.</p>
@@ -297,7 +297,7 @@ let result =
     | Some v -&gt; v
     | None -&gt; 0
 
-$ funlang option_pipe.l3
+$ fn option_pipe.l3
 10
 </code></pre>
 <h2 id="prelude-확장하기"><a class="header" href="#prelude-확장하기">Prelude 확장하기</a></h2>
@@ -318,7 +318,7 @@ let result =
     | Ok v -&gt; v
     | Error _ -&gt; 0
 
-$ funlang result_demo.l3
+$ fn result_demo.l3
 3
 </code></pre>
 <p><code>Result</code> 타입은 Rust나 F#에서 오류 처리의 주력 도구입니다. <code>Option</code>이 “값이 있거나 없거나“라면, <code>Result</code>는 “성공했거나, 구체적인 이유와 함께 실패했거나“입니다. 예외를 사용하는 대신 <code>Result</code>를 반환하면, 오류 처리가 타입 시스템에 드러나므로 호출하는 쪽에서 처리를 강제할 수 있습니다.</p>
@@ -333,50 +333,50 @@ let n = List.length [1; 2; 3]
 let doubled = List.map (fun x -&gt; x * 2) [1; 2; 3]
 let result = doubled
 
-$ funlang qualified_prelude.l3
+$ fn qualified_prelude.l3
 [2; 4; 6]
 </code></pre>
 <p>한정된 접근과 비한정된 접근을 섞어 쓸 수도 있습니다. <code>map</code>과 <code>List.map</code>은 같은 함수입니다:</p>
-<pre><code>funlang&gt; length [1; 2; 3]
+<pre><code>fn&gt; length [1; 2; 3]
 3
 
-funlang&gt; List.length [1; 2; 3]
+fn&gt; List.length [1; 2; 3]
 3
 </code></pre>
 <p>마찬가지로 <code>Core.id</code>, <code>Core.compose</code>, <code>Option.None</code>, <code>Option.Some</code> 등 다른 Prelude 모듈도 한정된 접근이 가능합니다.</p>
 <h3 id="리스트-변환-map-filter"><a class="header" href="#리스트-변환-map-filter">리스트 변환: map, filter</a></h3>
 <p><code>map</code>은 리스트의 각 요소에 함수를 적용합니다. 리스트 처리의 가장 기본적인 패턴으로, 각 원소를 독립적으로 변환할 때 씁니다:</p>
-<pre><code>funlang&gt; map (fun x -&gt; x * 2) [1..5]
+<pre><code>fn&gt; map (fun x -&gt; x * 2) [1..5]
 [2; 4; 6; 8; 10]
 </code></pre>
 <p><code>filter</code>는 조건을 만족하는 요소만 남깁니다. <code>map</code>이 “모든 원소를 변환“한다면 <code>filter</code>는 “일부 원소만 선택“합니다:</p>
-<pre><code>funlang&gt; filter (fun x -&gt; x &gt; 3) [1..6]
+<pre><code>fn&gt; filter (fun x -&gt; x &gt; 3) [1..6]
 [4; 5; 6]
 </code></pre>
 <p>이 두 함수는 대부분의 리스트 처리 코드의 80%를 커버합니다. Python의 리스트 컴프리헨션이나 <code>map()</code>, <code>filter()</code> 내장 함수와 같은 역할을 합니다.</p>
 <h3 id="리스트-축약-fold"><a class="header" href="#리스트-축약-fold">리스트 축약: fold</a></h3>
 <p><code>fold</code>는 리스트를 하나의 값으로 축약합니다. 합계, 최댓값, 문자열 합치기 등 리스트를 단일 결과로 만드는 모든 연산이 <code>fold</code>로 표현됩니다:</p>
-<pre><code>funlang&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..10]
+<pre><code>fn&gt; fold (fun acc -&gt; fun x -&gt; acc + x) 0 [1..10]
 55
 </code></pre>
 <p><code>fold</code>는 처음엔 조금 낯설 수 있습니다. 핵심은 “누산기(accumulator)를 초기값에서 시작해 각 원소마다 업데이트해 나간다“는 것입니다. 여기서 <code>0</code>이 초기값이고, <code>fun acc -&gt; fun x -&gt; acc + x</code>가 매 원소마다 실행되는 업데이트 함수입니다. 1부터 10까지 더하면 55가 됩니다.</p>
 <p><code>fold</code>는 <code>map</code>과 <code>filter</code>를 포함한 거의 모든 리스트 연산을 직접 구현할 수 있을 만큼 강력합니다. 하지만 그렇다고 항상 <code>fold</code>를 쓸 필요는 없습니다. <code>map</code>이나 <code>filter</code>로 표현되는 코드가 훨씬 읽기 쉬울 때는 그것을 쓰세요.</p>
 <h3 id="리스트-정보-length-hd-tl"><a class="header" href="#리스트-정보-length-hd-tl">리스트 정보: length, hd, tl</a></h3>
-<pre><code>funlang&gt; length [1; 2; 3]
+<pre><code>fn&gt; length [1; 2; 3]
 3
 
-funlang&gt; hd [10; 20]
+fn&gt; hd [10; 20]
 10
 
-funlang&gt; tl [10; 20]
+fn&gt; tl [10; 20]
 [20]
 </code></pre>
 <p><code>hd</code>(head)는 첫 번째 원소를, <code>tl</code>(tail)은 나머지 전부를 반환합니다. OCaml의 명명 관습에서 온 이름입니다. <code>hd</code>와 <code>tl</code>을 빈 리스트에 적용하면 런타임 오류가 발생하므로, 빈 리스트 가능성이 있다면 패턴 매칭으로 먼저 확인하는 것이 안전합니다.</p>
 <h3 id="리스트-조작-reverse-append"><a class="header" href="#리스트-조작-reverse-append">리스트 조작: reverse, append</a></h3>
-<pre><code>funlang&gt; reverse [] [1; 2; 3]
+<pre><code>fn&gt; reverse [] [1; 2; 3]
 [3; 2; 1]
 
-funlang&gt; append [1; 2] [3; 4]
+fn&gt; append [1; 2] [3; 4]
 [1; 2; 3; 4]
 </code></pre>
 <p><code>reverse</code>의 첫 번째 인자가 빈 리스트인 점이 눈에 띕니다. 이것은 누산기 패턴의 흔적입니다. 내부적으로 빈 리스트를 누산기 초기값으로 사용하면서 반전을 수행하는 방식이 인터페이스에 드러난 것입니다. 대부분의 경우 <code>reverse [] myList</code> 형태로 호출하면 됩니다.</p>
@@ -388,7 +388,7 @@ let r2 = List.sortBy (fun x -&gt; 0 - x) [1; 2; 3]
 let _ = println (to_string r1)
 let _ = println (to_string r2)
 
-$ funlang list_sort.l3
+$ fn list_sort.l3
 [1; 2; 3]
 [3; 2; 1]
 ()
@@ -404,7 +404,7 @@ let _ = println (to_string r)
 let d = List.distinctBy (fun x -&gt; x % 2) [1; 2; 3; 4; 5]
 let _ = println (to_string d)
 
-$ funlang list_search.l3
+$ fn list_search.l3
 true
 Some 3
 None
@@ -433,7 +433,7 @@ let _ = println (to_string (List.item 1 [10; 20; 30]))
 let _ = println (to_string (List.isEmpty []))
 let _ = println (to_string (List.isEmpty [1]))
 
-$ funlang list_transform.l3
+$ fn list_transform.l3
 [10; 21; 32]
 20
 true
@@ -464,7 +464,7 @@ let _ = HashSet.add hs 2
 let sorted = List.sort (List.ofSeq hs)
 let _ = println (to_string sorted)
 
-$ funlang list_ofseq.l3
+$ fn list_ofseq.l3
 [1; 2; 3]
 ()
 </code></pre>
@@ -474,36 +474,36 @@ $ funlang list_ofseq.l3
 <p>이 함수들은 수학의 기본 원소처럼, 단순하지만 다양한 맥락에서 유용합니다. 처음엔 “이걸 왜 쓰나?” 싶을 수 있는데, 파이프라인이나 고차 함수와 결합했을 때 진가가 드러납니다.</p>
 <h3 id="id--항등-함수"><a class="header" href="#id--항등-함수">id – 항등 함수</a></h3>
 <p>입력값을 그대로 반환합니다:</p>
-<pre><code>funlang&gt; id 42
+<pre><code>fn&gt; id 42
 42
 </code></pre>
 <p>“아무것도 안 하는 함수가 왜 필요한가?” — <code>id</code>는 함수를 인자로 받는 곳에 기본값으로 쓰기 좋습니다. 예를 들어 <code>map id [1; 2; 3]</code>은 리스트를 그대로 복사합니다. 또 <code>f &gt;&gt; id = f</code>, <code>id &gt;&gt; f = f</code>처럼 합성의 항등원이기도 합니다. Haskell이나 F#에서도 같은 이름으로 존재합니다.</p>
 <h3 id="const--상수-함수"><a class="header" href="#const--상수-함수">const – 상수 함수</a></h3>
 <p>첫 번째 인자를 반환하고 두 번째 인자를 무시합니다:</p>
-<pre><code>funlang&gt; const 42 "ignored"
+<pre><code>fn&gt; const 42 "ignored"
 42
 </code></pre>
 <p><code>const</code>는 두 인자를 받지만 첫 번째만 돌려줍니다. 이것이 어디서 쓰이냐면, 예를 들어 <code>map (const 0) [1; 2; 3]</code>은 리스트의 모든 원소를 0으로 바꿉니다. 콜백이나 고차 함수가 함수를 기대하는데 “항상 이 값을 반환하는 함수“가 필요할 때 <code>const</code>가 딱 맞습니다.</p>
 <h3 id="compose--함수-합성"><a class="header" href="#compose--함수-합성">compose – 함수 합성</a></h3>
 <p>두 함수를 합성합니다. <code>compose f g x</code>는 <code>f (g x)</code>와 같습니다:</p>
-<pre><code>funlang&gt; compose inc double 5
+<pre><code>fn&gt; compose inc double 5
 11
 </code></pre>
 <p><code>compose</code>는 <code>&gt;&gt;</code> 연산자의 함수 버전입니다. 연산자 형태(<code>&gt;&gt;</code>)가 더 읽기 편하지만, <code>compose</code>를 함수로 넘겨야 하는 경우에는 <code>compose</code>를 직접 씁니다. 예를 들어 함수들의 리스트를 <code>fold</code>로 합성하는 경우가 있습니다.</p>
 <h3 id="유틸리티-함수"><a class="header" href="#유틸리티-함수">유틸리티 함수</a></h3>
-<pre><code>funlang&gt; not true
+<pre><code>fn&gt; not true
 false
 
-funlang&gt; (min 3 5, max 3 5)
+fn&gt; (min 3 5, max 3 5)
 (3, 5)
 
-funlang&gt; abs (0 - 42)
+fn&gt; abs (0 - 42)
 42
 
-funlang&gt; (fst (1, 2), snd (1, 2))
+fn&gt; (fst (1, 2), snd (1, 2))
 (1, 2)
 
-funlang&gt; ignore 42
+fn&gt; ignore 42
 ()
 </code></pre>
 <p><code>fst</code>와 <code>snd</code>는 튜플의 첫 번째, 두 번째 원소를 꺼냅니다. <code>ignore</code>는 값을 받아서 <code>()</code>를 반환하는데, 부작용을 일으키는 함수의 반환값을 무시하고 싶을 때 유용합니다. F# 코드를 써봤다면 익숙한 이름들입니다.</p>
@@ -515,7 +515,7 @@ let result =
     |&gt; filter (fun x -&gt; x % 2 = 0)
     |&gt; map (fun x -&gt; x * x)
 
-$ funlang pipeline.l3
+$ fn pipeline.l3
 [4; 16; 36; 64; 100]
 </code></pre>
 <p>“1부터 10까지의 수 중 짝수만 골라서, 각각 제곱한 결과” — 코드가 이 설명을 그대로 표현합니다. SQL의 <code>WHERE</code>와 <code>SELECT</code>처럼, 파이프라인의 각 단계가 한 가지 일만 담당합니다. 단계를 추가하거나 순서를 바꾸기도 쉽습니다.</p>
@@ -523,24 +523,24 @@ $ funlang pipeline.l3
 <p>Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다. 연산자는 중위 표기(infix)를 쓸 수 있어서, 일부 표현은 함수 형태보다 연산자 형태가 훨씬 자연스럽습니다.</p>
 <h3 id="--리스트-연결"><a class="header" href="#--리스트-연결"><code>++</code> — 리스트 연결</a></h3>
 <p><code>append</code>의 중위 연산자 버전입니다:</p>
-<pre><code>funlang&gt; [1; 2] ++ [3; 4; 5]
+<pre><code>fn&gt; [1; 2] ++ [3; 4; 5]
 [1; 2; 3; 4; 5]
 </code></pre>
 <p><code>(++)</code>를 함수로 사용할 수도 있습니다. 괄호로 감싸면 일반 함수처럼 고차 함수에 넘길 수 있습니다:</p>
-<pre><code>funlang&gt; fold (++) [] [[1; 2]; [3]; [4; 5]]
+<pre><code>fn&gt; fold (++) [] [[1; 2]; [3]; [4; 5]]
 [1; 2; 3; 4; 5]
 </code></pre>
 <p><code>fold</code>에 <code>(++)</code>를 넘겨서 리스트들을 하나로 합쳤습니다. Haskell의 <code>concat</code>과 같은 결과지만, 여기서는 <code>fold</code>와 <code>++</code>의 조합으로 직접 구현한 셈입니다.</p>
 <p><code>++</code>는 INFIXOP2 (+ 와 같은 우선순위, 좌결합)입니다.</p>
 <h3 id="--option-대안"><a class="header" href="#--option-대안"><code>&lt;|&gt;</code> — Option 대안</a></h3>
 <p>첫 번째 <code>Some</code> 값을 반환하거나, 모두 <code>None</code>이면 <code>None</code>을 반환합니다. 여러 소스에서 값을 찾을 때 fallback 체인을 표현하기에 딱 맞습니다:</p>
-<pre><code>funlang&gt; Some 1 &lt;|&gt; Some 2
+<pre><code>fn&gt; Some 1 &lt;|&gt; Some 2
 Some 1
 
-funlang&gt; None &lt;|&gt; Some 42
+fn&gt; None &lt;|&gt; Some 42
 Some 42
 
-funlang&gt; None &lt;|&gt; None
+fn&gt; None &lt;|&gt; None
 None
 </code></pre>
 <p>연쇄하여 fallback 패턴을 구현할 수 있습니다. “여러 파싱 방법을 순서대로 시도해서 첫 번째로 성공한 결과를 택한다“는 파서 콤비네이터 스타일의 코드를 자연스럽게 표현합니다:</p>
@@ -552,13 +552,13 @@ let tryParse s =
     | _ -&gt; None
 let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
-$ funlang fallback.l3
+$ fn fallback.l3
 Some 42
 </code></pre>
 <p><code>&lt;|&gt;</code>는 INFIXOP0 (비교 연산자 수준, 좌결합)입니다.</p>
 <h3 id="--문자열-연결"><a class="header" href="#--문자열-연결"><code>^^</code> — 문자열 연결</a></h3>
 <p><code>string_concat</code>의 중위 연산자 버전입니다:</p>
-<pre><code>funlang&gt; "hello" ^^ " " ^^ "world"
+<pre><code>fn&gt; "hello" ^^ " " ^^ "world"
 "hello world"
 </code></pre>
 <p><code>+</code> 연산자는 정수 덧셈이므로, 문자열 연결에는 <code>^^</code>를 사용합니다. 이 점이 Python이나 JavaScript와 다른 부분인데, FunLang는 타입에 따라 다른 동작을 하는 오버로딩을 지원하지 않아서 연산자를 구분합니다. 처음엔 어색하지만 코드를 읽을 때 “지금 더하는 게 숫자인지 문자열인지” 즉시 알 수 있다는 장점이 있습니다:</p>
@@ -566,7 +566,7 @@ Some 42
 let formatPair key = fun value -&gt; key ^^ "=" ^^ value
 let result = formatPair "name" "Alice"
 
-$ funlang string_build.l3
+$ fn string_build.l3
 "name=Alice"
 </code></pre>
 <p><code>^^</code>는 INFIXOP1 (@ 와 같은 우선순위, 우결합)입니다.</p>
@@ -596,13 +596,13 @@ $ funlang string_build.l3
 </table>
 </div>
 <p>이들은 REPL과 파일 모드 모두에서 동작합니다:</p>
-<pre><code>funlang&gt; String.length "hello"
+<pre><code>fn&gt; String.length "hello"
 5
 
-funlang&gt; to_string 42
+fn&gt; to_string 42
 "42"
 
-funlang&gt; to_string (Some [1; 2; 3])
+fn&gt; to_string (Some [1; 2; 3])
 "Some [1; 2; 3]"
 </code></pre>
 <p><code>to_string</code>은 모든 타입을 지원합니다 — ADT, 리스트, 튜플, 레코드 등. 문자열은 따옴표 없이 그대로 반환됩니다 (F# <code>string</code> 함수와 동일). 디버깅할 때 복잡한 값을 출력해보고 싶다면 <code>to_string</code>을 <code>println</code>과 함께 쓰면 됩니다.</p>

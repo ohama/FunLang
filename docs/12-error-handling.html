@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -193,7 +193,7 @@ let rec find pred = fun xs -&gt;
 
 let result = try find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5] with | NotFound -&gt; 0 - 1
 
-$ funlang find_exc.l3
+$ fn find_exc.l3
 4
 </code></pre>
 <h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
@@ -206,7 +206,7 @@ let rec find pred = fun xs -&gt;
 
 let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
-$ funlang find_opt.l3
+$ fn find_opt.l3
 4
 </code></pre>
 <h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
@@ -219,7 +219,7 @@ let rec find pred = fun xs -&gt;
 
 let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
-$ funlang find_res.l3
+$ fn find_res.l3
 4
 </code></pre>
 <p>세 가지 모두 같은 결과를 반환합니다. 그러나 <strong>코드의 의미와 안전성</strong>에서 큰 차이가 있습니다.</p>
@@ -272,7 +272,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ funlang chain_exc.l3
+$ fn chain_exc.l3
 (2, -1, -2)
 </code></pre>
 <p>Result를 사용하면 <strong>파이프라인으로 합성</strong>할 수 있습니다:</p>
@@ -291,7 +291,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ funlang chain_res.l3
+$ fn chain_res.l3
 (Ok 3, Error "div/0", Error "invalid: abc")
 </code></pre>
 <p><code>resultBind</code>와 <code>resultMap</code>으로 에러가 자동 전파됩니다:</p>
@@ -321,7 +321,7 @@ let rec searchList pred = fun xs -&gt; fun i -&gt;
 
 let result = searchList (fun x -&gt; x = 999999) [1..1000000] 0
 
-$ funlang tco_result.l3
+$ fn tco_result.l3
 Ok 999998
 </code></pre>
 <p>100만 개의 리스트를 검색해도 스택 오버플로우 없이 동작합니다.</p>
@@ -337,7 +337,7 @@ let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
 
-$ funlang option_use.l3
+$ fn option_use.l3
 10
 </code></pre>
 <p>적합한 경우:</p>
@@ -357,7 +357,7 @@ let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
 
-$ funlang fallback.l3
+$ fn fallback.l3
 Some 5
 </code></pre>
 <p><code>&lt;|&gt;</code>는 첫 번째 <code>Some</code> 값을 반환하고, 모두 <code>None</code>이면 마지막 값을 반환합니다.</p>
@@ -374,7 +374,7 @@ let r2 = validate "" 25
 let r3 = validate "Bob" (0 - 5)
 let result = (r1, r2, r3)
 
-$ funlang result_use.l3
+$ fn result_use.l3
 (Ok "Alice (30)", Error "name cannot be empty", Error "age cannot be negative")
 </code></pre>
 <p>적합한 경우:</p>
@@ -398,7 +398,7 @@ let rec processAll xs =
 
 let result = processAll [1; 2; 3; 4; 5]
 
-$ funlang exception_use.l3
+$ fn exception_use.l3
 15
 </code></pre>
 <p>적합한 경우:</p>

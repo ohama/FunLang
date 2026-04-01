@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -189,7 +189,7 @@ instance Show int =
 
 let result = show 42
 
-$ funlang show_class.l3
+$ fn show_class.l3
 "42"
 </code></pre>
 <p><code>typeclass Show 'a</code>는 “타입 <code>'a</code>에 대해 <code>show</code>라는 함수가 존재해야 한다“고 선언합니다. 메서드는 선행 파이프(<code>|</code>)와 타입 어노테이션으로 작성합니다 — ADT의 생성자 선언과 같은 구문입니다.</p>
@@ -207,7 +207,7 @@ instance Describable int =
 
 let result = describe 42 + ":" + tag 42
 
-$ funlang describable.l3
+$ fn describable.l3
 "42:int"
 </code></pre>
 <p>인스턴스는 타입 클래스가 선언한 모든 메서드를 구현해야 합니다.</p>
@@ -221,7 +221,7 @@ let _ = println (show true)
 let _ = println (show 'x')
 let _ = println (show "hello")
 
-$ funlang show_builtin.l3
+$ fn show_builtin.l3
 42
 true
 x
@@ -236,7 +236,7 @@ let _ = println (to_string (eq 1 2))
 let _ = println (to_string (eq "hello" "hello"))
 let _ = println (to_string (eq 'a' 'b'))
 
-$ funlang eq_builtin.l3
+$ fn eq_builtin.l3
 true
 false
 true
@@ -248,7 +248,7 @@ false
 let show_twice x = show x + show x
 let result = show_twice 42
 
-$ funlang show_twice.l3
+$ fn show_twice.l3
 "4242"
 </code></pre>
 <p><code>show_twice</code>는 <code>show</code>를 호출하므로, 컴파일러가 <code>Show 'a =&gt; 'a -&gt; string</code>이라는 타입을 추론합니다. “타입 <code>'a</code>가 <code>Show</code>의 인스턴스일 때만 이 함수를 호출할 수 있다“는 의미입니다. <code>show_twice 42</code>를 호출하면 <code>'a</code>가 <code>int</code>로 결정되고, <code>Show int</code> 인스턴스가 자동으로 선택됩니다.</p>
@@ -258,7 +258,7 @@ let show_twice x = show x + show x
 let _ = println (show_twice 42)
 let _ = println (show_twice true)
 
-$ funlang show_poly.l3
+$ fn show_poly.l3
 4242
 truetrue
 </code></pre>
@@ -270,7 +270,7 @@ let f : Show 'a =&gt; 'a -&gt; string = fun x -&gt; show x
 
 let result = f 42
 
-$ funlang constrained_annot.l3
+$ fn constrained_annot.l3
 "42"
 </code></pre>
 <p>제약이 추론 가능한 경우에는 생략해도 되지만, 복잡한 함수에서 의도를 명확히 하고 싶을 때 유용합니다.</p>
@@ -280,7 +280,7 @@ $ funlang constrained_annot.l3
 let map_show lst = List.map show lst
 let result = map_show [1; 2; 3]
 
-$ funlang show_map.l3
+$ fn show_map.l3
 ["1"; "2"; "3"]
 </code></pre>
 <p><code>List.map show [1; 2; 3]</code>에서 <code>show</code>는 <code>int -&gt; string</code> 함수처럼 동작합니다. Prelude의 <code>Show int</code> 인스턴스가 자동으로 선택됩니다. 타입 클래스 메서드가 일급 함수라는 사실이 파이프라인 스타일 프로그래밍과 자연스럽게 어울립니다.</p>
@@ -290,7 +290,7 @@ $ funlang show_map.l3
 <pre><code>$ cat no_instance.l3
 let bad = show (fun x -&gt; x)
 
-$ funlang no_instance.l3
+$ fn no_instance.l3
 error[E0701]: No instance of Show for 'x -&gt; 'x
  --&gt; no_instance.l3:1:8-14
     |
@@ -309,7 +309,7 @@ instance Show int =
 instance Show int =
     let show x = to_string x
 
-$ funlang dup_instance.l3
+$ fn dup_instance.l3
 error[E0702]: Duplicate instance declaration: Show int
  --&gt; dup_instance.l3:3:0-4:28
     |
@@ -321,7 +321,7 @@ error[E0702]: Duplicate instance declaration: Show int
 <pre><code>$ cat eq_error.l3
 let result = eq (fun x -&gt; x) (fun x -&gt; x)
 
-$ funlang eq_error.l3
+$ fn eq_error.l3
 error[E0701]: No instance of Eq for 'z -&gt; 'z
  --&gt; eq_error.l3:1:11-15
     |
@@ -346,7 +346,7 @@ instance Show Color =
 
 let result = show Green
 
-$ funlang custom_show.l3
+$ fn custom_show.l3
 "Green"
 </code></pre>
 <p>타입 정의와 인스턴스 선언이 분리되어 있으므로, 이미 존재하는 타입에 새로운 동작을 추가할 수 있습니다. Java에서 기존 클래스에 인터페이스를 구현하려면 클래스 자체를 수정해야 하지만, 타입 클래스에서는 그럴 필요가 없습니다.</p>
@@ -366,7 +366,7 @@ instance Eq Direction =
 let _ = println (to_string (eq North North))
 let result = eq North South
 
-$ funlang custom_eq.l3
+$ fn custom_eq.l3
 true
 false
 </code></pre>
@@ -388,7 +388,7 @@ let _ = println (show Circle)
 let _ = println (show Square)
 let result = show Triangle
 
-$ funlang mod_typeclass.l3
+$ fn mod_typeclass.l3
 circle
 square
 "triangle"
@@ -406,7 +406,7 @@ instance Renderable int =
 
 let result = render 42
 
-$ funlang mod_class.l3
+$ fn mod_class.l3
 "[42]"
 </code></pre>
 <h2 id="prelude의-타입-클래스"><a class="header" href="#prelude의-타입-클래스">Prelude의 타입 클래스</a></h2>

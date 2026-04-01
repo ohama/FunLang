@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -186,7 +186,7 @@ module Config =
     let title = "My App"
 let result = Config.title + " (" + to_string Config.width + "x" + to_string Config.height + ")"
 
-$ funlang config.l3
+$ fn config.l3
 "My App (800x600)"
 </code></pre>
 <p>들여쓰기가 모듈 본문의 범위를 결정합니다 – <code>end</code> 키워드가 필요하지 않습니다.</p>
@@ -199,7 +199,7 @@ module Math =
     let triple x = x * 3
 let result = Math.double 5 + Math.triple 3
 
-$ funlang qualified.l3
+$ fn qualified.l3
 19
 </code></pre>
 <p><code>Math.double</code>과 <code>Math.triple</code>은 단순히 <code>double</code>과 <code>triple</code>이 어디 있는지를 알려주는 것이 아닙니다. 이름이 충돌해도 <code>Math.double</code>과 <code>String.double</code>은 완전히 별개의 함수입니다. 대규모 코드베이스에서는 이 구분이 매우 중요합니다.</p>
@@ -212,7 +212,7 @@ module M =
 open M
 let result = x + y
 
-$ funlang open_mod.l3
+$ fn open_mod.l3
 30
 </code></pre>
 <p><code>open M</code> 이후에는 <code>M.</code> 접두사 없이 <code>x</code>와 <code>y</code>를 직접 사용할 수 있습니다.</p>
@@ -225,7 +225,7 @@ module Outer =
         let value = 42
 let result = Outer.Inner.value
 
-$ funlang nested.l3
+$ fn nested.l3
 42
 </code></pre>
 <p>연쇄된 한정 접근은 어떤 깊이에서든 동작합니다. <code>Outer.Inner.value</code>처럼 경로를 따라 내려가는 방식은 파일 시스템의 디렉토리 구조와 비슷합니다. 실제로 대규모 F# 프로젝트에서는 <code>Domain.User.Repository.find</code> 같은 형태로 네임스페이스를 구성하는 경우도 있습니다.</p>
@@ -239,7 +239,7 @@ module B =
     let y = 20
 let result = A.x + B.y
 
-$ funlang multi_mod.l3
+$ fn multi_mod.l3
 30
 </code></pre>
 <p>이 순서 규칙은 중요합니다. <code>B</code> 안에서 <code>A.x</code>를 참조하는 것은 가능하지만, <code>A</code> 안에서 <code>B.y</code>를 참조하는 것은 불가능합니다. 순환 의존성이 원천 차단됩니다. 처음엔 제약처럼 느껴지지만, 이 규칙 덕분에 코드의 의존성 그래프가 항상 단방향(topological order)을 유지합니다. 코드베이스가 커져도 의존성이 엉키지 않습니다.</p>
@@ -258,7 +258,7 @@ let result =
     | Green -&gt; "green"
     | Blue -&gt; "blue"
 
-$ funlang mod_type.l3
+$ fn mod_type.l3
 "green"
 </code></pre>
 <p>한정된 생성자 접근은 인자 없는 생성자와 데이터를 가진 생성자 모두에서 동작합니다:</p>
@@ -269,7 +269,7 @@ module M =
         | MSome of int
 let result = M.MSome 42
 
-$ funlang mod_ctor.l3
+$ fn mod_ctor.l3
 MSome 42
 </code></pre>
 <p><code>M.MSome 42</code>처럼 모듈 이름을 붙여서 생성자를 사용할 수 있습니다. <code>open M</code> 없이도 생성자를 명확하게 참조할 수 있어서, 같은 이름의 생성자가 여러 모듈에 있어도 구분이 됩니다.</p>
@@ -286,7 +286,7 @@ module M =
         | MNone -&gt; 0
 let result = M.unwrap (M.MSome 42)
 
-$ funlang mod_fn.l3
+$ fn mod_fn.l3
 42
 </code></pre>
 <p><code>M.unwrap</code>은 <code>M.Opt</code> 타입을 이해하는 함수입니다. 타입과 함수가 같은 모듈에 있으니, <code>unwrap</code>을 수정할 때 타입 정의와 함께 볼 수 있어 맥락을 잃지 않습니다. 이것이 객체지향의 클래스가 제공하는 캡슐화를 함수형 방식으로 달성하는 방법입니다.</p>
@@ -301,7 +301,7 @@ module App =
     let version = 1
 let result = App.name + " v" + to_string App.version + " -&gt; " + DB.host + ":" + to_string DB.port
 
-$ funlang layers.l3
+$ fn layers.l3
 "MyService v1 -&gt; localhost:5432"
 </code></pre>
 <p>코드를 읽는 사람이 <code>DB.host</code>는 데이터베이스 설정이고 <code>App.version</code>은 애플리케이션 버전임을 이름만 봐도 알 수 있습니다. 모듈 이름이 문서 역할을 합니다.</p>
@@ -315,7 +315,7 @@ $ cat main.l3
 open "lib.fun"
 let result = add 3 (double 4)
 
-$ funlang main.l3
+$ fn main.l3
 11
 </code></pre>
 <p>경로는 임포트하는 파일의 디렉토리를 기준으로 해석됩니다. 절대 경로도 사용할 수 있습니다.</p>
@@ -345,7 +345,7 @@ $ cat main.l3
 open "utils/format.fun"
 let result = formatSquare 7
 
-$ funlang main.l3
+$ fn main.l3
 "49"
 </code></pre>
 <p><code>lib/math.fun</code> 안의 <code>open "helpers.fun"</code>은 <code>lib/</code> 디렉토리에서 <code>helpers.fun</code>을 찾습니다. <code>utils/format.fun</code> 안의 <code>open "../lib/math.fun"</code>은 <code>utils/</code>에서 한 단계 올라가 <code>lib/math.fun</code>을 찾습니다. 이 방식은 Rust의 모듈 해석과 동일한 원칙으로, 실행 디렉토리에 무관하게 일관된 결과를 보장합니다.</p>
@@ -360,7 +360,7 @@ $ cat main.l3
 open "mathlib.fun"
 let result = Math.square 5 + Math.cube 2
 
-$ funlang main.l3
+$ fn main.l3
 33
 </code></pre>
 <p>이 방식으로 여러 파일에 걸친 모듈 시스템을 구성할 수 있습니다.</p>
@@ -381,7 +381,7 @@ module Config =
 
 let result = Config.host + ":" + to_string Config.port
 
-$ funlang readable.l3
+$ fn readable.l3
 "localhost:5432"
 </code></pre>
 <p>빈 줄은 모듈 본문뿐 아니라, <code>let</code> 본문이나 <code>match</code> 표현식 안에서도 허용됩니다. F#과 동일한 관례로, 관련 있는 선언을 그룹화하고 논리적 단위 사이에 빈 줄을 넣으면 읽기 좋은 코드가 됩니다.</p>
@@ -401,7 +401,7 @@ module Colors =
 open Colors
 let result = show Green
 
-$ funlang mod_tc.l3
+$ fn mod_tc.l3
 "green"
 </code></pre>
 <p>인스턴스는 전역적으로 동작하므로, <code>open Colors</code> 이후에 <code>show Green</code>이 바로 동작합니다. 타입 클래스에 대한 자세한 내용은 <a href="23-typeclasses.html">23장: 타입 클래스</a>를 참조하세요.</p>

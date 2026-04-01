@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -178,16 +178,16 @@
 <p>문자열 처리는 어떤 언어에서든 실질적인 프로그래밍의 기반입니다. FunLang는 간결하지만 충분히 강력한 문자열 함수들을 제공하고, <code>printf</code> 계열 함수로 형식화된 출력도 지원합니다. 이 장에서는 문자열을 만들고 조작하는 방법부터, 화면에 출력하는 다양한 방법까지 살펴봅니다.</p>
 <h2 id="문자열-리터럴"><a class="header" href="#문자열-리터럴">문자열 리터럴</a></h2>
 <p>문자열 리터럴은 큰따옴표와 표준 이스케이프 시퀀스를 사용합니다:</p>
-<pre><code>funlang&gt; "hello world"
+<pre><code>fn&gt; "hello world"
 "hello world"
 
-funlang&gt; "tab\there"
+fn&gt; "tab\there"
 "tab	here"
 </code></pre>
 <p><code>\t</code>, <code>\n</code>, <code>\\</code> 같은 표준 이스케이프 시퀀스를 모두 사용할 수 있습니다. REPL에서 문자열을 입력하면 따옴표가 포함된 결과가 나타나는데, 이는 “이것이 문자열 값임“을 명시하는 것입니다. 파일 출력(<code>println</code> 등)에서는 따옴표 없이 내용만 출력됩니다.</p>
 <h2 id="문자열-연결"><a class="header" href="#문자열-연결">문자열 연결</a></h2>
 <p><code>+</code> 연산자로 문자열을 연결합니다:</p>
-<pre><code>funlang&gt; "hello" + " " + "world"
+<pre><code>fn&gt; "hello" + " " + "world"
 "hello world"
 </code></pre>
 <p>FunLang에서 <code>+</code>는 정수 덧셈과 문자열 연결 모두에 사용됩니다. 타입 추론 덕분에 컴파일러가 문맥에서 어떤 <code>+</code>인지 판단합니다. 단, 정수와 문자열을 섞어 쓰면 타입 오류가 발생합니다 — <code>"age: " + 30</code>은 안 되고, <code>"age: " + to_string 30</code>이 필요합니다.</p>
@@ -198,16 +198,16 @@ funlang&gt; "tab\there"
 </blockquote>
 <h3 id="stringlength"><a class="header" href="#stringlength">String.length</a></h3>
 <p>문자 수를 반환합니다:</p>
-<pre><code>funlang&gt; String.length "hello"
+<pre><code>fn&gt; String.length "hello"
 5
 
-funlang&gt; String.length ""
+fn&gt; String.length ""
 0
 </code></pre>
 <p>빈 문자열의 길이는 0입니다. 인덱스 범위 검사나 반복 횟수 계산에 자주 쓰입니다.</p>
 <h3 id="-연산자-문자열-연결"><a class="header" href="#-연산자-문자열-연결"><code>^^</code> 연산자 (문자열 연결)</a></h3>
 <p><code>^^</code> 연산자로 두 문자열을 연결합니다 (Core 모듈에서 제공):</p>
-<pre><code>funlang&gt; "hello" ^^ " world"
+<pre><code>fn&gt; "hello" ^^ " world"
 "hello world"
 </code></pre>
 <p><code>+</code> 연산자와 결과는 같지만, <code>^^</code>는 문자열 전용 연결 연산자라는 점이 다릅니다. 람다와 함께 사용하면 접두사를 붙이는 함수를 만들 수 있습니다:</p>
@@ -215,13 +215,13 @@ funlang&gt; String.length ""
 let add_prefix = fun s -&gt; "prefix:" ^^ s
 let result = add_prefix "value"
 
-$ funlang prefix.l3
+$ fn prefix.l3
 "prefix:value"
 </code></pre>
 <p><code>fun s -&gt; "prefix:" ^^ s</code>는 “앞에 ’prefix:’를 붙이는 함수“입니다. 이렇게 만든 <code>add_prefix</code>를 파이프라인에서 재사용할 수 있습니다. 예를 들어 리스트의 모든 항목에 접두사를 붙이거나, 고차 함수에 인자로 전달할 때 편리합니다.</p>
 <h3 id="stringsubstring"><a class="header" href="#stringsubstring">String.substring</a></h3>
 <p>시작 인덱스와 길이로 부분 문자열을 추출합니다:</p>
-<pre><code>funlang&gt; String.substring "hello" 1 3
+<pre><code>fn&gt; String.substring "hello" 1 3
 "ell"
 </code></pre>
 <p><code>String.substring s start len</code>은 인덱스 <code>start</code>부터 <code>len</code>개의 문자를 반환합니다.
@@ -229,32 +229,32 @@ $ funlang prefix.l3
 <p>Python의 슬라이싱 <code>s[1:4]</code>와 비슷하지만, 끝 인덱스가 아니라 길이를 지정한다는 점에 주의하세요. Python에서 <code>s[1:4]</code>는 인덱스 1부터 3까지 3개의 문자를 가져오지만, FunLang에서는 <code>String.substring s 1 3</code>으로 동일한 결과를 얻습니다. <code>start + len</code>이 문자열 길이를 초과하지 않도록 주의하세요.</p>
 <h3 id="stringcontains"><a class="header" href="#stringcontains">String.contains</a></h3>
 <p>문자열이 부분 문자열을 포함하는지 확인합니다:</p>
-<pre><code>funlang&gt; String.contains "hello world" "world"
+<pre><code>fn&gt; String.contains "hello world" "world"
 true
 
-funlang&gt; String.contains "hello" "xyz"
+fn&gt; String.contains "hello" "xyz"
 false
 </code></pre>
 <p>검색 결과를 <code>bool</code>로 반환하므로 <code>if</code> 표현식이나 조건 분기에 바로 사용할 수 있습니다. 파일 경로 검증, 키워드 필터링 같은 간단한 텍스트 검색에 유용합니다.</p>
 <h3 id="to_string"><a class="header" href="#to_string">to_string</a></h3>
 <p>모든 타입의 값을 문자열 표현으로 변환합니다:</p>
-<pre><code>funlang&gt; to_string 42
+<pre><code>fn&gt; to_string 42
 "42"
 
-funlang&gt; to_string true
+fn&gt; to_string true
 "true"
 
-funlang&gt; to_string "already a string"
+fn&gt; to_string "already a string"
 "already a string"
 </code></pre>
 <p>ADT, 리스트, 튜플, 레코드 등 모든 복합 타입도 지원합니다:</p>
-<pre><code>funlang&gt; to_string (Some 42)
+<pre><code>fn&gt; to_string (Some 42)
 "Some 42"
 
-funlang&gt; to_string [1; 2; 3]
+fn&gt; to_string [1; 2; 3]
 "[1; 2; 3]"
 
-funlang&gt; to_string (1, true)
+fn&gt; to_string (1, true)
 "(1, true)"
 </code></pre>
 <p><code>to_string</code>은 FunLang에서 가장 유연한 함수 중 하나입니다. 디버깅할 때 복잡한 값을 출력해보고 싶을 때, 또는 로그 메시지를 만들 때 항상 <code>to_string</code>으로 시작하면 됩니다.</p>
@@ -263,7 +263,7 @@ funlang&gt; to_string (1, true)
 <p>이 동작이 처음에는 약간 헷갈릴 수 있습니다. <code>to_string "hello"</code>는 <code>"hello"</code>(따옴표 없이 hello)를 반환하지만, <code>to_string (Some "hello")</code>는 <code>"Some \"hello\""</code> 형태로 내부 문자열에 따옴표가 붙습니다. 컨테이너 안의 문자열이라는 맥락에서 따옴표가 필요하기 때문입니다.</p>
 <h3 id="string_to_int"><a class="header" href="#string_to_int">string_to_int</a></h3>
 <p>문자열을 정수로 파싱합니다:</p>
-<pre><code>funlang&gt; string_to_int "123"
+<pre><code>fn&gt; string_to_int "123"
 123
 </code></pre>
 <p>외부에서 입력받은 숫자 문자열을 계산에 사용하기 전에 정수로 변환할 때 필요합니다. 파싱이 실패하는 경우(숫자가 아닌 문자열)에 대한 처리는 현재 별도로 필요합니다.</p>
@@ -271,13 +271,13 @@ funlang&gt; to_string (1, true)
 <p>FunLang는 네 가지 출력 함수를 제공합니다. 각각 줄바꿈과 형식화 여부가 다릅니다. 어떤 상황에 어떤 함수를 쓰면 좋은지 함께 알아봅니다.</p>
 <h3 id="print"><a class="header" href="#print">print</a></h3>
 <p>줄바꿈 없이 문자열을 출력하고, unit을 반환합니다:</p>
-<pre><code>funlang&gt; print "hello"
+<pre><code>fn&gt; print "hello"
 hello()
 </code></pre>
 <p>대화형 세션에서는 부수 효과 텍스트가 <code>()</code> 결과 바로 앞에 나타납니다. 여러 값을 같은 줄에 이어 출력하거나, 진행 상황을 한 줄에 표시할 때 사용합니다.</p>
 <h3 id="println"><a class="header" href="#println">println</a></h3>
 <p>줄바꿈을 포함하여 문자열을 출력하고, unit을 반환합니다:</p>
-<pre><code>funlang&gt; println "hello"
+<pre><code>fn&gt; println "hello"
 hello
 ()
 </code></pre>
@@ -302,7 +302,7 @@ hello
 let _ = printf "%s is %d years old\n" "Alice" 30
 let result = 0
 
-$ funlang printf_demo.l3
+$ fn printf_demo.l3
 Alice is 30 years old
 0
 </code></pre>
@@ -311,7 +311,7 @@ Alice is 30 years old
 <pre><code>$ cat printf_multi.l3
 let _ = printf "name=%s, active=%b\n" "Bob" true
 
-$ funlang printf_multi.l3
+$ fn printf_multi.l3
 name=Bob, active=true
 0
 </code></pre>
@@ -322,17 +322,17 @@ name=Bob, active=true
 let _ = printfn "name=%s, age=%d" "Alice" 30
 let result = 0
 
-$ funlang printfn_demo.l3
+$ fn printfn_demo.l3
 name=Alice, age=30
 0
 </code></pre>
 <p><code>printf "...\n"</code>을 쓸 필요 없이 <code>printfn "..."</code>을 사용하세요. 줄바꿈을 형식 문자열 끝에 매번 붙이는 것을 잊기 쉽습니다. 한 줄씩 형식화된 출력을 할 때는 <code>printfn</code>이 실수를 줄여줍니다.</p>
 <h3 id="sprintf"><a class="header" href="#sprintf">sprintf</a></h3>
 <p>형식화된 문자열을 <strong>반환</strong>합니다 (출력하지 않음):</p>
-<pre><code>funlang&gt; sprintf "%d + %d = %d" 1 2 3
+<pre><code>fn&gt; sprintf "%d + %d = %d" 1 2 3
 "1 + 2 = 3"
 
-funlang&gt; sprintf "name=%s" "Alice"
+fn&gt; sprintf "name=%s" "Alice"
 "name=Alice"
 </code></pre>
 <p><code>sprintf</code>는 출력하지 않고 형식화된 문자열 값을 만들어 돌려줍니다. 바로 출력하는 대신 나중에 사용하거나 다른 함수에 전달할 형식화된 문자열이 필요할 때 유용합니다. Python의 <code>str.format()</code>나 f-string과 역할이 비슷합니다.</p>
@@ -346,7 +346,7 @@ let new_ = sprintf "result=%d" 42
 
 let result = (old, new_)
 
-$ funlang sprintf_vs.l3
+$ fn sprintf_vs.l3
 ("result=42", "result=42")
 </code></pre>
 <p>두 방법의 결과는 같지만, <code>sprintf</code>가 형식을 한눈에 파악하기 좋습니다. 특히 여러 값을 조합할 때 차이가 뚜렷합니다 — <code>"name=" + to_string name + ", age=" + to_string age</code>보다 <code>sprintf "name=%s, age=%d" name age</code>가 훨씬 읽기 좋습니다.</p>
@@ -360,7 +360,7 @@ let t = "abcdef"
 let _ = println (t.[0..2])
 let _ = println (t.[3..5])
 
-$ funlang str_slice.l3
+$ fn str_slice.l3
 ell
 h
 abc
@@ -373,7 +373,7 @@ let s = "hello"
 let _ = println (s.[2..])
 let _ = println ("hello world".[6..])
 
-$ funlang str_slice_open.l3
+$ fn str_slice_open.l3
 llo
 world
 ()
@@ -388,7 +388,7 @@ let _ = println (to_string (String.startsWith "hello" "he"))
 let _ = println (to_string (String.startsWith "hello" "wo"))
 let _ = println (String.trim "  spaces  ")
 
-$ funlang str_module.l3
+$ fn str_module.l3
 true
 false
 true
@@ -421,7 +421,7 @@ let _ = StringBuilder.add sb " "
 let _ = StringBuilder.add sb "world"
 let _ = println (StringBuilder.toString sb)
 
-$ funlang sb_basic.l3
+$ fn sb_basic.l3
 hello world
 ()
 </code></pre>
@@ -433,7 +433,7 @@ let _ = StringBuilder.add sb ' '
 let _ = StringBuilder.add sb '!'
 let _ = println (StringBuilder.toString sb)
 
-$ funlang sb_char.l3
+$ fn sb_char.l3
 hi !
 ()
 </code></pre>
@@ -458,7 +458,7 @@ let _ = println "second"
 let _ = println "third"
 let result = "done"
 
-$ funlang sequence.l3
+$ fn sequence.l3
 first
 second
 third
@@ -469,14 +469,14 @@ third
 <p>왜 <code>let _ =</code>가 필요한가요? FunLang는 기본적으로 표현식 기반 언어입니다. <code>println "first"</code>는 unit 값 <code>()</code>을 반환하는 표현식입니다. 이 결과를 이름 없이 버리면서 다음 표현식으로 넘어가는 방법이 <code>let _ =</code>입니다. <code>_</code>는 “이 이름에는 관심이 없다“는 관례적인 표기입니다. 시퀀싱이 자연스러운 명령형 언어와 달리, 순수 함수형 언어에서는 부수 효과의 순서를 명시적으로 표현해야 합니다.</p>
 <h2 id="문자열-함수와-파이프"><a class="header" href="#문자열-함수와-파이프">문자열 함수와 파이프</a></h2>
 <p>문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:</p>
-<pre><code>funlang&gt; "hello" |&gt; String.length
+<pre><code>fn&gt; "hello" |&gt; String.length
 5
 </code></pre>
 <p>문자열 변환으로 파이프라인을 구성합니다:</p>
 <pre><code>$ cat string_pipe.l3
 let result = 42 |&gt; to_string |&gt; fun s -&gt; "answer: " ^^ s
 
-$ funlang string_pipe.l3
+$ fn string_pipe.l3
 "answer: 42"
 </code></pre>
 <p><code>42 |&gt; to_string</code>은 <code>"42"</code>를 만들고, <code>|&gt; fun s -&gt; "answer: " ^^ s</code>는 <code>"answer: "</code>와 <code>"42"</code>를 <code>^^</code>로 연결하여 <code>"answer: 42"</code>를 만듭니다. 파이프와 람다가 함께 쓰이는 전형적인 패턴입니다. 변환 단계가 많을수록 파이프라인 방식이 중첩 함수 호출보다 훨씬 읽기 좋습니다.</p>
@@ -489,7 +489,7 @@ let _ = println (format_line "width" 800)
 let _ = println (format_line "height" 600)
 let result = "report complete"
 
-$ funlang report.l3
+$ fn report.l3
 width: 800
 height: 600
 "report complete"

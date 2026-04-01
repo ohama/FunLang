@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -184,7 +184,7 @@ let _ = write_file "/tmp/hello.txt" "hello world"
 let content = read_file "/tmp/hello.txt"
 let result = content
 
-$ funlang file_rw.l3
+$ fn file_rw.l3
 "hello world"
 </code></pre>
 <p><code>write_file</code>은 기존 파일을 덮어씁니다. 파일이 없으면 새로 생성합니다.</p>
@@ -195,7 +195,7 @@ let _ = write_file "/tmp/log.txt" "line1"
 let _ = append_file "/tmp/log.txt" "\nline2"
 let result = read_file "/tmp/log.txt"
 
-$ funlang file_append.l3
+$ fn file_append.l3
 "line1\nline2"
 </code></pre>
 <h3 id="read_lines--write_lines"><a class="header" href="#read_lines--write_lines">read_lines / write_lines</a></h3>
@@ -205,7 +205,7 @@ let _ = write_lines "/tmp/data.txt" ["alice"; "bob"; "carol"]
 let names = read_lines "/tmp/data.txt"
 let result = length names
 
-$ funlang file_lines.l3
+$ fn file_lines.l3
 3
 </code></pre>
 <h3 id="file_exists"><a class="header" href="#file_exists">file_exists</a></h3>
@@ -214,7 +214,7 @@ $ funlang file_lines.l3
 let _ = write_file "/tmp/exists.txt" "data"
 let result = file_exists "/tmp/exists.txt"
 
-$ funlang file_check.l3
+$ fn file_check.l3
 true
 </code></pre>
 <h2 id="에러-처리"><a class="header" href="#에러-처리">에러 처리</a></h2>
@@ -226,7 +226,7 @@ let result =
     with
     | e -&gt; "file not found"
 
-$ funlang file_error.l3
+$ fn file_error.l3
 "file not found"
 </code></pre>
 <h2 id="시스템-함수"><a class="header" href="#시스템-함수">시스템 함수</a></h2>
@@ -236,7 +236,7 @@ $ funlang file_error.l3
 let cwd = get_cwd ()
 let result = String.length cwd &gt; 0
 
-$ funlang get_cwd.l3
+$ fn get_cwd.l3
 true
 </code></pre>
 <h3 id="get_env"><a class="header" href="#get_env">get_env</a></h3>
@@ -246,7 +246,7 @@ let result =
     try get_env "NONEXISTENT_VAR_XYZ"
     with e -&gt; "not set"
 
-$ funlang get_env.l3
+$ fn get_env.l3
 "not set"
 </code></pre>
 <h3 id="get_args"><a class="header" href="#get_args">get_args</a></h3>
@@ -255,12 +255,12 @@ $ funlang get_env.l3
 let args = get_args ()
 let result = args
 
-$ funlang show_args.l3 -- foo bar
+$ fn show_args.l3 -- foo bar
 ["foo"; "bar"]
 </code></pre>
 <h3 id="path_combine"><a class="header" href="#path_combine">path_combine</a></h3>
 <p>두 경로를 합칩니다:</p>
-<pre><code>funlang&gt; path_combine "/home/user" "file.txt"
+<pre><code>fn&gt; path_combine "/home/user" "file.txt"
 "/home/user/file.txt"
 </code></pre>
 <h3 id="dir_files"><a class="header" href="#dir_files">dir_files</a></h3>
@@ -269,7 +269,7 @@ $ funlang show_args.l3 -- foo bar
 let files = dir_files "/tmp"
 let result = length files &gt; 0
 
-$ funlang dir_list.l3
+$ fn dir_list.l3
 true
 </code></pre>
 <h3 id="eprint"><a class="header" href="#eprint">eprint</a></h3>
@@ -278,7 +278,7 @@ true
 let _ = eprint "debug: starting\n"
 let result = 42
 
-$ funlang debug.l3
+$ fn debug.l3
 42
 </code></pre>
 <p><code>eprint</code>의 출력은 stderr로 가므로, stdout의 결과와 섞이지 않습니다.</p>
@@ -290,7 +290,7 @@ let name = stdin_read_line ()
 let _ = println ("안녕하세요, " + name + "!")
 let result = ()
 
-$ echo "Alice" | funlang greet.l3
+$ echo "Alice" | fn greet.l3
 이름을 입력하세요: 안녕하세요, Alice!
 </code></pre>
 <h2 id="함수-요약"><a class="header" href="#함수-요약">함수 요약</a></h2>

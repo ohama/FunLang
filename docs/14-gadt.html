@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -248,7 +248,7 @@ type Expr 'a =
     | BoolLit : bool -&gt; bool Expr
 let result = IntLit 42
 
-$ funlang expr.l3
+$ fn expr.l3
 IntLit 42
 </code></pre>
 <p>일반 ADT 구문과 비교해봅시다:</p>
@@ -281,7 +281,7 @@ let eval e =
     : int)
 let result = eval (IntLit 42)
 
-$ funlang eval.l3
+$ fn eval.l3
 42
 </code></pre>
 <p>이 코드에서 일어나는 일을 단계별로 추적해봅시다:</p>
@@ -335,7 +335,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
-$ funlang calc.l3
+$ fn calc.l3
 42
 </code></pre>
 <p><code>Add : int Expr * int Expr -&gt; int Expr</code>의 의미를 잘 보세요:</p>
@@ -360,7 +360,7 @@ let eval e =
 let _ = printf "%d\n" (eval (IntLit 42))
 let result = eval (BoolLit true)
 
-$ funlang poly-eval.l3
+$ fn poly-eval.l3
 42
 true
 </code></pre>
@@ -379,7 +379,7 @@ let eval_int e =
     : int)
 let result = eval_int (IntLit 7)
 
-$ funlang filter.l3
+$ fn filter.l3
 7
 </code></pre>
 <p><code>BoolLit</code> 분기가 없는데도 불완전 경고가 나타나지 않습니다. 왜일까요?</p>
@@ -398,7 +398,7 @@ let show_int v =
     : string)
 let result = show_int (VInt 99)
 
-$ funlang typed.l3
+$ fn typed.l3
 "99"
 </code></pre>
 <p><code>Val 'a</code>는 세 가지 종류의 값을 담을 수 있지만, 타입 매개변수 <code>'a</code>가 각 값의 구체적인 타입을 보존합니다:</p>
@@ -433,7 +433,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Neg (IntLit 3)))
 
-$ funlang typed_eval.l3
+$ fn typed_eval.l3
 7
 </code></pre>
 <p>이 평가기가 보장하는 것들을 정리합시다:</p>

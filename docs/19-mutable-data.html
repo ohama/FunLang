@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -190,7 +190,7 @@ let v = Array.get arr 2
 let n = Array.length arr
 let result = (arr, v, n)
 
-$ funlang arr_basic.l3
+$ fn arr_basic.l3
 ([|10; 20; 30; 0; 0|], 30, 5)
 </code></pre>
 <p>배열은 <code>[|1; 2; 3|]</code> 형식으로 출력됩니다. <code>Array.set</code>은 unit을 반환하므로 <code>let _ =</code>로 받습니다. 변이는 제자리에서 일어나므로 <code>arr</code>을 다시 바인딩할 필요가 없습니다.</p>
@@ -203,7 +203,7 @@ let _ = Array.set arr 2 99
 let back = Array.toList arr
 let result = back
 
-$ funlang arr_conv.l3
+$ fn arr_conv.l3
 [1; 2; 99; 4; 5]
 </code></pre>
 <p><code>Array.set arr 2 99</code>가 세 번째 원소를 99로 바꿨고, <code>Array.toList</code>로 리스트로 꺼내면 그 변화가 반영되어 있습니다.</p>
@@ -215,7 +215,7 @@ let arr = Array.ofList [10; 20; 30]
 let _ = Array.iter (fun x -&gt; println (to_string x)) arr
 let result = "완료"
 
-$ funlang arr_iter.l3
+$ fn arr_iter.l3
 10
 20
 30
@@ -227,7 +227,7 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let squared = Array.map (fun x -&gt; x * x) arr
 let result = squared
 
-$ funlang arr_map.l3
+$ fn arr_map.l3
 [|1; 4; 9; 16; 25|]
 </code></pre>
 <p><strong>Array.fold</strong> — 배열을 하나의 값으로 축약합니다. 콜백은 반드시 커링된 형태 <code>fun acc -&gt; fun x -&gt; ...</code>로 작성합니다:</p>
@@ -236,7 +236,7 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let total = Array.fold (fun acc -&gt; fun x -&gt; acc + x) 0 arr
 let result = total
 
-$ funlang arr_fold.l3
+$ fn arr_fold.l3
 15
 </code></pre>
 <p><code>(fun acc -&gt; fun x -&gt; acc + x)</code>는 FunLang에서 두 인자를 받는 콜백을 작성하는 방식입니다. <code>fun acc x -&gt; ...</code>는 파싱 에러이므로 반드시 커링 형태를 사용해야 합니다.</p>
@@ -245,7 +245,7 @@ $ funlang arr_fold.l3
 let arr = Array.init 6 (fun i -&gt; i * i)
 let result = arr
 
-$ funlang arr_init.l3
+$ fn arr_init.l3
 [|0; 1; 4; 9; 16; 25|]
 </code></pre>
 <p><code>Array.init 6 f</code>는 길이 6인 배열을 만들고 각 인덱스 <code>i</code>에 <code>f i</code>를 채웁니다. <code>Array.create 6 v</code> 뒤에 반복적으로 <code>Array.set</code>을 호출하는 것과 같지만 훨씬 간결합니다.</p>
@@ -259,7 +259,7 @@ let result =
     with
     | e -&gt; -1
 
-$ funlang arr_oob.l3
+$ fn arr_oob.l3
 -1
 </code></pre>
 <p><strong>참조 동등성:</strong> 배열은 참조 동등성을 사용합니다. 내용이 같은 두 배열이라도 <code>=</code> 연산자는 항상 <code>false</code>를 반환합니다. 동등성을 비교하려면 <code>Array.toList</code>로 변환한 뒤 리스트로 비교하거나, 직접 원소를 순회하는 방법을 사용하세요.</p>
@@ -277,7 +277,7 @@ let v = Hashtable.get ht "name"
 let has = Hashtable.containsKey ht "score"
 let result = (v, has)
 
-$ funlang ht_basic.l3
+$ fn ht_basic.l3
 ("Alice", true)
 </code></pre>
 <p><code>Hashtable.set ht key value</code>는 unit을 반환하는 변이 연산입니다. <code>Hashtable.get ht key</code>는 값을 반환하며, 키가 없으면 예외가 발생합니다. <code>Hashtable.containsKey ht key</code>는 키 존재 여부를 <code>bool</code>로 반환합니다.</p>
@@ -288,7 +288,7 @@ let _ = Hashtable.set ht "score" 10
 let _ = Hashtable.set ht "score" 99
 let result = Hashtable.get ht "score"
 
-$ funlang ht_overwrite.l3
+$ fn ht_overwrite.l3
 99
 </code></pre>
 <h3 id="키-목록과-삭제"><a class="header" href="#키-목록과-삭제">키 목록과 삭제</a></h3>
@@ -303,7 +303,7 @@ let _ = Hashtable.remove ht "b"
 let count_after = length (Hashtable.keys ht)
 let result = (count_before, count_after)
 
-$ funlang ht_keys.l3
+$ fn ht_keys.l3
 (3, 2)
 </code></pre>
 <p><code>Hashtable.keys</code>가 반환하는 리스트에는 삽입 순서가 보장되지 않습니다. 특정 순서로 키를 처리해야 한다면 <code>Hashtable.keys</code>로 얻은 리스트를 <code>sort</code>로 정렬한 뒤 사용하세요.</p>
@@ -320,7 +320,7 @@ let _ = for (k, v) in ht do
   let _ = println k
   println v
 
-$ funlang ht_forin.l3
+$ fn ht_forin.l3
 name
 Alice
 ()
@@ -337,7 +337,7 @@ let _ = println (to_string (HashSet.contains hs 1))
 let _ = println (to_string (HashSet.contains hs 9))
 let _ = println (to_string (HashSet.count hs))
 
-$ funlang hashset_basic.l3
+$ fn hashset_basic.l3
 true
 true
 false
@@ -352,7 +352,7 @@ let hs = HashSet.create ()
 let _ = HashSet.add hs 42
 let _ = for x in hs do println (to_string x)
 
-$ funlang hashset_forin.l3
+$ fn hashset_forin.l3
 42
 ()
 </code></pre>
@@ -384,7 +384,7 @@ let v2 = Queue.dequeue q ()
 let _ = println (to_string v2)
 let _ = println (to_string (Queue.count q))
 
-$ funlang queue_basic.l3
+$ fn queue_basic.l3
 3
 10
 20
@@ -400,7 +400,7 @@ let _ = Queue.enqueue q 2
 let _ = Queue.enqueue q 3
 let _ = for x in q do println (to_string x)
 
-$ funlang queue_forin.l3
+$ fn queue_forin.l3
 1
 2
 3
@@ -432,7 +432,7 @@ let _ = println (to_string ml.[0])
 let _ = println (to_string ml.[1])
 let _ = println (to_string ml.[2])
 
-$ funlang ml_basic.l3
+$ fn ml_basic.l3
 3
 10
 20
@@ -448,7 +448,7 @@ let _ = println (to_string ml.[0])
 let _ = ml.[0] &lt;- 999
 let _ = println (to_string ml.[0])
 
-$ funlang ml_index.l3
+$ fn ml_index.l3
 100
 999
 ()
@@ -461,7 +461,7 @@ let _ = MutableList.add ml 10
 let _ = MutableList.add ml 15
 let _ = for x in ml do println (to_string x)
 
-$ funlang ml_forin.l3
+$ fn ml_forin.l3
 5
 10
 15

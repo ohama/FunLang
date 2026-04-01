@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -187,7 +187,7 @@ with
 | NotFound -&gt; 42
 | _ -&gt; 0
 
-$ funlang exc_basic.l3
+$ fn exc_basic.l3
 42
 </code></pre>
 <p>OCaml이나 F#의 예외 구문과 거의 동일합니다. <code>try-with</code> 블록 안에서 예외가 발생하면 <code>with</code> 아래의 패턴들과 순서대로 매칭합니다. 매칭된 핸들러의 결과가 전체 <code>try-with</code> 식의 결과가 됩니다.</p>
@@ -202,7 +202,7 @@ with
 | InvalidArg msg -&gt; "error: " + msg
 | _ -&gt; "unknown"
 
-$ funlang exc_data.l3
+$ fn exc_data.l3
 "error: bad input"
 </code></pre>
 <p>핸들러에서 <code>InvalidArg msg</code>처럼 패턴 매칭으로 데이터를 꺼낼 수 있습니다. 오류 메시지, 오류 코드, 또는 어떤 타입이든 담을 수 있어서 오류의 맥락을 풍부하게 전달할 수 있습니다.</p>
@@ -219,7 +219,7 @@ with
 | Timeout secs -&gt; "timeout after " + to_string secs + "s"
 | _ -&gt; "unknown"
 
-$ funlang exc_multi.l3
+$ fn exc_multi.l3
 "timeout after 30s"
 </code></pre>
 <p>핸들러는 위에서 아래로 순서대로 시도됩니다. <code>match</code> 표현식과 동일한 규칙입니다. 첫 번째로 매칭되는 핸들러가 실행되므로, 더 구체적인 핸들러를 앞에, <code>| _ -&gt;</code> 같은 포괄적인 핸들러를 뒤에 배치해야 합니다. 순서를 반대로 하면 구체적인 핸들러가 영원히 도달하지 못할 수 있습니다.</p>
@@ -234,7 +234,7 @@ with
 | Error x -&gt; "error: " + to_string x
 | _ -&gt; "unknown"
 
-$ funlang exc_guard.l3
+$ fn exc_guard.l3
 "error: 42"
 </code></pre>
 <p>가드는 패턴이 매치된 후에 평가됩니다. 가드가 실패하면 다음 핸들러로 매칭이 계속됩니다.</p>
@@ -254,7 +254,7 @@ with
 | Inner -&gt; "outer caught"
 | _ -&gt; "fallback"
 
-$ funlang exc_nested.l3
+$ fn exc_nested.l3
 "inner caught"
 </code></pre>
 <p>내부 핸들러가 매치되지 않으면 예외가 외부로 전파됩니다. 내부의 <code>raise</code>를 <code>raise Outer</code>로 변경하면 내부 핸들러의 catch-all이 대신 매치됩니다.</p>
@@ -275,7 +275,7 @@ with
 | First -&gt; "outer caught first"
 | _ -&gt; "outer fallback"
 
-$ funlang exc_reraise.l3
+$ fn exc_reraise.l3
 "inner fallback"
 </code></pre>
 <p><code>First</code>가 발생했을 때 안쪽 <code>try-with</code>를 보면, <code>Second</code>는 매칭 실패하지만 <code>| _ -&gt;</code> 가 모든 것을 잡으므로 <code>"inner fallback"</code>이 반환됩니다. 만약 안쪽 <code>| _ -&gt;</code>가 없었다면 <code>First</code>는 바깥쪽으로 전파되어 <code>"outer caught first"</code>가 되었을 것입니다.</p>
@@ -289,7 +289,7 @@ let result = try
 with
 | NotFound -&gt; 42
 
-$ funlang exc_warn.l3
+$ fn exc_warn.l3
 Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
  --&gt; :0:0-1:0
    = hint: Add a catch-all handler or handle all possible exceptions
@@ -305,7 +305,7 @@ with
 | NotFound -&gt; 42
 | _ -&gt; 0
 
-$ funlang exc_nowarn.l3
+$ fn exc_nowarn.l3
 42
 </code></pre>
 <p>ADT의 패턴 매칭이 “닫힌 타입“에 대해 완전성을 보장할 수 있는 것과 달리, 예외는 “열린 타입“이라 항상 미지의 예외가 올 수 있습니다. <code>| _ -&gt; 0</code>처럼 기본값을 제공하거나, <code>| _ -&gt; raise e</code>처럼 잡은 예외를 다시 던지는 방법도 있습니다. 어떻게 처리할지는 상황에 따라 다르지만, 경고 자체를 무시하는 것은 피하세요.</p>
@@ -322,7 +322,7 @@ with
 | DivByZero -&gt; -1
 | _ -&gt; -2
 
-$ funlang safe_div.l3
+$ fn safe_div.l3
 -1
 </code></pre>
 <p><code>safe_div</code> 함수 자체는 예외 처리를 하지 않고 발생시키기만 합니다. 어떻게 처리할지는 호출하는 쪽의 맥락에 따라 다를 수 있기 때문입니다. 어떤 곳에서는 -1을 반환하고, 다른 곳에서는 0을 반환하거나, 또 다른 곳에서는 오류 메시지를 출력할 수 있습니다. 이렇게 발생과 처리를 분리하면 <code>safe_div</code>는 재사용 가능한 순수한 함수가 됩니다.</p>
@@ -339,7 +339,7 @@ let result =
     with
     | e -&gt; 0
 
-$ funlang failwith_demo.l3
+$ fn failwith_demo.l3
 0
 </code></pre>
 <p><code>failwith</code>는 커스텀 예외를 선언하지 않고도 빠르게 오류를 발생시킬 때 편리합니다. F#의 <code>failwith</code>와 동일합니다.</p>
@@ -348,7 +348,7 @@ $ funlang failwith_demo.l3
 <pre><code>$ cat inline_try.l3
 let result = try failwith "boom" with e -&gt; "caught"
 
-$ funlang inline_try.l3
+$ fn inline_try.l3
 "caught"
 </code></pre>
 <p>여러 핸들러가 필요하면 파이프를 사용하는 일반 형태를 쓰세요. 인라인 형태는 단일 catch-all 핸들러에 적합합니다.</p>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -178,20 +178,20 @@
 <p>앞 장에서 문자열을 다뤘으니, 이번에는 단일 문자를 살펴봅니다. FunLang는 문자열(<code>string</code>)과는 별도로 단일 문자를 표현하는 <code>char</code> 타입을 제공합니다. 작은따옴표로 문자 리터럴을 작성하며, 문자와 정수 사이의 변환 함수를 제공합니다.</p>
 <h2 id="문자-리터럴"><a class="header" href="#문자-리터럴">문자 리터럴</a></h2>
 <p>작은따옴표로 단일 문자를 표현합니다:</p>
-<pre><code>funlang&gt; 'a'
+<pre><code>fn&gt; 'a'
 'a'
 
-funlang&gt; 'Z'
+fn&gt; 'Z'
 'Z'
 
-funlang&gt; '0'
+fn&gt; '0'
 '0'
 </code></pre>
 <p>이스케이프 시퀀스도 지원합니다:</p>
-<pre><code>funlang&gt; '\n'
+<pre><code>fn&gt; '\n'
 '\n'
 
-funlang&gt; '\t'
+fn&gt; '\t'
 '\t'
 </code></pre>
 <h2 id="문자-변환"><a class="header" href="#문자-변환">문자 변환</a></h2>
@@ -201,7 +201,7 @@ let code = char_to_int 'A'
 let back = int_to_char 65
 let result = code
 
-$ funlang char_conv.l3
+$ fn char_conv.l3
 65
 </code></pre>
 <p><code>int_to_char</code>는 0~127 범위의 ASCII 코드만 지원합니다. 범위를 벗어나면 오류가 발생합니다.</p>
@@ -215,18 +215,18 @@ let toLower c =
     else c
 let result = toLower 'H'
 
-$ funlang to_lower.l3
+$ fn to_lower.l3
 'h'
 </code></pre>
 <h2 id="문자-비교"><a class="header" href="#문자-비교">문자 비교</a></h2>
 <p>문자는 비교 연산자로 순서를 비교할 수 있습니다. ASCII 코드 값 기준으로 비교됩니다:</p>
-<pre><code>funlang&gt; 'a' &lt; 'z'
+<pre><code>fn&gt; 'a' &lt; 'z'
 true
 
-funlang&gt; 'A' &gt; 'Z'
+fn&gt; 'A' &gt; 'Z'
 false
 
-funlang&gt; 'a' = 'a'
+fn&gt; 'a' = 'a'
 true
 </code></pre>
 <p>문자와 문자열 사이의 비교도 가능합니다. 비교 연산자는 피연산자의 타입에 따라 자동으로 widening됩니다.</p>
@@ -240,7 +240,7 @@ let classify c =
     | _ -&gt; "other"
 let result = classify 'A'
 
-$ funlang char_match.l3
+$ fn char_match.l3
 "uppercase A"
 </code></pre>
 <h2 id="char-모듈-함수"><a class="header" href="#char-모듈-함수">Char 모듈 함수</a></h2>
@@ -251,7 +251,7 @@ let _ = println (to_string (Char.IsDigit 'a'))
 let _ = println (to_string (Char.IsLetter 'z'))
 let _ = println (to_string (Char.ToUpper 'a'))
 
-$ funlang char_module.l3
+$ fn char_module.l3
 true
 false
 true
@@ -264,7 +264,7 @@ let _ = println (to_string (Char.IsUpper 'A'))
 let _ = println (to_string (Char.IsLower 'a'))
 let _ = println (to_string (Char.ToLower 'Z'))
 
-$ funlang char_case.l3
+$ fn char_case.l3
 true
 true
 'z'

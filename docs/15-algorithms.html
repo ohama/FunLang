@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-7ba49565.js";
+            window.path_to_searchindex_js = "searchindex-6f985edc.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -211,7 +211,7 @@ let rec map f = fun xs -&gt;
 
 let result = map (fun x -&gt; x * x) [1; 2; 3; 4; 5]
 
-$ funlang map.l3
+$ fn map.l3
 [1; 4; 9; 16; 25]
 </code></pre>
 <p><code>map</code>은 두 개의 매개변수를 받습니다. 첫 번째 <code>f</code>가 <code>let rec</code> 매개변수이고,
@@ -227,7 +227,7 @@ let rec filter pred = fun xs -&gt;
 
 let result = filter (fun x -&gt; x % 2 = 0) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 
-$ funlang filter.l3
+$ fn filter.l3
 [2; 4; 6; 8; 10]
 </code></pre>
 <p><code>x % 2 = 0</code>은 <code>%</code> (모듈로) 연산자로 짝수를 판별합니다.</p>
@@ -242,7 +242,7 @@ let rec fold f = fun acc -&gt; fun xs -&gt;
 
 let result = fold (fun acc -&gt; fun x -&gt; acc + x * x) 0 [1; 2; 3; 4; 5]
 
-$ funlang fold.l3
+$ fn fold.l3
 55
 </code></pre>
 <p>세 개의 매개변수가 중첩 클로저로 전달됩니다: <code>f</code>가 <code>let rec</code> 매개변수,
@@ -258,7 +258,7 @@ let rec sieve xs =
 
 let result = sieve [2..50]
 
-$ funlang sieve_prelude.l3
+$ fn sieve_prelude.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 </code></pre>
 <p><code>filter</code>는 Prelude에서 제공되므로 재정의할 필요 없이, <code>sieve</code> 함수만 작성하면
@@ -271,7 +271,7 @@ let rec fact n = if n &lt;= 1 then 1 else n * fact (n - 1)
 
 let result = fact 10
 
-$ funlang factorial.l3
+$ fn factorial.l3
 3628800
 </code></pre>
 <p><code>fact 10</code>은 10 * 9 * 8 * … * 1 = 3,628,800을 계산합니다.
@@ -287,7 +287,7 @@ let rec map f = fun xs -&gt;
 
 let result = map fib [0..15]
 
-$ funlang fibonacci.l3
+$ fn fibonacci.l3
 [0; 1; 1; 2; 3; 5; 8; 13; 21; 34; 55; 89; 144; 233; 377; 610]
 </code></pre>
 <p><code>[0..15]</code>는 0부터 15까지 16개의 정수 리스트를 생성합니다.
@@ -303,7 +303,7 @@ let lcm a = fun b -&gt;
 
 let result = (gcd 48 36, lcm 12 18)
 
-$ funlang gcd_lcm.l3
+$ fn gcd_lcm.l3
 (12, 36)
 </code></pre>
 <p><code>gcd 48 36</code>의 축약: gcd 48 36 -&gt; gcd 36 12 -&gt; gcd 12 0 -&gt; 12.
@@ -323,7 +323,7 @@ let rec filter pred = fun xs -&gt;
 let coprimes n = filter (fun k -&gt; gcd n k = 1) [1..n]
 let result = coprimes 12
 
-$ funlang coprimes.l3
+$ fn coprimes.l3
 [1; 5; 7; 11]
 </code></pre>
 <p><code>[1..12]</code> 중에서 12와 GCD가 1인 수만 남깁니다. 이것이 오일러 토션트 함수
@@ -341,7 +341,7 @@ let isPrime n = if n &lt; 2 then false else checkPrime n 2
 
 let result = filter (fun n -&gt; isPrime n) [2..50]
 
-$ funlang is_prime.l3
+$ fn is_prime.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 </code></pre>
 <p><code>checkPrime n d</code>는 2부터 sqrt(n)까지 나눠보며 소수를 판별합니다.
@@ -355,7 +355,7 @@ let rec power base = fun exp -&gt;
 
 let result = power 2 10
 
-$ funlang power.l3
+$ fn power.l3
 1024
 </code></pre>
 <p><code>power 2 10</code>은 2^10 = 1024를 계산합니다.</p>
@@ -377,7 +377,7 @@ let rec sort xs =
 
 let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang insertion_sort.l3
+$ fn insertion_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 </code></pre>
 <p><code>insert</code>와 <code>sort</code>가 각각 독립된 최상위 함수입니다. <code>insert</code>는 정렬된 리스트에서
@@ -406,7 +406,7 @@ let rec qsort xs =
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang quicksort.l3
+$ fn quicksort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 </code></pre>
 <p><code>filter</code>, <code>append</code>, <code>qsort</code> 세 함수가 각각 독립 선언입니다. 피벗은 리스트의
@@ -423,7 +423,7 @@ let rec qsort xs =
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
-$ funlang qsort_prelude.l3
+$ fn qsort_prelude.l3
 [1; 2; 3; 5; 7; 8; 9]
 </code></pre>
 <h3 id="병합-정렬"><a class="header" href="#병합-정렬">병합 정렬</a></h3>
@@ -461,7 +461,7 @@ let rec msort xs =
 
 let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ funlang merge_sort.l3
+$ fn merge_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 </code></pre>
 <p>다섯 개의 함수가 각각 독립된 최상위 선언입니다. 각 함수를 독립적으로 읽고 이해할 수 있습니다.</p>
@@ -496,7 +496,7 @@ let rec inorder t =
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
-$ funlang tree_sort.l3
+$ fn tree_sort.l3
 [1; 2; 3; 5; 7; 8; 9]
 </code></pre>
 <p><code>Tree</code> 타입은 두 생성자를 가진 대수적 데이터 타입입니다: <code>Leaf</code>(빈 노드)와
@@ -528,7 +528,7 @@ let three = Succ (Succ (Succ Zero))
 let four = Succ (Succ (Succ (Succ Zero)))
 let result = toInt (mul three four)
 
-$ funlang peano.l3
+$ fn peano.l3
 12
 </code></pre>
 <p><code>add</code>는 <code>a</code>에서 <code>Succ</code>를 하나씩 벗기고 결과를 감쌉니다:
@@ -553,7 +553,7 @@ let rec sieve xs =
 
 let result = sieve [2..50]
 
-$ funlang sieve.l3
+$ fn sieve.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 </code></pre>
 <p><code>[2..50]</code>이 2부터 50까지의 리스트를 생성합니다. <code>sieve</code>는 리스트의 첫 원소 <code>p</code>를
@@ -576,7 +576,7 @@ let rec rev acc = fun xs -&gt;
 let seq = rev [] (collatz 27 [])
 let result = length seq
 
-$ funlang collatz.l3
+$ fn collatz.l3
 112
 </code></pre>
 <p><code>collatz</code>는 꼬리 재귀 함수로, 누적자 <code>acc</code>에 각 단계의 값을 기록합니다.
@@ -601,7 +601,7 @@ let fizzbuzz n =
 
 let result = map fizzbuzz [1..20]
 
-$ funlang fizzbuzz.l3
+$ fn fizzbuzz.l3
 ["1"; "2"; "Fizz"; "4"; "Buzz"; "Fizz"; "7"; "8"; "Fizz"; "Buzz"; "11"; "Fizz"; "13"; "14"; "FizzBuzz"; "16"; "17"; "Fizz"; "19"; "Buzz"]
 </code></pre>
 <p><code>fizzbuzz</code>는 <code>%</code> 연산자로 3과 5의 나머지를 구하고 튜플로 만들어 패턴 매칭합니다.
@@ -627,7 +627,7 @@ let r1 = stateA [1; 0; 1; 0]
 let r2 = stateA [1; 0; 0]
 let result = (r1, r2)
 
-$ funlang state_machine.l3
+$ fn state_machine.l3
 (ended in B, ended in B)
 </code></pre>
 <p>두 상태 A, B 사이를 전이하는 간단한 오토마톤입니다:</p>
