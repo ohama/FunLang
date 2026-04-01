@@ -317,7 +317,23 @@ x : int
 
 ## 오류 메시지
 
-타입 오류에는 오류 코드, 소스 위치, 힌트가 포함됩니다:
+타입 오류에는 오류 코드, 소스 위치, 소스 스니펫, 힌트가 포함됩니다. 파일 모드에서는 해당 소스 라인과 `^^^` 밑줄이 표시됩니다:
+
+```
+$ cat type_error.l3
+let x = 1
+let y = x + "hello"
+
+$ langthree type_error.l3
+error[E0301]: Type mismatch: expected int but got string
+ --> type_error.l3:2:6-19
+    |
+  2 | let y = x + "hello"
+    |       ^^^^^^^^^^^^^
+   = hint: Check that all branches of your expression return the same type
+```
+
+표현식 모드에서는 소스 파일이 없으므로 위치만 표시됩니다:
 
 ```
 $ langthree --expr '"hello" + 1'
@@ -326,20 +342,46 @@ error[E0301]: Type mismatch: expected string but got int
    = hint: Check that all branches of your expression return the same type
 ```
 
-파싱 오류:
+### "Did you mean?" 제안
+
+변수명이나 함수명에 오타가 있으면 유사한 이름을 제안합니다:
+
+```
+$ cat typo.l3
+let x = 1
+let result = prnt (to_string x)
+
+$ langthree typo.l3
+error[E0303]: Unbound variable: prnt
+ --> typo.l3:2:11-17
+    |
+  2 | let result = prnt (to_string x)
+    |            ^^^^^^
+   = hint: Did you mean 'print'?
+```
+
+변수, 생성자, 모듈, 타입 클래스 이름에 대해 제안이 동작합니다.
+
+### 파싱 오류
+
+파싱 오류에는 예상하지 못한 토큰과 소스 위치가 포함됩니다:
+
+```
+$ cat parse_err.l3
+let f x = = y
+
+$ langthree parse_err.l3
+Error: parse error: unexpected EQUALS at parse_err.l3:1:8
+    |
+  1 | let f x = = y
+    |         ^
+```
+
+표현식 모드의 파싱 오류는 위치 정보 없이 표시됩니다:
 
 ```
 $ langthree --expr '1 +'
 Error: parse error
-```
-
-미정의 변수 오류:
-
-```
-$ langthree --expr 'foo'
-error[E0303]: Unbound variable: foo
- --> <expr>:1:0-3
-   = hint: Make sure the variable is defined before use
 ```
 
 ## 경고
@@ -364,7 +406,10 @@ let result =
 
 $ langthree incomplete.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
- --> :0:0-1:0
+ --> incomplete.l3:6:4-8:16
+    |
+  6 |     match Red with
+    |     ^^^^^^^^^^^^^^
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 ```
@@ -388,7 +433,10 @@ let result =
 
 $ langthree redundant.l3
 Warning: warning[W0002]: Redundant pattern in clause 4. This case will never be reached.
- --> :0:0-1:0
+ --> redundant.l3:6:4-11:10
+    |
+  6 |     match Red with
+    |     ^^^^^^^^^^^^^^
    = hint: Remove the unreachable pattern
 1
 ```

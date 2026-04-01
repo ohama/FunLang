@@ -165,9 +165,15 @@ let bad = show (fun x -> x)
 
 $ langthree no_instance.l3
 error[E0701]: No instance of Show for 'x -> 'x
+ --> no_instance.l3:1:8-14
+    |
+  1 | let bad = show (fun x -> x)
+    |         ^^^^^^
+   = hint: Add an instance declaration for this type
+           (Available instances: Show char, Show string, Show bool, Show int)
 ```
 
-함수 타입에 대한 `Show` 인스턴스가 없으므로 컴파일 에러가 발생합니다. "이 타입은 문자열로 변환할 방법이 정의되지 않았다"는 것을 타입 시스템이 잡아줍니다.
+함수 타입에 대한 `Show` 인스턴스가 없으므로 컴파일 에러가 발생합니다. 에러 메시지에는 사용 가능한 인스턴스 목록이 포함되어 있어, 어떤 타입에 대해 `show`를 사용할 수 있는지 한눈에 볼 수 있습니다.
 
 ### 중복 인스턴스 선언
 
@@ -175,15 +181,17 @@ error[E0701]: No instance of Show for 'x -> 'x
 $ cat dup_instance.l3
 typeclass Show 'a =
     | show : 'a -> string
-
 instance Show int =
     let show x = to_string x
-
 instance Show int =
     let show x = to_string x
 
 $ langthree dup_instance.l3
 error[E0702]: Duplicate instance declaration: Show int
+ --> dup_instance.l3:3:0-4:28
+    |
+  3 | instance Show int =
+    | ^^^^^^^^^^^^^^^^^^^
 ```
 
 같은 타입에 대해 인스턴스를 두 번 선언하면 에러가 발생합니다. 어떤 구현을 선택해야 할지 모호해지기 때문입니다.
@@ -196,6 +204,10 @@ let result = eq (fun x -> x) (fun x -> x)
 
 $ langthree eq_error.l3
 error[E0701]: No instance of Eq for 'z -> 'z
+ --> eq_error.l3:1:11-15
+    |
+  1 | let result = eq (fun x -> x) (fun x -> x)
+    |            ^^^^
 ```
 
 함수 타입은 동등성 비교가 불가능합니다. 수학적으로 두 함수가 같은지 판정하는 것은 일반적으로 불가능한 문제이며, LangThree의 타입 시스템은 이를 컴파일 타임에 방지합니다.

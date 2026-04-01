@@ -129,7 +129,12 @@ let _ =
         i <- 42
 
 $ langthree for_err.l3
-error[E0320]: Cannot assign to immutable variable 'i'. Use 'let mut' to declare mutable variables.
+error[E0320]: Cannot assign to immutable variable 'i'. ...
+ --> for_err.l3:3:8-15
+    |
+  3 |         i <- 42
+    |         ^^^^^^^
+   = hint: Declare the variable with 'let mut' to allow assignment
 ```
 
 루프 카운터를 직접 수정할 필요가 있다면 별도의 `let mut` 변수를 사용하세요.
@@ -274,6 +279,10 @@ let _ = if true then 42
 
 $ langthree if_then_err.l3
 error[E0301]: Type mismatch: expected int but got unit
+ --> if_then_err.l3:1:6-23
+    |
+  1 | let _ = if true then 42
+    |       ^^^^^^^^^^^^^^^^^
 ```
 
 `if cond then expr`는 then 브랜치가 unit인 경우에만 사용하세요. 값을 반환하는 조건문이라면 반드시 `if cond then expr1 else expr2` 형태로 작성하세요.

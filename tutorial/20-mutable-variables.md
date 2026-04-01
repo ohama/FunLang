@@ -361,10 +361,15 @@ let x = 5
 let _ = x <- 10
 
 $ langthree mut_err_immutable.l3
-error[E0320]: Cannot assign to immutable variable 'x'. Use 'let mut' to declare mutable variables.
+error[E0320]: Cannot assign to immutable variable 'x'. ...
+ --> mut_err_immutable.l3:2:6-14
+    |
+  2 | let _ = x <- 10
+    |       ^^^^^^^^
+   = hint: Declare the variable with 'let mut' to allow assignment
 ```
 
-힌트 메시지가 `let mut`을 사용하라고 안내합니다. 변수를 가변으로 만들려면 선언 시 `let mut`을 사용해야 합니다.
+소스 코드 스니펫이 문제 위치를 정확히 가리킵니다. 변수를 가변으로 만들려면 선언 시 `let mut`을 사용해야 합니다.
 
 ### E0301: 타입 불일치
 
@@ -377,6 +382,10 @@ let _ = x <- "hello"
 
 $ langthree mut_err_type.l3
 error[E0301]: Type mismatch: expected int but got string
+ --> mut_err_type.l3:2:6-20
+    |
+  2 | let _ = x <- "hello"
+    |       ^^^^^^^^^^^^^^
 ```
 
 `x`는 `int`로 선언되었으므로 `string`을 대입할 수 없습니다. 가변 변수의 타입은 선언 시점에 고정됩니다.
