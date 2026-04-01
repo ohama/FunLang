@@ -1,5 +1,5 @@
 // Test: basic let mut declaration and read
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let mut x = 42 in x
 // --- Output:

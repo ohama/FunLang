@@ -1,5 +1,5 @@
 // Test: deriving Show for nullary ADT
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Color = | Red | Green | Blue
 deriving Show Color

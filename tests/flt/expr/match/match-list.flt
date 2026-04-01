@@ -1,5 +1,5 @@
 // Test: match on list patterns (empty and cons)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = match [1; 2; 3] with | [] -> 0 | x :: _ -> x
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: module with deeply nested internal let bindings (depth 5 from module)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 module Calc =
     let compute x =

@@ -1,4 +1,4 @@
 // Test: --emit-ast for And expression
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "true && false"
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "true && false"
 // --- Output:
 And (Bool true, Bool false)

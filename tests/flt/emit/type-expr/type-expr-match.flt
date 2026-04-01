@@ -1,4 +1,4 @@
 // Test: --emit-type match expression infers branch result type
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr 'match 1 with | 0 -> "zero" | _ -> "other"'
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr 'match 1 with | 0 -> "zero" | _ -> "other"'
 // --- Output:
 string

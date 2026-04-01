@@ -1,4 +1,4 @@
 // Test: --emit-ast for Multiply expression
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "2 * 4"
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "2 * 4"
 // --- Output:
 Multiply (Number 2, Number 4)

@@ -1,5 +1,5 @@
 // Test: HashSet basic usage with integers (COLL-02)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let hs = HashSet.create ()
 let r1 = HashSet.add hs 1

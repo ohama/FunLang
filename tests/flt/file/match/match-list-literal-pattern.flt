@@ -1,5 +1,5 @@
 // Test: list literal patterns in match - [x], [x; y], [x; y; z]
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let describe xs =
     match xs with

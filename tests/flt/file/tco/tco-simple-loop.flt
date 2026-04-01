@@ -1,5 +1,5 @@
 // Test: tail-recursive loop with 1M iterations (TCO prevents stack overflow)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     let rec loop n = if n = 0 then 0 else loop (n - 1)

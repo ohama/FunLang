@@ -1,5 +1,5 @@
 // Test: pipe operator combined with composition
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let double x = x * 2
 let inc x = x + 1

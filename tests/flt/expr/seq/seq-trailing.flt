@@ -1,5 +1,5 @@
 // Test: trailing semicolon is accepted and silently ignored (no parse error)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = print "ok";
 // --- Output:

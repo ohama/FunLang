@@ -1,5 +1,5 @@
 // Test: recursive factorial with let rec
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
 // --- Output:

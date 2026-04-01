@@ -1,5 +1,5 @@
 // Test: --emit-type for parametric ADT type inference
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-type %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type %input
 // --- Input:
 type Option 'a =
     | Some of 'a

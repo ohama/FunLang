@@ -1,5 +1,5 @@
 // Test: Prelude functions in pipeline
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = [1..10] |> filter (fun x -> x - (x / 2) * 2 = 1) |> map (fun x -> x * x)
 // --- Output:

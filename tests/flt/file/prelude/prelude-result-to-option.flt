@@ -1,5 +1,5 @@
 // Test: Prelude resultToOption converts Ok to Some and Error to None
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let r1 = resultToOption (Ok 42)
 let r2 = resultToOption (Error "oops")

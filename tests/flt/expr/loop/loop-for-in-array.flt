@@ -1,5 +1,5 @@
 // Test FORIN-02: for-in iterates array elements
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.ofList [10; 20; 30]
 let mut sum = 0

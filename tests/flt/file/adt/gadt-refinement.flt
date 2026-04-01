@@ -1,5 +1,5 @@
 // Test: GADT type refinement in pattern matching
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Expr 'a =
     | IntLit : int -> int Expr

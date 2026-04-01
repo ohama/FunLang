@@ -1,5 +1,5 @@
 // Test: not with filter for negation
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let isEven x = x - (x / 2) * 2 = 0
 let odds = filter (fun x -> not (isEven x)) [1..10]

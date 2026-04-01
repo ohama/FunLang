@@ -1,5 +1,5 @@
 // Test: chained pipe operators
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = 1 |> (fun x -> x + 1) |> (fun x -> x * 3)
 // --- Output:

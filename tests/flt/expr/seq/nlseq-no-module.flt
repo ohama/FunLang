@@ -1,5 +1,5 @@
 // Test NLSEQ-05: module-level let declarations are independent (no spurious SEMICOLON)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let a = 1
 let b = 2

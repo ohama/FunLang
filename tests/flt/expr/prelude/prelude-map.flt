@@ -1,5 +1,5 @@
 // Test: map function over a list
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let rec map f = fun xs -> match xs with | [] -> [] | x :: rest -> f x :: map f rest in map (fun x -> x + 1) [1; 2; 3]
 // --- Output:

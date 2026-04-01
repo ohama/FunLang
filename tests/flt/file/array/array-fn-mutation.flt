@@ -1,5 +1,5 @@
 // Test: Array passed to function - mutation visible after function returns
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let fillArray = fun arr -> fun v ->
   let _ = Array.set arr 0 v

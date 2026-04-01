@@ -1,5 +1,5 @@
 // Test: implicit in -- module lets NOT affected
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 module M =
     let x = 1

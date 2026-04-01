@@ -1,4 +1,4 @@
 // Test: --emit-type for pipe operator infers result type
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr '1 |> (fun x -> x + 1)'
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr '1 |> (fun x -> x + 1)'
 // --- Output:
 int

@@ -1,5 +1,5 @@
 // Test: Array with string elements
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.ofList ["hello"; "world"; "test"]
 let _ = println (Array.get arr 0)

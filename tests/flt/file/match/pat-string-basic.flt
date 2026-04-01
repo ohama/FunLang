@@ -1,5 +1,5 @@
 // Test: string pattern matching - basic string constant
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     match "hello" with

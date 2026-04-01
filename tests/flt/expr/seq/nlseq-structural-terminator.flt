@@ -1,5 +1,5 @@
 // Test NLSEQ-ST: else at same indent is NOT preceded by spurious SEMICOLON
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let x = 5
 let result =

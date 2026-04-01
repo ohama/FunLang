@@ -1,5 +1,5 @@
 // Test: reassigning mutable variable with different type produces E0301 error
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let mut x = 5 in x <- "hello"
 // --- ExitCode: 1

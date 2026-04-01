@@ -1,5 +1,5 @@
 // Test: Prelude ++ operator as function in fold
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = fold (++) [] [[1; 2]; [3]; [4; 5]]
 // --- Output:

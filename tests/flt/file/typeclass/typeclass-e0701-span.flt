@@ -1,5 +1,5 @@
 // Test: E0701 NoInstance shows source location instead of <unknown location> (Bug 1 fix)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 type Foo = | Bar
 let result = show Bar

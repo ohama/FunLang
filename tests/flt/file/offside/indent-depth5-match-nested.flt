@@ -1,5 +1,5 @@
 // Test: nested match expressions (match inside match clause) at depth 5
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Shape = Circle of int | Rect of int * int | Point
 

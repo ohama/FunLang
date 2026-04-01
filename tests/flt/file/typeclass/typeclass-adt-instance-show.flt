@@ -1,5 +1,5 @@
 // Test: Show instance for user-defined ADT with multiple constructors
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Shape = | Circle | Square | Triangle
 

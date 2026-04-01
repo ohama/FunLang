@@ -1,5 +1,5 @@
 // Test: let mut inside offside-rule indented block
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let counter n =
     let mut i = 0

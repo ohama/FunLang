@@ -1,5 +1,5 @@
 // Test: Prelude not function
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = (not true, not false, not (1 = 2))
 // --- Output:

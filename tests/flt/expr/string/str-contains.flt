@@ -1,5 +1,5 @@
 // Test: string_contains returns true when a substring is found
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = string_contains "hello" "ell"
 // --- Output:

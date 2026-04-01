@@ -1,5 +1,5 @@
 // Test: range [3..3] produces single-element list
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = [3..3]
 // --- Output:

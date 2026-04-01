@@ -1,5 +1,5 @@
 // Test: to_string converts an integer to its string representation
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = to_string 42
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: unit type with side effects sequencing
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = print "step1 "
 let _ = print "step2 "

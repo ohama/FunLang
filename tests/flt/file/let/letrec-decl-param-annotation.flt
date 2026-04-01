@@ -1,5 +1,5 @@
 // Test: first-param type annotation enforcement on let rec bindings
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec f (x : int) y = x + y
 and g (z : bool) = if z then 1 else 0

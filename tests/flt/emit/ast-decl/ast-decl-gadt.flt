@@ -1,5 +1,5 @@
 // Test: --emit-ast for GADT type declaration with return type annotations
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 type Expr 'a =
   | IntLit : int -> int Expr

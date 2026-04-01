@@ -1,5 +1,5 @@
 // Test: --emit-ast for simple ADT type declaration with constructor usage
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 type Color =
     | Red

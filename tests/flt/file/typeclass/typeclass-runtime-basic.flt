@@ -1,5 +1,5 @@
 // Test: instance Show int — show 42 evaluates to "42" at runtime
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 typeclass Show 'a =
     | show : 'a -> string

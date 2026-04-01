@@ -1,5 +1,5 @@
 // Test: <|> operator for Option fallback chain
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
 

@@ -1,5 +1,5 @@
 // Test: StringBuilder method chaining (COLL-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sb = StringBuilder.create ()
 let _ = StringBuilder.add sb "a"

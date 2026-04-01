@@ -1,5 +1,5 @@
 // Test: greater than or equal comparison (false case)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = 2 >= 5
 // --- Stdout:

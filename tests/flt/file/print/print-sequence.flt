@@ -1,5 +1,5 @@
 // Test: file-mode print side effects happen in declaration order before final value
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = print "a"
 

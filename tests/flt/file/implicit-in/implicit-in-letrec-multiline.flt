@@ -1,5 +1,5 @@
 // Test: implicit in -- let rec + multiline fun -> + body
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sorted =
     let rec filter pred = fun xs ->

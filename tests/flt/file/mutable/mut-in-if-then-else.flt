@@ -1,5 +1,5 @@
 // Test: let mut used with if-then-else
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     let mut x = 0

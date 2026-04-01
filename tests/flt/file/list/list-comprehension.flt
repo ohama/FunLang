@@ -1,5 +1,5 @@
 // Test: List comprehension [for x in coll -> expr] and range variant (LANG-02)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let doubled = [for x in [1;2;3] -> x * 2]
 let _ = println (to_string doubled)

@@ -1,5 +1,5 @@
 // Test: pattern matching on list of tuples (summing first elements)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest

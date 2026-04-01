@@ -1,5 +1,5 @@
 // Test: println writes string to stdout with newline and returns unit
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = println "hello"
 // --- Output:

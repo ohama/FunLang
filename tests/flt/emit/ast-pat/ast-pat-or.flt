@@ -1,4 +1,4 @@
 // Test: --emit-ast pattern: or-pattern (OrPat)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr 'match 1 with | 1 | 2 -> "a" | _ -> "b"'
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr 'match 1 with | 1 | 2 -> "a" | _ -> "b"'
 // --- Output:
 Match (Number 1, [(OrPat [ConstPat (IntConst 1) | ConstPat (IntConst 2)], String "a"); (WildcardPat, String "b")])

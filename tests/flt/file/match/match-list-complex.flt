@@ -1,5 +1,5 @@
 // Test: complex list pattern matching with multiple cases
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let describe xs = match xs with
 | [] -> "empty"

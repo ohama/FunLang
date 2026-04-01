@@ -1,5 +1,5 @@
 // Test: constrained type annotation parses to TEConstrained in let declaration AST
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 let f : Show 'a => 'a -> string = fun x -> show x
 // --- Output:

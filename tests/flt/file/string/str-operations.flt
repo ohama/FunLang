@@ -1,5 +1,5 @@
 // Test: string built-in functions in file mode
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let s = "hello world"
 let n = string_length s

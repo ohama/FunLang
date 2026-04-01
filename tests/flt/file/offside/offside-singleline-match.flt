@@ -1,5 +1,5 @@
 // Test: single-line match as let RHS with implicit in
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     let y = match 5 with | x -> x * 2

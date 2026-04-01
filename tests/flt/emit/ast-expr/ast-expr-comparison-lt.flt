@@ -1,4 +1,4 @@
 // Test: --emit-ast for LessThan expression
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "1 < 2"
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "1 < 2"
 // --- Output:
 LessThan (Number 1, Number 2)

@@ -1,5 +1,5 @@
 // Test: out-of-bounds Array.get raises catchable exception
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.create 2 0
 let result = try Array.get arr 5 with e -> -1

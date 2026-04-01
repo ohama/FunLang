@@ -1,5 +1,5 @@
 // Test: Array.map transforms each element, producing a new array (TST-20)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.ofList [1; 2; 3]
 let doubled = Array.map (fun x -> x * 2) arr

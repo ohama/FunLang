@@ -1,5 +1,5 @@
 // Test: Prelude resultMapError transforms error value
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let r1 = resultMapError (fun e -> "wrapped: " + e) (Error "fail")
 let r2 = resultMapError (fun e -> "wrapped: " + e) (Ok 42)

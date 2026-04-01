@@ -1,5 +1,5 @@
 // Test: --emit-ast for module declaration with nested let
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 module M =
   let x = 42

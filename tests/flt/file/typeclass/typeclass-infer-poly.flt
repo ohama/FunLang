@@ -1,5 +1,5 @@
 // Test: duplicate instance declaration for the same type produces E0702 error
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 typeclass Show 'a =
     | show : 'a -> string

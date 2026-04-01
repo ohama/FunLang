@@ -1,5 +1,5 @@
 // Test: multiple closures share same mutable variable
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let mut x = 0
 let inc y = x <- x + 1

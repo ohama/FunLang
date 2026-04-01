@@ -1,5 +1,5 @@
 // Test: --emit-ast for exception declaration with data payload
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 exception InvalidArg of string
 // --- Output:

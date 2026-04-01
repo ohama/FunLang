@@ -1,5 +1,5 @@
 // Test: multiple printf calls with side effects ordering
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = printf "%d " 1
 let _ = printf "%d " 2

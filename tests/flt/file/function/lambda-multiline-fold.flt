@@ -1,5 +1,5 @@
 // Test: chained fun -> with multiline body
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec fold f = fun acc -> fun xs ->
     match xs with

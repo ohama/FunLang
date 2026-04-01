@@ -1,5 +1,5 @@
 // Test: nested list pattern matching with multiple elements
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = match [1; 2; 3; 4] with | a :: b :: c :: rest -> a + b + c | _ -> 0
 // --- Output:

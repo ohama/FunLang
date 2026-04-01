@@ -1,5 +1,5 @@
 // Test: when guards in match expressions
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = match 5 with
 | x when x > 3 -> "big"

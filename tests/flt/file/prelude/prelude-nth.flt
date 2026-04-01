@@ -1,5 +1,5 @@
 // Test: Prelude nth function (zero-indexed)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = (nth 0 [10; 20; 30], nth 2 [10; 20; 30])
 // --- Output:

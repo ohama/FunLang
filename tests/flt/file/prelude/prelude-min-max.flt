@@ -1,5 +1,5 @@
 // Test: Prelude min and max functions
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = (min 3 5, max 3 5, min 10 2, max 0 0)
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: higher-order functions passed as arguments
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let apply f x = f x
 let double x = x * 2

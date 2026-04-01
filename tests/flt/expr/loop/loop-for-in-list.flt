@@ -1,5 +1,5 @@
 // Test FORIN-01: for-in iterates list elements in order
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let mut total = 0
 let _ =

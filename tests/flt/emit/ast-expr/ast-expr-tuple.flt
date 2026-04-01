@@ -1,4 +1,4 @@
 // Test: --emit-ast for Tuple expression
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr '(1, true, "hi")'
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr '(1, true, "hi")'
 // --- Output:
 Tuple [Number 1, Bool true, String "hi"]

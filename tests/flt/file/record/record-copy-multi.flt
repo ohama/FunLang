@@ -1,5 +1,5 @@
 // Test: record copy-and-update with multiple fields
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Person = { name: string; age: int; active: bool }
 

@@ -1,5 +1,5 @@
 // Test: match on result of function call (computed value)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let abs x = if x < 0 then 0 - x else x
 let classify x =

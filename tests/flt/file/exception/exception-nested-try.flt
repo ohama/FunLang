@@ -1,5 +1,5 @@
 // Test: nested try-with with exception propagation
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 exception Inner
 exception Outer

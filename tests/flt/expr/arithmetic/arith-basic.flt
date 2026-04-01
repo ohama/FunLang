@@ -1,5 +1,5 @@
 // Test: basic arithmetic with operator precedence (1 + 2 * 3 = 7)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = 1 + 2 * 3
 // --- Output:

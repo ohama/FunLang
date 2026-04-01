@@ -1,5 +1,5 @@
 // Test: Empty array (size 0) - create, length, toList
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.create 0 0
 let _ = println (to_string (Array.length arr))

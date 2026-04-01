@@ -1,5 +1,5 @@
 // Test: Prelude any and all predicates
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let r1 = any (fun x -> x > 5) [1; 2; 3; 4; 5; 6]
 let r2 = any (fun x -> x > 10) [1; 2; 3]

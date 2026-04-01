@@ -1,5 +1,5 @@
 // Test: list inequality
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = if [1; 2] <> [3; 4] then "ne" else "eq"
 // --- Output:

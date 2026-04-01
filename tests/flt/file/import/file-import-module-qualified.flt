@@ -1,5 +1,5 @@
 // Test: open file import then qualified module access (Module.func)
-// --- Command: bash -c 'printf "module Math =\n    let square x = x * x\n" > /tmp/flt-math-qual.fun && /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input'
+// --- Command: bash -c 'printf "module Math =\n    let square x = x * x\n" > /tmp/flt-math-qual.fun && src/FunLang/bin/Release/net10.0/FunLang %input'
 // --- Input:
 open "/tmp/flt-math-qual.fun"
 let result = Math.square 7

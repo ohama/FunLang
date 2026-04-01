@@ -1,5 +1,5 @@
 // Test: string_to_int and to_string round-trip
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let n = string_to_int "123"
 let s = to_string n

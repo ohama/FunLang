@@ -1,5 +1,5 @@
 // Test: state machine using mutual recursion
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec stateA xs =
     match xs with

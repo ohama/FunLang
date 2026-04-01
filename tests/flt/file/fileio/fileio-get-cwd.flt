@@ -1,5 +1,5 @@
 // Test: get_cwd returns the current working directory as a non-empty string
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let cwd = get_cwd ()
 let result = cwd <> ""

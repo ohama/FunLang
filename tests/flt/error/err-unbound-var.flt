@@ -1,5 +1,5 @@
 // Test: unbound variable error
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --expr "x + 1"
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --expr "x + 1"
 // --- ExitCode: 1
 // --- Stderr:
 error[E0303]: Unbound variable: x

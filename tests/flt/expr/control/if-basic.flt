@@ -1,5 +1,5 @@
 // Test: basic if-then-else (true branch)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = if true then 1 else 2
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: module-level let rec with multiline fun -> body
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec map f = fun xs ->
     match xs with

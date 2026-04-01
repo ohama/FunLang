@@ -1,5 +1,5 @@
 // Test: boolean constant patterns in match
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = match true with | true -> 1 | false -> 0
 // --- Stdout:

@@ -1,5 +1,5 @@
 // Test: multi-param let in expression context
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let add x y = x + y in add 3 4
 // --- Output:

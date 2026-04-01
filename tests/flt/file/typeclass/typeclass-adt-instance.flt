@@ -1,5 +1,5 @@
 // Test: instance Show for user-defined ADT at top level
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Color = | Red | Green | Blue
 instance Show Color =

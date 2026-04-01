@@ -1,5 +1,5 @@
 // Test: nested patterns in match (tuple containing ADT)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Wrapper = Wrap of int
 

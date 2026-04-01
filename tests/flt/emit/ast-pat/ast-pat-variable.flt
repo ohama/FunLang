@@ -1,4 +1,4 @@
 // Test: --emit-ast pattern: variable binding (VarPat)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match 42 with | x -> x"
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match 42 with | x -> x"
 // --- Output:
 Match (Number 42, [(VarPat "x", Var "x")])

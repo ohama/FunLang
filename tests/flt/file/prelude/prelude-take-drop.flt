@@ -1,5 +1,5 @@
 // Test: Prelude take and drop functions
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let r1 = take 3 [1..10]
 let r2 = drop 7 [1..10]
