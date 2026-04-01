@@ -196,13 +196,45 @@ match expr with
 
 - Effort: **Medium** — AST에 `AsPat` 추가, 패턴 매칭 컴파일 수정
 
-### 8.2 연산자 섹션 (Operator Sections)
+### 8.2 Placeholder Lambda (`_` in expressions)
 
-```
-map (+1) [1; 2; 3]     // 현재: map (fun x -> x + 1) [1; 2; 3]
+Scala 스타일의 `_` placeholder로 간결한 익명 함수를 만든다.
+
+**현재:**
+```fsharp
+map (fun x -> x + 1) [1; 2; 3]
+filter (fun x -> x > 0) [-1; 0; 1; 2]
+fold (fun acc x -> acc + x) 0 [1; 2; 3]
+List.sortBy (fun x -> String.length x) names
 ```
 
-- Effort: **Medium** — Parser에서 `(op expr)` / `(expr op)`를 Lambda로 디슈거
+**개선 후:**
+```fsharp
+map (_ + 1) [1; 2; 3]              // fun x -> x + 1
+filter (_ > 0) [-1; 0; 1; 2]       // fun x -> x > 0
+fold (_ + _) 0 [1; 2; 3]           // fun x y -> x + y
+List.sortBy (String.length _) names // fun x -> String.length x
+```
+
+**규칙:**
+- 괄호 안의 `_`가 표현식 위치에 나타나면 placeholder로 인식
+- 각 `_`는 순서대로 새 파라미터가 됨 (`$1`, `$2`, ...)
+- 스코프는 가장 가까운 괄호 — `(_ + 1)` → `fun $1 -> $1 + 1`
+- 패턴의 `_` (wildcard)와 구별: 표현식 위치 vs 패턴 위치로 파서가 구분
+
+**구현 방법:**
+1. Parser: 표현식 위치의 `UNDERSCORE`를 `PlaceholderExpr(index)` AST 노드로 파싱
+2. Parser 후처리: 괄호 안에 `PlaceholderExpr`가 있으면 `Lambda` 래핑으로 디슈거
+3. 중첩 방지: `((_ + 1) * _)` → 내부 `(_ + 1)`이 먼저 처리
+
+**LALR(1) 안전:** `_`는 표현식에서 현재 사용되지 않는 토큰이므로 충돌 없음. 패턴 위치의 `_`는 별도 규칙 (`WildcardPat`)으로 이미 분리되어 있음.
+
+**Haskell 스타일 `(+1)` 대비 장점:**
+- 연산자뿐 아니라 **함수 호출에도 적용** (`String.length _`, `to_string _`)
+- 다중 placeholder로 **이항 함수 생성** (`_ + _`, `_ > _`)
+- LALR(1) 파서에서 **충돌 없음** (Haskell 좌측 섹션 `(1+)`은 LALR 충돌)
+
+- Effort: **Medium** (~2-3일, AST 노드 추가 + 디슈거 패스)
 
 ### 8.3 숫자 리터럴 확장
 
@@ -304,7 +336,7 @@ let add x y = x + y
 | 8 | LSP (diagnostics + hover) | Medium | High |
 | 9 | 프로파일링 (--profile) | Medium | Medium |
 | 10 | As-패턴 | Medium | Medium |
-| 11 | 연산자 섹션 | Medium | Medium |
+| 11 | Placeholder lambda (`_ + 1`) | Medium | Medium |
 | 12 | 불변 Map 모듈 | Medium | High |
 | 13 | REPL 멀티라인 입력 | Medium | High |
 
