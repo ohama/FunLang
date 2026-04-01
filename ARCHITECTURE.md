@@ -276,7 +276,7 @@ src/LangThree/
 ├── Format.fs          # AST/type pretty-printing
 ├── Diagnostic.fs      # Error/warning formatting, source snippets, "Did you mean?" suggestions
 ├── Program.fs         # CLI entry point (--expr, file, --emit-ast, etc.)
-├── Repl.fs            # Interactive REPL
+├── Repl.fs            # Interactive REPL (v14.0: persistent bindings, :type/:load commands)
 └── LangThree.fsproj   # Project file
 ```
 
@@ -343,3 +343,12 @@ Jules Jacobs 알고리즘으로 패턴 → 이진 결정 트리 컴파일.
 - **파서 에러**: `parseModuleFromString`에서 fsyacc 예외 포착, 토큰 이름 + 위치 + 스니펫으로 강화
 - **타입 클래스 에러**: E0701 NoInstance에 사용 가능한 인스턴스 목록 포함
 - **다중 에러**: `typeCheckModuleWithPrelude`가 `Error(Diagnostic list)` 반환 (단일 → 리스트)
+
+### 5.10 Enhanced REPL (v14.0)
+
+`Repl.fs`에 구현된 대화형 환경:
+- **영속적 바인딩**: `let x = 42` → 다음 줄에서 `x` 사용 가능. TypeEnv/Env/CtorEnv/RecEnv/ClassEnv/InstEnv 모두 스레딩
+- **`:type` 명령**: 표현식의 타입만 추론하여 표시 (Bidir.synth 활용)
+- **`:load` 파일**: 파일을 REPL 환경에 로드 (tryEvalDecl로 선언 처리)
+- **타입+값 표시**: 표현식 `- : int = 3`, 선언 `val x : int = 42` (F# Interactive 스타일)
+- **선언 파싱**: `parseModule` + `typeCheckDecls` + `evalModuleDecls` 파이프라인으로 모듈 레벨 선언 처리

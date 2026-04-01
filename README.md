@@ -71,6 +71,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Automatic Deriving** | `deriving Show Color`, `deriving Eq Direction` — code generation from ADT constructors | v12.0 |
 | **Extended Stdlib** | String.split/indexOf/replace/toUpper/toLower + 17 new List functions (init/find/partition/groupBy/scan/sum/contains...) | v13.0 |
 | **Multi-Param Lambda** | `fun x y z -> body` desugars to nested lambdas | v13.0 |
+| **Enhanced REPL** | Persistent bindings, `:type`/`:load`/`:help` commands, type+value display | v14.0 |
 
 ## Quick Start
 
@@ -275,7 +276,7 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (~16,000 LOC F#)
+├── src/LangThree/       # Interpreter source (~16,200 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
 │   └── flt/             # fslit integration tests (698 tests)
@@ -338,8 +339,9 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v11.1 | Poison Type Multi-Error | — | — | 2026-04-01 |
 | v12.0 | Type Class Extensions | 89-92 | — | 2026-04-01 |
 | v13.0 | Standard Library Extension | 93-95 | — | 2026-04-01 |
+| v14.0 | Enhanced REPL | 96 | — | 2026-04-01 |
 
-**Total:** 95 phases across 25 milestones
+**Total:** 96 phases across 26 milestones
 
 ## Reference Documents
 
