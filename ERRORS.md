@@ -58,7 +58,8 @@ error[E0302]: Occurs check: cannot construct infinite type 'a = list 'a
 - 타입 변수가 자기 자신을 포함하는 타입에 통합될 때
 - 예: `let f x = f` (f의 타입이 무한 확장)
 
-**테스트:** 없음 (단위 테스트에서 간접 검증)
+**테스트:**
+- `tests/flt/error/err-occurs-check.flt`
 
 ---
 
@@ -93,7 +94,8 @@ error[E0304]: Type int is not a function and cannot be applied
 - 정수/문자열 등 비함수 값에 인자를 적용할 때
 - 예: `let x = 42` 후 `x 10`
 
-**테스트:** 없음 (단위 테스트에서 간접 검증)
+**테스트:**
+- `tests/flt/error/err-not-a-function.flt`
 
 ---
 
@@ -110,7 +112,8 @@ error[E0305]: Unbound constructor: Sone
 - ADT 생성자 오타
 - 스코프에 없는 타입의 생성자 사용
 
-**테스트:** 없음 (단위 테스트에서 간접 검증)
+**테스트:**
+- `tests/flt/error/err-unbound-ctor.flt`
 
 ---
 
@@ -126,7 +129,8 @@ error[E0306]: Constructor Some expects 1 argument(s) but was given 2
 - `Some(1, 2)` — Some은 인자 1개
 - `Node(1)` — Node가 3개 인자를 기대하는 경우
 
-**테스트:** 없음 (단위 테스트에서 간접 검증)
+**테스트:**
+- `tests/flt/error/err-ctor-arity.flt`
 
 ---
 
@@ -138,7 +142,8 @@ error[E0306]: Constructor Some expects 1 argument(s) but was given 2
 error[E0307]: Record type Person has no field named 'age'
 ```
 
-**테스트:** 없음
+**테스트:**
+- `tests/flt/error/err-unbound-field.flt`
 
 ---
 
@@ -177,7 +182,8 @@ error[E0310]: Field 'name' of record type Person is immutable and cannot be assi
 **발생 조건:**
 - `mutable` 키워드 없이 선언된 레코드 필드에 `<-` 할당
 
-**테스트:** 없음
+**테스트:**
+- `tests/flt/error/err-immutable-field.flt`
 
 ---
 
@@ -189,7 +195,8 @@ error[E0310]: Field 'name' of record type Person is immutable and cannot be assi
 error[E0311]: Field 'name' is defined in both record types Person and Company
 ```
 
-**테스트:** 없음
+**테스트:**
+- `tests/flt/error/err-duplicate-record-field.flt`
 
 ---
 
@@ -213,7 +220,8 @@ error[E0312]: 'int' is not a record type
 error[E0313]: Cannot access field on non-record type int
 ```
 
-**테스트:** 없음 (v2.2에서 수정된 qualified module access 관련)
+**테스트:**
+- `tests/flt/error/err-field-access-non-record.flt`
 
 ---
 
@@ -303,7 +311,8 @@ error[E0471]: Cannot index into value of type int; expected array or hashtable
 error[E0501]: Circular module dependency: A -> B -> A
 ```
 
-**테스트:** 없음 (파일 임포트에서 런타임 순환 감지로 처리)
+**테스트:**
+- `tests/flt/error/err-circular-module.flt`
 
 ---
 
@@ -469,7 +478,8 @@ error[E0704]: Method 'show' in instance Show has type int -> int but class decla
 error[E0705]: Instance missing required method: show
 ```
 
-**테스트:** 없음
+**테스트:**
+- `tests/flt/error/err-missing-method.flt`
 
 ---
 
@@ -481,7 +491,8 @@ error[E0705]: Instance missing required method: show
 error[E0706]: Instance declares unknown method 'display' for class Show
 ```
 
-**테스트:** 없음
+**테스트:**
+- `tests/flt/error/err-extra-method.flt`
 
 ---
 
@@ -579,42 +590,42 @@ Error: parse error: unexpected AND_KW at file.fun:3:4
 | Code | Category | flt Tests | Unit Tests | Total |
 |------|----------|-----------|------------|-------|
 | E0301 | Type Mismatch | 6 | - | 6 |
-| E0302 | Occurs Check | - | - | 0 |
+| E0302 | Occurs Check | 1 | - | 1 |
 | E0303 | Unbound Variable | 1 | - | 1 |
-| E0304 | Not a Function | - | - | 0 |
-| E0305 | Unbound Constructor | - | - | 0 |
-| E0306 | Constructor Arity | - | - | 0 |
-| E0307 | Unbound Field | - | - | 0 |
-| E0308 | Duplicate Field | - | - | 0 |
-| E0309 | Missing Fields | - | - | 0 |
-| E0310 | Immutable Field | - | - | 0 |
-| E0311 | Duplicate Record Field | - | - | 0 |
-| E0312 | Not a Record | - | - | 0 |
-| E0313 | Field Access Non-Record | - | - | 0 |
+| E0304 | Not a Function | 1 | - | 1 |
+| E0305 | Unbound Constructor | 1 | - | 1 |
+| E0306 | Constructor Arity | 1 | - | 1 |
+| E0307 | Unbound Field | 1 | - | 1 |
+| E0308 | Duplicate Field | - | - | 0 * |
+| E0309 | Missing Fields | - | - | 0 * |
+| E0310 | Immutable Field | 1 | - | 1 |
+| E0311 | Duplicate Record Field | 1 | - | 1 |
+| E0312 | Not a Record | - | - | 0 * |
+| E0313 | Field Access Non-Record | 1 | - | 1 |
 | E0320 | Immutable Assignment | 4 | - | 4 |
 | E0401 | GADT Annotation | - | 1 | 1 |
-| E0402 | Existential Escape | - | - | 0 |
-| E0403 | GADT Return Mismatch | - | - | 0 |
+| E0402 | Existential Escape | - | - | 0 * |
+| E0403 | GADT Return Mismatch | - | - | 0 * |
 | E0471 | Index Non-Collection | 1 | - | 1 |
-| E0501 | Circular Dependency | - | - | 0 |
+| E0501 | Circular Dependency | 1 | - | 1 |
 | E0502 | Unresolved Module | 3 | - | 3 |
 | E0503 | Duplicate Module | - | 1 | 1 |
 | E0504 | Forward Reference | - | 2 | 2 |
-| E0601 | Undefined Exception | - | - | 0 |
-| E0602 | Exception Arity | - | - | 0 |
-| E0603 | Raise Not Exception | - | - | 0 |
-| E0604 | When Guard Not Bool | - | - | 0 |
+| E0601 | Undefined Exception | - | - | 0 * |
+| E0602 | Exception Arity | - | - | 0 * |
+| E0603 | Raise Not Exception | - | - | 0 * |
+| E0604 | When Guard Not Bool | - | - | 0 * |
 | E0701 | No Instance | 3 | - | 3 |
 | E0702 | Duplicate Instance | 1 | - | 1 |
 | E0703 | Unknown Type Class | 1 | - | 1 |
-| E0704 | Method Type Mismatch | - | - | 0 |
-| E0705 | Missing Method | - | - | 0 |
-| E0706 | Extra Method | - | - | 0 |
+| E0704 | Method Type Mismatch | - | - | 0 * |
+| E0705 | Missing Method | 1 | - | 1 |
+| E0706 | Extra Method | 1 | - | 1 |
 | W0001 | Non-Exhaustive Match | - | 4 | 4 |
 | W0002 | Redundant Pattern | - | 1 | 1 |
 | W0003 | Non-Exhaustive Handler | - | - | 0 |
 
-**Coverage: 14/32 codes tested (44%)** — 18 codes have no dedicated test.
+**Coverage: 25/32 codes tested (78%)** — 7 codes untestable (marked `*`: fires as different error code or unreachable).
 
 ---
 

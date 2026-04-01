@@ -1,0 +1,8 @@
+// Test: E0306 Constructor arity mismatch — wrong number of arguments
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- ExitCode: 1
+// --- Stderr:
+error[E0306]: Constructor A expects 1 argument(s) but was given 0
+// --- Input:
+type T = A of int
+let x = A

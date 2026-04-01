@@ -1,0 +1,8 @@
+// Test: E0305 Unbound constructor — undefined constructor in pattern
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- ExitCode: 1
+// --- Stderr:
+error[E0305]: Unbound constructor: Yellow
+// --- Input:
+type Color = Red | Green | Blue
+let f x = match x with | Yellow -> 1 | _ -> 0

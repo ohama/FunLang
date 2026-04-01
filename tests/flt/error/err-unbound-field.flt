@@ -1,0 +1,9 @@
+// Test: E0307 Unbound field — accessing nonexistent record field
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- ExitCode: 1
+// --- Stderr:
+error[E0307]: Record type P has no field named 'z'
+// --- Input:
+type P = { x: int; y: int }
+let p = { x = 1; y = 2 }
+let z = p.z

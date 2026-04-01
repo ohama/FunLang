@@ -1,0 +1,11 @@
+// Test: E0706 Extra method — instance declares method not in class
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- ExitCode: 1
+// --- Stderr:
+error[E0706]: Instance declares unknown method 'extra' for class Printable
+// --- Input:
+typeclass Printable 'a =
+    | display : 'a -> string
+instance Printable int =
+    let display x = to_string x
+    let extra x = x
