@@ -27,6 +27,13 @@ let rec desugarMixedParams (paramList: Choice<string, string * TypeExpr> list) (
     | Choice2Of2 (name, ty) :: rest ->
         LambdaAnnot(name, ty, desugarMixedParams rest body span, span)
 
+/// Desugar multi-param lambda: fun x y z -> body  =>  fun x -> fun y -> fun z -> body
+let rec desugarMultiParamLambda (names: string list) (body: Expr) (span: Span) : Expr =
+    match names with
+    | [] -> failwith "desugarMultiParamLambda: empty param list"
+    | [name] -> Lambda(name, body, span)
+    | name :: rest -> Lambda(name, desugarMultiParamLambda rest body span, span)
+
 /// Desugar list literal patterns [p1; p2; p3] into ConsPat/EmptyListPat chains
 let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
     match pats with
@@ -208,6 +215,11 @@ Expr:
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | FUN IDENT ARROW SeqExpr                     { Lambda($2, $4, ruleSpan parseState 1 4) }
     | FUN IDENT ARROW INDENT SeqExpr DEDENT       { Lambda($2, $5, ruleSpan parseState 1 6) }
+    // v13.0: Multi-param lambda - fun x y z -> body  =>  fun x -> fun y -> fun z -> body
+    | FUN IDENT IDENT LambdaParams ARROW SeqExpr
+        { desugarMultiParamLambda ($2 :: $3 :: $4) $6 (ruleSpan parseState 1 6) }
+    | FUN IDENT IDENT LambdaParams ARROW INDENT SeqExpr DEDENT
+        { desugarMultiParamLambda ($2 :: $3 :: $4) $7 (ruleSpan parseState 1 8) }
     // v6.0: Annotated lambda - fun (x: T) -> e
     // Single parameter
     | FUN LPAREN IDENT COLON TypeExpr RPAREN ARROW SeqExpr
@@ -507,6 +519,11 @@ AnnotParamList:
 
 AnnotParam:
     | LPAREN IDENT COLON TypeExpr RPAREN    { ($2, $4) }
+
+// v13.0: Additional plain params for multi-param lambda (fun x y z -> ...)
+LambdaParams:
+    | IDENT LambdaParams    { $1 :: $2 }
+    | /* empty */           { [] }
 
 // v6.0: Type expression grammar
 // Precedence via grammar structure (not %left/%right):

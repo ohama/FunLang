@@ -1,0 +1,13 @@
+// Test: multi-param lambda — fun x y z -> body desugars to nested lambdas
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let add = fun x y -> x + y
+let mul = fun a b c -> a * b * c
+let _ = println (to_string (add 3 4))
+let _ = println (to_string (mul 2 3 4))
+let pair = fun x y -> (x, y)
+let result = pair "hello" 42
+// --- Output:
+7
+24
+("hello", 42)
