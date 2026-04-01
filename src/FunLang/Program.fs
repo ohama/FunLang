@@ -94,7 +94,7 @@ let rec private collectDeps (filePath: string) (visited: Set<string>) (depth: in
 [<EntryPoint>]
 let main argv =
     let parser = ArgumentParser.Create<CliArgs>(
-        programName = "funlang",
+        programName = "fn",
         errorHandler = ProcessExiter(colorizer = function
             | ErrorCode.HelpText -> None
             | _ -> Some ConsoleColor.Red))
@@ -294,7 +294,7 @@ let main argv =
                 1
         // --check without file
         elif results.Contains Check then
-            eprintfn "Usage: langthree --check <file>"
+            eprintfn "Usage: fn --check <file>"
             1
         // --deps with file (recursive dependency tree)
         elif results.Contains Deps && results.Contains File then
@@ -315,7 +315,7 @@ let main argv =
                 1
         // --deps without file
         elif results.Contains Deps then
-            eprintfn "Usage: langthree --deps <file>"
+            eprintfn "Usage: fn --deps <file>"
             1
         // --emit-type with file (module pipeline)
         elif results.Contains Emit_Type && results.Contains File then

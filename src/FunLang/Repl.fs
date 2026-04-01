@@ -129,7 +129,7 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
 
 /// REPL loop with persistent state
 let rec private replLoop (state: ReplState) : unit =
-    match readLineWithHistory "funlang> " with
+    match readLineWithHistory "fn> " with
     | None ->
         // EOF (Ctrl+D)
         printfn ""
@@ -208,7 +208,7 @@ let rec private replLoop (state: ReplState) : unit =
 
 /// Start the REPL with welcome message
 let startRepl () : int =
-    printfn "FunLang REPL v14.0"
+    printfn "fn REPL v14.0 (FunLang)"
     printfn "Type :help for commands, #quit or Ctrl+D to exit."
     printfn ""
     let prelude = Prelude.loadPrelude None None

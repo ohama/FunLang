@@ -22,7 +22,7 @@ fi
 
 # --- FunLang (test subject) ---
 FUNLANG_PROJ="$ROOT/src/FunLang/FunLang.fsproj"
-FUNLANG_BIN="$ROOT/src/FunLang/bin/Release/net10.0/FunLang"
+FUNLANG_BIN="$ROOT/src/FunLang/bin/Release/net10.0/fn"
 FUNLANG_SRC="$ROOT/src/FunLang"
 
 # Build FunLang if binary missing or source newer than binary
