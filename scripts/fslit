@@ -2,19 +2,33 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PROJ="$ROOT/tools/fslit/FsLit/FsLit.fsproj"
-BIN="$ROOT/tools/fslit/FsLit/bin/Release/net10.0/FsLit"
+
+# --- fslit (test runner) ---
+FSLIT_PROJ="$ROOT/tools/fslit/FsLit/FsLit.fsproj"
+FSLIT_BIN="$ROOT/tools/fslit/FsLit/bin/Release/net10.0/FsLit"
+FSLIT_SRC="$ROOT/tools/fslit/FsLit/src"
 
 # Initialize submodule if needed
-if [ ! -f "$PROJ" ]; then
+if [ ! -f "$FSLIT_PROJ" ]; then
     echo "Initializing fslit submodule..."
     git -C "$ROOT" submodule update --init tools/fslit
 fi
 
-# Build if binary missing
-if [ ! -f "$BIN" ]; then
+# Build fslit if binary missing or source newer than binary
+if [ ! -f "$FSLIT_BIN" ] || [ -n "$(find "$FSLIT_SRC" -newer "$FSLIT_BIN" 2>/dev/null)" ]; then
     echo "Building fslit..."
-    dotnet build "$PROJ" -c Release -v quiet
+    dotnet build "$FSLIT_PROJ" -c Release -v quiet
 fi
 
-exec "$BIN" "$@"
+# --- FunLang (test subject) ---
+FUNLANG_PROJ="$ROOT/src/FunLang/FunLang.fsproj"
+FUNLANG_BIN="$ROOT/src/FunLang/bin/Release/net10.0/FunLang"
+FUNLANG_SRC="$ROOT/src/FunLang"
+
+# Build FunLang if binary missing or source newer than binary
+if [ ! -f "$FUNLANG_BIN" ] || [ -n "$(find "$FUNLANG_SRC" -name '*.fs' -o -name '*.fsl' -o -name '*.fsy' | xargs -I{} find {} -newer "$FUNLANG_BIN" 2>/dev/null)" ]; then
+    echo "Building FunLang..."
+    dotnet build "$FUNLANG_PROJ" -c Release -v quiet
+fi
+
+exec "$FSLIT_BIN" "$@"
