@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-b18ec9a1.js";
+            window.path_to_searchindex_js = "searchindex-1b152664.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -3251,18 +3251,6 @@ $ funlang mod_fn.l3
 42
 </code></pre>
 <p><code>M.unwrap</code>은 <code>M.Opt</code> 타입을 이해하는 함수입니다. 타입과 함수가 같은 모듈에 있으니, <code>unwrap</code>을 수정할 때 타입 정의와 함께 볼 수 있어 맥락을 잃지 않습니다. 이것이 객체지향의 클래스가 제공하는 캡슐화를 함수형 방식으로 달성하는 방법입니다.</p>
-<h2 id="네임스페이스-선언"><a class="header" href="#네임스페이스-선언">네임스페이스 선언</a></h2>
-<p><code>namespace</code> 선언은 파일의 전체 내용을 감쌉니다. 모듈과 달리, 네임스페이스는 중첩된 스코프를 만들지 않습니다. 파일 수준의 식별자 역할을 하며, 여러 파일에 걸쳐 일관된 이름 체계를 부여할 때 씁니다:</p>
-<pre><code>$ cat ns.l3
-namespace App
-let x = 42
-let result = x + 1
-
-$ funlang ns.l3
-43
-</code></pre>
-<p><code>module</code>과 달리 namespace는 중첩된 스코프를 생성하지 않습니다 – 선언은 최상위 수준에 위치합니다.</p>
-<p><code>module</code>과 <code>namespace</code>의 차이를 한 문장으로 정리하면: <code>module</code>은 코드 안에서 이름 공간을 만들고, <code>namespace</code>는 파일 전체에 레이블을 붙입니다. 파일이 어느 논리적 영역에 속하는지 선언하는 용도로 <code>namespace</code>를 쓰고, 코드 내부에서 관련 기능을 묶을 때 <code>module</code>을 씁니다.</p>
 <h2 id="실용-예제-계층화된-설정"><a class="header" href="#실용-예제-계층화된-설정">실용 예제: 계층화된 설정</a></h2>
 <p>모듈의 가장 일반적인 사용 사례 중 하나는 관련 설정 값들을 그룹화하는 것입니다. 모듈 없이 <code>db_host</code>, <code>db_port</code>, <code>app_name</code>, <code>app_version</code>처럼 긴 접두사를 붙여야 했을 값들을, 모듈을 쓰면 <code>DB.host</code>, <code>App.version</code>처럼 짧고 명확하게 표현할 수 있습니다:</p>
 <pre><code>$ cat layers.l3
@@ -3383,7 +3371,7 @@ $ funlang mod_tc.l3
 <li><strong>들여쓰기 기반:</strong> 모듈 본문은 들여쓰기로 구분되며, <code>end</code>나 <code>}</code>가 아님</li>
 <li><strong>빈 줄 허용:</strong> 모듈 본문, let 본문, match 안에서 빈 줄로 코드를 구분할 수 있음</li>
 <li><strong>위에서 아래 순서:</strong> 모듈은 참조되기 전에 정의되어야 함 (순환 의존성 불가)</li>
-<li><strong><code>module M =</code></strong> 은 중첩 모듈에 <code>=</code>을 사용; 최상위 <code>namespace</code>는 <code>=</code>이 없음</li>
+<li><strong><code>module M =</code></strong> 은 중첩 모듈에 <code>=</code>을 사용; 최상위 <code>module M</code>은 <code>=</code>이 없음</li>
 <li><strong>타입 클래스 인스턴스:</strong> 모듈 안에 선언해도 전역적으로 동작 (<a href="#23장-타입-클래스-type-classes">23장</a> 참조)</li>
 <li><strong>한정된 접근</strong>은 값, 함수, 생성자에 대해 동작함</li>
 <li><strong><code>open "file.fun"</code></strong> 으로 외부 파일의 바인딩과 모듈을 임포트 가능 (경로는 임포트하는 파일 기준)</li>
