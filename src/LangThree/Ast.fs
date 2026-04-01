@@ -366,7 +366,7 @@ type Decl =
     | LetMutDecl of name: string * body: Expr * Span
     // Phase 71 (Type Classes): Typeclass and instance declarations
     | TypeClassDecl of className: string * typeVar: string * methods: (string * TypeExpr) list * Span
-    | InstanceDecl of className: string * instanceType: TypeExpr * methods: (string * Expr) list * Span
+    | InstanceDecl of className: string * instanceType: TypeExpr * methods: (string * Expr) list * constraints: (string * TypeExpr) list * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -392,7 +392,7 @@ let declSpanOf (decl: Decl) : Span =
     | FileImportDecl(_, s) -> s
     | LetMutDecl(_, _, s) -> s
     | TypeClassDecl(_, _, _, s) -> s
-    | InstanceDecl(_, _, _, s) -> s
+    | InstanceDecl(_, _, _, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =

@@ -250,7 +250,7 @@ let rec elaborateTypeclasses (decls: Decl list) : Decl list =
         match decl with
         | TypeClassDecl(_, _, _, _) ->
             [] // Type-level only; remove from eval pipeline
-        | InstanceDecl(_className, _instType, methods, span) ->
+        | InstanceDecl(_className, _instType, methods, _constraints, span) ->
             // Each method becomes an ordinary let-binding
             methods |> List.map (fun (methodName, methodBody) ->
                 LetDecl(methodName, methodBody, span))
@@ -260,7 +260,7 @@ let rec elaborateTypeclasses (decls: Decl list) : Decl list =
             let instanceBindings =
                 innerDecls |> List.collect (fun d ->
                     match d with
-                    | InstanceDecl(_, _, methods, ispan) ->
+                    | InstanceDecl(_, _, methods, _, ispan) ->
                         methods |> List.map (fun (methodName, methodBody) ->
                             LetDecl(methodName, methodBody, ispan))
                     | _ -> [])

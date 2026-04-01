@@ -76,10 +76,12 @@ type ClassInfo = {
     Methods: (string * Scheme) list
 }
 
-/// Type class instance info (Phase 70 — method bodies populated in Phase 71)
+/// Type class instance info (Phase 70 — extended in v12.0 for constrained instances)
 type InstanceInfo = {
     ClassName: string
     InstanceType: Type
+    InstanceVars: int list          // Bound type variables (e.g., [42] for Show (list 'a))
+    InstanceConstraints: Constraint list  // Required constraints (e.g., [Show 'a])
 }
 
 /// Class environment: class name -> ClassInfo

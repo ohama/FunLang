@@ -1064,7 +1064,7 @@ let rec typeCheckDecls
                             Map.add methodName scheme acc) env
                     (env', cEnv, rEnv, clsEnv', iEnv, mods, warns)
 
-            | InstanceDecl(className, instTypeExpr, methods, span) ->
+            | InstanceDecl(className, instTypeExpr, methods, constraintExprs, span) ->
                 // Look up class in classEnv
                 let classInfo =
                     match Map.tryFind className clsEnv with
@@ -1123,8 +1123,17 @@ let rec typeCheckDecls
                     let s2 = Unify.unifyWithContext [] [] span (apply s actualTy) (apply s expectedTy)
                     ignore s2  // We only care about errors, not the resulting substitution
                 )
+                // Elaborate instance constraints (v12.0: constrained instances)
+                let instConstraints =
+                    constraintExprs |> List.map (fun (cName, cTypeExpr) ->
+                        let (cType, _) = Elaborate.elaborateWithVars Map.empty cTypeExpr
+                        { ClassName = cName; TypeArg = cType; SourceSpan = span })
+                let instVars =
+                    instConstraints |> List.collect (fun c -> freeVars c.TypeArg |> Set.toList)
+                    |> List.append (freeVars instType |> Set.toList)
+                    |> List.distinct
                 // Add to instanceEnv
-                let newInst = { ClassName = className; InstanceType = instType }
+                let newInst = { ClassName = className; InstanceType = instType; InstanceVars = instVars; InstanceConstraints = instConstraints }
                 let iEnv' = Map.add className (newInst :: existingInstances) iEnv
                 // Update Bidir mutable ref for constraint resolution access
                 Bidir.currentInstEnv <- iEnv'

@@ -1,0 +1,13 @@
+// Test: constrained instance Show 'a => Show ('a list) with nested resolution
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+instance Show 'a => Show ('a list) =
+    let show xs = to_string xs
+
+let _ = println (show [1; 2; 3])
+let _ = println (show [true; false])
+let result = show [[1; 2]; [3; 4]]
+// --- Output:
+[1; 2; 3]
+[true; false]
+"[[1; 2]; [3; 4]]"

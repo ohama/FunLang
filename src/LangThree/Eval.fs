@@ -1699,7 +1699,7 @@ let rec evalModuleDecls
             // Type classes are type-level only; no runtime behavior
             // (Phase 73 will add dictionary construction for InstanceDecl)
             (env, modEnv)
-        | InstanceDecl(_, _, _, _) ->
+        | InstanceDecl(_, _, _, _, _) ->
             // Instance dictionaries constructed in Phase 73 elaboration pass
             (env, modEnv)
         | FileImportDecl(path, _span) ->

@@ -358,7 +358,7 @@ let rec formatDecl (decl: Ast.Decl) : string =
     | Ast.TypeClassDecl(className, typeVar, methods, _) ->
         let methodsStr = methods |> List.map (fun (name, ty) -> sprintf "%s : %s" name (formatTypeExpr ty)) |> String.concat ", "
         sprintf "TypeClassDecl \"%s\" %s [%s]" className typeVar methodsStr
-    | Ast.InstanceDecl(className, instType, methods, _) ->
+    | Ast.InstanceDecl(className, instType, methods, _, _) ->
         let methodsStr = methods |> List.map (fun (name, body) -> sprintf "%s = %s" name (formatAst body)) |> String.concat ", "
         sprintf "InstanceDecl \"%s\" %s [%s]" className (formatTypeExpr instType) methodsStr
 

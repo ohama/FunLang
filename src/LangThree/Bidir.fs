@@ -81,12 +81,33 @@ let generalize (env: TypeEnv) (ty: Type): Scheme =
         pending |> List.partition (fun c ->
             let constraintFree = freeVars c.TypeArg
             not (Set.isEmpty (Set.intersect constraintFree varsSet)))
-    // Resolve concrete constraints against InstanceEnv
+    // Resolve concrete constraints against InstanceEnv (v12.0: unification-based)
+    let rec resolveConstraint (c: Constraint) (depth: int) =
+        if depth > 20 then false  // Guard against infinite recursion
+        else
+            let instEnv = currentInstEnv
+            let instances = Map.tryFind c.ClassName instEnv |> Option.defaultValue []
+            instances |> List.exists (fun ii ->
+                // Instantiate instance type vars with fresh vars for unification
+                let freshVars = ii.InstanceVars |> List.map (fun _ -> Infer.freshVar())
+                let instSubst = List.zip ii.InstanceVars freshVars |> Map.ofList
+                let instType = apply instSubst ii.InstanceType
+                try
+                    let s = Unify.unify instType c.TypeArg
+                    // Check instance constraints (subgoals) are satisfiable
+                    ii.InstanceConstraints |> List.forall (fun ic ->
+                        let resolvedArg = apply s (apply instSubst ic.TypeArg)
+                        let subgoal = { ic with TypeArg = resolvedArg }
+                        // If subgoal is still polymorphic, defer (assume satisfiable)
+                        let subgoalFree = freeVars subgoal.TypeArg
+                        if not (Set.isEmpty (Set.intersect subgoalFree varsSet)) then true
+                        else resolveConstraint subgoal (depth + 1))
+                with _ -> false)
+
     concrete |> List.iter (fun c ->
-        let instEnv = currentInstEnv
-        let instances = Map.tryFind c.ClassName instEnv |> Option.defaultValue []
-        let resolved = instances |> List.exists (fun ii -> ii.InstanceType = c.TypeArg)
-        if not resolved then
+        if not (resolveConstraint c 0) then
+            let instEnv = currentInstEnv
+            let instances = Map.tryFind c.ClassName instEnv |> Option.defaultValue []
             let availableInstances = instances |> List.map (fun ii -> sprintf "%s %s" c.ClassName (Type.formatType ii.InstanceType))
             raise (TypeException {
                 Kind = NoInstance(c.ClassName, c.TypeArg)
