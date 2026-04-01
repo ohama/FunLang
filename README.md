@@ -69,6 +69,8 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Constrained Instances** | `instance Show 'a => Show ('a list)`, unification-based instance resolution, recursive subgoals | v12.0 |
 | **Superclass Constraints** | `typeclass Eq 'a => Ord 'a`, automatic superclass constraint propagation | v12.0 |
 | **Automatic Deriving** | `deriving Show Color`, `deriving Eq Direction` — code generation from ADT constructors | v12.0 |
+| **Extended Stdlib** | String.split/indexOf/replace/toUpper/toLower + 17 new List functions (init/find/partition/groupBy/scan/sum/contains...) | v13.0 |
+| **Multi-Param Lambda** | `fun x y z -> body` desugars to nested lambdas | v13.0 |
 
 ## Quick Start
 
@@ -273,10 +275,10 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (~15,900 LOC F#)
+├── src/LangThree/       # Interpreter source (~16,000 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (695 tests)
+│   └── flt/             # fslit integration tests (698 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
 │       ├── file/        # File-mode tests (472 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
@@ -302,10 +304,10 @@ LangThree/
 # F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (695)
+# fslit integration tests (698)
 /path/to/fslit tests/flt/
 
-# Total: ~919 tests
+# Total: ~922 tests
 ```
 
 ## Milestones
@@ -335,8 +337,9 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v11.0 | Error Reporting Enhancement | 83-88 | — | 2026-04-01 |
 | v11.1 | Poison Type Multi-Error | — | — | 2026-04-01 |
 | v12.0 | Type Class Extensions | 89-92 | — | 2026-04-01 |
+| v13.0 | Standard Library Extension | 93-95 | — | 2026-04-01 |
 
-**Total:** 92 phases across 24 milestones
+**Total:** 95 phases across 25 milestones
 
 ## Reference Documents
 

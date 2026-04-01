@@ -234,7 +234,9 @@ Expr    ::= 'let' IDENT '=' Expr 'in' Expr
           | IDENT '<-' Expr
           | 'if' Expr 'then' Expr 'else' Expr
           | 'fun' IDENT '->' Expr
+          | 'fun' IDENT IDENT+ '->' Expr    // multi-param: fun x y z -> body (v13.0)
           | 'fun' '(' IDENT ':' TypeExpr ')' '->' Expr
+          | 'fun' '(' IDENT ':' TypeExpr ')'+  '->' Expr
           | 'fun' '(' ')' '->' Expr
           | 'fun' TuplePattern '->' Expr
           | 'match' Expr 'with' MatchClauses
@@ -583,7 +585,7 @@ let eval e =
 
 **Types:** `Option 'a = None | Some of 'a`, `Result 'a 'b = Ok of 'a | Error of 'b`
 
-**List functions:** `map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`, `zip`, `take`, `drop`, `any`, `all`, `flatten`, `nth`, `head`, `tail`, `exists`, `item`, `isEmpty`, `sort`, `sortBy`, `mapi`, `tryFind`, `choose`, `distinctBy`, `ofSeq`
+**List functions:** `map`, `filter`, `fold`, `length`, `reverse`, `append`, `hd`, `tl`, `zip`, `take`, `drop`, `any`, `all`, `flatten`, `nth`, `head`, `tail`, `exists`, `item`, `isEmpty`, `sort`, `sortBy`, `mapi`, `tryFind`, `choose`, `distinctBy`, `ofSeq`, `init`, `find`, `findIndex`, `partition`, `groupBy`, `scan`, `replicate`, `collect`, `pairwise`, `sumBy`, `sum`, `minBy`, `maxBy`, `contains`, `unzip`, `forall`, `iter`
 
 **Core functions:** `id`, `const`, `compose`, `flip`, `apply`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore`
 
@@ -597,7 +599,7 @@ let eval e =
 
 **Hashtable functions (qualified):** `Hashtable.create`, `Hashtable.get`, `Hashtable.set`, `Hashtable.containsKey`, `Hashtable.keys`, `Hashtable.remove`
 
-**String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`
+**String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`, `String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.join`, `String.substring`
 
 **Char functions (qualified):** `Char.IsDigit`, `Char.IsLetter`, `Char.IsUpper`, `Char.IsLower`, `Char.ToUpper`, `Char.ToLower`
 

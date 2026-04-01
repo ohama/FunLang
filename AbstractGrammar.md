@@ -130,6 +130,7 @@ expr ::= -- 바인딩 형식
 
          -- 람다
        | 'fun' IDENT '->' expr
+       | 'fun' IDENT IDENT+ '->' expr                   -- 다중 파라미터 (v13.0)
        | 'fun' '(' IDENT ':' type_expr ')' '->' expr
        | 'fun' '(' IDENT ':' type_expr ')'+  '->' expr
        | 'fun' '(' ')' '->' expr
