@@ -326,7 +326,10 @@ let result =
 
 ```
 // Single-line match (no InMatch context needed)
-let r = match x with | 0 -> "zero" | _ -> "other"
+let r =
+    match x with
+    | 0 -> "zero"
+    | _ -> "other"
 
 // Multi-line match (InMatch context with pipe alignment)
 let r =
@@ -355,7 +358,10 @@ Type: ('a -> 'a) -> 'a -> 'a
 ```
 // Polymorphic return (no annotation)
 type Expr 'a = IntLit : int -> int Expr | BoolLit : bool -> bool Expr
-let eval e = match e with | IntLit n -> n | BoolLit b -> b
+let eval e =
+    match e with
+    | IntLit n -> n
+    | BoolLit b -> b
 eval (IntLit 42)    → 42 : int
 eval (BoolLit true) → true : bool
 
@@ -458,7 +464,9 @@ result → 42
 → Tuple [Number 1; String "hello"]
 
 // Match
-match x with | 0 -> "zero" | _ -> "other"
+match x with
+| 0 -> "zero"
+| _ -> "other"
 → Match (Var "x", [(ConstPat (IntConst 0), String "zero"); (WildcardPat, String "other")])
 
 // Lambda

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
+            window.path_to_searchindex_js = "searchindex-b18ec9a1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -311,7 +311,10 @@ $ funlang string_ops.l3
 <p><strong><code>&lt;|&gt;</code> (Option 대안):</strong></p>
 <p>여러 시도 중 첫 번째로 성공한 결과를 택하는 패턴입니다. 파싱이나 fallback 로직을 표현할 때 특히 유용합니다:</p>
 <pre><code>$ cat option_ops.l3
-let tryParse s = match s with | "42" -&gt; Some 42 | _ -&gt; None
+let tryParse s =
+    match s with
+    | "42" -&gt; Some 42
+    | _ -&gt; None
 let result = tryParse "abc" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
 $ funlang option_ops.l3

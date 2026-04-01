@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
+            window.path_to_searchindex_js = "searchindex-b18ec9a1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -251,7 +251,16 @@ $ funlang multi2.l3
 <p>왜 <code>let rec</code>가 필요한 걸까요? 일반 <code>let</code>에서는 정의하는 시점에 자기 자신의 이름이 아직 스코프에 없습니다. <code>let rec</code>는 “이 함수의 이름을 함수 본문 안에서도 참조할 수 있다“고 컴파일러에게 알려주는 키워드입니다. OCaml과 F#도 같은 방식을 씁니다.</p>
 <p><strong>제한 사항:</strong> <code>let rec</code>는 단일 매개변수만 지원합니다. 다중 매개변수
 재귀 함수의 경우, 단일 튜플을 받거나 본문 내부에서 중첩 람다를 사용하세요:</p>
-<pre><code>funlang&gt; let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1; 2; 3]
+<pre><code>$ cat len.l3
+let rec len xs =
+    match xs with
+    | [] -&gt; 0
+    | _ :: rest -&gt; 1 + len rest
+
+let result = len [1; 2; 3]
+let _ = println (to_string result)
+
+$ funlang len.l3
 3
 </code></pre>
 <p>여기서 <code>[1; 2; 3]</code>은 리스트이고 <code>match ... with</code>는 패턴 매칭입니다. 리스트는 <a href="03-lists-and-tuples.html">3장</a>에서, 패턴 매칭은 <a href="04-pattern-matching.html">4장</a>에서 자세히 다룹니다. 지금은 “빈 리스트이면 0, 아니면 1을 더하고 나머지에 재귀“라는 흐름만 이해하면 충분합니다.</p>

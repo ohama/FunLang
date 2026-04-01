@@ -92,7 +92,11 @@ FunLang를 시작하는 순간부터 바로 쓸 수 있는 세 개의 연산자�
 
 ```
 $ cat qsort_op.l3
-let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -> []
+    | p :: rest ->
+        qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
@@ -125,7 +129,11 @@ $ funlang format_op.l3
 
 ```
 $ cat fallback_op.l3
-let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
+let tryParse s =
+    match s with
+    | "42" -> Some 42
+    | "0" -> Some 0
+    | _ -> None
 
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 

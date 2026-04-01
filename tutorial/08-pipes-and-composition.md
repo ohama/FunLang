@@ -208,7 +208,10 @@ $ funlang string_ops.l3
 
 ```
 $ cat option_ops.l3
-let tryParse s = match s with | "42" -> Some 42 | _ -> None
+let tryParse s =
+    match s with
+    | "42" -> Some 42
+    | _ -> None
 let result = tryParse "abc" <|> tryParse "42" <|> Some 0
 
 $ funlang option_ops.l3

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
+            window.path_to_searchindex_js = "searchindex-b18ec9a1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -245,7 +245,11 @@ $ funlang op_as_func.l3
 <h3 id="리스트-정렬-quicksort-with-"><a class="header" href="#리스트-정렬-quicksort-with-">리스트 정렬 (quicksort with ++)</a></h3>
 <p>퀵정렬은 <code>++</code>를 사용하면 알고리즘의 구조가 코드에 그대로 드러납니다. “피벗보다 작은 것들을 정렬한 결과” 더하기 “[피벗]” 더하기 “피벗보다 크거나 같은 것들을 정렬한 결과“라는 설명이 코드와 일대일로 대응합니다.</p>
 <pre><code>$ cat qsort_op.l3
-let rec qsort xs = match xs with | [] -&gt; [] | p :: rest -&gt; qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -&gt; []
+    | p :: rest -&gt;
+        qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
@@ -268,7 +272,11 @@ $ funlang format_op.l3
 <h3 id="option-fallback-체인"><a class="header" href="#option-fallback-체인">Option fallback 체인</a></h3>
 <p><code>&lt;|&gt;</code>의 진가는 여러 소스에서 값을 시도할 때 드러납니다. 여러 파싱 전략을 순서대로 시도하고, 처음 성공한 결과를 택하는 이 패턴은 실제 파서나 설정 읽기 코드에서 자주 등장합니다.</p>
 <pre><code>$ cat fallback_op.l3
-let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let tryParse s =
+    match s with
+    | "42" -&gt; Some 42
+    | "0" -&gt; Some 0
+    | _ -&gt; None
 
 let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 

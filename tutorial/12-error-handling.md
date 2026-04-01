@@ -101,7 +101,11 @@ $ cat chain_exc.l3
 exception ParseError of string
 exception DivError of string
 
-let parseInt s = match s with | "42" -> 42 | "0" -> 0 | _ -> raise (ParseError ("invalid: " + s))
+let parseInt s =
+    match s with
+    | "42" -> 42
+    | "0" -> 0
+    | _ -> raise (ParseError ("invalid: " + s))
 let safeDivide a = fun b -> if b = 0 then raise (DivError "div/0") else a / b
 
 let compute input = try
@@ -126,7 +130,11 @@ Result를 사용하면 **파이프라인으로 합성**할 수 있습니다:
 
 ```
 $ cat chain_res.l3
-let parseInt s = match s with | "42" -> Ok 42 | "0" -> Ok 0 | _ -> Error ("invalid: " + s)
+let parseInt s =
+    match s with
+    | "42" -> Ok 42
+    | "0" -> Ok 0
+    | _ -> Error ("invalid: " + s)
 let safeDivide a = fun b -> if b = 0 then Error "div/0" else Ok (a / b)
 
 let compute input = parseInt input |> resultBind (safeDivide 100) |> resultMap (fun x -> x + 1)
@@ -186,7 +194,10 @@ Ok 999998
 
 ```
 $ cat option_use.l3
-let safeHead xs = match xs with | [] -> None | h :: _ -> Some h
+let safeHead xs =
+    match xs with
+    | [] -> None
+    | h :: _ -> Some h
 let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |> optionBind safeHead |> optionBind (safeDivide 100) |> optionDefault 0
@@ -205,7 +216,10 @@ $ funlang option_use.l3
 
 ```
 $ cat fallback.l3
-let safeHead xs = match xs with | [] -> None | h :: _ -> Some h
+let safeHead xs =
+    match xs with
+    | [] -> None
+    | h :: _ -> Some h
 let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 <|> safeDivide 10 2 <|> Some 0
@@ -250,7 +264,12 @@ Exception은 **프로그래밍 오류나 복구 불가능한 상황**에 사용�
 $ cat exception_use.l3
 exception InternalError of string
 
-let rec processAll xs = match xs with | [] -> 0 | h :: t -> if h < 0 then raise (InternalError "unexpected negative value") else h + processAll t
+let rec processAll xs =
+    match xs with
+    | [] -> 0
+    | h :: t ->
+        if h < 0 then raise (InternalError "unexpected negative value")
+        else h + processAll t
 
 let result = processAll [1; 2; 3; 4; 5]
 

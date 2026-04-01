@@ -299,7 +299,16 @@ $ funlang deep_option.l3
 **튜플의 리스트:**
 
 ```
-funlang> let rec sumFirst xs = match xs with | [] -> 0 | (a, _) :: rest -> a + sumFirst rest in sumFirst [(1, "a"); (2, "b"); (3, "c")]
+$ cat sum_first.l3
+let rec sumFirst xs =
+    match xs with
+    | [] -> 0
+    | (a, _) :: rest -> a + sumFirst rest
+
+let result = sumFirst [(1, "a"); (2, "b"); (3, "c")]
+let _ = println (to_string result)
+
+$ funlang sum_first.l3
 6
 ```
 
@@ -649,21 +658,45 @@ FunLang는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
 **리스트 합계:**
 
 ```
-funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1; 2; 3; 4; 5]
+$ cat list_sum.l3
+let rec sum xs =
+    match xs with
+    | [] -> 0
+    | x :: rest -> x + sum rest
+
+let _ = println (to_string (sum [1; 2; 3; 4; 5]))
+
+$ funlang list_sum.l3
 15
 ```
 
 **요소 개수 세기:**
 
 ```
-funlang> let rec length xs = match xs with | [] -> 0 | _ :: rest -> 1 + length rest in length [10; 20; 30]
+$ cat list_length.l3
+let rec length xs =
+    match xs with
+    | [] -> 0
+    | _ :: rest -> 1 + length rest
+
+let _ = println (to_string (length [10; 20; 30]))
+
+$ funlang list_length.l3
 3
 ```
 
 **조건 함수로 필터링 (클로저 캡처):**
 
 ```
-funlang> let rec filter pred = fun xs -> match xs with | [] -> [] | h :: t -> if pred h then h :: filter pred t else filter pred t in filter (fun x -> x > 3) [1; 2; 3; 4; 5; 6]
+$ cat list_filter.l3
+let rec filter pred = fun xs ->
+    match xs with
+    | [] -> []
+    | h :: t -> if pred h then h :: filter pred t else filter pred t
+
+let _ = println (to_string (filter (fun x -> x > 3) [1; 2; 3; 4; 5; 6]))
+
+$ funlang list_filter.l3
 [4; 5; 6]
 ```
 
@@ -694,7 +727,11 @@ type Expr =
     | Mul of Expr * Expr
 
 let result =
-    let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
+    let rec eval e =
+        match e with
+        | Num n -> n
+        | Add (a, b) -> eval a + eval b
+        | Mul (a, b) -> eval a * eval b
     eval (Add (Mul (Num 3, Num 4), Num 5))
 
 $ funlang expr_eval.l3
@@ -735,11 +772,20 @@ type Tree =
 
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
-    let rec depth t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + max (depth l) (depth r)
+    let rec depth t =
+        match t with
+        | Leaf -> 0
+        | Node (l, _, r) -> 1 + max (depth l) (depth r)
     // 트리의 노드 수
-    let rec size t = match t with | Leaf -> 0 | Node (l, _, r) -> 1 + size l + size r
+    let rec size t =
+        match t with
+        | Leaf -> 0
+        | Node (l, _, r) -> 1 + size l + size r
     // 트리의 모든 값의 합
-    let rec sumTree t = match t with | Leaf -> 0 | Node (l, v, r) -> sumTree l + v + sumTree r
+    let rec sumTree t =
+        match t with
+        | Leaf -> 0
+        | Node (l, v, r) -> sumTree l + v + sumTree r
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
     (depth t, size t, sumTree t)
 
@@ -758,7 +804,10 @@ let sorted =
         match xs with
         | [] -> x :: []
         | h :: t -> if x <= h then x :: h :: t else h :: insert x t
-    let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
+    let rec sort xs =
+        match xs with
+        | [] -> []
+        | h :: t -> insert h (sort t)
     sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted

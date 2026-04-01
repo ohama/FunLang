@@ -10,7 +10,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 >
 > https://ohama.github.io/FunLang/
 >
-> Settings → Pages → Source: `Deploy from a branch` → Branch: `master` / `/docs` → Save
+> Settings → Pages → Source: `Deploy from a branch` → Branch: `main` / `/docs` → Save
 
 [FunLang Tutorial](https://ohama.github.io/FunLang/) — 23 chapters, 300+ runnable examples
 
@@ -76,6 +76,9 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 ## Quick Start
 
 ```bash
+# Clone (with submodule)
+git clone --recursive https://github.com/ohama/FunLang.git
+
 # Build
 dotnet build src/FunLang/FunLang.fsproj -c Release
 
@@ -261,15 +264,30 @@ let rec treeInsert x = fun t ->
         if x <= v then Node (treeInsert x l, v, r)
         else Node (l, v, treeInsert x r)
 
-let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
-let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorder l) (v :: inorder r)
+let rec buildTree xs =
+    match xs with
+    | [] -> Leaf
+    | h :: t -> treeInsert h (buildTree t)
+
+let rec inorder t =
+    match t with
+    | Leaf -> []
+    | Node (l, v, r) -> append (inorder l) (v :: inorder r)
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 // => [1; 2; 3; 5; 7; 8; 9]
 
 // Mutual recursion (state machine)
-let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
-and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
+let rec stateA xs =
+    match xs with
+    | [] -> "ended in A"
+    | 0 :: rest -> stateB rest
+    | _ :: rest -> stateA rest
+and stateB xs =
+    match xs with
+    | [] -> "ended in B"
+    | 1 :: rest -> stateA rest
+    | _ :: rest -> stateB rest
 ```
 
 ## Project Structure
@@ -278,12 +296,14 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 FunLang/
 ├── src/FunLang/       # Interpreter source (~16,200 LOC F#)
 ├── tests/
-│   ├── FunLang.Tests/ # F# unit tests (224 tests)
+│   ├── FunLang.Tests/ # F# unit tests (229 tests)
 │   └── flt/             # fslit integration tests (698 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
-│       ├── file/        # File-mode tests (472 tests, 34 subdirs)
+│       ├── file/        # File-mode tests (475 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
 │       └── error/       # Error case tests (4 tests)
+├── tools/fslit/         # fslit test runner (git submodule)
+├── scripts/fslit        # Wrapper script (auto-init + auto-build + run)
 ├── tutorial/            # mdBook tutorial (23 chapters, Korean)
 ├── Prelude/             # Standard library (13 modules: Core, List, Option, Result, Array, Hashtable, String, Char, HashSet, Queue, MutableList, StringBuilder, Typeclass)
 ├── howto/               # Developer knowledge base
@@ -296,19 +316,19 @@ FunLang/
 - **F#** (.NET 10) — Implementation language
 - **FsLexYacc** — Lexer/parser generator (fslex + fsyacc)
 - **Expecto** — Unit test framework
-- **fslit** — File-based literate testing
+- **[fslit](https://github.com/ohama/fslit)** — File-based literate testing (git submodule)
 - **mdBook** — Tutorial documentation
 
 ## Tests
 
 ```bash
-# F# unit tests (224)
+# F# unit tests (229)
 dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 
-# fslit integration tests (698)
-/path/to/fslit tests/flt/
+# fslit integration tests (698) — auto-builds on first run
+scripts/fslit tests/flt/
 
-# Total: ~922 tests
+# Total: ~927 tests
 ```
 
 ## Milestones

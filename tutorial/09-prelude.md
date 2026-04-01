@@ -504,7 +504,11 @@ None
 
 ```
 $ cat fallback.l3
-let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
+let tryParse s =
+    match s with
+    | "42" -> Some 42
+    | "0" -> Some 0
+    | _ -> None
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 
 $ funlang fallback.l3

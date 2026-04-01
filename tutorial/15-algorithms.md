@@ -19,7 +19,7 @@ FunLang에서 알고리즘을 구현할 때 자주 사용하는 기능들입니�
 
 - 매개변수는 **하나만** 직접 받습니다: `let rec f x = body`
 - 두 번째 매개변수부터는 클로저로 전달합니다: `let rec f x = fun y -> body`
-- `match` 표현식은 한 줄에 작성해야 합니다
+- `match` 표현식은 한 줄 또는 들여쓰기 기반 여러 줄로 작성할 수 있습니다
 
 이제 이 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.
 
@@ -100,7 +100,10 @@ Prelude 함수를 사용하면 알고리즘을 더 간결하게 작성할 수 �
 
 ```
 $ cat sieve_prelude.l3
-let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (fun n -> n % p <> 0) rest)
+let rec sieve xs =
+    match xs with
+    | [] -> []
+    | p :: rest -> p :: sieve (filter (fun n -> n % p <> 0) rest)
 
 let result = sieve [2..50]
 
@@ -255,7 +258,10 @@ let rec insert x = fun xs ->
     | [] -> x :: []
     | h :: t -> if x <= h then x :: h :: t else h :: insert x t
 
-let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
+let rec sort xs =
+    match xs with
+    | [] -> []
+    | h :: t -> insert h (sort t)
 
 let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -283,7 +289,13 @@ let rec append xs = fun ys ->
     | [] -> ys
     | h :: t -> h :: append t ys
 
-let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (fun x -> x < pivot) rest in let hi = filter (fun x -> x >= pivot) rest in append (qsort lo) (pivot :: qsort hi)
+let rec qsort xs =
+    match xs with
+    | [] -> []
+    | pivot :: rest ->
+        let lo = filter (fun x -> x < pivot) rest
+        in let hi = filter (fun x -> x >= pivot) rest
+        in append (qsort lo) (pivot :: qsort hi)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -300,7 +312,11 @@ Prelude `++` 연산자를 사용하면 `append`를 재정의할 필요가 없어
 
 ```
 $ cat qsort_prelude.l3
-let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -> []
+    | p :: rest ->
+        qsort (filter (fun x -> x < p) rest) ++ [p] ++ qsort (filter (fun x -> x >= p) rest)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
@@ -315,18 +331,34 @@ $ funlang qsort_prelude.l3
 
 ```
 $ cat merge_sort.l3
-let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t
+let rec length xs =
+    match xs with
+    | [] -> 0
+    | _ :: t -> 1 + length t
 let rec take n = fun xs ->
-    if n = 0 then [] else match xs with | [] -> [] | h :: t -> h :: take (n - 1) t
+    if n = 0 then []
+    else match xs with
+         | [] -> []
+         | h :: t -> h :: take (n - 1) t
 let rec drop n = fun xs ->
-    if n = 0 then xs else match xs with | [] -> [] | _ :: t -> drop (n - 1) t
+    if n = 0 then xs
+    else match xs with
+         | [] -> []
+         | _ :: t -> drop (n - 1) t
 // 두 정렬된 리스트의 head를 비교하며 병합
 let rec merge xs = fun ys ->
     match xs with
     | [] -> ys
-    | x :: xt -> match ys with | [] -> xs | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+    | x :: xt ->
+        match ys with
+        | [] -> xs
+        | y :: yt -> if x <= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
 // 리스트를 반으로 나눠 각각 정렬 후 병합 (O(n log n))
-let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
+let rec msort xs =
+    let len = length xs
+    in if len <= 1 then xs
+    else let mid = len / 2
+         in merge (msort (take mid xs)) (msort (drop mid xs))
 
 let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -357,12 +389,18 @@ let rec treeInsert x = fun t ->
     match t with
     | Leaf -> Node (Leaf, x, Leaf)
     | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
-let rec buildTree xs = match xs with | [] -> Leaf | h :: t -> treeInsert h (buildTree t)
+let rec buildTree xs =
+    match xs with
+    | [] -> Leaf
+    | h :: t -> treeInsert h (buildTree t)
 let rec append xs = fun ys ->
     match xs with
     | [] -> ys
     | h :: t -> h :: append t ys
-let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorder l) (v :: inorder r)
+let rec inorder t =
+    match t with
+    | Leaf -> []
+    | Node (l, v, r) -> append (inorder l) (v :: inorder r)
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
@@ -386,7 +424,10 @@ type Nat =
     | Zero
     | Succ of Nat
 
-let rec toInt n = match n with | Zero -> 0 | Succ p -> 1 + toInt p
+let rec toInt n =
+    match n with
+    | Zero -> 0
+    | Succ p -> 1 + toInt p
 let rec add a = fun b ->
     match a with
     | Zero -> b
@@ -426,7 +467,10 @@ let rec filter pred = fun xs ->
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
-let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (fun n -> n % p <> 0) rest)
+let rec sieve xs =
+    match xs with
+    | [] -> []
+    | p :: rest -> p :: sieve (filter (fun n -> n % p <> 0) rest)
 
 let result = sieve [2..50]
 
@@ -505,8 +549,16 @@ $ funlang fizzbuzz.l3
 
 ```
 $ cat state_machine.l3
-let rec stateA xs = match xs with | [] -> "ended in A" | 0 :: rest -> stateB rest | _ :: rest -> stateA rest
-and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | _ :: rest -> stateB rest
+let rec stateA xs =
+    match xs with
+    | [] -> "ended in A"
+    | 0 :: rest -> stateB rest
+    | _ :: rest -> stateA rest
+and stateB xs =
+    match xs with
+    | [] -> "ended in B"
+    | 1 :: rest -> stateA rest
+    | _ :: rest -> stateB rest
 
 let r1 = stateA [1; 0; 1; 0]
 let r2 = stateA [1; 0; 0]

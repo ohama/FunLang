@@ -211,14 +211,32 @@ Prelude에 없는 동작이 필요하면 `let rec`으로 직접 재귀 함수를
 **합계:**
 
 ```
-funlang> let rec sum xs = match xs with | [] -> 0 | x :: rest -> x + sum rest in sum [1; 2; 3; 4; 5]
+$ cat sum.l3
+let rec sum xs =
+    match xs with
+    | [] -> 0
+    | x :: rest -> x + sum rest
+
+let result = sum [1; 2; 3; 4; 5]
+let _ = println (to_string result)
+
+$ funlang sum.l3
 15
 ```
 
 **각 요소를 10배로:**
 
 ```
-funlang> let rec go xs = match xs with | [] -> [] | x :: rest -> x * 10 :: go rest in go [1; 2; 3]
+$ cat map10.l3
+let rec go xs =
+    match xs with
+    | [] -> []
+    | x :: rest -> x * 10 :: go rest
+
+let result = go [1; 2; 3]
+let _ = println (to_string result)
+
+$ funlang map10.l3
 [10; 20; 30]
 ```
 

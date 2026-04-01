@@ -133,7 +133,11 @@ type IntList =
     | Cons of int * IntList
 let xs = Cons (1, Cons (2, Cons (3, Nil)))
 let result =
-    let rec sum xs = match xs with | Nil -> 0 | Cons (x, rest) -> x + sum rest in
+    let rec sum xs =
+        match xs with
+        | Nil -> 0
+        | Cons (x, rest) -> x + sum rest
+    in
     sum xs
 
 $ funlang intlist.l3
@@ -152,7 +156,11 @@ type Tree =
 let t = Branch (Leaf 1, Branch (Leaf 2, Leaf 3))
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
-    let rec depth t = match t with | Leaf _ -> 1 | Branch (l, r) -> 1 + max (depth l) (depth r) in
+    let rec depth t =
+        match t with
+        | Leaf _ -> 1
+        | Branch (l, r) -> 1 + max (depth l) (depth r)
+    in
     depth t
 
 $ funlang tree.l3
@@ -221,7 +229,12 @@ type Expr =
     | Mul of Expr * Expr
 let e = Plus (Num 2, Mul (Num 3, Num 4))
 let result =
-    let rec eval e = match e with | Num n -> n | Plus (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b in
+    let rec eval e =
+        match e with
+        | Num n -> n
+        | Plus (a, b) -> eval a + eval b
+        | Mul (a, b) -> eval a * eval b
+    in
     eval e
 
 $ funlang calc.l3

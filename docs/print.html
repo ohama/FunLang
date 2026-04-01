@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
+            window.path_to_searchindex_js = "searchindex-b18ec9a1.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -479,7 +479,16 @@ $ funlang multi2.l3
 <p>왜 <code>let rec</code>가 필요한 걸까요? 일반 <code>let</code>에서는 정의하는 시점에 자기 자신의 이름이 아직 스코프에 없습니다. <code>let rec</code>는 “이 함수의 이름을 함수 본문 안에서도 참조할 수 있다“고 컴파일러에게 알려주는 키워드입니다. OCaml과 F#도 같은 방식을 씁니다.</p>
 <p><strong>제한 사항:</strong> <code>let rec</code>는 단일 매개변수만 지원합니다. 다중 매개변수
 재귀 함수의 경우, 단일 튜플을 받거나 본문 내부에서 중첩 람다를 사용하세요:</p>
-<pre><code>funlang&gt; let rec len xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + len rest in len [1; 2; 3]
+<pre><code>$ cat len.l3
+let rec len xs =
+    match xs with
+    | [] -&gt; 0
+    | _ :: rest -&gt; 1 + len rest
+
+let result = len [1; 2; 3]
+let _ = println (to_string result)
+
+$ funlang len.l3
 3
 </code></pre>
 <p>여기서 <code>[1; 2; 3]</code>은 리스트이고 <code>match ... with</code>는 패턴 매칭입니다. 리스트는 <a href="#3장-리스트와-튜플-lists-and-tuples">3장</a>에서, 패턴 매칭은 <a href="#4장-패턴-매칭-pattern-matching">4장</a>에서 자세히 다룹니다. 지금은 “빈 리스트이면 0, 아니면 1을 더하고 나머지에 재귀“라는 흐름만 이해하면 충분합니다.</p>
@@ -916,11 +925,29 @@ funlang&gt; [1..3] ++ [10..12]
 <code>let rec</code>는 단일 매개변수만 지원하므로, 추가 상태를 전달하려면
 클로저(closure)를 사용하세요.</p>
 <p><strong>합계:</strong></p>
-<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1; 2; 3; 4; 5]
+<pre><code>$ cat sum.l3
+let rec sum xs =
+    match xs with
+    | [] -&gt; 0
+    | x :: rest -&gt; x + sum rest
+
+let result = sum [1; 2; 3; 4; 5]
+let _ = println (to_string result)
+
+$ funlang sum.l3
 15
 </code></pre>
 <p><strong>각 요소를 10배로:</strong></p>
-<pre><code>funlang&gt; let rec go xs = match xs with | [] -&gt; [] | x :: rest -&gt; x * 10 :: go rest in go [1; 2; 3]
+<pre><code>$ cat map10.l3
+let rec go xs =
+    match xs with
+    | [] -&gt; []
+    | x :: rest -&gt; x * 10 :: go rest
+
+let result = go [1; 2; 3]
+let _ = println (to_string result)
+
+$ funlang map10.l3
 [10; 20; 30]
 </code></pre>
 <p>이 두 예제는 리스트 재귀의 기본 패턴을 잘 보여줍니다. 빈 리스트(<code>[]</code>)가 기저 사례(base case)이고, <code>x :: rest</code>로 분해해 머리(head) <code>x</code>를 처리한 뒤 꼬리(tail) <code>rest</code>에 재귀 호출하는 것이 귀납 사례(inductive case)입니다. Haskell을 비롯한 모든 함수형 언어에서 리스트 재귀는 이 구조를 따릅니다.</p>
@@ -1209,7 +1236,16 @@ $ funlang deep_option.l3
 "42 | inner none | mid none | outer none"
 </code></pre>
 <p><strong>튜플의 리스트:</strong></p>
-<pre><code>funlang&gt; let rec sumFirst xs = match xs with | [] -&gt; 0 | (a, _) :: rest -&gt; a + sumFirst rest in sumFirst [(1, "a"); (2, "b"); (3, "c")]
+<pre><code>$ cat sum_first.l3
+let rec sumFirst xs =
+    match xs with
+    | [] -&gt; 0
+    | (a, _) :: rest -&gt; a + sumFirst rest
+
+let result = sumFirst [(1, "a"); (2, "b"); (3, "c")]
+let _ = println (to_string result)
+
+$ funlang sum_first.l3
 6
 </code></pre>
 <p><strong>리스트 안의 튜플을 포함하는 생성자:</strong></p>
@@ -1484,15 +1520,39 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 <h3 id="재귀적-리스트-처리"><a class="header" href="#재귀적-리스트-처리">재귀적 리스트 처리</a></h3>
 <p>리스트 재귀의 표준 패턴: 빈 리스트와 cons를 매칭하고, 꼬리(tail)에 대해 재귀합니다.</p>
 <p><strong>리스트 합계:</strong></p>
-<pre><code>funlang&gt; let rec sum xs = match xs with | [] -&gt; 0 | x :: rest -&gt; x + sum rest in sum [1; 2; 3; 4; 5]
+<pre><code>$ cat list_sum.l3
+let rec sum xs =
+    match xs with
+    | [] -&gt; 0
+    | x :: rest -&gt; x + sum rest
+
+let _ = println (to_string (sum [1; 2; 3; 4; 5]))
+
+$ funlang list_sum.l3
 15
 </code></pre>
 <p><strong>요소 개수 세기:</strong></p>
-<pre><code>funlang&gt; let rec length xs = match xs with | [] -&gt; 0 | _ :: rest -&gt; 1 + length rest in length [10; 20; 30]
+<pre><code>$ cat list_length.l3
+let rec length xs =
+    match xs with
+    | [] -&gt; 0
+    | _ :: rest -&gt; 1 + length rest
+
+let _ = println (to_string (length [10; 20; 30]))
+
+$ funlang list_length.l3
 3
 </code></pre>
 <p><strong>조건 함수로 필터링 (클로저 캡처):</strong></p>
-<pre><code>funlang&gt; let rec filter pred = fun xs -&gt; match xs with | [] -&gt; [] | h :: t -&gt; if pred h then h :: filter pred t else filter pred t in filter (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5; 6]
+<pre><code>$ cat list_filter.l3
+let rec filter pred = fun xs -&gt;
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
+
+let _ = println (to_string (filter (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5; 6]))
+
+$ funlang list_filter.l3
 [4; 5; 6]
 </code></pre>
 <p><strong>조건이 참인 동안 가져오기(take while):</strong></p>
@@ -1516,7 +1576,11 @@ type Expr =
     | Mul of Expr * Expr
 
 let result =
-    let rec eval e = match e with | Num n -&gt; n | Add (a, b) -&gt; eval a + eval b | Mul (a, b) -&gt; eval a * eval b
+    let rec eval e =
+        match e with
+        | Num n -&gt; n
+        | Add (a, b) -&gt; eval a + eval b
+        | Mul (a, b) -&gt; eval a * eval b
     eval (Add (Mul (Num 3, Num 4), Num 5))
 
 $ funlang expr_eval.l3
@@ -1548,11 +1612,20 @@ type Tree =
 
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
-    let rec depth t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; 1 + max (depth l) (depth r)
+    let rec depth t =
+        match t with
+        | Leaf -&gt; 0
+        | Node (l, _, r) -&gt; 1 + max (depth l) (depth r)
     // 트리의 노드 수
-    let rec size t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; 1 + size l + size r
+    let rec size t =
+        match t with
+        | Leaf -&gt; 0
+        | Node (l, _, r) -&gt; 1 + size l + size r
     // 트리의 모든 값의 합
-    let rec sumTree t = match t with | Leaf -&gt; 0 | Node (l, v, r) -&gt; sumTree l + v + sumTree r
+    let rec sumTree t =
+        match t with
+        | Leaf -&gt; 0
+        | Node (l, v, r) -&gt; sumTree l + v + sumTree r
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
     (depth t, size t, sumTree t)
 
@@ -1567,7 +1640,10 @@ let sorted =
         match xs with
         | [] -&gt; x :: []
         | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
-    let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
+    let rec sort xs =
+        match xs with
+        | [] -&gt; []
+        | h :: t -&gt; insert h (sort t)
     sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
@@ -1698,7 +1774,11 @@ type IntList =
     | Cons of int * IntList
 let xs = Cons (1, Cons (2, Cons (3, Nil)))
 let result =
-    let rec sum xs = match xs with | Nil -&gt; 0 | Cons (x, rest) -&gt; x + sum rest in
+    let rec sum xs =
+        match xs with
+        | Nil -&gt; 0
+        | Cons (x, rest) -&gt; x + sum rest
+    in
     sum xs
 
 $ funlang intlist.l3
@@ -1713,7 +1793,11 @@ type Tree =
 let t = Branch (Leaf 1, Branch (Leaf 2, Leaf 3))
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
-    let rec depth t = match t with | Leaf _ -&gt; 1 | Branch (l, r) -&gt; 1 + max (depth l) (depth r) in
+    let rec depth t =
+        match t with
+        | Leaf _ -&gt; 1
+        | Branch (l, r) -&gt; 1 + max (depth l) (depth r)
+    in
     depth t
 
 $ funlang tree.l3
@@ -1765,7 +1849,12 @@ type Expr =
     | Mul of Expr * Expr
 let e = Plus (Num 2, Mul (Num 3, Num 4))
 let result =
-    let rec eval e = match e with | Num n -&gt; n | Plus (a, b) -&gt; eval a + eval b | Mul (a, b) -&gt; eval a * eval b in
+    let rec eval e =
+        match e with
+        | Num n -&gt; n
+        | Plus (a, b) -&gt; eval a + eval b
+        | Mul (a, b) -&gt; eval a * eval b
+    in
     eval e
 
 $ funlang calc.l3
@@ -2546,7 +2635,10 @@ $ funlang string_ops.l3
 <p><strong><code>&lt;|&gt;</code> (Option 대안):</strong></p>
 <p>여러 시도 중 첫 번째로 성공한 결과를 택하는 패턴입니다. 파싱이나 fallback 로직을 표현할 때 특히 유용합니다:</p>
 <pre><code>$ cat option_ops.l3
-let tryParse s = match s with | "42" -&gt; Some 42 | _ -&gt; None
+let tryParse s =
+    match s with
+    | "42" -&gt; Some 42
+    | _ -&gt; None
 let result = tryParse "abc" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
 $ funlang option_ops.l3
@@ -2954,7 +3046,11 @@ None
 </code></pre>
 <p>연쇄하여 fallback 패턴을 구현할 수 있습니다. “여러 파싱 방법을 순서대로 시도해서 첫 번째로 성공한 결과를 택한다“는 파서 콤비네이터 스타일의 코드를 자연스럽게 표현합니다:</p>
 <pre><code>$ cat fallback.l3
-let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let tryParse s =
+    match s with
+    | "42" -&gt; Some 42
+    | "0" -&gt; Some 0
+    | _ -&gt; None
 let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
 $ funlang fallback.l3
@@ -4935,7 +5031,11 @@ $ funlang find_res.l3
 exception ParseError of string
 exception DivError of string
 
-let parseInt s = match s with | "42" -&gt; 42 | "0" -&gt; 0 | _ -&gt; raise (ParseError ("invalid: " + s))
+let parseInt s =
+    match s with
+    | "42" -&gt; 42
+    | "0" -&gt; 0
+    | _ -&gt; raise (ParseError ("invalid: " + s))
 let safeDivide a = fun b -&gt; if b = 0 then raise (DivError "div/0") else a / b
 
 let compute input = try
@@ -4957,7 +5057,11 @@ $ funlang chain_exc.l3
 </code></pre>
 <p>Result를 사용하면 <strong>파이프라인으로 합성</strong>할 수 있습니다:</p>
 <pre><code>$ cat chain_res.l3
-let parseInt s = match s with | "42" -&gt; Ok 42 | "0" -&gt; Ok 0 | _ -&gt; Error ("invalid: " + s)
+let parseInt s =
+    match s with
+    | "42" -&gt; Ok 42
+    | "0" -&gt; Ok 0
+    | _ -&gt; Error ("invalid: " + s)
 let safeDivide a = fun b -&gt; if b = 0 then Error "div/0" else Ok (a / b)
 
 let compute input = parseInt input |&gt; resultBind (safeDivide 100) |&gt; resultMap (fun x -&gt; x + 1)
@@ -5005,7 +5109,10 @@ Ok 999998
 <h3 id="option--실패-이유가-중요하지-않을-때"><a class="header" href="#option--실패-이유가-중요하지-않을-때">Option — 실패 이유가 중요하지 않을 때</a></h3>
 <p>“값이 있거나 없거나“만 구분하면 될 때 <code>Option</code>을 사용합니다:</p>
 <pre><code>$ cat option_use.l3
-let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
+let safeHead xs =
+    match xs with
+    | [] -&gt; None
+    | h :: _ -&gt; Some h
 let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
@@ -5022,7 +5129,10 @@ $ funlang option_use.l3
 </ul>
 <p><code>&lt;|&gt;</code> 연산자를 사용하면 fallback 체인을 더 간결하게 작성할 수 있습니다:</p>
 <pre><code>$ cat fallback.l3
-let safeHead xs = match xs with | [] -&gt; None | h :: _ -&gt; Some h
+let safeHead xs =
+    match xs with
+    | [] -&gt; None
+    | h :: _ -&gt; Some h
 let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
@@ -5059,7 +5169,12 @@ $ funlang result_use.l3
 <pre><code>$ cat exception_use.l3
 exception InternalError of string
 
-let rec processAll xs = match xs with | [] -&gt; 0 | h :: t -&gt; if h &lt; 0 then raise (InternalError "unexpected negative value") else h + processAll t
+let rec processAll xs =
+    match xs with
+    | [] -&gt; 0
+    | h :: t -&gt;
+        if h &lt; 0 then raise (InternalError "unexpected negative value")
+        else h + processAll t
 
 let result = processAll [1; 2; 3; 4; 5]
 
@@ -5188,7 +5303,11 @@ $ funlang op_as_func.l3
 <h3 id="리스트-정렬-quicksort-with-"><a class="header" href="#리스트-정렬-quicksort-with-">리스트 정렬 (quicksort with ++)</a></h3>
 <p>퀵정렬은 <code>++</code>를 사용하면 알고리즘의 구조가 코드에 그대로 드러납니다. “피벗보다 작은 것들을 정렬한 결과” 더하기 “[피벗]” 더하기 “피벗보다 크거나 같은 것들을 정렬한 결과“라는 설명이 코드와 일대일로 대응합니다.</p>
 <pre><code>$ cat qsort_op.l3
-let rec qsort xs = match xs with | [] -&gt; [] | p :: rest -&gt; qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -&gt; []
+    | p :: rest -&gt;
+        qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
@@ -5211,7 +5330,11 @@ $ funlang format_op.l3
 <h3 id="option-fallback-체인"><a class="header" href="#option-fallback-체인">Option fallback 체인</a></h3>
 <p><code>&lt;|&gt;</code>의 진가는 여러 소스에서 값을 시도할 때 드러납니다. 여러 파싱 전략을 순서대로 시도하고, 처음 성공한 결과를 택하는 이 패턴은 실제 파서나 설정 읽기 코드에서 자주 등장합니다.</p>
 <pre><code>$ cat fallback_op.l3
-let tryParse s = match s with | "42" -&gt; Some 42 | "0" -&gt; Some 0 | _ -&gt; None
+let tryParse s =
+    match s with
+    | "42" -&gt; Some 42
+    | "0" -&gt; Some 0
+    | _ -&gt; None
 
 let result = tryParse "abc" &lt;|&gt; tryParse "xyz" &lt;|&gt; tryParse "42" &lt;|&gt; Some 0
 
@@ -5984,7 +6107,7 @@ instance Eq char =
 <ul>
 <li>매개변수는 <strong>하나만</strong> 직접 받습니다: <code>let rec f x = body</code></li>
 <li>두 번째 매개변수부터는 클로저로 전달합니다: <code>let rec f x = fun y -&gt; body</code></li>
-<li><code>match</code> 표현식은 한 줄에 작성해야 합니다</li>
+<li><code>match</code> 표현식은 한 줄 또는 들여쓰기 기반 여러 줄로 작성할 수 있습니다</li>
 </ul>
 <p>이제 이 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.</p>
 <h2 id="표준-리스트-함수"><a class="header" href="#표준-리스트-함수">표준 리스트 함수</a></h2>
@@ -6045,7 +6168,10 @@ $ funlang fold.l3
 <h3 id="prelude를-활용한-간결한-코드"><a class="header" href="#prelude를-활용한-간결한-코드">Prelude를 활용한 간결한 코드</a></h3>
 <p>Prelude 함수를 사용하면 알고리즘을 더 간결하게 작성할 수 있습니다:</p>
 <pre><code>$ cat sieve_prelude.l3
-let rec sieve xs = match xs with | [] -&gt; [] | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n % p &lt;&gt; 0) rest)
+let rec sieve xs =
+    match xs with
+    | [] -&gt; []
+    | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n % p &lt;&gt; 0) rest)
 
 let result = sieve [2..50]
 
@@ -6161,7 +6287,10 @@ let rec insert x = fun xs -&gt;
     | [] -&gt; x :: []
     | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
 
-let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
+let rec sort xs =
+    match xs with
+    | [] -&gt; []
+    | h :: t -&gt; insert h (sort t)
 
 let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -6184,7 +6313,13 @@ let rec append xs = fun ys -&gt;
     | [] -&gt; ys
     | h :: t -&gt; h :: append t ys
 
-let rec qsort xs = match xs with | [] -&gt; [] | pivot :: rest -&gt; let lo = filter (fun x -&gt; x &lt; pivot) rest in let hi = filter (fun x -&gt; x &gt;= pivot) rest in append (qsort lo) (pivot :: qsort hi)
+let rec qsort xs =
+    match xs with
+    | [] -&gt; []
+    | pivot :: rest -&gt;
+        let lo = filter (fun x -&gt; x &lt; pivot) rest
+        in let hi = filter (fun x -&gt; x &gt;= pivot) rest
+        in append (qsort lo) (pivot :: qsort hi)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -6197,7 +6332,11 @@ head를 사용합니다. <code>filter</code>로 피벗보다 작은 원소(<code
 조합합니다.</p>
 <p>Prelude <code>++</code> 연산자를 사용하면 <code>append</code>를 재정의할 필요가 없어 더 간결합니다:</p>
 <pre><code>$ cat qsort_prelude.l3
-let rec qsort xs = match xs with | [] -&gt; [] | p :: rest -&gt; qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
+let rec qsort xs =
+    match xs with
+    | [] -&gt; []
+    | p :: rest -&gt;
+        qsort (filter (fun x -&gt; x &lt; p) rest) ++ [p] ++ qsort (filter (fun x -&gt; x &gt;= p) rest)
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
@@ -6208,18 +6347,34 @@ $ funlang qsort_prelude.l3
 <p>리스트를 반으로 나누고, 각 반쪽을 정렬한 후 병합합니다. 여러 헬퍼 함수가
 필요한 알고리즘에서 모듈 레벨 선언의 장점이 특히 드러납니다:</p>
 <pre><code>$ cat merge_sort.l3
-let rec length xs = match xs with | [] -&gt; 0 | _ :: t -&gt; 1 + length t
+let rec length xs =
+    match xs with
+    | [] -&gt; 0
+    | _ :: t -&gt; 1 + length t
 let rec take n = fun xs -&gt;
-    if n = 0 then [] else match xs with | [] -&gt; [] | h :: t -&gt; h :: take (n - 1) t
+    if n = 0 then []
+    else match xs with
+         | [] -&gt; []
+         | h :: t -&gt; h :: take (n - 1) t
 let rec drop n = fun xs -&gt;
-    if n = 0 then xs else match xs with | [] -&gt; [] | _ :: t -&gt; drop (n - 1) t
+    if n = 0 then xs
+    else match xs with
+         | [] -&gt; []
+         | _ :: t -&gt; drop (n - 1) t
 // 두 정렬된 리스트의 head를 비교하며 병합
 let rec merge xs = fun ys -&gt;
     match xs with
     | [] -&gt; ys
-    | x :: xt -&gt; match ys with | [] -&gt; xs | y :: yt -&gt; if x &lt;= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
+    | x :: xt -&gt;
+        match ys with
+        | [] -&gt; xs
+        | y :: yt -&gt; if x &lt;= y then x :: merge xt (y :: yt) else y :: merge (x :: xt) yt
 // 리스트를 반으로 나눠 각각 정렬 후 병합 (O(n log n))
-let rec msort xs = let len = length xs in if len &lt;= 1 then xs else let mid = len / 2 in merge (msort (take mid xs)) (msort (drop mid xs))
+let rec msort xs =
+    let len = length xs
+    in if len &lt;= 1 then xs
+    else let mid = len / 2
+         in merge (msort (take mid xs)) (msort (drop mid xs))
 
 let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
@@ -6243,12 +6398,18 @@ let rec treeInsert x = fun t -&gt;
     match t with
     | Leaf -&gt; Node (Leaf, x, Leaf)
     | Node (l, v, r) -&gt; if x &lt;= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
-let rec buildTree xs = match xs with | [] -&gt; Leaf | h :: t -&gt; treeInsert h (buildTree t)
+let rec buildTree xs =
+    match xs with
+    | [] -&gt; Leaf
+    | h :: t -&gt; treeInsert h (buildTree t)
 let rec append xs = fun ys -&gt;
     match xs with
     | [] -&gt; ys
     | h :: t -&gt; h :: append t ys
-let rec inorder t = match t with | Leaf -&gt; [] | Node (l, v, r) -&gt; append (inorder l) (v :: inorder r)
+let rec inorder t =
+    match t with
+    | Leaf -&gt; []
+    | Node (l, v, r) -&gt; append (inorder l) (v :: inorder r)
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
@@ -6267,7 +6428,10 @@ type Nat =
     | Zero
     | Succ of Nat
 
-let rec toInt n = match n with | Zero -&gt; 0 | Succ p -&gt; 1 + toInt p
+let rec toInt n =
+    match n with
+    | Zero -&gt; 0
+    | Succ p -&gt; 1 + toInt p
 let rec add a = fun b -&gt;
     match a with
     | Zero -&gt; b
@@ -6299,7 +6463,10 @@ let rec filter pred = fun xs -&gt;
     match xs with
     | [] -&gt; []
     | h :: t -&gt; if pred h then h :: filter pred t else filter pred t
-let rec sieve xs = match xs with | [] -&gt; [] | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n % p &lt;&gt; 0) rest)
+let rec sieve xs =
+    match xs with
+    | [] -&gt; []
+    | p :: rest -&gt; p :: sieve (filter (fun n -&gt; n % p &lt;&gt; 0) rest)
 
 let result = sieve [2..50]
 
@@ -6362,8 +6529,16 @@ $ funlang fizzbuzz.l3
 <p><code>let rec ... and ...</code> 구문은 서로를 호출하는 함수를 정의할 수 있게 합니다.
 상태 머신은 상호 재귀의 대표적인 활용 사례입니다:</p>
 <pre><code>$ cat state_machine.l3
-let rec stateA xs = match xs with | [] -&gt; "ended in A" | 0 :: rest -&gt; stateB rest | _ :: rest -&gt; stateA rest
-and stateB xs = match xs with | [] -&gt; "ended in B" | 1 :: rest -&gt; stateA rest | _ :: rest -&gt; stateB rest
+let rec stateA xs =
+    match xs with
+    | [] -&gt; "ended in A"
+    | 0 :: rest -&gt; stateB rest
+    | _ :: rest -&gt; stateA rest
+and stateB xs =
+    match xs with
+    | [] -&gt; "ended in B"
+    | 1 :: rest -&gt; stateA rest
+    | _ :: rest -&gt; stateB rest
 
 let r1 = stateA [1; 0; 1; 0]
 let r2 = stateA [1; 0; 0]

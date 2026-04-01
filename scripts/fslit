@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJ="$ROOT/tools/fslit/FsLit/FsLit.fsproj"
+BIN="$ROOT/tools/fslit/FsLit/bin/Release/net10.0/FsLit"
+
+# Initialize submodule if needed
+if [ ! -f "$PROJ" ]; then
+    echo "Initializing fslit submodule..."
+    git -C "$ROOT" submodule update --init tools/fslit
+fi
+
+# Build if binary missing
+if [ ! -f "$BIN" ]; then
+    echo "Building fslit..."
+    dotnet build "$PROJ" -c Release -v quiet
+fi
+
+exec "$BIN" "$@"

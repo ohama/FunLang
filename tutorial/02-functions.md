@@ -125,7 +125,16 @@ funlang> let rec fact n = if n <= 1 then 1 else n * fact (n - 1) in fact 5
 재귀 함수의 경우, 단일 튜플을 받거나 본문 내부에서 중첩 람다를 사용하세요:
 
 ```
-funlang> let rec len xs = match xs with | [] -> 0 | _ :: rest -> 1 + len rest in len [1; 2; 3]
+$ cat len.l3
+let rec len xs =
+    match xs with
+    | [] -> 0
+    | _ :: rest -> 1 + len rest
+
+let result = len [1; 2; 3]
+let _ = println (to_string result)
+
+$ funlang len.l3
 3
 ```
 

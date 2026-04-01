@@ -1,0 +1,3 @@
+[submodule "tools/fslit"]
+	path = tools/fslit
+	url = https://github.com/ohama/fslit
