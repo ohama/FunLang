@@ -22,7 +22,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Algebraic Data Types** | Sum types, pattern matching, exhaustiveness checking | v1.0 |
 | **GADT** | Type refinement, polymorphic return (`eval : 'a Expr -> 'a`) | v1.0+v1.8 |
 | **Records** | Named fields, mutable fields, copy-and-update, pattern matching | v1.0 |
-| **Modules** | Namespace, open, qualified names, nested modules | v1.0 |
+| **Modules** | `module`, `open`, qualified names, nested modules | v1.0 |
 | **Exceptions** | try...with, when guards, custom exception types | v1.0 |
 | **Pattern Compilation** | Decision tree compilation (Jules Jacobs algorithm) | v1.0 |
 | **Pipe & Composition** | `\|>`, `>>`, `<<` operators | v1.2 |
@@ -296,8 +296,8 @@ and stateB xs =
 FunLang/
 ├── src/FunLang/       # Interpreter source (~16,200 LOC F#)
 ├── tests/
-│   ├── FunLang.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (699 tests)
+│   ├── FunLang.Tests/ # F# unit tests (223 tests)
+│   └── flt/             # fslit integration tests (696 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
 │       ├── file/        # File-mode tests (475 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
@@ -328,7 +328,7 @@ dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 # fslit integration tests (699) — auto-builds on first run
 scripts/fslit tests/flt/
 
-# Total: 923 tests
+# Total: 919 tests
 ```
 
 ## Milestones

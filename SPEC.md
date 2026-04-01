@@ -28,16 +28,15 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | WITH | `with` | TYPE | `type` |
 | OF | `of` | AND_KW | `and` |
 | TRUE | `true` | FALSE | `false` |
-| MODULE | `module` | NAMESPACE | `namespace` |
-| OPEN | `open` | EXCEPTION | `exception` |
-| RAISE | `raise` | TRY | `try` |
-| WHEN | `when` | MUTABLE | `mutable` |
-| CHAR | `char` | MUT | `mut` |
-| WHILE | `while` | FOR | `for` |
-| TO | `to` | DOWNTO | `downto` |
-| DO | `do` | IN_KW | `in` |
-| TYPECLASS | `typeclass` | INSTANCE | `instance` |
-| DERIVING | `deriving` | | |
+| MODULE | `module` | OPEN | `open` |
+| EXCEPTION | `exception` | RAISE | `raise` |
+| TRY | `try` | WHEN | `when` |
+| MUTABLE | `mutable` | MUT | `mut` |
+| CHAR | `char` | WHILE | `while` |
+| FOR | `for` | TO | `to` |
+| DOWNTO | `downto` | DO | `do` |
+| IN_KW | `in` | TYPECLASS | `typeclass` |
+| INSTANCE | `instance` | DERIVING | `deriving` |
 
 ### 1.3 Type Keywords (6)
 
@@ -152,7 +151,6 @@ Single-character operators (`+`, `-`, `*`, `/`, `%`, `<`, `>`, `=`) are always l
 ```
 Program     ::= Module
 Module      ::= 'module' QualifiedIdent Decls EOF
-              | 'namespace' QualifiedIdent Decls EOF
               | Decls EOF
 
 QualifiedIdent ::= IDENT ('.' IDENT)*

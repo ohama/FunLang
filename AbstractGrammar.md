@@ -34,14 +34,13 @@
 
 ```
 program     ::= 'module' qualified_ident decl* EOF
-             |  'namespace' qualified_ident decl* EOF
              |  decl* EOF
 
 qualified_ident ::= IDENT ('.' IDENT)*
 ```
 
 최상위 프로그램은 빈 파일이거나(`EmptyModule`), 선언 목록이거나,
-`module` / `namespace` 헤더를 가진 명명된 모듈이다.
+`module` 헤더를 가진 명명된 모듈이다.
 
 ---
 
@@ -72,8 +71,6 @@ decl ::= 'let' IDENT '=' expr
 
        | 'open' qualified_ident
        | 'open' STRING
-
-       | 'namespace' qualified_ident
 
        -- 타입 클래스 (v10.0, v12.0 확장)
        | 'typeclass' IDENT type_var '='
