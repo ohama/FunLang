@@ -35,6 +35,12 @@ let initialTypeEnv: TypeEnv =
         "string_endswith",   Scheme([], [], TArrow(TString, TArrow(TString, TBool)))
         "string_startswith", Scheme([], [], TArrow(TString, TArrow(TString, TBool)))
         "string_trim",       Scheme([], [], TArrow(TString, TString))
+        // v13.0: String module extensions
+        "string_split",      Scheme([], [], TArrow(TString, TArrow(TString, TList TString)))
+        "string_indexof",    Scheme([], [], TArrow(TString, TArrow(TString, TInt)))
+        "string_replace",    Scheme([], [], TArrow(TString, TArrow(TString, TArrow(TString, TString))))
+        "string_toupper",    Scheme([], [], TArrow(TString, TString))
+        "string_tolower",    Scheme([], [], TArrow(TString, TString))
 
         // to_string: 'a -> string  (permissively polymorphic; runtime enforces int/bool/string)
         "to_string", Scheme([0], [], TArrow(TVar 0, TString))

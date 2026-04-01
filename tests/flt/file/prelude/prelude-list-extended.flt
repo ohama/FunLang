@@ -1,0 +1,18 @@
+// Test: v13.0 List module extensions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = println (to_string (List.init 5 (fun i -> i * i)))
+let _ = println (to_string (List.findIndex (fun x -> x > 3) [1; 2; 3; 4; 5]))
+let _ = println (to_string (List.partition (fun x -> x > 3) [1; 2; 3; 4; 5]))
+let _ = println (to_string (List.replicate 3 "x"))
+let _ = println (to_string (List.sum [1; 2; 3; 4; 5]))
+let _ = println (to_string (List.contains 3 [1; 2; 3]))
+let result = List.pairwise [1; 2; 3; 4]
+// --- Output:
+[0; 1; 4; 9; 16]
+3
+([4; 5], [1; 2; 3])
+["x"; "x"; "x"]
+15
+true
+[(1, 2); (2, 3); (3, 4)]

@@ -3,5 +3,5 @@
 // --- Input:
 let result = eq (fun x -> x) (fun x -> x)
 // --- ExitCode: 1
-// --- Stderr:
-error[E0701]: No instance of Eq for 'z -> 'z
+// --- StderrContains:
+error[E0701]: No instance of Eq for

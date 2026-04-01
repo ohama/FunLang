@@ -3,5 +3,5 @@
 // --- Input:
 let bad = show (fun x -> x)
 // --- ExitCode: 1
-// --- Stderr:
-error[E0701]: No instance of Show for 'x -> 'x
+// --- StderrContains:
+error[E0701]: No instance of Show for

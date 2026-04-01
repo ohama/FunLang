@@ -55,5 +55,59 @@ module List =
             else h :: _distinctBy_helper f (key :: seen) t
     let distinctBy f xs = _distinctBy_helper f [] xs
     let ofSeq coll = list_of_seq coll
+    // v13.0: New List functions
+    let rec init n f =
+        if n = 0 then []
+        else
+            let rec _init_helper i =
+                if i = n then []
+                else f i :: _init_helper (i + 1)
+            _init_helper 0
+    let find pred xs =
+        match tryFind pred xs with
+        | Some v -> v
+        | None -> failwith "List.find: no element satisfies the predicate"
+    let rec _findIndex_helper pred i xs =
+        match xs with
+        | [] -> 0 - 1
+        | h :: t -> if pred h then i else _findIndex_helper pred (i + 1) t
+    let findIndex pred xs = _findIndex_helper pred 0 xs
+    let partition pred xs =
+        let rec go yes no = fun xs ->
+            match xs with
+            | [] -> (reverse [] yes, reverse [] no)
+            | h :: t -> if pred h then go (h :: yes) no t else go yes (h :: no) t
+        go [] [] xs
+    let rec groupBy f xs =
+        match xs with
+        | [] -> []
+        | h :: _ ->
+            let key = f h
+            let (matches, rest) = partition (fun x -> f x = key) xs
+            (key, matches) :: groupBy f rest
+    let rec scan f acc xs =
+        acc :: (match xs with
+               | [] -> []
+               | h :: t -> scan f (f acc h) t)
+    let replicate n x = init n (fun _i -> x)
+    let collect f xs = flatten (map f xs)
+    let rec pairwise xs =
+        match xs with
+        | a :: b :: rest -> (a, b) :: pairwise (b :: rest)
+        | _ -> []
+    let sumBy f xs = fold (fun acc -> fun x -> acc + f x) 0 xs
+    let sum xs = fold (fun acc -> fun x -> acc + x) 0 xs
+    let minBy f xs =
+        match xs with
+        | [] -> failwith "List.minBy: empty list"
+        | h :: t -> fold (fun best -> fun x -> if f x < f best then x else best) h t
+    let maxBy f xs =
+        match xs with
+        | [] -> failwith "List.maxBy: empty list"
+        | h :: t -> fold (fun best -> fun x -> if f x > f best then x else best) h t
+    let contains x xs = any (fun y -> y = x) xs
+    let unzip xs = (map fst xs, map snd xs)
+    let forall pred xs = all pred xs
+    let iter f xs = fold (fun _u -> fun x -> f x) () xs
 
 open List

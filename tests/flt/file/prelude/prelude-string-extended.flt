@@ -1,0 +1,14 @@
+// Test: v13.0 String module extensions
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+let _ = println (to_string (String.split "a,b,c" ","))
+let _ = println (to_string (String.indexOf "hello world" "world"))
+let _ = println (String.replace "hello world" "world" "L3")
+let _ = println (String.toUpper "hello")
+let result = String.toLower "HELLO"
+// --- Output:
+["a"; "b"; "c"]
+6
+hello L3
+HELLO
+"hello"

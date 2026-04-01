@@ -260,6 +260,46 @@ let initialBuiltinEnv : Env =
             | StringValue s -> StringValue (s.Trim())
             | _ -> failwith "string_trim: expected string argument")
 
+        // v13.0: String module extensions
+        "string_split", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s -> BuiltinValue (fun v2 ->
+                match v2 with
+                | StringValue sep ->
+                    let parts = s.Split([|sep|], System.StringSplitOptions.None)
+                    ListValue (parts |> Array.toList |> List.map StringValue)
+                | _ -> failwith "string_split: second argument must be string")
+            | _ -> failwith "string_split: first argument must be string")
+
+        "string_indexof", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s -> BuiltinValue (fun v2 ->
+                match v2 with
+                | StringValue sub -> IntValue (s.IndexOf(sub))
+                | _ -> failwith "string_indexof: second argument must be string")
+            | _ -> failwith "string_indexof: first argument must be string")
+
+        "string_replace", BuiltinValue (fun v1 ->
+            match v1 with
+            | StringValue s -> BuiltinValue (fun v2 ->
+                match v2 with
+                | StringValue old -> BuiltinValue (fun v3 ->
+                    match v3 with
+                    | StringValue rep -> StringValue (s.Replace(old, rep))
+                    | _ -> failwith "string_replace: third argument must be string")
+                | _ -> failwith "string_replace: second argument must be string")
+            | _ -> failwith "string_replace: first argument must be string")
+
+        "string_toupper", BuiltinValue (fun v ->
+            match v with
+            | StringValue s -> StringValue (s.ToUpper())
+            | _ -> failwith "string_toupper: expected string argument")
+
+        "string_tolower", BuiltinValue (fun v ->
+            match v with
+            | StringValue s -> StringValue (s.ToLower())
+            | _ -> failwith "string_tolower: expected string argument")
+
         // to_string : 'a -> string  (polymorphic; F#-style: no quotes on strings)
         "to_string", BuiltinValue (fun v ->
             match v with
