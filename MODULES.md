@@ -55,7 +55,7 @@ module Config =
     let maxRetries = 3
 
 module StringUtils =
-    let greet name = string_concat ["Hello, "; name; "!"]
+    let greet name = "Hello, " ^^ name ^^ "!"
 
 let _ = println (to_string Config.maxRetries)       // 3
 let _ = println (StringUtils.greet "World")          // Hello, World!
@@ -492,8 +492,8 @@ module Geometry =
 
     let describe s =
         match s with
-        | Circle r -> string_concat ["Circle("; to_string r; ")"]
-        | Rect (w, h) -> string_concat ["Rect("; to_string w; ","; to_string h; ")"]
+        | Circle r -> "Circle(" ^^ to_string r ^^ ")"
+        | Rect (w, h) -> "Rect(" ^^ to_string w ^^ "," ^^ to_string h ^^ ")"
 ```
 
 ```fsharp

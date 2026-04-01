@@ -14,25 +14,25 @@ dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)
-funlang --expr '1 + 2 * 3'
+fn --expr '1 + 2 * 3'
 
 # File mode (파일 실행)
-funlang myfile.l3
+fn myfile.l3
 
 # AST 출력
-funlang --emit-ast --expr '1 + 2'
-funlang --emit-ast myfile.l3
+fn --emit-ast --expr '1 + 2'
+fn --emit-ast myfile.l3
 
 # 타입 출력
-funlang --emit-type --expr 'fun x -> x + 1'
-funlang --emit-type myfile.l3
+fn --emit-type --expr 'fun x -> x + 1'
+fn --emit-type myfile.l3
 ```
 
 ### 1.2 fslit 파일 형식
 
 ```
 --- Command:
-funlang %input
+fn %input
 --- Input:
 let result = 1 + 2
 --- Output:
