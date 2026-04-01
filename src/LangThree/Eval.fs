@@ -1602,7 +1602,7 @@ let rec evalModuleDecls
             let ctorNames =
                 innerDecls |> List.collect (fun d ->
                     match d with
-                    | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
+                    | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _, _)) ->
                         ctors |> List.collect (fun ctor ->
                             match ctor with
                             | ConstructorDecl(cname, _, _) -> [cname]
@@ -1654,7 +1654,7 @@ let rec evalModuleDecls
                     Map.add name v acc) env
             sharedEnvRef := mutualEnv
             (mutualEnv, modEnv)
-        | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _)) ->
+        | Decl.TypeDecl (Ast.TypeDecl(_, _, ctors, _, _)) ->
             // Register constructor values/functions in the environment
             let dummySpan = unknownSpan
             let env' =
@@ -1695,12 +1695,15 @@ let rec evalModuleDecls
             // Type aliases are purely a type-level feature, no runtime behavior
             (env, modEnv)
         // Phase 72 (Type Classes): type-level only; no runtime behavior
-        | TypeClassDecl(_, _, _, _) ->
+        | TypeClassDecl(_, _, _, _, _) ->
             // Type classes are type-level only; no runtime behavior
             // (Phase 73 will add dictionary construction for InstanceDecl)
             (env, modEnv)
         | InstanceDecl(_, _, _, _, _) ->
             // Instance dictionaries constructed in Phase 73 elaboration pass
+            (env, modEnv)
+        | DerivingDecl(_, _, _) ->
+            // Handled by TypeCheck; elaborated away before eval
             (env, modEnv)
         | FileImportDecl(path, _span) ->
             // Use currentEvalFile for path resolution (span.FileName may be empty due to

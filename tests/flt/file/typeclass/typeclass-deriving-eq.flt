@@ -1,0 +1,13 @@
+// Test: deriving Eq for nullary ADT
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Direction = | North | South | East | West
+deriving Eq Direction
+
+let _ = println (to_string (eq North North))
+let _ = println (to_string (eq North South))
+let result = eq East East
+// --- Output:
+true
+false
+true

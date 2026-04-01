@@ -67,7 +67,7 @@ let gadtTests = testList "GADT" [
             match result with
             | Ast.Module([d], _) ->
                 match d with
-                | Ast.Decl.TypeDecl(Ast.TypeDecl(name, tparams, ctors, _)) ->
+                | Ast.Decl.TypeDecl(Ast.TypeDecl(name, tparams, ctors, _, _)) ->
                     Expect.equal name "Expr" "Type name should be Expr"
                     Expect.equal tparams ["'a"] "Should have type param 'a"
                     Expect.equal (List.length ctors) 3 "Should have 3 constructors"

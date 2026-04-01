@@ -1,0 +1,12 @@
+// Test: superclass constraints — typeclass Eq 'a => Ord 'a
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+typeclass Eq 'a => Ord 'a =
+    | compare : 'a -> 'a -> int
+
+instance Ord int =
+    let compare x = fun y -> if x < y then 0 - 1 else if x > y then 1 else 0
+
+let result = compare 3 5
+// --- Output:
+-1

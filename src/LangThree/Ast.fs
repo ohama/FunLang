@@ -175,7 +175,7 @@ and TypeExpr =
 /// Type declaration AST for algebraic data types (discriminated unions)
 /// Phase 2 (ADT-01): F# discriminated union syntax
 and TypeDecl =
-    | TypeDecl of name: string * typeParams: string list * constructors: ConstructorDecl list * Span
+    | TypeDecl of name: string * typeParams: string list * constructors: ConstructorDecl list * deriving: string list * Span
 
 /// Constructor definition within a type declaration
 and ConstructorDecl =
@@ -297,7 +297,7 @@ and Env = Map<string, Value>
 /// Extract span from TypeDecl
 let typeSpanOf (td: TypeDecl) : Span =
     match td with
-    | TypeDecl(_, _, _, s) -> s
+    | TypeDecl(_, _, _, _, s) -> s
 
 /// Extract span from ConstructorDecl
 let constructorSpanOf (cd: ConstructorDecl) : Span =
@@ -365,8 +365,10 @@ type Decl =
     // Phase 42 (Mutable Variables): Module-level mutable variable declaration
     | LetMutDecl of name: string * body: Expr * Span
     // Phase 71 (Type Classes): Typeclass and instance declarations
-    | TypeClassDecl of className: string * typeVar: string * methods: (string * TypeExpr) list * Span
+    | TypeClassDecl of className: string * typeVar: string * methods: (string * TypeExpr) list * superclasses: string list * Span
     | InstanceDecl of className: string * instanceType: TypeExpr * methods: (string * Expr) list * constraints: (string * TypeExpr) list * Span
+    // v12.0: Automatic deriving declaration
+    | DerivingDecl of typeName: string * classNames: string list * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -391,8 +393,9 @@ let declSpanOf (decl: Decl) : Span =
     | LetRecDecl(_, s) -> s
     | FileImportDecl(_, s) -> s
     | LetMutDecl(_, _, s) -> s
-    | TypeClassDecl(_, _, _, s) -> s
+    | TypeClassDecl(_, _, _, _, s) -> s
     | InstanceDecl(_, _, _, _, s) -> s
+    | DerivingDecl(_, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =

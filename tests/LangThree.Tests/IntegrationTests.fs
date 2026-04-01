@@ -199,7 +199,7 @@ let integrationTests = testList "Integration" [
     // Helper to extract TypeDecl details from a Decl
     let extractTypeDecl (d: Ast.Decl) =
         match d with
-        | Ast.Decl.TypeDecl(Ast.TypeDecl(name, tparams, ctors, _)) -> (name, tparams, ctors)
+        | Ast.Decl.TypeDecl(Ast.TypeDecl(name, tparams, ctors, _, _)) -> (name, tparams, ctors)
         | _ -> failwith "Expected TypeDecl"
 
     test "testParseSimpleADT" {
@@ -292,7 +292,7 @@ let integrationTests = testList "Integration" [
         let decl = Ast.TypeDecl("Bool", [], [
             Ast.ConstructorDecl("True", None, Ast.unknownSpan)
             Ast.ConstructorDecl("False", None, Ast.unknownSpan)
-        ], Ast.unknownSpan)
+        ], [], Ast.unknownSpan)
 
         let ctorEnv = Elaborate.elaborateTypeDecl decl
 
@@ -312,7 +312,7 @@ let integrationTests = testList "Integration" [
         let decl = Ast.TypeDecl("Option", ["'a"], [
             Ast.ConstructorDecl("None", None, Ast.unknownSpan)
             Ast.ConstructorDecl("Some", Some(Ast.TEVar "'a"), Ast.unknownSpan)
-        ], Ast.unknownSpan)
+        ], [], Ast.unknownSpan)
 
         let ctorEnv = Elaborate.elaborateTypeDecl decl
 
@@ -332,7 +332,7 @@ let integrationTests = testList "Integration" [
         let decl = Ast.TypeDecl("IntList", [], [
             Ast.ConstructorDecl("Nil", None, Ast.unknownSpan)
             Ast.ConstructorDecl("Cons", Some(Ast.TETuple [Ast.TEInt; Ast.TEName "IntList"]), Ast.unknownSpan)
-        ], Ast.unknownSpan)
+        ], [], Ast.unknownSpan)
 
         let ctorEnv = Elaborate.elaborateTypeDecl decl
 

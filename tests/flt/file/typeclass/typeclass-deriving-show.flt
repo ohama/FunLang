@@ -1,0 +1,13 @@
+// Test: deriving Show for nullary ADT
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Input:
+type Color = | Red | Green | Blue
+deriving Show Color
+
+let _ = println (show Red)
+let _ = println (show Green)
+let result = show Blue
+// --- Output:
+Red
+Green
+"Blue"

@@ -93,6 +93,7 @@ let formatToken (token: Parser.token) : string =
     | Parser.TYPECLASS -> "TYPECLASS"
     | Parser.INSTANCE -> "INSTANCE"
     | Parser.FATARROW -> "FATARROW"
+    | Parser.DERIVING -> "DERIVING"
     // Phase 9 (Pipe & Composition): Pipe and composition tokens
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
@@ -310,7 +311,7 @@ let rec formatDecl (decl: Ast.Decl) : string =
     match decl with
     | Ast.LetDecl(name, body, _) ->
         sprintf "LetDecl (\"%s\", %s)" name (formatAst body)
-    | Ast.Decl.TypeDecl(Ast.TypeDecl(name, typeParams, ctors, _)) ->
+    | Ast.Decl.TypeDecl(Ast.TypeDecl(name, typeParams, ctors, _, _)) ->
         let paramsStr = if typeParams.IsEmpty then "" else sprintf " %s" (typeParams |> List.map (sprintf "'%s") |> String.concat " ")
         let ctorsStr = ctors |> List.map formatConstructorDecl |> String.concat " "
         sprintf "TypeDecl \"%s%s\" [%s]" name paramsStr ctorsStr
@@ -355,12 +356,14 @@ let rec formatDecl (decl: Ast.Decl) : string =
         sprintf "LetMutDecl (\"%s\", %s)" name (formatAst body)
 
     // Phase 71 (Type Classes): render new decl nodes
-    | Ast.TypeClassDecl(className, typeVar, methods, _) ->
+    | Ast.TypeClassDecl(className, typeVar, methods, _, _) ->
         let methodsStr = methods |> List.map (fun (name, ty) -> sprintf "%s : %s" name (formatTypeExpr ty)) |> String.concat ", "
         sprintf "TypeClassDecl \"%s\" %s [%s]" className typeVar methodsStr
     | Ast.InstanceDecl(className, instType, methods, _, _) ->
         let methodsStr = methods |> List.map (fun (name, body) -> sprintf "%s = %s" name (formatAst body)) |> String.concat ", "
         sprintf "InstanceDecl \"%s\" %s [%s]" className (formatTypeExpr instType) methodsStr
+    | Ast.DerivingDecl(typeName, classNames, _) ->
+        sprintf "DerivingDecl \"%s\" [%s]" typeName (classNames |> String.concat ", ")
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =

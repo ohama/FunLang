@@ -1035,7 +1035,7 @@ let rec typeCheckDecls
                     raise (TypeException { err with Span = importSpan })
 
             // Phase 72 (Type Classes): TypeClassDecl and InstanceDecl processing
-            | TypeClassDecl(className, typeVarName, methods, span) ->
+            | TypeClassDecl(className, typeVarName, methods, superclasses, span) ->
                 // If class is already defined (e.g. from Prelude), skip redeclaration silently.
                 // This allows user code to re-declare a prelude class without error.
                 // Duplicate instance declarations are still caught below.
@@ -1046,12 +1046,17 @@ let rec typeCheckDecls
                     let classTypeVar = Infer.freshVar()
                     let classVarId = match classTypeVar with TVar n -> n | _ -> failwith "impossible"
                     // Elaborate each method signature with this shared type var env
+                    // v12.0: Build superclass constraints for method schemes
+                    let superclassConstraints =
+                        superclasses |> List.map (fun scName ->
+                            { ClassName = scName; TypeArg = TVar classVarId; SourceSpan = span })
                     let methodSchemes =
                         methods |> List.map (fun (methodName, methodTypeExpr) ->
                             let (methodTy, _) = Elaborate.elaborateWithVars (Map.ofList [(typeVarName, classVarId)]) methodTypeExpr
-                            // Method scheme: forall [classVarId]. ClassName classVarId => methodTy
+                            // Method scheme: forall [classVarId]. ClassName classVarId + superclass constraints => methodTy
                             let methodConstraint = { ClassName = className; TypeArg = TVar classVarId; SourceSpan = span }
-                            let scheme = Scheme([classVarId], [methodConstraint], methodTy)
+                            let allConstraints = methodConstraint :: superclassConstraints
+                            let scheme = Scheme([classVarId], allConstraints, methodTy)
                             (methodName, scheme))
                     // Build ClassInfo and add to classEnv
                     let classInfo = { Name = className; TypeVar = classVarId; Methods = methodSchemes }
@@ -1138,6 +1143,67 @@ let rec typeCheckDecls
                 // Update Bidir mutable ref for constraint resolution access
                 Bidir.currentInstEnv <- iEnv'
                 (env, cEnv, rEnv, clsEnv, iEnv', mods, warns)
+
+            | DerivingDecl(typeName, classNames, span) ->
+                // v12.0: Generate instance from type's constructors
+                // Look up the type's constructors
+                let typeCtors =
+                    cEnv |> Map.toList |> List.filter (fun (_, info) ->
+                        match info.ResultType with
+                        | TData(n, _) when n = typeName -> true
+                        | _ -> false)
+                // For each class to derive:
+                let mutable envAcc = env
+                let mutable iEnvAcc = iEnv
+                for className in classNames do
+                    match className with
+                    | "Show" ->
+                        // Generate: let show x = match x with | Ctor1 -> "Ctor1" | Ctor2 -> "Ctor2" ...
+                        let clauses =
+                            typeCtors |> List.map (fun (ctorName, ctorInfo) ->
+                                match ctorInfo.ArgType with
+                                | None ->
+                                    // Nullary: | Ctor -> "Ctor"
+                                    (Ast.ConstructorPat(ctorName, None, span), None, Ast.String(ctorName, span))
+                                | Some _ ->
+                                    // With data: | Ctor v -> "Ctor " + show v
+                                    let vPat = Ast.VarPat("__v", span)
+                                    let body = Ast.Add(Ast.String(ctorName + " ", span), Ast.App(Ast.Var("show", span), Ast.Var("__v", span), span), span)
+                                    (Ast.ConstructorPat(ctorName, Some vPat, span), None, body))
+                        let matchExpr = Ast.Match(Ast.Var("__x", span), clauses, span)
+                        let showBody = Ast.Lambda("__x", matchExpr, span)
+                        let instType = TData(typeName, [])
+                        let newInst = { ClassName = "Show"; InstanceType = instType; InstanceVars = []; InstanceConstraints = [] }
+                        let existingInstances = Map.tryFind "Show" iEnvAcc |> Option.defaultValue []
+                        iEnvAcc <- Map.add "Show" (newInst :: existingInstances) iEnvAcc
+                        Bidir.currentInstEnv <- iEnvAcc
+                        // Add show function to env with proper scheme
+                        let showScheme = Scheme([], [], TArrow(instType, TString))
+                        envAcc <- Map.add "show" showScheme envAcc
+                    | "Eq" ->
+                        // Generate: let eq a = fun b -> match (a, b) with | (C1, C1) -> true | ... | _ -> false
+                        let clauses =
+                            typeCtors |> List.map (fun (ctorName, ctorInfo) ->
+                                match ctorInfo.ArgType with
+                                | None ->
+                                    let pat = Ast.TuplePat([Ast.ConstructorPat(ctorName, None, span); Ast.ConstructorPat(ctorName, None, span)], span)
+                                    (pat, None, Ast.Bool(true, span))
+                                | Some _ ->
+                                    let pat = Ast.TuplePat([Ast.ConstructorPat(ctorName, Some(Ast.VarPat("__a", span)), span); Ast.ConstructorPat(ctorName, Some(Ast.VarPat("__b", span)), span)], span)
+                                    let body = Ast.App(Ast.App(Ast.Var("eq", span), Ast.Var("__a", span), span), Ast.Var("__b", span), span)
+                                    (pat, None, body))
+                        let wildcard = (Ast.WildcardPat span, None, Ast.Bool(false, span))
+                        let matchExpr = Ast.Match(Ast.Tuple([Ast.Var("__x", span); Ast.Var("__y", span)], span), clauses @ [wildcard], span)
+                        let eqBody = Ast.Lambda("__x", Ast.Lambda("__y", matchExpr, span), span)
+                        let instType = TData(typeName, [])
+                        let newInst = { ClassName = "Eq"; InstanceType = instType; InstanceVars = []; InstanceConstraints = [] }
+                        let existingInstances = Map.tryFind "Eq" iEnvAcc |> Option.defaultValue []
+                        iEnvAcc <- Map.add "Eq" (newInst :: existingInstances) iEnvAcc
+                        Bidir.currentInstEnv <- iEnvAcc
+                        let eqScheme = Scheme([], [], TArrow(instType, TArrow(instType, TBool)))
+                        envAcc <- Map.add "eq" eqScheme envAcc
+                    | _ -> ()
+                (envAcc, cEnv, rEnv, clsEnv, iEnvAcc, mods, warns)
 
             | NamespaceDecl(_path, innerDecls, _span) ->
                 // Namespace is just a naming prefix, process inner decls in current scope

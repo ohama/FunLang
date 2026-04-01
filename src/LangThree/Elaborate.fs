@@ -124,7 +124,7 @@ let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
 /// Example: type Option 'a = None | Some of 'a
 /// Returns: Map with "None" -> {TypeParams=[0]; ArgType=None; ResultType=TData("Option",[TVar 0])}
 ///                  "Some" -> {TypeParams=[0]; ArgType=Some(TVar 0); ResultType=TData("Option",[TVar 0])}
-let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _): Ast.TypeDecl) : ConstructorEnv =
+let elaborateTypeDecl (Ast.TypeDecl(name, typeParams, constructors, _, _): Ast.TypeDecl) : ConstructorEnv =
     // Map type parameter names to TVar indices (deterministic: 'a->0, 'b->1)
     let paramMap =
         typeParams
@@ -248,7 +248,7 @@ let elaborateScoped (tes: TypeExpr list): Type list =
 let rec elaborateTypeclasses (decls: Decl list) : Decl list =
     decls |> List.collect (fun decl ->
         match decl with
-        | TypeClassDecl(_, _, _, _) ->
+        | TypeClassDecl(_, _, _, _, _) ->
             [] // Type-level only; remove from eval pipeline
         | InstanceDecl(_className, _instType, methods, _constraints, span) ->
             // Each method becomes an ordinary let-binding
@@ -268,4 +268,6 @@ let rec elaborateTypeclasses (decls: Decl list) : Decl list =
         | NamespaceDecl(path, innerDecls, span) ->
             // Recurse into namespace bodies
             [NamespaceDecl(path, elaborateTypeclasses innerDecls, span)]
+        | DerivingDecl(_, _, _) ->
+            [] // Handled by TypeCheck; removed from eval pipeline
         | other -> [other])
