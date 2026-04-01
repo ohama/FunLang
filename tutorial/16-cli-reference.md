@@ -271,20 +271,55 @@ main = "tests/test.l3"
 
 ```
 $ langthree
-FunLang REPL
-Type '#quit' or Ctrl+D to quit.
+LangThree REPL v14.0
+Type :help for commands, #quit or Ctrl+D to exit.
 
 funlang> 1 + 2
-3
-funlang> let x = 5 in x * 2
-10
+- : int = 3
+funlang> let x = 42
+val x : int = 42
+funlang> let y = x * 2
+val y : int = 84
+funlang> x + y
+- : int = 126
 funlang> #quit
 ```
 
-REPL은 한 줄 표현식을 평가합니다 (`--expr` 모드와 동일). 바인딩에는
-`let ... in` 구문을 사용합니다. 모듈 수준의 `let` (`in` 없이)은 지원되지 않습니다.
+### 영속적 바인딩
 
-`#quit` 또는 Ctrl+D로 종료합니다.
+REPL에서 `let` 바인딩은 다음 줄에서도 유지됩니다. 타입 선언, 모듈, 타입 클래스 인스턴스도 영속적입니다:
+
+```
+funlang> type Color = | Red | Green | Blue
+type defined
+funlang> deriving Show Color
+deriving applied
+funlang> show Green
+- : string = "Green"
+```
+
+### REPL 명령
+
+| 명령 | 설명 |
+|------|------|
+| `:type <expr>` | 표현식의 추론된 타입만 표시 (평가하지 않음) |
+| `:load <file>` | 파일을 REPL 환경에 로드 |
+| `:help` | 사용 가능한 명령 목록 |
+| `#quit` / `#exit` | REPL 종료 (Ctrl+D도 가능) |
+
+```
+funlang> :type fun x y -> x + y
+int -> int -> int
+funlang> :type map
+('a -> 'b) -> 'a list -> 'b list
+```
+
+### 출력 형식
+
+- **표현식**: `- : int = 3` (타입과 값을 함께 표시)
+- **선언**: `val x : int = 42` (이름, 타입, 값)
+- **타입 정의**: `type defined`
+- **타입 클래스**: `typeclass defined` / `instance defined`
 
 ## 진단 모드 요약
 
