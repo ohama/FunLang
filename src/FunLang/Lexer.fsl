@@ -73,7 +73,6 @@ rule tokenize = parse
     | "mut"         { MUTABLE }
     // Phase 5 (Modules): Module system keywords
     | "module"      { MODULE }
-    | "namespace"   { NAMESPACE }
     | "open"        { OPEN }
     // v6.0: Type keywords for type annotations
     | "int"         { TYPE_INT }

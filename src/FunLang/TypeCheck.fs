@@ -1211,54 +1211,6 @@ let rec typeCheckDecls
                     | _ -> ()
                 (envAcc, cEnv, rEnv, clsEnv, iEnvAcc, mods, warns)
 
-            | NamespaceDecl(_path, innerDecls, _span) ->
-                // Namespace is just a naming prefix, process inner decls in current scope
-                let (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns) =
-                    innerDecls
-                    |> List.fold (fun (e, ce, re, cls, inst, ms, ws) d ->
-                        match d with
-                        | LetDecl(n, body, _) ->
-                            let refsInBody = collectModuleRefs ms body
-                            let rewrittenBody = rewriteModuleAccess ms body
-                            let (eForSynth, cForSynth, rForSynth) =
-                                if Set.isEmpty refsInBody then (e, ce, re)
-                                else mergeModuleExportsForTypeCheck ms refsInBody e ce re
-                            let s, ty = Bidir.synth cForSynth rForSynth [] eForSynth rewrittenBody
-                            let ty' = apply s ty
-                            let scheme = generalize (applyEnv s e) ty'
-                            let matchWarnings = checkMatchWarnings ce body
-                            (Map.add n scheme e, ce, re, cls, inst, ms, ws @ matchWarnings)
-                        | ModuleDecl(name, mInnerDecls, span) ->
-                            if Map.containsKey name ms then
-                                raise (TypeException {
-                                    Kind = DuplicateModuleName name
-                                    Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
-                            let (iTypeEnv, iCtor, iRec, iCls, iInst, iMods, iWarns) =
-                                typeCheckDecls mInnerDecls e ce re cls inst ms
-                            let mClsEnv = Map.fold (fun acc k v -> if Map.containsKey k cls then acc else Map.add k v acc) Map.empty iCls
-                            let mInstEnv =
-                                Map.fold (fun acc k v ->
-                                    let outerInsts = Map.tryFind k inst |> Option.defaultValue []
-                                    let newInsts = v |> List.filter (fun i -> not (List.contains i outerInsts))
-                                    if List.isEmpty newInsts then acc
-                                    else Map.add k newInsts acc) Map.empty iInst
-                            let mExports = {
-                                TypeEnv = Map.fold (fun acc k v -> if Map.containsKey k e then acc else Map.add k v acc) Map.empty iTypeEnv
-                                CtorEnv = Map.fold (fun acc k v -> if Map.containsKey k ce then acc else Map.add k v acc) Map.empty iCtor
-                                RecEnv = Map.fold (fun acc k v -> if Map.containsKey k re then acc else Map.add k v acc) Map.empty iRec
-                                ClassEnv = mClsEnv
-                                InstanceEnv = mInstEnv
-                                SubModules = iMods
-                            }
-                            // Propagate ClassEnv/InstanceEnv to outer scope
-                            let cls' = Map.fold (fun acc k v -> Map.add k v acc) cls iCls
-                            let inst' = Map.fold (fun acc k v -> Map.add k v acc) inst iInst
-                            Bidir.currentClassEnv <- cls'
-                            Bidir.currentInstEnv <- inst'
-                            (e, ce, re, cls', inst', Map.add name mExports ms, ws @ iWarns)
-                        | _ -> (e, ce, re, cls, inst, ms, ws)
-                    ) (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
-                (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns)
           with
           | TypeException err ->
               // Multi-error: accumulate ONLY expression-level type errors (v11.1)
@@ -1297,7 +1249,7 @@ let typeCheckModuleWithPrelude
         Bidir.pendingConstraints <- []
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
-        | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) ->
+        | Module (decls, _) | NamedModule(_, decls, _) ->
             // Check for circular module dependencies
             let depGraph = buildDependencyGraph decls
             match detectCircularDeps depGraph with

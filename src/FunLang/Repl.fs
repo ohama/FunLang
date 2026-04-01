@@ -79,7 +79,7 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
         let m = parseModule input
         let decls =
             match m with
-            | Module(decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+            | Module(decls, _) | NamedModule(_, decls, _) -> decls
             | EmptyModule _ -> []
         if List.isEmpty decls then None
         else

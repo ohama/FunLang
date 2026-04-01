@@ -80,7 +80,7 @@ let rec private collectDeps (filePath: string) (visited: Set<string>) (depth: in
         let m = parseModuleFromString source absPath
         let decls =
             match m with
-            | Module(ds, _) | NamedModule(_, ds, _) | NamespacedModule(_, ds, _) -> ds
+            | Module(ds, _) | NamedModule(_, ds, _) -> ds
             | EmptyModule _ -> []
         let imports = decls |> List.choose (function
             | FileImportDecl(path, _) -> Some path
@@ -205,7 +205,7 @@ let main argv =
                                             eprintfn "Warning: %s" (formatDiagnostic w)
                                         let moduleDecls =
                                             match m with
-                                            | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+                                            | Module (decls, _) | NamedModule(_, decls, _) -> decls
                                             | EmptyModule _ -> []
                                         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
                                         let elaboratedDecls = Elaborate.elaborateTypeclasses moduleDecls
@@ -445,7 +445,7 @@ let main argv =
                         // Extract declarations from any module variant
                         let moduleDecls =
                             match m with
-                            | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+                            | Module (decls, _) | NamedModule(_, decls, _) -> decls
                             | EmptyModule _ -> []
                         // Guard: no declarations means nothing to evaluate
                         if List.isEmpty moduleDecls then

@@ -265,9 +265,6 @@ let rec elaborateTypeclasses (decls: Decl list) : Decl list =
                             LetDecl(methodName, methodBody, ispan))
                     | _ -> [])
             [ModuleDecl(name, elaborateTypeclasses innerDecls, span)] @ instanceBindings
-        | NamespaceDecl(path, innerDecls, span) ->
-            // Recurse into namespace bodies
-            [NamespaceDecl(path, elaborateTypeclasses innerDecls, span)]
         | DerivingDecl(_, _, _) ->
             [] // Handled by TypeCheck; removed from eval pipeline
         | other -> [other])

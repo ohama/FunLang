@@ -27,7 +27,6 @@ type token =
   | TRY
   | WHEN
   | MODULE
-  | NAMESPACE
   | OPEN
   | MUTABLE
   | LARROW
@@ -112,7 +111,6 @@ type tokenId =
     | TOKEN_TRY
     | TOKEN_WHEN
     | TOKEN_MODULE
-    | TOKEN_NAMESPACE
     | TOKEN_OPEN
     | TOKEN_MUTABLE
     | TOKEN_LARROW

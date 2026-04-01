@@ -106,7 +106,6 @@ let formatToken (token: Parser.token) : string =
     | Parser.INFIXOP4 s -> sprintf "INFIXOP4(%s)" s
     // Phase 5 (Modules): Module system tokens
     | Parser.MODULE -> "MODULE"
-    | Parser.NAMESPACE -> "NAMESPACE"
     | Parser.OPEN -> "OPEN"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
@@ -324,9 +323,6 @@ let rec formatDecl (decl: Ast.Decl) : string =
         sprintf "ModuleDecl \"%s\" [\n  %s\n]" name declsStr
     | Ast.OpenDecl(path, _) ->
         sprintf "OpenDecl [%s]" (path |> String.concat ".")
-    | Ast.NamespaceDecl(path, decls, _) ->
-        let declsStr = decls |> List.map formatDecl |> String.concat "\n  "
-        sprintf "NamespaceDecl [%s] [\n  %s\n]" (path |> String.concat ".") declsStr
     | Ast.ExceptionDecl(name, None, _) ->
         sprintf "ExceptionDecl \"%s\"" name
     | Ast.ExceptionDecl(name, Some ty, _) ->
@@ -373,6 +369,4 @@ let formatModule (m: Ast.Module) : string =
     | Ast.Module(decls, _) -> formatDecls decls
     | Ast.NamedModule(name, decls, _) ->
         sprintf "module %s\n%s" (name |> String.concat ".") (formatDecls decls)
-    | Ast.NamespacedModule(name, decls, _) ->
-        sprintf "namespace %s\n%s" (name |> String.concat ".") (formatDecls decls)
     | Ast.EmptyModule _ -> "(empty module)"

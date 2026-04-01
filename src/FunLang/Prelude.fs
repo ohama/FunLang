@@ -48,7 +48,7 @@ let parseModuleFromString (input: string) (filename: string) : Module =
 /// Extract declarations from a module
 let private getDecls (m: Module) : Decl list =
     match m with
-    | Module (decls, _) | NamedModule(_, decls, _) | NamespacedModule(_, decls, _) -> decls
+    | Module (decls, _) | NamedModule(_, decls, _) -> decls
     | EmptyModule _ -> []
 
 /// Find the Prelude directory using a 3-stage search strategy

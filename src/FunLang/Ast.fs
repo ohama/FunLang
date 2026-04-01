@@ -353,7 +353,6 @@ type Decl =
     // Phase 5 (Modules): Module system declarations
     | ModuleDecl of name: string * decls: Decl list * Span
     | OpenDecl of path: string list * Span
-    | NamespaceDecl of path: string list * decls: Decl list * Span
     // Phase 6 (Exceptions): Exception declaration
     | ExceptionDecl of name: string * dataType: TypeExpr option * Span
     // Phase 17 (Type Aliases): Type alias declaration
@@ -375,7 +374,6 @@ type Decl =
 type Module =
     | Module of decls: Decl list * Span
     | NamedModule of name: string list * decls: Decl list * Span
-    | NamespacedModule of name: string list * decls: Decl list * Span
     | EmptyModule of Span
 
 /// Extract span from Decl
@@ -387,7 +385,6 @@ let declSpanOf (decl: Decl) : Span =
     | RecordTypeDecl (RecordDecl(_, _, _, s)) -> s
     | ModuleDecl(_, _, s) -> s
     | OpenDecl(_, s) -> s
-    | NamespaceDecl(_, _, s) -> s
     | ExceptionDecl(_, _, s) -> s
     | TypeAliasDecl(_, _, _, s) -> s
     | LetRecDecl(_, s) -> s
@@ -402,4 +399,3 @@ let moduleSpanOf (m: Module) : Span =
     match m with
     | Module(_, s) | EmptyModule s -> s
     | NamedModule(_, _, s) -> s
-    | NamespacedModule(_, _, s) -> s
