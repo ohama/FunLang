@@ -1,6 +1,6 @@
-// Test: string_sub extracts a substring by start index and length
+// Test: String.substring extracts a substring by start index and length
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
-let result = string_sub "hello" 1 3
+let result = String.substring "hello" 1 3
 // --- Output:
 "ell"

@@ -15,7 +15,7 @@ let classify x =
         let label =
             let abs_n = if n > 0 then n else 0 - n
             let s = to_string abs_n
-            string_concat sign (string_concat ":" s)
+            sign ^^ ":" ^^ s
         label
 
 let _ = println (classify 42)

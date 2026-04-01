@@ -3,6 +3,6 @@
 // --- Input:
 type Name = string
 let x = "hello"
-let result = string_length x
+let result = String.length x
 // --- Output:
 5

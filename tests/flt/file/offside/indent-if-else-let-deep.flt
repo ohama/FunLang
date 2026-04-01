@@ -14,15 +14,15 @@ let clamp lo hi x =
                 let tag =
                     let prefix = "lo"
                     let val_str = to_string clamped
-                    string_concat prefix (string_concat "=" val_str)
+                    prefix ^^ "=" ^^ val_str
                 tag
         msg
     else if x > hi then
         let clamped = hi
-        let msg = string_concat "hi=" (to_string clamped)
+        let msg = "hi=" ^^ to_string clamped
         msg
     else
-        let msg = string_concat "ok=" (to_string x)
+        let msg = "ok=" ^^ to_string x
         msg
 
 let _ = println (clamp 0 100 50)

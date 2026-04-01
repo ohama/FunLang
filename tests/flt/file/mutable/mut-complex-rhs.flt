@@ -3,7 +3,7 @@
 // --- Input:
 let mut x = 1 + 2 * 3
 let _ = println (to_string x)
-let _ = x <- string_length "hello" + x
+let _ = x <- String.length "hello" + x
 let _ = println (to_string x)
 // --- Output:
 7

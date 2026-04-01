@@ -1,7 +1,7 @@
-// Test: string_concat curried function in file mode
+// Test: ^^ curried function in file mode
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
-let prefix = string_concat "Mr. "
+let prefix = fun s -> "Mr. " ^^ s
 let result = prefix "Smith"
 // --- Output:
 "Mr. Smith"

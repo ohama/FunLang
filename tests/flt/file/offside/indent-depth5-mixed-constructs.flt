@@ -15,7 +15,7 @@ let process x =
                         to_string v
                     with
                     | _ -> "error"
-                string_concat "pos:" tag
+                "pos:" ^^ tag
             else
                 let abs_n = 0 - n
                 let tag =
@@ -24,7 +24,7 @@ let process x =
                         to_string v
                     with
                     | _ -> "error"
-                string_concat "neg:" tag
+                "neg:" ^^ tag
     category
 
 let _ = println (process 5)

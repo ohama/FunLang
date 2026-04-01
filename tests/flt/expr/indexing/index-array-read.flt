@@ -1,10 +1,10 @@
 // Test IDX-01: arr.[i] reads array element
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
-let arr = array_create 3 0
-let _ = array_set arr 0 10
-let _ = array_set arr 1 20
-let _ = array_set arr 2 30
+let arr = Array.create 3 0
+let _ = Array.set arr 0 10
+let _ = Array.set arr 1 20
+let _ = Array.set arr 2 30
 let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 let _ = println (to_string arr.[2])

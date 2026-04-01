@@ -6,18 +6,18 @@ let eval op a b =
     | "add" ->
         let x = a + b
         let label = "sum"
-        let msg = string_concat label (string_concat "=" (to_string x))
+        let msg = label ^^ "=" ^^ to_string x
         msg
     | "mul" ->
         let x = a * b
         let doubled =
             let d = x * 2
             d
-        let msg = string_concat "double-product=" (to_string doubled)
+        let msg = "double-product=" ^^ to_string doubled
         msg
     | _ ->
         let msg =
-            let unknown = string_concat "unknown:" op
+            let unknown = "unknown:" ^^ op
             unknown
         msg
 

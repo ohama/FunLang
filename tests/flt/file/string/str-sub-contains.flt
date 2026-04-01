@@ -1,9 +1,9 @@
-// Test: string_sub and string_contains in file mode
+// Test: String.substring and String.contains in file mode
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let s = "abcdefgh"
-let mid = string_sub s 2 4
-let has = string_contains mid "cd"
+let mid = String.substring s 2 4
+let has = String.contains mid "cd"
 let result = has
 // --- Output:
 true

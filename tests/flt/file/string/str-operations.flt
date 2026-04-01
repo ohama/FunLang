@@ -2,9 +2,9 @@
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let s = "hello world"
-let n = string_length s
-let sub = string_sub s 0 5
-let found = string_contains s "world"
+let n = String.length s
+let sub = String.substring s 0 5
+let found = String.contains s "world"
 let result = n
 // --- Output:
 11

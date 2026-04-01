@@ -1,6 +1,6 @@
 // Test: composition operator with built-in functions
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
-let result = let f = to_string >> string_length in f 12345
+let result = let f = to_string >> String.length in f 12345
 // --- Output:
 5

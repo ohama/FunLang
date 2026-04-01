@@ -1,6 +1,6 @@
 // Test: pipe chain with multiple built-in functions
 // --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
-let result = "hello world" |> string_length |> to_string
+let result = "hello world" |> String.length |> to_string
 // --- Output:
 "11"
