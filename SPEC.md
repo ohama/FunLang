@@ -17,7 +17,7 @@ type_var    = '\'' letter (letter | digit | '_')*
 op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '~']
 ```
 
-### 1.2 Keywords (29)
+### 1.2 Keywords (30)
 
 | Token | Keyword | Token | Keyword |
 |-------|---------|-------|---------|
@@ -37,6 +37,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | TO | `to` | DOWNTO | `downto` |
 | DO | `do` | IN_KW | `in` |
 | TYPECLASS | `typeclass` | INSTANCE | `instance` |
+| DERIVING | `deriving` | | |
 
 ### 1.3 Type Keywords (6)
 
@@ -195,8 +196,12 @@ LetPatDecl  ::= 'let' '(' Pattern ',' Pattern ')' '=' Expr  // module-level tupl
 ExceptionDecl ::= 'exception' IDENT ('of' TypeExpr)?
 
 TypeClassDecl ::= 'typeclass' IDENT TYPE_VAR '=' TypeClassMethods
+                | 'typeclass' ConstraintList '=>' IDENT TYPE_VAR '=' TypeClassMethods  // superclass (v12.0)
 
 InstanceDecl  ::= 'instance' IDENT AtomicType '=' InstanceMethods
+                | 'instance' ConstraintList '=>' IDENT AtomicType '=' InstanceMethods  // constrained (v12.0)
+
+DerivingDecl  ::= 'deriving' IDENT IDENT                                               // v12.0
 
 TypeClassMethods ::= ('|' IDENT ':' TypeExpr)+
 
@@ -439,14 +444,35 @@ instance Show int =
 let show_twice x = show x + show x   // Show 'a => 'a -> string
 ```
 
+**제약 조건부 인스턴스 (v12.0):** 유니피케이션 기반 인스턴스 해결:
+```
+instance Show 'a => Show ('a list) =
+    let show xs = to_string xs
+```
+
+**슈퍼클래스 제약 (v12.0):** 타입 클래스 계층:
+```
+typeclass Eq 'a => Ord 'a =
+    | compare : 'a -> 'a -> int
+```
+
+**자동 도출 (v12.0):** ADT 생성자로부터 인스턴스 코드 자동 생성:
+```
+type Color = | Red | Green | Blue
+deriving Show Color
+deriving Eq Color
+```
+
 **내장 타입 클래스 (Prelude):**
 - `Show 'a`: `show : 'a -> string` — 인스턴스: `int`, `bool`, `string`, `char`
 - `Eq 'a`: `eq : 'a -> 'a -> bool` — 인스턴스: `int`, `bool`, `string`, `char`
 
 **정교화:** `InstanceDecl` → 일반 `LetDecl`로 변환 (dictionary-passing elaboration)
 
+**다중 에러 (v11.1):** `TError` Poison Type — 유니피케이션 항상 성공, 선언 단위 에러 축적
+
 **에러 코드:**
-- `E0701`: 인스턴스 없음 (e.g., `show (fun x -> x)`)
+- `E0701`: 인스턴스 없음 (e.g., `show (fun x -> x)`) — 가용 인스턴스 목록 포함
 - `E0702`: 중복 인스턴스 선언
 
 ### 5.4 GADT Type Refinement

@@ -75,11 +75,16 @@ decl ::= 'let' IDENT '=' expr
 
        | 'namespace' qualified_ident
 
-       -- 타입 클래스 (v10.0)
+       -- 타입 클래스 (v10.0, v12.0 확장)
        | 'typeclass' IDENT type_var '='
+             ('|' IDENT ':' type_expr)+
+       | 'typeclass' constraint_list '=>' IDENT type_var '='     -- 슈퍼클래스 (v12.0)
              ('|' IDENT ':' type_expr)+
        | 'instance' IDENT atomic_type '='
              ('let' IDENT param+ '=' expr)+
+       | 'instance' constraint_list '=>' IDENT atomic_type '='   -- 조건부 인스턴스 (v12.0)
+             ('let' IDENT param+ '=' expr)+
+       | 'deriving' IDENT IDENT                                  -- 자동 도출 (v12.0)
 
 param    ::= IDENT
 op_name  ::= INFIXOP0 | INFIXOP1 | INFIXOP2 | INFIXOP3 | INFIXOP4

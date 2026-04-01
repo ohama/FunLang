@@ -65,6 +65,10 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Module Error Quality** | Clear `E0502` for undefined modules, file import span, constraint annotation validation | v10.2 |
 | **Blank Line Tolerance** | Blank lines allowed in module bodies, let bodies, match arms; `--emit-filtered-tokens` CLI | v10.3 |
 | **Error Reporting** | Source snippets with `^^^` underlines, "Did you mean?" suggestions, parser errors with location, typeclass instance listing | v11.0 |
+| **Multi-Error Reporting** | Poison Type (`TError`) — multiple type errors per file, cascading prevention | v11.1 |
+| **Constrained Instances** | `instance Show 'a => Show ('a list)`, unification-based instance resolution, recursive subgoals | v12.0 |
+| **Superclass Constraints** | `typeclass Eq 'a => Ord 'a`, automatic superclass constraint propagation | v12.0 |
+| **Automatic Deriving** | `deriving Show Color`, `deriving Eq Direction` — code generation from ADT constructors | v12.0 |
 
 ## Quick Start
 
@@ -269,12 +273,12 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (~15,600 LOC F#)
+├── src/LangThree/       # Interpreter source (~15,900 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
-│   └── flt/             # fslit integration tests (690 tests)
+│   └── flt/             # fslit integration tests (695 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
-│       ├── file/        # File-mode tests (467 tests, 34 subdirs)
+│       ├── file/        # File-mode tests (472 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
 │       └── error/       # Error case tests (4 tests)
 ├── tutorial/            # mdBook tutorial (23 chapters, Korean)
@@ -298,10 +302,10 @@ LangThree/
 # F# unit tests (224)
 dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 
-# fslit integration tests (690)
+# fslit integration tests (695)
 /path/to/fslit tests/flt/
 
-# Total: ~914 tests
+# Total: ~919 tests
 ```
 
 ## Milestones
@@ -329,8 +333,10 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v10.2 | Module Error Quality | 79-80 | — | 2026-04-01 |
 | v10.3 | Blank Line Tolerance | 81-82 | — | 2026-04-01 |
 | v11.0 | Error Reporting Enhancement | 83-88 | — | 2026-04-01 |
+| v11.1 | Poison Type Multi-Error | — | — | 2026-04-01 |
+| v12.0 | Type Class Extensions | 89-92 | — | 2026-04-01 |
 
-**Total:** 88 phases across 22 milestones
+**Total:** 92 phases across 24 milestones
 
 ## Reference Documents
 

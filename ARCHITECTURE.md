@@ -165,13 +165,16 @@ check(env, expr, expected) → substitution    // 타입 검증
 - **check**: 람다, if-then-else, match 분기에서 기대 타입과 비교
 - **subsumption**: check에서 직접 처리 못하면 synth 후 unify
 
-**타입 클래스 제약 추론 (v10.0):**
+**타입 클래스 제약 추론 (v10.0, v12.0 확장):**
 - `Scheme` 타입: `(vars, constraints, ty)` — 제약 포함
-- `Constraint`: `{ ClassName: string; TypeArg: Type }`
-- `ClassEnv`: 클래스명 → 타입 변수 + 메서드 시그니처 맵
-- `InstanceEnv`: 클래스명 → 인스턴스 타입 목록 맵
+- `Constraint`: `{ ClassName: string; TypeArg: Type; SourceSpan: Span }`
+- `ClassInfo`: 클래스명 + 타입 변수 + 메서드 시그니처 + 슈퍼클래스 목록 (v12.0)
+- `InstanceInfo`: 클래스명 + 인스턴스 타입 + 타입 변수 + 제약 (v12.0: 조건부 인스턴스)
 - `pendingConstraints`: 타입 추론 중 축적되는 제약 목록
-- 인스턴스 해결: 제약의 타입 인자가 구체 타입이면 InstanceEnv에서 매칭
+- 인스턴스 해결 (v12.0): `Unify.unify` 기반 매칭 + 재귀적 subgoal 해결 (depth guard 20)
+- 슈퍼클래스 (v12.0): `typeclass Eq 'a => Ord 'a` — 메서드 스킴에 슈퍼클래스 제약 자동 포함
+- `deriving` (v12.0): TypeDecl에서 생성자 정보 → Show/Eq 인스턴스 코드 자동 생성
+- `TError` (v11.1): Poison Type — 유니피케이션 항상 성공, 캐스케이딩 에러 방지
 - 에러 코드: E0701 (인스턴스 없음), E0702 (중복 인스턴스), E0703-E0706
 
 **Let-Polymorphism:**
