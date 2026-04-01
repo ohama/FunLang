@@ -817,9 +817,12 @@ let rec typeCheckDecls
     validateUniqueRecordFields decls
 
     // Second pass: process declarations sequentially
+    // Each declaration is wrapped in try-catch for multi-error reporting (v11.1).
+    // On type error, the declaration is skipped and the error is accumulated.
     let (typeEnv', ctorEnv', recEnv', classEnv', instEnv', modules', warnings') =
         decls
         |> List.fold (fun (env, cEnv, rEnv, clsEnv, iEnv, mods, warns) decl ->
+          try
             match decl with
             | LetDecl(name, body, _) ->
                 // Resolve qualified module access before type checking
@@ -1175,6 +1178,21 @@ let rec typeCheckDecls
                         | _ -> (e, ce, re, cls, inst, ms, ws)
                     ) (env, cEnv, rEnv, clsEnv, iEnv, mods, warns)
                 (env', cEnv'', rEnv'', clsEnv'', iEnv'', mods', innerWarns)
+          with
+          | TypeException err ->
+              // Multi-error: accumulate ONLY expression-level type errors (v11.1)
+              // Structural errors (duplicate module, forward ref, circular dep) must propagate
+              match err.Kind with
+              | UnifyMismatch _ | OccursCheck _ | UnboundVar _ | NotAFunction _
+              | UnboundConstructor _ | ArityMismatch _
+              | UnboundField _ | FieldAccessOnNonRecord _ | NotARecord _
+              | ImmutableVariableAssignment _
+              | IndexOnNonCollection _ | NoInstance _ ->
+                  let diag = typeErrorToDiagnostic err
+                  (env, cEnv, rEnv, clsEnv, iEnv, mods, diag :: warns)
+              | _ ->
+                  // Structural errors: re-raise (do not recover)
+                  raise (TypeException err)
         ) (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, [])
 
     (typeEnv', ctorEnv', recEnv', classEnv', instEnv', modules', warnings')
@@ -1209,9 +1227,15 @@ let typeCheckModuleWithPrelude
             | None -> ()
 
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
-            let (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, warnings) =
+            let (typeEnv, ctorEnv, recEnv, classEnv, instEnv, modules, diagnostics) =
                 typeCheckDecls decls mergedTypeEnv preludeCtorEnv preludeRecEnv preludeClassEnv preludeInstEnv initialModules
-            Ok (warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
+            // v11.1: Separate errors from warnings in the diagnostics list
+            let errors = diagnostics |> List.filter (fun d -> match d.Code with Some c -> not (c.StartsWith("W")) | None -> true)
+            let warnings = diagnostics |> List.filter (fun d -> match d.Code with Some c -> c.StartsWith("W") | None -> false)
+            if not (List.isEmpty errors) then
+                Error(List.rev errors)
+            else
+                Ok (List.rev warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
     with
     | TypeException err ->
         Error([typeErrorToDiagnostic err])

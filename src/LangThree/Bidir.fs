@@ -19,6 +19,11 @@ let mutable pendingConstraints : Constraint list = []
 let mutable currentClassEnv : ClassEnv = Map.empty
 let mutable currentInstEnv : InstanceEnv = Map.empty
 
+/// Accumulated type errors for multi-error reporting (v11.1 Poison Type)
+/// Reset at every typeCheckModuleWithPrelude entry point.
+/// NOTE: Not thread-safe. Tests must run sequentially or use separate entry points.
+let mutable accumulatedErrors : Diagnostic.TypeError list = []
+
 /// Apply a substitution to all pending constraints (resolves stale TVar refs after unification)
 let applySubstToConstraints (s: Subst) =
     pendingConstraints <- pendingConstraints |> List.map (fun c ->

@@ -15,6 +15,7 @@ type Type =
     | THashtable of Type * Type      // hashtable type (Phase 39)
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
     | TExn                                        // Exception base type
+    | TError                                      // Poison type for error recovery (v11.1)
 
 /// Constraint for type class requirements
 /// Example: { ClassName = "Show"; TypeArg = TVar 0 } means "Show 'a"
@@ -110,6 +111,7 @@ let rec formatType = function
         let argStr = args |> List.map formatType |> String.concat ", "
         sprintf "%s<%s>" name argStr
     | TExn -> "exn"
+    | TError -> "<error>"
 
 /// Format type with normalized type variables ('a, 'b, 'c instead of raw indices)
 /// TVar 1000, TVar 1001 -> 'a, 'b (based on order of first appearance)
@@ -123,7 +125,7 @@ let formatTypeNormalized (ty: Type) : string =
         | TArray t -> collectVars acc t
         | THashtable (k, v) -> collectVars (collectVars acc k) v
         | TData (_, args) -> List.fold collectVars acc args
-        | TInt | TBool | TString | TChar | TExn -> acc
+        | TInt | TBool | TString | TChar | TExn | TError -> acc
 
     let vars = collectVars [] ty
     let varMap = vars |> List.mapi (fun i v -> (v, i)) |> Map.ofList
@@ -150,6 +152,7 @@ let formatTypeNormalized (ty: Type) : string =
             let argStr = args |> List.map format |> String.concat ", "
             sprintf "%s<%s>" name argStr
         | TExn -> "exn"
+        | TError -> "<error>"
 
     format ty
 
@@ -166,7 +169,7 @@ let formatSchemeNormalized (Scheme (_vars, constraints, ty)) : string =
         | TArray t -> collectVars acc t
         | THashtable (k, v) -> collectVars (collectVars acc k) v
         | TData (_, args) -> List.fold collectVars acc args
-        | TInt | TBool | TString | TChar | TExn -> acc
+        | TInt | TBool | TString | TChar | TExn | TError -> acc
     let constraintTypes = constraints |> List.map (fun c -> c.TypeArg)
     let allVarsFromConstraints = List.fold collectVars [] constraintTypes
     let allVars = collectVars allVarsFromConstraints ty
@@ -193,6 +196,7 @@ let formatSchemeNormalized (Scheme (_vars, constraints, ty)) : string =
             let argStr = args |> List.map format |> String.concat ", "
             sprintf "%s<%s>" name argStr
         | TExn -> "exn"
+        | TError -> "<error>"
     let tyStr = format ty
     match constraints with
     | [] -> tyStr
@@ -221,6 +225,7 @@ let rec apply (s: Subst) = function
     | TString -> TString
     | TChar -> TChar
     | TExn -> TExn
+    | TError -> TError
     | TVar n ->
         match Map.tryFind n s with
         | Some t -> apply s t  // Recursive for transitive substitution
@@ -255,7 +260,7 @@ let applyEnv (s: Subst) (env: TypeEnv): TypeEnv =
 
 /// Collect free type variables in a type
 let rec freeVars = function
-    | TInt | TBool | TString | TChar | TExn -> Set.empty
+    | TInt | TBool | TString | TChar | TExn | TError -> Set.empty
     | TVar n -> Set.singleton n
     | TArrow (t1, t2) -> Set.union (freeVars t1) (freeVars t2)
     | TTuple ts -> ts |> List.map freeVars |> Set.unionMany

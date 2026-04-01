@@ -13,6 +13,9 @@ let occurs (v: int) (t: Type): bool =
 let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
                          (span: Span) (t1: Type) (t2: Type): Subst =
     match t1, t2 with
+    // Poison type: always succeeds to prevent cascading errors (v11.1)
+    | TError, _ | _, TError -> empty
+
     // Primitive types: must be identical
     | TInt, TInt -> empty
     | TBool, TBool -> empty
