@@ -100,7 +100,7 @@ let rec loadAndTypeCheckFileImpl
     if fileLoadingStack.Contains resolvedPath then
         raise (TypeException {
             Kind = CircularModuleDependency [resolvedPath]
-            Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
+            Span = unknownSpan; Term = None; ContextStack = []; Trace = []; Scope = [] })
     // 2. Cache check (after cycle detection)
     match tcCache.TryGetValue(resolvedPath) with
     | true, (fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
@@ -115,7 +115,7 @@ let rec loadAndTypeCheckFileImpl
     if not (File.Exists resolvedPath) then
         raise (TypeException {
             Kind = UnresolvedModule resolvedPath
-            Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
+            Span = unknownSpan; Term = None; ContextStack = []; Trace = []; Scope = [] })
     fileLoadingStack.Add resolvedPath |> ignore
     let prevFile = TypeCheck.currentTypeCheckingFile
     try

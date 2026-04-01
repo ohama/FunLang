@@ -29,7 +29,7 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
                 Span = span
                 Term = None
                 ContextStack = ctx
-                Trace = trace
+                Trace = trace; Scope = []
             })
         else
             singleton n t
@@ -78,7 +78,7 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
             Span = span
             Term = None
             ContextStack = ctx
-            Trace = trace
+            Trace = trace; Scope = []
         })
 
 /// Robinson's unification algorithm (backward compatible)

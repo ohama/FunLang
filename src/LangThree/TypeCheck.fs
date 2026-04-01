@@ -263,14 +263,14 @@ let resolveModule (modules: Map<string, ModuleExports>) (path: string list) (spa
             | None ->
                 raise (TypeException {
                     Kind = UnresolvedModule name
-                    Span = span; Term = None; ContextStack = []; Trace = [] })
+                    Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
         | name :: rest ->
             match Map.tryFind name mods with
             | Some exports -> resolve exports.SubModules rest
             | None ->
                 raise (TypeException {
                     Kind = UnresolvedModule name
-                    Span = span; Term = None; ContextStack = []; Trace = [] })
+                    Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
     resolve modules path
 
 /// Detect circular module dependencies using DFS 3-color algorithm.
@@ -461,7 +461,7 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
                               Span = matchSpan
                               Term = None
                               ContextStack = []
-                              Trace = [] }
+                              Trace = []; Scope = [] }
                             |> typeErrorToDiagnostic
                         scrWarnings <- diag :: scrWarnings
                     | Exhaustive.Exhaustive -> ()
@@ -474,7 +474,7 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
                                   Span = matchSpan
                                   Term = None
                                   ContextStack = []
-                                  Trace = [] }
+                                  Trace = []; Scope = [] }
                                 |> typeErrorToDiagnostic
                             scrWarnings <- diag :: scrWarnings
                     | Exhaustive.NoRedundancy -> ()
@@ -540,7 +540,7 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             if hasCatchAll then []
             else
                 [{ Kind = NonExhaustiveExceptionHandler("not all exceptions are handled; consider adding a catch-all handler")
-                   Span = span; Term = None; ContextStack = []; Trace = [] }
+                   Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] }
                  |> typeErrorToDiagnostic])
 
     matchWarnings @ tryWithWarnings
@@ -567,7 +567,7 @@ let validateUniqueRecordFields (decls: Decl list) =
         raise (TypeException {
             Kind = DuplicateRecordField(fieldName, type1, type2)
             Span = span2
-            Term = None; ContextStack = []; Trace = [] })
+            Term = None; ContextStack = []; Trace = []; Scope = [] })
     | [] -> ()
 
 /// Collect all module names referenced via qualified access in an expression.
@@ -647,7 +647,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
         | None ->
             raise (TypeException {
                 Kind = UnresolvedModule (sprintf "%s.%s" modName subModName)
-                Span = span; Term = None; ContextStack = []; Trace = [] })
+                Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
 
     // App(Module.Ctor, arg) -- constructor application via qualified access
     | App(FieldAccess(Constructor(modName, None, _), ctorName, s2), arg, appSpan)
@@ -948,7 +948,7 @@ let rec typeCheckDecls
                 if Map.containsKey name mods then
                     raise (TypeException {
                         Kind = DuplicateModuleName name
-                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                        Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                 // Recurse into inner declarations
                 let (innerTypeEnv, innerCtorEnv, innerRecEnv, innerClsEnv, innerInstEnv, innerMods, innerWarns) =
                     typeCheckDecls innerDecls env cEnv rEnv clsEnv iEnv mods
@@ -1009,7 +1009,7 @@ let rec typeCheckDecls
                     | None ->
                         raise (TypeException {
                             Kind = UnresolvedModule name
-                            Span = span; Term = None; ContextStack = []; Trace = [] })
+                            Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                     | Some exports ->
                         let (env', cEnv', rEnv', clsEnv', iEnv') = openModuleExports exports env cEnv rEnv clsEnv iEnv
                         (env', cEnv', rEnv', clsEnv', iEnv', mods, warns)
@@ -1069,7 +1069,7 @@ let rec typeCheckDecls
                     | None ->
                         raise (TypeException {
                             Kind = UnknownTypeClass className
-                            Span = span; Term = None; ContextStack = []; Trace = [] })
+                            Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                 // Elaborate the instance type (e.g., TEName "int" -> TInt)
                 // TEName for user-defined types must resolve to TData, not fresh TVar.
                 // Check if any constructor resolves to this type, or if it's a record type.
@@ -1089,7 +1089,7 @@ let rec typeCheckDecls
                 if existingInstances |> List.exists (fun ii -> ii.InstanceType = instType) then
                     raise (TypeException {
                         Kind = DuplicateInstance(className, instType)
-                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                        Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                 // Check methods match class declaration (same set of names)
                 let classMethodNames = classInfo.Methods |> List.map fst |> Set.ofList
                 let instMethodNames = methods |> List.map fst |> Set.ofList
@@ -1099,12 +1099,12 @@ let rec typeCheckDecls
                     let missingName = Set.minElement missing
                     raise (TypeException {
                         Kind = MissingMethod(className, missingName)
-                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                        Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                 if not (Set.isEmpty extra) then
                     let extraName = Set.minElement extra
                     raise (TypeException {
                         Kind = ExtraMethod(className, extraName)
-                        Span = span; Term = None; ContextStack = []; Trace = [] })
+                        Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                 // Type-check each method body against the class method signature
                 // instantiated with the concrete instance type
                 methods |> List.iter (fun (methodName, methodBody) ->
@@ -1148,7 +1148,7 @@ let rec typeCheckDecls
                             if Map.containsKey name ms then
                                 raise (TypeException {
                                     Kind = DuplicateModuleName name
-                                    Span = span; Term = None; ContextStack = []; Trace = [] })
+                                    Span = span; Term = None; ContextStack = []; Trace = []; Scope = [] })
                             let (iTypeEnv, iCtor, iRec, iCls, iInst, iMods, iWarns) =
                                 typeCheckDecls mInnerDecls e ce re cls inst ms
                             let mClsEnv = Map.fold (fun acc k v -> if Map.containsKey k cls then acc else Map.add k v acc) Map.empty iCls
@@ -1205,7 +1205,7 @@ let typeCheckModuleWithPrelude
             | Some cycle ->
                 raise (TypeException {
                     Kind = CircularModuleDependency cycle
-                    Span = unknownSpan; Term = None; ContextStack = []; Trace = [] })
+                    Span = unknownSpan; Term = None; ContextStack = []; Trace = []; Scope = [] })
             | None -> ()
 
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv

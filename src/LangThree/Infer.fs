@@ -115,7 +115,7 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
                 Span = patternSpanOf pat
                 Term = None
                 ContextStack = []
-                Trace = []
+                Trace = []; Scope = []
             })
         | Some ctorInfo ->
             // Instantiate constructor type with fresh type variables
@@ -143,7 +143,7 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
                     Span = patternSpanOf pat
                     Term = None
                     ContextStack = []
-                    Trace = []
+                    Trace = []; Scope = []
                 })
             | (Some _, None) ->
                 raise (TypeException {
@@ -151,7 +151,7 @@ let rec inferPattern (ctorEnv: ConstructorEnv) (pat: Pattern): TypeEnv * Type =
                     Span = patternSpanOf pat
                     Term = None
                     ContextStack = []
-                    Trace = []
+                    Trace = []; Scope = []
                 })
 
 /// <summary>
@@ -177,7 +177,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
 
     // === Arithmetic operators (INFER-05) ===
@@ -237,7 +237,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
                 Span = spanOf func
                 Term = Some func
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
         | _ ->
             let resultTy = freshVar()

@@ -3,6 +3,80 @@ module Diagnostic
 open Ast
 open Type
 
+// ============================================================================
+// Source Snippet Support (Phase 83 — v11.0)
+// ============================================================================
+
+/// Cache of source file contents for error display
+let mutable private sourceCache : Map<string, string[]> = Map.empty
+
+/// Read a source line from file, with caching
+let getSourceLine (fileName: string) (line: int) : string option =
+    if fileName = "<unknown>" || fileName = "<expr>" || fileName = ""
+       || fileName.StartsWith("<") then None
+    else
+        try
+            let lines =
+                match Map.tryFind fileName sourceCache with
+                | Some l -> l
+                | None ->
+                    if System.IO.File.Exists(fileName) then
+                        let l = System.IO.File.ReadAllLines(fileName)
+                        sourceCache <- Map.add fileName l sourceCache
+                        l
+                    else [||]
+            if line >= 1 && line <= lines.Length then Some lines.[line - 1]
+            else None
+        with _ -> None
+
+/// Render source snippet with underline for a span
+let renderSourceSnippet (span: Span) (label: string option) : string list =
+    match getSourceLine span.FileName span.StartLine with
+    | None -> []
+    | Some sourceLine ->
+        let gutterNum = sprintf "%d" span.StartLine
+        let padding = System.String(' ', gutterNum.Length)
+        let startCol = span.StartColumn
+        let endCol =
+            if span.StartLine = span.EndLine then span.EndColumn
+            else sourceLine.Length
+        let underlineLen = max 1 (endCol - startCol)
+        let underlinePrefix = System.String(' ', startCol)
+        let underline = System.String('^', underlineLen)
+        let labelStr = match label with Some l -> " " + l | None -> ""
+        [ sprintf "  %s |" padding
+          sprintf "  %s | %s" gutterNum sourceLine
+          sprintf "  %s | %s%s%s" padding underlinePrefix underline labelStr ]
+
+// ============================================================================
+// Suggest / "Did You Mean?" (Phase 84 — v11.0)
+// ============================================================================
+
+/// Levenshtein edit distance between two strings
+let editDistance (s1: string) (s2: string) : int =
+    let m, n = s1.Length, s2.Length
+    if m = 0 then n
+    elif n = 0 then m
+    else
+        let d = Array2D.create (m + 1) (n + 1) 0
+        for i in 0..m do d.[i, 0] <- i
+        for j in 0..n do d.[0, j] <- j
+        for i in 1..m do
+            for j in 1..n do
+                let cost = if System.Char.ToLower(s1.[i-1]) = System.Char.ToLower(s2.[j-1]) then 0 else 1
+                d.[i, j] <- min (min (d.[i-1, j] + 1) (d.[i, j-1] + 1)) (d.[i-1, j-1] + cost)
+        d.[m, n]
+
+/// Suggest a similar name from a list of candidates
+let suggest (name: string) (candidates: string seq) : string option =
+    let threshold = max 2 (name.Length / 3)
+    candidates
+    |> Seq.map (fun s -> (s, editDistance name s))
+    |> Seq.filter (fun (_, d) -> d > 0 && d <= threshold)
+    |> Seq.sortBy snd
+    |> Seq.tryHead
+    |> Option.map fst
+
 /// General error representation with location, message, and helpful context
 type Diagnostic = {
     Code: string option           // e.g., Some "E0301"
@@ -93,6 +167,7 @@ type TypeError = {
     Term: Expr option
     ContextStack: InferContext list
     Trace: UnifyPath list
+    Scope: string list  // Names in scope for "Did you mean?" suggestions (Phase 84)
 }
 
 /// Exception wrapper for type errors
@@ -198,9 +273,14 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "This usually means you're trying to define a recursive type without a base case"
 
         | UnboundVar name ->
+            let suggestion = suggest name err.Scope
+            let hint =
+                match suggestion with
+                | Some s -> sprintf "Did you mean '%s'?" s
+                | None -> "Make sure the variable is defined before use"
             Some "E0303",
             sprintf "Unbound variable: %s" name,
-            Some "Make sure the variable is defined before use"
+            Some hint
 
         | NotAFunction ty ->
             Some "E0304",
@@ -208,9 +288,14 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "Check that you're calling a function, not a value"
 
         | UnboundConstructor name ->
+            let suggestion = suggest name err.Scope
+            let hint =
+                match suggestion with
+                | Some s -> sprintf "Did you mean '%s'?" s
+                | None -> "Make sure the type declaration defining this constructor is in scope"
             Some "E0305",
             sprintf "Unbound constructor: %s" name,
-            Some "Make sure the type declaration defining this constructor is in scope"
+            Some hint
 
         | ArityMismatch (ctor, expected, actual) ->
             Some "E0306",
@@ -275,9 +360,14 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "Remove the circular dependency between modules"
 
         | UnresolvedModule name ->
+            let suggestion = suggest name err.Scope
+            let hint =
+                match suggestion with
+                | Some s -> sprintf "Did you mean '%s'?" s
+                | None -> "Make sure the module is defined before use"
             Some "E0502",
             sprintf "Unresolved module: %s" name,
-            Some "Make sure the module is defined before use"
+            Some hint
 
         | DuplicateModuleName name ->
             Some "E0503",
@@ -325,9 +415,15 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "Use array_create to create an array or hashtable_create to create a hashtable"
 
         | NoInstance (className, ty) ->
+            let availableNote =
+                if not (List.isEmpty err.Scope) then
+                    sprintf "Available instances: %s" (err.Scope |> String.concat ", ")
+                else ""
             Some "E0701",
             sprintf "No instance of %s for %s" className (formatType ty),
-            Some "Add an instance declaration for this type"
+            Some (if availableNote <> "" then
+                    sprintf "Add an instance declaration for this type (%s)" availableNote
+                  else "Add an instance declaration for this type")
 
         | DuplicateInstance (className, ty) ->
             Some "E0702",
@@ -335,9 +431,14 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "Remove the duplicate instance declaration"
 
         | UnknownTypeClass className ->
+            let suggestion = suggest className err.Scope
+            let hint =
+                match suggestion with
+                | Some s -> sprintf "Did you mean '%s'?" s
+                | None -> "Make sure the type class is declared before use"
             Some "E0703",
             sprintf "Unknown type class: %s" className,
-            Some "Make sure the type class is declared before use"
+            Some hint
 
         | MethodTypeMismatch (className, methodName, expected, actual) ->
             Some "E0704",
@@ -405,6 +506,11 @@ let formatDiagnostic (diag: Diagnostic) : string =
 
     // Primary location: --> file.fun:2:5
     sb.AppendLine(sprintf " --> %s" (formatSpan diag.PrimarySpan)) |> ignore
+
+    // Source snippet with ^^^ underline (Phase 83)
+    let snippetLines = renderSourceSnippet diag.PrimarySpan None
+    for line in snippetLines do
+        sb.AppendLine(line) |> ignore
 
     // Secondary spans (related locations)
     for (span, label) in diag.SecondarySpans do

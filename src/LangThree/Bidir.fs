@@ -82,12 +82,13 @@ let generalize (env: TypeEnv) (ty: Type): Scheme =
         let instances = Map.tryFind c.ClassName instEnv |> Option.defaultValue []
         let resolved = instances |> List.exists (fun ii -> ii.InstanceType = c.TypeArg)
         if not resolved then
+            let availableInstances = instances |> List.map (fun ii -> sprintf "%s %s" c.ClassName (Type.formatType ii.InstanceType))
             raise (TypeException {
                 Kind = NoInstance(c.ClassName, c.TypeArg)
                 Span = c.SourceSpan
                 Term = None
                 ContextStack = []
-                Trace = []
+                Trace = []; Scope = availableInstances
             })
     )
     // Remove duplicate deferred constraints (same class + same type arg)
@@ -141,7 +142,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = env |> Map.toSeq |> Seq.map fst |> Seq.toList
             })
 
     // === Constructor expressions (ADT) ===
@@ -212,7 +213,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     Span = span
                     Term = Some expr
                     ContextStack = ctx
-                    Trace = []
+                    Trace = []; Scope = []
                 })
             | (Some _, None) ->
                 raise (TypeException {
@@ -220,7 +221,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     Span = span
                     Term = Some expr
                     ContextStack = ctx
-                    Trace = []
+                    Trace = []; Scope = []
                 })
 
     // === Application (BIDIR-03) ===
@@ -236,7 +237,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = spanOf func
                 Term = Some func
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
         | _ ->
             let resultTy = freshVar()
@@ -267,7 +268,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 if not (Map.containsKey className currentClassEnv) then
                     raise (Diagnostic.TypeException {
                         Kind = Diagnostic.UnknownTypeClass className
-                        Span = span; Term = Some expr; ContextStack = ctx; Trace = [] }))
+                        Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] }))
         | _ -> ()
         let expectedTy = elaborateTypeExpr tyExpr
         let ctx' = InCheckMode (expectedTy, "annotation", span) :: ctx
@@ -376,7 +377,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
         match Map.tryFind name env with
         | Some scheme ->
@@ -390,7 +391,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
 
     // === LetRec (multi-binding mutual recursion) ===
@@ -467,7 +468,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
 
     | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) | Modulo (e1, e2, _) ->
@@ -506,7 +507,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Span = span
                 Term = Some expr
                 ContextStack = ctx
-                Trace = []
+                Trace = []; Scope = []
             })
 
     | And (e1, e2, _) | Or (e1, e2, _) ->
@@ -680,17 +681,17 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             (finalS, resultTy)
         | [] ->
             let fieldNameStr = fields |> List.map fst |> String.concat ", "
-            raise (TypeException { Kind = UnboundField(sprintf "{%s}" fieldNameStr, List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = UnboundField(sprintf "{%s}" fieldNameStr, List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ ->
-            raise (TypeException { Kind = DuplicateFieldName(List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = DuplicateFieldName(List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
 
     | FieldAccess (accessExpr, fieldName, span) ->
         // Check for module-like qualified access on undefined module (MERR-01/02)
         match accessExpr with
         | Ast.Constructor(name, None, _) when System.Char.IsUpper(name.[0]) && not (Map.containsKey name ctorEnv) ->
-            raise (TypeException { Kind = UnresolvedModule name; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = UnresolvedModule name; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | Ast.FieldAccess(Ast.Constructor(modName, None, _), _subName, _) when System.Char.IsUpper(modName.[0]) && not (Map.containsKey modName ctorEnv) ->
-            raise (TypeException { Kind = UnresolvedModule modName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = UnresolvedModule modName; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ -> ()
         let s1, exprTy = synth ctorEnv recEnv ctx env accessExpr
         let resolvedTy = apply s1 exprTy
@@ -704,11 +705,11 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     let fieldTy = apply subst fieldInfo.FieldType
                     (s1, fieldTy)
                 | None ->
-                    raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                    raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
             | None ->
-                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ ->
-            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
 
     | RecordUpdate (source, updates, span) ->
         let s1, srcTy = synth ctorEnv recEnv ctx env source
@@ -727,13 +728,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                         let s'' = unifyWithContext ctx [] span expectedTy actualTy
                         compose s'' (compose s' s)
                     | None ->
-                        raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                        raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
                 let finalS = List.fold folder s1 updates
                 (finalS, apply finalS resolvedSrcTy)
             | None ->
-                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ ->
-            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedSrcTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedSrcTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
 
     // === SetField (mutable field assignment) ===
     | SetField (expr, fieldName, value, span) ->
@@ -746,18 +747,18 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 match recInfo.Fields |> List.tryFind (fun f -> f.Name = fieldName) with
                 | Some fieldInfo ->
                     if not fieldInfo.IsMutable then
-                        raise (TypeException { Kind = ImmutableFieldAssignment(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                        raise (TypeException { Kind = ImmutableFieldAssignment(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
                     let subst = List.zip recInfo.TypeParams typeArgs |> Map.ofList
                     let fieldTy = apply subst fieldInfo.FieldType
                     let s2, valTy = synth ctorEnv recEnv ctx (applyEnv s1 env) value
                     let s3 = unifyWithContext ctx [] span fieldTy valTy
                     (compose s3 (compose s2 s1), TTuple [])
                 | None ->
-                    raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                    raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
             | None ->
-                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+                raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ ->
-            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = [] })
+            raise (TypeException { Kind = FieldAccessOnNonRecord resolvedTy; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
 
     // === IndexGet (Phase 47 - array/hashtable index read) ===
     | IndexGet (collExpr, idxExpr, span) ->
@@ -780,7 +781,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | ty ->
             raise (TypeException {
                 Kind = IndexOnNonCollection ty
-                Span = span; Term = Some expr; ContextStack = ctx; Trace = []
+                Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = []
             })
 
     // === IndexSet (Phase 47 - array/hashtable index write) ===
@@ -812,7 +813,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | ty ->
             raise (TypeException {
                 Kind = IndexOnNonCollection ty
-                Span = span; Term = Some expr; ContextStack = ctx; Trace = []
+                Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = []
             })
 
     // === Phase 58: String slice type checking ===
@@ -970,11 +971,11 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                         | (None, Some _) ->
                             raise (TypeException {
                                 Kind = ArityMismatch(name, 0, 1); Span = patSpan
-                                Term = None; ContextStack = clauseCtx; Trace = [] })
+                                Term = None; ContextStack = clauseCtx; Trace = []; Scope = [] })
                         | (Some _, None) ->
                             raise (TypeException {
                                 Kind = ArityMismatch(name, 1, 0); Span = patSpan
-                                Term = None; ContextStack = clauseCtx; Trace = [] })
+                                Term = None; ContextStack = clauseCtx; Trace = []; Scope = [] })
 
                     // 5. Build branch environment with pattern bindings + refined types
                     let branchEnv =
@@ -1008,7 +1009,7 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                                 raise (TypeException {
                                     Kind = ExistentialEscape ev
                                     Span = span; Term = None
-                                    ContextStack = clauseCtx; Trace = [] })
+                                    ContextStack = clauseCtx; Trace = []; Scope = [] })
 
                         // Do NOT compose bodyS into s — branch result stays independent
                         (s, idx + 1)
@@ -1024,7 +1025,7 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                                 raise (TypeException {
                                     Kind = ExistentialEscape ev
                                     Span = span; Term = None
-                                    ContextStack = clauseCtx; Trace = [] })
+                                    ContextStack = clauseCtx; Trace = []; Scope = [] })
 
                         // 8. Local constraints stay local -- only body substitution propagates
                         (compose bodyS s, idx + 1)
