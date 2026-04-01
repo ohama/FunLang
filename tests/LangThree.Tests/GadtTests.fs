@@ -85,7 +85,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "mixed GADT and regular constructors" {
@@ -94,7 +94,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 
@@ -111,7 +111,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "GADT match on bool Expr refines to bool" {
@@ -120,7 +120,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "GADT match with If constructor" {
@@ -129,7 +129,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 
@@ -145,7 +145,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "existential type used correctly in match branch" {
@@ -154,7 +154,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 
@@ -170,7 +170,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Expected type-check to succeed, got: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Expected type-check to succeed, got: %s" (List.head diags).Message)
         }
 
         test "GADT match result type is inferred from single branch body" {
@@ -178,15 +178,15 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "GADT match without annotation does not produce E0401" {
             let input = "type Expr 'a =\n    | IntLit : int -> int Expr\n    | BoolLit : bool -> bool Expr\n\nlet eval e =\n    match e with\n    | IntLit n -> n\n"
             let result = parseAndTypeCheck input
             match result with
-            | Error diag ->
-                Expect.notEqual diag.Code (Some "E0401") "Should not produce E0401 error"
+            | Error diags ->
+                Expect.notEqual (List.head diags).Code (Some "E0401") "Should not produce E0401 error"
             | Ok _ -> ()
         }
     ]
@@ -205,7 +205,7 @@ let gadtTests = testList "GADT" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Expected type-check to succeed (no E0301), got: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Expected type-check to succeed (no E0301), got: %s" (List.head diags).Message)
         }
 
         test "cross-type eval with IntLit returns int value 42" {
@@ -243,7 +243,7 @@ let gadtTests = testList "GADT" [
                 let hasExhaustivenessWarning = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isFalse hasExhaustivenessWarning
                     "Should NOT warn about missing BoolLit case when matching on int Expr"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "exhaustiveness warning for genuinely missing GADT case" {
@@ -254,7 +254,7 @@ let gadtTests = testList "GADT" [
             | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isTrue hasW0001 "Should warn about missing Add case"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "no warning when all possible GADT constructors covered" {
@@ -264,7 +264,7 @@ let gadtTests = testList "GADT" [
             | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isFalse hasW0001 "No warning when all int Expr constructors covered"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 
@@ -279,7 +279,7 @@ let gadtTests = testList "GADT" [
             match result with
             | Ok (warnings, _, _, _) ->
                 Expect.isEmpty warnings "No warnings for complete match"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "parametric ADT still works" {
@@ -288,7 +288,7 @@ let gadtTests = testList "GADT" [
             match result with
             | Ok (warnings, _, _, _) ->
                 Expect.isEmpty warnings "No warnings for complete match"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "regular ADT exhaustiveness warning still works" {
@@ -298,7 +298,7 @@ let gadtTests = testList "GADT" [
             | Ok (warnings, _, _, _) ->
                 let hasW0001 = warnings |> List.exists (fun d -> d.Code = Some "W0001")
                 Expect.isTrue hasW0001 "Should warn about missing Green and Blue cases"
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 ]

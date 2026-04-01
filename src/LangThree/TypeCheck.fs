@@ -337,13 +337,13 @@ let typecheck (expr: Expr): Result<Type, string> =
 
 /// Type check an expression and return full diagnostic on error
 /// Returns Ok(type) on success, Error(Diagnostic) on type error
-let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic> =
+let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic list> =
     try
         let ty = synthTop initialTypeEnv expr
         Ok(ty)
     with
     | TypeException err ->
-        Error(typeErrorToDiagnostic err)
+        Error([typeErrorToDiagnostic err])
 
 /// Recursively collect all match expressions from an expression.
 /// Returns list of (patterns, scrutinee, span) for each Match node.
@@ -1181,14 +1181,14 @@ let rec typeCheckDecls
 
 /// Type check a module: build environments from declarations,
 /// type check all bindings with exhaustiveness/redundancy checking.
-/// Returns Ok(warnings, CtorEnv, RecordEnv, ClassEnv, InstanceEnv, modules, TypeEnv) on success, Error(Diagnostic) on type error.
+/// Returns Ok(warnings, CtorEnv, RecordEnv, ClassEnv, InstanceEnv, modules, TypeEnv) on success, Error(Diagnostic list) on type error.
 let typeCheckModuleWithPrelude
     (preludeCtorEnv: ConstructorEnv) (preludeRecEnv: RecordEnv)
     (preludeClassEnv: ClassEnv) (preludeInstEnv: InstanceEnv)
     (preludeTypeEnv: TypeEnv)
     (initialModules: Map<string, ModuleExports>)
     (m: Module)
-    : Result<Diagnostic list * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
+    : Result<Diagnostic list * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic list> =
     try
         // Phase 42: Reset mutable variable tracking for each top-level type check
         Bidir.mutableVars <- Set.empty
@@ -1214,9 +1214,9 @@ let typeCheckModuleWithPrelude
             Ok (warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
     with
     | TypeException err ->
-        Error(typeErrorToDiagnostic err)
+        Error([typeErrorToDiagnostic err])
 
-let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic> =
+let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<string, ModuleExports> * TypeEnv, Diagnostic list> =
     match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty Map.empty Map.empty m with
     | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
     | Error e -> Error e

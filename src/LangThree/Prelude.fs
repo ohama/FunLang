@@ -131,8 +131,8 @@ let rec loadAndTypeCheckFileImpl
             let mergedTypeEnv = Map.fold (fun acc k v -> Map.add k v acc) typeEnv fileTypeEnv
             let mergedMods = Map.fold (fun acc k v -> Map.add k v acc) mods fileMods
             (mergedTypeEnv, mergedCEnv, mergedREnv, mergedMods)
-        | Error diag ->
-            failwithf "Type error in imported file %s:\n%s" resolvedPath (formatDiagnostic diag)
+        | Error diags ->
+            failwithf "Type error in imported file %s:\n%s" resolvedPath (diags |> List.map formatDiagnostic |> String.concat "\n")
     finally
         TypeCheck.currentTypeCheckingFile <- prevFile
         fileLoadingStack.Remove resolvedPath |> ignore
@@ -307,8 +307,8 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
 
                         result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; ClassEnv = mergedClassEnv; InstEnv = mergedInstEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv }
 
-                    | Error diag ->
-                        eprintfn "Warning: Type error in %s: %s" file (formatDiagnostic diag)
+                    | Error diags ->
+                        eprintfn "Warning: Type error in %s: %s" file (diags |> List.map formatDiagnostic |> String.concat "\n")
                 with ex ->
                     eprintfn "Warning: Failed to load %s: %s" file ex.Message
             result

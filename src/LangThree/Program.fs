@@ -37,16 +37,36 @@ let parseModuleFromString (input: string) (filename: string) : Module =
     let lexbuf = LexBuffer<char>.FromString input
     Lexer.setInitialPos lexbuf filename
     let mutable index = 0
+    let mutable lastToken : Parser.token option = None
     let tokenizer (lb: LexBuffer<_>) =
         if index < filteredTokens.Length then
             let pt = filteredTokens.[index]
             index <- index + 1
             lb.StartPos <- pt.StartPos
             lb.EndPos <- pt.EndPos
+            lastToken <- Some pt.Token
             pt.Token
         else
             Parser.EOF
-    Parser.parseModule tokenizer lexbuf
+    try
+        Parser.parseModule tokenizer lexbuf
+    with _ex ->
+        // Enhanced parse error with location and token info
+        let pos = lexbuf.StartPos
+        let line = pos.Line
+        let col = pos.Column
+        let tokenStr =
+            match lastToken with
+            | Some tok -> Format.formatToken tok
+            | None -> "end of input"
+        let snippet =
+            match Diagnostic.getSourceLine filename line with
+            | Some srcLine ->
+                let pad = System.String(' ', (sprintf "%d" line).Length)
+                sprintf "\n  %s |\n  %d | %s\n  %s | %s^" pad line srcLine pad (System.String(' ', col))
+            | None -> ""
+        let msg = sprintf "parse error: unexpected %s at %s:%d:%d%s" tokenStr filename line col snippet
+        failwith msg
 
 /// Collect recursive file import dependencies via AST walk (parse only, no type-check)
 let rec private collectDeps (filePath: string) (visited: Set<string>) (depth: int) : (string * int * bool) list =
@@ -131,8 +151,8 @@ let main argv =
                                         for w in warnings do
                                             eprintfn "Warning: %s" (formatDiagnostic w)
                                         eprintfn "OK: %s (%d warnings)" target.Name (List.length warnings)
-                                    | Error diag ->
-                                        eprintfn "Error in %s: %s" target.Name (formatDiagnostic diag)
+                                    | Error diags ->
+                                        for d in diags do eprintfn "Error in %s: %s" target.Name (formatDiagnostic d)
                                         exitCode <- 1
                             with ex ->
                                 eprintfn "Error in %s: %s" target.Name ex.Message
@@ -177,8 +197,8 @@ let main argv =
                                     Eval.scriptArgs <- []
                                     let m = parseModuleFromString input target.Main
                                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
-                                    | Error diag ->
-                                        eprintfn "Error in %s: %s" target.Name (formatDiagnostic diag)
+                                    | Error diags ->
+                                        for d in diags do eprintfn "Error in %s: %s" target.Name (formatDiagnostic d)
                                         exitCode <- 1
                                     | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
                                         for w in warnings do
@@ -243,8 +263,8 @@ let main argv =
                 | Ok ty ->
                     printfn "%s" (Type.formatTypeNormalized ty)
                     0
-                | Error diag ->
-                    eprintfn "%s" (formatDiagnostic diag)
+                | Error diags ->
+                    for d in diags do eprintfn "%s" (formatDiagnostic d)
                     1
             with ex ->
                 eprintfn "Error: %s" ex.Message
@@ -263,8 +283,8 @@ let main argv =
                             eprintfn "Warning: %s" (formatDiagnostic w)
                         eprintfn "OK (%d warnings)" (List.length warnings)
                         0
-                    | Error diag ->
-                        eprintfn "%s" (formatDiagnostic diag)
+                    | Error diags ->
+                        for d in diags do eprintfn "%s" (formatDiagnostic d)
                         1
                 with ex ->
                     eprintfn "Error: %s" ex.Message
@@ -318,8 +338,8 @@ let main argv =
                         |> Map.iter (fun name scheme ->
                             printfn "%s : %s" name (Type.formatSchemeNormalized scheme))
                         0
-                    | Error diag ->
-                        eprintfn "%s" (formatDiagnostic diag)
+                    | Error diags ->
+                        for d in diags do eprintfn "%s" (formatDiagnostic d)
                         1
                 with ex ->
                     eprintfn "Error: %s" ex.Message
@@ -380,8 +400,8 @@ let main argv =
                 let ast = parse expr "<expr>"
                 // Type check first
                 match typecheckWithDiagnostic ast with
-                | Error diag ->
-                    eprintfn "%s" (formatDiagnostic diag)
+                | Error diags ->
+                    for d in diags do eprintfn "%s" (formatDiagnostic d)
                     1
                 | Ok _ ->
                     // Type check passed, evaluate
@@ -415,8 +435,8 @@ let main argv =
                         | None -> []
                     let m = parseModuleFromString input filename
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
-                    | Error diag ->
-                        eprintfn "%s" (formatDiagnostic diag)
+                    | Error diags ->
+                        for d in diags do eprintfn "%s" (formatDiagnostic d)
                         1
                     | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
                         // Print any warnings (non-exhaustive matches, etc.)

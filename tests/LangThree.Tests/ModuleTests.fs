@@ -38,7 +38,7 @@ let parseAndTypeCheck (input: string) =
 let evalModule (input: string) : Ast.Value =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
-    | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+    | Error diags -> failtest (sprintf "Type checking failed: %s" (diags |> List.map Diagnostic.formatDiagnostic |> String.concat "\n"))
     | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         let decls =
             match m with
@@ -55,10 +55,11 @@ let evalModule (input: string) : Ast.Value =
 let expectTypeError (input: string) (expectedCode: string) =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
-    | Error diag ->
-        match diag.Code with
+    | Error diags ->
+        let diag = List.head diags
+        match (List.head diags).Code with
         | Some code -> Expect.equal code expectedCode (sprintf "Expected error code %s" expectedCode)
-        | None -> failtest (sprintf "Expected error code %s but got None. Message: %s" expectedCode diag.Message)
+        | None -> failtest (sprintf "Expected error code %s but got None. Message: %s" expectedCode (List.head diags).Message)
     | Ok _ -> failtest (sprintf "Expected type error %s but got Ok" expectedCode)
 
 [<Tests>]
@@ -222,7 +223,7 @@ let evalFileModule (filePath: string) : Ast.Value =
     TypeCheck.currentTypeCheckingFile <- absPath
     try
         match TypeCheck.typeCheckModule m with
-        | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (diags |> List.map Diagnostic.formatDiagnostic |> String.concat "\n"))
         | Ok (_warnings, recEnv, _modules, _typeEnv) ->
             let decls =
                 match m with
@@ -296,7 +297,7 @@ let evalWithPrelude (input: string) : Ast.Value =
     let prelude = Prelude.loadPrelude None None
     let m = parseModule input
     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
-    | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+    | Error diags -> failtest (sprintf "Type checking failed: %s" (diags |> List.map Diagnostic.formatDiagnostic |> String.concat "\n"))
     | Ok (_warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
         let decls =
             match m with

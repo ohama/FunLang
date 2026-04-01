@@ -358,7 +358,7 @@ let integrationTests = testList "Integration" [
         let result = parseAndTypeCheck input
         match result with
         | Ok _ -> ()
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testMatchOnParametricADT" {
@@ -366,7 +366,7 @@ let integrationTests = testList "Integration" [
         let result = parseAndTypeCheck input
         match result with
         | Ok _ -> ()
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testMatchWithNestedConstructors" {
@@ -374,7 +374,7 @@ let integrationTests = testList "Integration" [
         let result = parseAndTypeCheck input
         match result with
         | Ok _ -> ()
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testConstructorArityMismatch" {
@@ -482,7 +482,7 @@ let integrationTests = testList "Integration" [
             Expect.isTrue hasW0001 "Should have W0001 warning code"
             let w = warnings |> List.find (fun d -> d.Code = Some "W0001")
             Expect.stringContains w.Message "None" "Warning should mention missing 'None' case"
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testExhaustivenessNoWarningComplete" {
@@ -491,7 +491,7 @@ let integrationTests = testList "Integration" [
         match result with
         | Ok (warnings, _, _, _) ->
             Expect.isEmpty warnings "Complete match should have no warnings"
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testRedundancyWarning" {
@@ -501,7 +501,7 @@ let integrationTests = testList "Integration" [
         | Ok (warnings, _, _, _) ->
             let hasW0002 = warnings |> List.exists (fun d -> d.Code = Some "W0002")
             Expect.isTrue hasW0002 "Should have W0002 redundancy warning"
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testExhaustivenessWarningTree" {
@@ -512,7 +512,7 @@ let integrationTests = testList "Integration" [
             Expect.isNonEmpty warnings "Should have exhaustiveness warning for Tree"
             let w = warnings |> List.find (fun d -> d.Code = Some "W0001")
             Expect.stringContains w.Message "Node" "Warning should mention missing 'Node' case"
-        | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+        | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     }
 
     test "testMixedSingleAndMultiLine" {
@@ -539,7 +539,7 @@ let integrationTests = testList "Integration" [
 let evalModule (input: string) : Ast.Value =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
-    | Error diag -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic diag))
+    | Error diags -> failtest (sprintf "Type checking failed: %s" (Diagnostic.formatDiagnostic (List.head diags)))
     | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         let decls =
             match m with

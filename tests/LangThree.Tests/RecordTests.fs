@@ -38,7 +38,7 @@ let parseAndTypeCheck (input: string) =
 let parseTypeCheckAndEval (input: string) : Ast.Env =
     let m = parseModule input
     match TypeCheck.typeCheckModule m with
-    | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+    | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
     | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         match m with
         | Ast.Module(decls, _) ->
@@ -64,7 +64,7 @@ let recordTests = testList "Records" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "record with type parameters" {
@@ -72,7 +72,7 @@ let recordTests = testList "Records" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
 
         test "record with trailing semicolon" {
@@ -80,7 +80,7 @@ let recordTests = testList "Records" [
             let result = parseAndTypeCheck input
             match result with
             | Ok _ -> ()
-            | Error diag -> failtest (sprintf "Type checking failed: %s" diag.Message)
+            | Error diags -> failtest (sprintf "Type checking failed: %s" (List.head diags).Message)
         }
     ]
 
@@ -243,9 +243,9 @@ let recordTests = testList "Records" [
             let input = "type Counter = { mutable count: int; name: string }\n\nlet c = { count = 0; name = \"test\" }\n\nlet result = c.name <- \"new\"\n"
             let result = parseAndTypeCheck input
             match result with
-            | Error diag ->
-                if diag.Message.Contains("immutable") || diag.Message.Contains("Immutable") then ()
-                else failtest (sprintf "Expected ImmutableFieldAssignment error, got: %s" diag.Message)
+            | Error diags ->
+                if (List.head diags).Message.Contains("immutable") || (List.head diags).Message.Contains("Immutable") then ()
+                else failtest (sprintf "Expected ImmutableFieldAssignment error, got: %s" (List.head diags).Message)
             | Ok _ -> failtest "Expected type error for immutable field assignment"
         }
 
