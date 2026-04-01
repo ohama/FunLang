@@ -184,7 +184,7 @@ do
 let rec private collectCtors (decls: Decl list) : Set<string> =
     (Set.empty, decls) ||> List.fold (fun acc d ->
         match d with
-        | Decl.TypeDecl(Ast.TypeDecl(_, _, ctors, _)) ->
+        | Decl.TypeDecl(Ast.TypeDecl(_, _, ctors, _, _)) ->
             (acc, ctors) ||> List.fold (fun a ct ->
                 match ct with
                 | ConstructorDecl(name, _, _) | GadtConstructorDecl(name, _, _, _) -> Set.add name a)
