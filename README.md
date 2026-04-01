@@ -64,6 +64,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Typeclass Module Integration** | Instances in modules globally accessible, ClassEnv/InstanceEnv module export, ADT instance support | v10.1 |
 | **Module Error Quality** | Clear `E0502` for undefined modules, file import span, constraint annotation validation | v10.2 |
 | **Blank Line Tolerance** | Blank lines allowed in module bodies, let bodies, match arms; `--emit-filtered-tokens` CLI | v10.3 |
+| **Error Reporting** | Source snippets with `^^^` underlines, "Did you mean?" suggestions, parser errors with location, typeclass instance listing | v11.0 |
 
 ## Quick Start
 
@@ -268,7 +269,7 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 
 ```
 LangThree/
-├── src/LangThree/       # Interpreter source (~15,500 LOC F#)
+├── src/LangThree/       # Interpreter source (~15,600 LOC F#)
 ├── tests/
 │   ├── LangThree.Tests/ # F# unit tests (224 tests)
 │   └── flt/             # fslit integration tests (690 tests)
@@ -327,8 +328,9 @@ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
 | v10.1 | Typeclass Module Integration | 75-78 | — | 2026-04-01 |
 | v10.2 | Module Error Quality | 79-80 | — | 2026-04-01 |
 | v10.3 | Blank Line Tolerance | 81-82 | — | 2026-04-01 |
+| v11.0 | Error Reporting Enhancement | 83-88 | — | 2026-04-01 |
 
-**Total:** 82 phases across 21 milestones
+**Total:** 88 phases across 22 milestones
 
 ## Reference Documents
 

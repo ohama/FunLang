@@ -271,7 +271,7 @@ src/LangThree/
 ├── Eval.fs            # Runtime evaluation + built-in functions
 ├── Prelude.fs         # Prelude loading, file import delegates
 ├── Format.fs          # AST/type pretty-printing
-├── Diagnostic.fs      # Error/warning message formatting
+├── Diagnostic.fs      # Error/warning formatting, source snippets, "Did you mean?" suggestions
 ├── Program.fs         # CLI entry point (--expr, file, --emit-ast, etc.)
 ├── Repl.fs            # Interactive REPL
 └── LangThree.fsproj   # Project file
@@ -331,3 +331,12 @@ Jules Jacobs 알고리즘으로 패턴 → 이진 결정 트리 컴파일.
 `callValueRef: (Value -> Value -> Value) ref` 뮤터블 ref 패턴으로 해결:
 빌트인 정의 시점에 ref를 플레이스홀더로 생성하고, `eval` 함수가 정의된 후 실제 구현으로 채움.
 순환 의존성 없이 HOF 빌트인과 평가기를 연결하는 표준 F# 패턴.
+
+### 5.9 Error Reporting (v11.0)
+
+`Diagnostic.fs`에 집중된 에러 보고 시스템:
+- **소스 스니펫**: 에러 위치의 소스 라인 + `^^^` 밑줄 표시. 파일 내용 캐싱 (`sourceCache`)
+- **"Did you mean?"**: Levenshtein edit distance로 유사 이름 제안 (`suggest` 함수). `TypeError.Scope` 필드로 스코프 전달
+- **파서 에러**: `parseModuleFromString`에서 fsyacc 예외 포착, 토큰 이름 + 위치 + 스니펫으로 강화
+- **타입 클래스 에러**: E0701 NoInstance에 사용 가능한 인스턴스 목록 포함
+- **다중 에러**: `typeCheckModuleWithPrelude`가 `Error(Diagnostic list)` 반환 (단일 → 리스트)
