@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>에러 처리 전략 - LangThree Tutorial</title>
+        <title>에러 처리 전략 - FunLang Tutorial</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼">
+        <meta name="description" content="함수형 프로그래밍 경험자를 위한 FunLang 언어 튜토리얼">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8cfab617.js";
+            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f1b237e8.js"></script>
+        <script src="toc-b938acb2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -137,7 +137,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">LangThree Tutorial</h1>
+                    <h1 class="menu-title">FunLang Tutorial</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -176,7 +176,7 @@
                     <main>
                         <h1 id="12장-에러-처리-전략-error-handling-strategies"><a class="header" href="#12장-에러-처리-전략-error-handling-strategies">12장: 에러 처리 전략 (Error Handling Strategies)</a></h1>
 <p>프로그램에서 실패는 피할 수 없습니다. 파일이 없을 수 있고, 네트워크가 끊길 수 있고, 사용자가 잘못된 입력을 줄 수 있습니다. 문제는 “실패가 발생하는가?“가 아니라 “실패를 어떻게 표현하고 처리하는가?“입니다.</p>
-<p>11장에서 예외(Exception)를 배웠습니다. 예외는 강력하지만, 함수의 시그니처만 봐서는 그 함수가 실패할 수 있는지 알 수 없다는 근본적인 한계가 있습니다. LangThree는 예외 외에도 <code>Option</code>과 <code>Result</code>라는 두 가지 타입 기반 접근법을 제공합니다. 이 세 가지 중 어떤 것을 선택하느냐에 따라 코드의 안전성, 합성 가능성, 가독성이 크게 달라집니다.</p>
+<p>11장에서 예외(Exception)를 배웠습니다. 예외는 강력하지만, 함수의 시그니처만 봐서는 그 함수가 실패할 수 있는지 알 수 없다는 근본적인 한계가 있습니다. FunLang는 예외 외에도 <code>Option</code>과 <code>Result</code>라는 두 가지 타입 기반 접근법을 제공합니다. 이 세 가지 중 어떤 것을 선택하느냐에 따라 코드의 안전성, 합성 가능성, 가독성이 크게 달라집니다.</p>
 <p>이 장은 같은 문제를 세 가지 방식으로 풀어보고, 각각의 장단점을 비교한 뒤, 실전에서의 선택 기준을 제시합니다. 함수형 프로그래밍 커뮤니티에서 왜 “예외보다 타입을 써라“라고 말하는지, 그 이유를 직접 확인하게 됩니다.</p>
 <h2 id="세-가지-접근법-비교"><a class="header" href="#세-가지-접근법-비교">세 가지 접근법 비교</a></h2>
 <p>같은 문제를 세 가지 방식으로 풀어보겠습니다: 리스트에서 조건을 만족하는
@@ -193,7 +193,7 @@ let rec find pred = fun xs -&gt;
 
 let result = try find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5] with | NotFound -&gt; 0 - 1
 
-$ langthree find_exc.l3
+$ funlang find_exc.l3
 4
 </code></pre>
 <h3 id="option-방식"><a class="header" href="#option-방식">Option 방식</a></h3>
@@ -206,7 +206,7 @@ let rec find pred = fun xs -&gt;
 
 let result = optionDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
-$ langthree find_opt.l3
+$ funlang find_opt.l3
 4
 </code></pre>
 <h3 id="result-방식"><a class="header" href="#result-방식">Result 방식</a></h3>
@@ -219,7 +219,7 @@ let rec find pred = fun xs -&gt;
 
 let result = resultDefault (0 - 1) (find (fun x -&gt; x &gt; 3) [1; 2; 3; 4; 5])
 
-$ langthree find_res.l3
+$ funlang find_res.l3
 4
 </code></pre>
 <p>세 가지 모두 같은 결과를 반환합니다. 그러나 <strong>코드의 의미와 안전성</strong>에서 큰 차이가 있습니다.</p>
@@ -256,7 +256,7 @@ let safeDivide a = fun b -&gt; if b = 0 then raise (DivError "div/0") else a / b
 
 let compute input = try
     let n = parseInt input
-    in try
+    try
         safeDivide 100 n
     with
     | DivError msg -&gt; 0 - 1
@@ -268,7 +268,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ langthree chain_exc.l3
+$ funlang chain_exc.l3
 (2, -1, -2)
 </code></pre>
 <p>Result를 사용하면 <strong>파이프라인으로 합성</strong>할 수 있습니다:</p>
@@ -283,7 +283,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ langthree chain_res.l3
+$ funlang chain_res.l3
 (Ok 3, Error "div/0", Error "invalid: abc")
 </code></pre>
 <p><code>resultBind</code>와 <code>resultMap</code>으로 에러가 자동 전파됩니다:</p>
@@ -313,7 +313,7 @@ let rec searchList pred = fun xs -&gt; fun i -&gt;
 
 let result = searchList (fun x -&gt; x = 999999) [1..1000000] 0
 
-$ langthree tco_result.l3
+$ funlang tco_result.l3
 Ok 999998
 </code></pre>
 <p>100만 개의 리스트를 검색해도 스택 오버플로우 없이 동작합니다.</p>
@@ -326,7 +326,7 @@ let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |&gt; optionBind safeHead |&gt; optionBind (safeDivide 100) |&gt; optionDefault 0
 
-$ langthree option_use.l3
+$ funlang option_use.l3
 10
 </code></pre>
 <p>적합한 경우:</p>
@@ -343,7 +343,7 @@ let safeDivide a = fun b -&gt; if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 &lt;|&gt; safeDivide 10 2 &lt;|&gt; Some 0
 
-$ langthree fallback.l3
+$ funlang fallback.l3
 Some 5
 </code></pre>
 <p><code>&lt;|&gt;</code>는 첫 번째 <code>Some</code> 값을 반환하고, 모두 <code>None</code>이면 마지막 값을 반환합니다.</p>
@@ -360,7 +360,7 @@ let r2 = validate "" 25
 let r3 = validate "Bob" (0 - 5)
 let result = (r1, r2, r3)
 
-$ langthree result_use.l3
+$ funlang result_use.l3
 (Ok "Alice (30)", Error "name cannot be empty", Error "age cannot be negative")
 </code></pre>
 <p>적합한 경우:</p>
@@ -379,7 +379,7 @@ let rec processAll xs = match xs with | [] -&gt; 0 | h :: t -&gt; if h &lt; 0 th
 
 let result = processAll [1; 2; 3; 4; 5]
 
-$ langthree exception_use.l3
+$ funlang exception_use.l3
 15
 </code></pre>
 <p>적합한 경우:</p>
@@ -390,19 +390,25 @@ $ langthree exception_use.l3
 </ul>
 <h2 id="prelude-함수-요약"><a class="header" href="#prelude-함수-요약">Prelude 함수 요약</a></h2>
 <pre><code>-- Option 함수
-optionMap    : ('a -&gt; 'b) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
-optionBind   : ('a -&gt; Option&lt;'b&gt;) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
-optionDefault: 'a -&gt; Option&lt;'a&gt; -&gt; 'a
-isSome       : Option&lt;'a&gt; -&gt; bool
-isNone       : Option&lt;'a&gt; -&gt; bool
+optionMap         : ('a -&gt; 'b) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
+optionBind        : ('a -&gt; Option&lt;'b&gt;) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'b&gt;
+optionDefault     : 'a -&gt; Option&lt;'a&gt; -&gt; 'a
+optionDefaultValue: 'a -&gt; Option&lt;'a&gt; -&gt; 'a      -- optionDefault와 동일
+optionFilter      : ('a -&gt; bool) -&gt; Option&lt;'a&gt; -&gt; Option&lt;'a&gt;
+optionIter        : ('a -&gt; unit) -&gt; Option&lt;'a&gt; -&gt; unit
+isSome            : Option&lt;'a&gt; -&gt; bool
+isNone            : Option&lt;'a&gt; -&gt; bool
 
 -- Result 함수
-resultMap     : ('a -&gt; 'b) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
-resultBind    : ('a -&gt; Result&lt;'b, 'e&gt;) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
-resultMapError: ('e -&gt; 'f) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'a, 'f&gt;
-resultDefault : 'a -&gt; Result&lt;'a, 'e&gt; -&gt; 'a
-isOk          : Result&lt;'a, 'e&gt; -&gt; bool
-isError       : Result&lt;'a, 'e&gt; -&gt; bool
+resultMap         : ('a -&gt; 'b) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
+resultBind        : ('a -&gt; Result&lt;'b, 'e&gt;) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'b, 'e&gt;
+resultMapError    : ('e -&gt; 'f) -&gt; Result&lt;'a, 'e&gt; -&gt; Result&lt;'a, 'f&gt;
+resultDefault     : 'a -&gt; Result&lt;'a, 'e&gt; -&gt; 'a
+resultDefaultValue: 'a -&gt; Result&lt;'a, 'e&gt; -&gt; 'a  -- resultDefault와 동일
+resultIter        : ('a -&gt; unit) -&gt; Result&lt;'a, 'e&gt; -&gt; unit
+resultToOption    : Result&lt;'a, 'e&gt; -&gt; Option&lt;'a&gt;
+isOk              : Result&lt;'a, 'e&gt; -&gt; bool
+isError           : Result&lt;'a, 'e&gt; -&gt; bool
 </code></pre>
 <h2 id="권장-가이드라인"><a class="header" href="#권장-가이드라인">권장 가이드라인</a></h2>
 <div class="table-wrapper">

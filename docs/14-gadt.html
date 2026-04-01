@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>GADT - LangThree Tutorial</title>
+        <title>GADT - FunLang Tutorial</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼">
+        <meta name="description" content="함수형 프로그래밍 경험자를 위한 FunLang 언어 튜토리얼">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8cfab617.js";
+            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f1b237e8.js"></script>
+        <script src="toc-b938acb2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -137,7 +137,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">LangThree Tutorial</h1>
+                    <h1 class="menu-title">FunLang Tutorial</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -248,7 +248,7 @@ type Expr 'a =
     | BoolLit : bool -&gt; bool Expr
 let result = IntLit 42
 
-$ langthree expr.l3
+$ funlang expr.l3
 IntLit 42
 </code></pre>
 <p>일반 ADT 구문과 비교해봅시다:</p>
@@ -281,7 +281,7 @@ let eval e =
     : int)
 let result = eval (IntLit 42)
 
-$ langthree eval.l3
+$ funlang eval.l3
 42
 </code></pre>
 <p>이 코드에서 일어나는 일을 단계별로 추적해봅시다:</p>
@@ -333,9 +333,9 @@ let result =
         | BoolLit b -&gt; if b then 1 else 0
         | Add (a, b) -&gt; eval a + eval b
         : int)
-    in eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
+    eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
-$ langthree calc.l3
+$ funlang calc.l3
 42
 </code></pre>
 <p><code>Add : int Expr * int Expr -&gt; int Expr</code>의 의미를 잘 보세요:</p>
@@ -360,7 +360,7 @@ let eval e =
 let _ = printf "%d\n" (eval (IntLit 42))
 let result = eval (BoolLit true)
 
-$ langthree poly-eval.l3
+$ funlang poly-eval.l3
 42
 true
 </code></pre>
@@ -379,7 +379,7 @@ let eval_int e =
     : int)
 let result = eval_int (IntLit 7)
 
-$ langthree filter.l3
+$ funlang filter.l3
 7
 </code></pre>
 <p><code>BoolLit</code> 분기가 없는데도 불완전 경고가 나타나지 않습니다. 왜일까요?</p>
@@ -398,7 +398,7 @@ let show_int v =
     : string)
 let result = show_int (VInt 99)
 
-$ langthree typed.l3
+$ funlang typed.l3
 "99"
 </code></pre>
 <p><code>Val 'a</code>는 세 가지 종류의 값을 담을 수 있지만, 타입 매개변수 <code>'a</code>가 각 값의 구체적인 타입을 보존합니다:</p>
@@ -431,9 +431,9 @@ let result =
         | Add (a, b) -&gt; eval a + eval b
         | Neg x -&gt; 0 - eval x
         : int)
-    in eval (Add (IntLit 10, Neg (IntLit 3)))
+    eval (Add (IntLit 10, Neg (IntLit 3)))
 
-$ langthree typed_eval.l3
+$ funlang typed_eval.l3
 7
 </code></pre>
 <p>이 평가기가 보장하는 것들을 정리합시다:</p>
@@ -445,7 +445,7 @@ $ langthree typed_eval.l3
 </ol>
 <p>이 구조는 실제 언어 인터프리터나 컴파일러의 작동 방식과 동일합니다. 타입 안전한 AST(Abstract Syntax Tree)를 GADT로 표현하고, 재귀 평가기로 값을 계산합니다.</p>
 <h2 id="다른-언어의-gadt"><a class="header" href="#다른-언어의-gadt">다른 언어의 GADT</a></h2>
-<p>GADT는 LangThree만의 기능이 아닙니다. 여러 언어가 같은 아이디어를 각자의 방식으로 표현합니다. 다른 언어의 접근법을 비교하면 GADT의 본질이 더 명확해집니다.</p>
+<p>GADT는 FunLang만의 기능이 아닙니다. 여러 언어가 같은 아이디어를 각자의 방식으로 표현합니다. 다른 언어의 접근법을 비교하면 GADT의 본질이 더 명확해집니다.</p>
 <h3 id="haskell--gadt의-원조"><a class="header" href="#haskell--gadt의-원조">Haskell — GADT의 원조</a></h3>
 <p>Haskell은 GADT를 가장 먼저 실용화한 언어입니다. <code>{-# LANGUAGE GADTs #-}</code> 확장으로 사용합니다:</p>
 <pre><code class="language-haskell">{-# LANGUAGE GADTs #-}
@@ -461,11 +461,11 @@ eval (BoolLit b) = b
 eval (Add x y)   = eval x + eval y
 </code></pre>
 <p>Haskell에서 주목할 점은 <code>eval</code>의 반환 타입이 <code>a</code>라는 것입니다. <code>IntLit</code> 분기에서 <code>a = Int</code>로 정제되므로 <code>n :: Int</code>를 그대로 반환할 수 있고, <code>BoolLit</code> 분기에서는 <code>a = Bool</code>로 정제되므로 <code>b :: Bool</code>을 반환할 수 있습니다. <strong>반환 타입이 입력에 따라 달라지는 함수를 타입 안전하게 정의한 것입니다.</strong> Haskell은 타입 추론이 강력해서 <code>(match ... : int)</code> 같은 명시적 주석 없이도 동작하는 경우가 많습니다.</p>
-<p>LangThree와 비교하면:</p>
+<p>FunLang와 비교하면:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th></th><th>Haskell</th><th>LangThree</th></tr>
+<tr><th></th><th>Haskell</th><th>FunLang</th></tr>
 </thead>
 <tbody>
 <tr><td>구문</td><td><code>IntLit :: Int -&gt; Expr Int</code></td><td><code>IntLit : int -&gt; int Expr</code></td></tr>
@@ -475,9 +475,9 @@ eval (Add x y)   = eval x + eval y
 </tbody>
 </table>
 </div>
-<p>Haskell의 <code>eval :: Expr a -&gt; a</code>는 “정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다“를 타입 하나로 표현합니다. LangThree도 주석 없이 <code>let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b</code>처럼 쓰면 <code>eval : 'a Expr -&gt; 'a</code> 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 <code>(match ... : int)</code> 주석을 추가하면 됩니다.</p>
-<h3 id="ocaml--langthree의-직접적-영감"><a class="header" href="#ocaml--langthree의-직접적-영감">OCaml — LangThree의 직접적 영감</a></h3>
-<p>OCaml은 4.0부터 GADT를 지원합니다. LangThree의 GADT 구현은 OCaml의 접근법에서 직접적인 영감을 받았습니다:</p>
+<p>Haskell의 <code>eval :: Expr a -&gt; a</code>는 “정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다“를 타입 하나로 표현합니다. FunLang도 주석 없이 <code>let eval e = match e with | IntLit n -&gt; n | BoolLit b -&gt; b</code>처럼 쓰면 <code>eval : 'a Expr -&gt; 'a</code> 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 <code>(match ... : int)</code> 주석을 추가하면 됩니다.</p>
+<h3 id="ocaml--funlang의-직접적-영감"><a class="header" href="#ocaml--funlang의-직접적-영감">OCaml — FunLang의 직접적 영감</a></h3>
+<p>OCaml은 4.0부터 GADT를 지원합니다. FunLang의 GADT 구현은 OCaml의 접근법에서 직접적인 영감을 받았습니다:</p>
 <pre><code class="language-ocaml">type _ expr =
   | IntLit  : int  -&gt; int expr
   | BoolLit : bool -&gt; bool expr
@@ -488,8 +488,8 @@ let eval : type a. a expr -&gt; a = function
   | BoolLit b -&gt; b
   | Add (x, y) -&gt; eval x + eval y
 </code></pre>
-<p>OCaml에서 <code>type a.</code>는 <strong>locally abstract type</strong> 선언입니다. 컴파일러에게 “이 함수 안에서 GADT 타입 정제를 수행하라“고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. LangThree는 주석 없이도 자동으로 다형적 타입 변수를 생성하여 타입 정제를 수행하는 방식으로, OCaml보다 한 걸음 더 나아갔습니다. 반환 타입을 하나로 고정하고 싶을 때는 여전히 <code>(match ... : int)</code> 주석을 사용할 수 있습니다.</p>
-<p>OCaml 구문에서 <code>type _ expr</code>의 <code>_</code>는 타입 매개변수를 익명으로 선언합니다. 각 생성자가 자신의 반환 타입에서 이 매개변수를 구체화합니다. LangThree에서는 <code>type Expr 'a</code>로 매개변수에 이름을 줍니다.</p>
+<p>OCaml에서 <code>type a.</code>는 <strong>locally abstract type</strong> 선언입니다. 컴파일러에게 “이 함수 안에서 GADT 타입 정제를 수행하라“고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. FunLang는 주석 없이도 자동으로 다형적 타입 변수를 생성하여 타입 정제를 수행하는 방식으로, OCaml보다 한 걸음 더 나아갔습니다. 반환 타입을 하나로 고정하고 싶을 때는 여전히 <code>(match ... : int)</code> 주석을 사용할 수 있습니다.</p>
+<p>OCaml 구문에서 <code>type _ expr</code>의 <code>_</code>는 타입 매개변수를 익명으로 선언합니다. 각 생성자가 자신의 반환 타입에서 이 매개변수를 구체화합니다. FunLang에서는 <code>type Expr 'a</code>로 매개변수에 이름을 줍니다.</p>
 <h3 id="scala--sealed-trait으로-유사-구현"><a class="header" href="#scala--sealed-trait으로-유사-구현">Scala — sealed trait으로 유사 구현</a></h3>
 <p>Scala는 언어 자체에 GADT 키워드가 없지만, sealed trait과 제네릭으로 비슷한 패턴을 만들 수 있습니다:</p>
 <pre><code class="language-scala">sealed trait Expr[A]
@@ -503,7 +503,7 @@ def eval[A](e: Expr[A]): A = e match {
   case Add(x, y) =&gt; eval(x) + eval(y)
 }
 </code></pre>
-<p>Scala에서 <code>IntLit extends Expr[Int]</code>은 “IntLit은 Expr의 타입 매개변수를 Int로 고정한다“는 뜻입니다. 이것이 LangThree의 <code>IntLit : int -&gt; int Expr</code>과 정확히 같은 의미입니다. Scala의 패턴 매칭에서도 <code>case IntLit(n) =&gt;</code>에 진입하면 컴파일러가 <code>A = Int</code>를 추론합니다.</p>
+<p>Scala에서 <code>IntLit extends Expr[Int]</code>은 “IntLit은 Expr의 타입 매개변수를 Int로 고정한다“는 뜻입니다. 이것이 FunLang의 <code>IntLit : int -&gt; int Expr</code>과 정확히 같은 의미입니다. Scala의 패턴 매칭에서도 <code>case IntLit(n) =&gt;</code>에 진입하면 컴파일러가 <code>A = Int</code>를 추론합니다.</p>
 <p>객체지향 배경에서 왔다면 이 Scala 코드가 가장 친숙하게 느껴질 것입니다. <code>extends Expr[Int]</code>는 상속처럼 보이지만, 실제로는 GADT의 “생성자가 반환 타입을 고정한다“는 것과 동일한 효과를 냅니다.</p>
 <h3 id="typescript--판별-유니온으로-흉내내기"><a class="header" href="#typescript--판별-유니온으로-흉내내기">TypeScript — 판별 유니온으로 흉내내기</a></h3>
 <p>TypeScript에는 GADT가 없지만, 판별 유니온(discriminated union)과 타입 좁히기(type narrowing)로 비슷한 효과를 낼 수 있습니다:</p>
@@ -549,14 +549,14 @@ function eval(e: Expr): number | boolean {
 <tbody>
 <tr><td><strong>Haskell</strong></td><td>네이티브 (<code>GADTs</code> 확장)</td><td><code>data Expr a where IntLit :: Int -&gt; Expr Int</code></td><td>대부분 불필요</td><td><code>eval :: Expr a -&gt; a</code> 가능</td></tr>
 <tr><td><strong>OCaml</strong></td><td>네이티브 (4.0+)</td><td><code>type _ expr = IntLit : int -&gt; int expr</code></td><td><code>type a.</code> 필요</td><td>가능</td></tr>
-<tr><td><strong>LangThree</strong></td><td>네이티브</td><td><code>IntLit : int -&gt; int Expr</code></td><td>선택사항 (생략 시 다형적)</td><td><code>eval : 'a Expr -&gt; 'a</code> 가능</td></tr>
+<tr><td><strong>FunLang</strong></td><td>네이티브</td><td><code>IntLit : int -&gt; int Expr</code></td><td>선택사항 (생략 시 다형적)</td><td><code>eval : 'a Expr -&gt; 'a</code> 가능</td></tr>
 <tr><td><strong>Scala</strong></td><td>sealed trait으로 유사</td><td><code>case class IntLit(n: Int) extends Expr[Int]</code></td><td>불필요</td><td>가능</td></tr>
 <tr><td><strong>TypeScript</strong></td><td>판별 유니온 (제한적)</td><td><code>{ tag: "int"; value: number }</code></td><td>불필요</td><td>유니온 반환만</td></tr>
 <tr><td><strong>Rust</strong></td><td>미지원</td><td>—</td><td>—</td><td>—</td></tr>
 </tbody>
 </table>
 </div>
-<p>LangThree의 GADT는 OCaml의 설계를 가장 가깝게 따르며, Haskell보다 단순하지만 핵심 기능(타입 정제, 불가능한 분기 제거, 컴파일 시점 타입 안전성)은 동일하게 제공합니다.</p>
+<p>FunLang의 GADT는 OCaml의 설계를 가장 가깝게 따르며, Haskell보다 단순하지만 핵심 기능(타입 정제, 불가능한 분기 제거, 컴파일 시점 타입 안전성)은 동일하게 제공합니다.</p>
 <h2 id="adt-vs-gadt-언제-무엇을-쓸까"><a class="header" href="#adt-vs-gadt-언제-무엇을-쓸까">ADT vs GADT: 언제 무엇을 쓸까</a></h2>
 <div class="table-wrapper">
 <table>
@@ -613,7 +613,7 @@ function eval(e: Expr): number | boolean {
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="15-algorithms.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="23-typeclasses.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -627,7 +627,7 @@ function eval(e: Expr): number | boolean {
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="15-algorithms.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="23-typeclasses.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

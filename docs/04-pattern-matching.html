@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>패턴 매칭 - LangThree Tutorial</title>
+        <title>패턴 매칭 - FunLang Tutorial</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼">
+        <meta name="description" content="함수형 프로그래밍 경험자를 위한 FunLang 언어 튜토리얼">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8cfab617.js";
+            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f1b237e8.js"></script>
+        <script src="toc-b938acb2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -137,7 +137,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">LangThree Tutorial</h1>
+                    <h1 class="menu-title">FunLang Tutorial</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -176,8 +176,8 @@
                     <main>
                         <h1 id="4장-패턴-매칭-pattern-matching"><a class="header" href="#4장-패턴-매칭-pattern-matching">4장: 패턴 매칭 (Pattern Matching)</a></h1>
 <p>C나 Java의 <code>switch</code>문을 써본 적이 있다면, 패턴 매칭은 그것의 대폭 강화된 버전이라고 생각할 수 있습니다. 하지만 실제로 써보면 차원이 다릅니다. <code>switch</code>는 값을 비교하는 것이 전부지만, 패턴 매칭은 데이터의 구조를 분해하면서 동시에 변수를 바인딩하고, 조건에 따라 분기합니다. 이 세 가지가 하나의 구문에서 일어납니다.</p>
-<p>패턴 매칭이 함수형 프로그래밍의 핵심이라고 불리는 데는 이유가 있습니다. ADT(5장)를 정의하면 자연스럽게 패턴 매칭으로 처리하게 되고, 리스트를 순회할 때도, 에러를 처리할 때도, 복잡한 데이터를 파싱할 때도 패턴 매칭이 등장합니다. LangThree에서 가장 많이 쓰게 될 기능이니 이 장을 천천히 읽어보세요.</p>
-<p>LangThree의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.</p>
+<p>패턴 매칭이 함수형 프로그래밍의 핵심이라고 불리는 데는 이유가 있습니다. ADT(5장)를 정의하면 자연스럽게 패턴 매칭으로 처리하게 되고, 리스트를 순회할 때도, 에러를 처리할 때도, 복잡한 데이터를 파싱할 때도 패턴 매칭이 등장합니다. FunLang에서 가장 많이 쓰게 될 기능이니 이 장을 천천히 읽어보세요.</p>
+<p>FunLang의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.</p>
 <h2 id="기본-match-구문"><a class="header" href="#기본-match-구문">기본 Match 구문</a></h2>
 <p>Match 표현식은 <code>match</code> 키워드에 맞춰 정렬된 <code>|</code> 파이프를 사용합니다:</p>
 <pre><code>funlang&gt; match 2 with | 0 -&gt; "zero" | 1 -&gt; "one" | _ -&gt; "other"
@@ -192,7 +192,7 @@ let classify x =
     | _ -&gt; "other"
 let result = classify 1
 
-$ langthree classify.l3
+$ funlang classify.l3
 "one"
 </code></pre>
 <p>파이프는 <code>match</code> 키워드의 열(column)에 맞춰야 하며, 그보다 들여쓰기하면 안 됩니다.</p>
@@ -223,7 +223,7 @@ let dayType d =
     | _ -&gt; "invalid"
 let result = dayType 3
 
-$ langthree daytype.l3
+$ funlang daytype.l3
 "Wednesday"
 </code></pre>
 <h3 id="문자열-패턴-string-patterns"><a class="header" href="#문자열-패턴-string-patterns">문자열 패턴 (String Patterns)</a></h3>
@@ -236,7 +236,7 @@ let greet name =
     | _ -&gt; "Who are you, " + name + "?"
 let result = greet "Alice"
 
-$ langthree string_match.l3
+$ funlang string_match.l3
 "Hello, Alice!"
 </code></pre>
 <p>커맨드 디스패치에 유용합니다:</p>
@@ -248,7 +248,7 @@ let classify cmd =
     | _ -&gt; "unknown: " + cmd
 let result = classify "quit"
 
-$ langthree cmd_dispatch.l3
+$ funlang cmd_dispatch.l3
 "exit command"
 </code></pre>
 <p>위 예제는 or-패턴과 문자열 패턴을 함께 사용합니다. or-패턴은 아래에서 설명합니다.</p>
@@ -269,7 +269,7 @@ let sign x =
     | _ -&gt; 0 - 1
 let result = (sign 5, sign 0, sign (0 - 3))
 
-$ langthree sign.l3
+$ funlang sign.l3
 (1, 0, -1)
 </code></pre>
 <p><strong>섀도잉(Shadowing):</strong> 패턴 내의 변수는 같은 이름의 외부 바인딩을 가립니다:</p>
@@ -295,7 +295,7 @@ let classify pair =
     | (false, _) -&gt; "false"
 let result = classify (true, 42)
 
-$ langthree classify_pair.l3
+$ funlang classify_pair.l3
 "positive-true: 42"
 </code></pre>
 <h3 id="리스트-패턴-list-patterns"><a class="header" href="#리스트-패턴-list-patterns">리스트 패턴 (List Patterns)</a></h3>
@@ -321,7 +321,7 @@ let r3 = describe [1; 2]
 let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ langthree list_describe.l3
+$ funlang list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 </code></pre>
 <h3 id="생성자-패턴-constructor-patterns"><a class="header" href="#생성자-패턴-constructor-patterns">생성자 패턴 (Constructor Patterns)</a></h3>
@@ -337,7 +337,7 @@ let area s =
     | Rect (w, h) -&gt; w * h
 let result = area (Circle 5)
 
-$ langthree shape.l3
+$ funlang shape.l3
 75
 </code></pre>
 <p>데이터가 없는 생성자 (nullary):</p>
@@ -359,7 +359,7 @@ let value c =
 
 let result = value Ace + value King + value (Num 5)
 
-$ langthree card.l3
+$ funlang card.l3
 26
 </code></pre>
 <p>생성자 내부에서 와일드카드 사용:</p>
@@ -375,7 +375,7 @@ let isLeaf t =
 
 let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
 
-$ langthree is_leaf.l3
+$ funlang is_leaf.l3
 (true, false)
 </code></pre>
 <h3 id="중첩-패턴-nested-patterns"><a class="header" href="#중첩-패턴-nested-patterns">중첩 패턴 (Nested Patterns)</a></h3>
@@ -395,7 +395,7 @@ let r3 = deepGet (Some None)
 let r4 = deepGet None
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ langthree deep_option.l3
+$ funlang deep_option.l3
 "42 | inner none | mid none | outer none"
 </code></pre>
 <p><strong>튜플의 리스트:</strong></p>
@@ -413,7 +413,7 @@ let result =
     | Some [] -&gt; 0
     | None -&gt; 0
 
-$ langthree nested_complex.l3
+$ funlang nested_complex.l3
 1
 </code></pre>
 <h3 id="레코드-패턴-record-patterns"><a class="header" href="#레코드-패턴-record-patterns">레코드 패턴 (Record Patterns)</a></h3>
@@ -425,7 +425,7 @@ let result =
     match p with
     | { x = a; y = b } -&gt; a + b
 
-$ langthree record_match.l3
+$ funlang record_match.l3
 3
 </code></pre>
 <p>부분 레코드 패턴 – 일부 필드만 매칭:</p>
@@ -438,7 +438,7 @@ let greet p =
 
 let result = greet { name = "Alice"; age = 30; active = true }
 
-$ langthree record_partial.l3
+$ funlang record_partial.l3
 "Alice is 30"
 </code></pre>
 <h2 id="or-패턴-or-patterns"><a class="header" href="#or-패턴-or-patterns">Or-패턴 (Or-Patterns)</a></h2>
@@ -456,7 +456,7 @@ let classify n =
     | _ -&gt; "large"
 let result = classify 5
 
-$ langthree or_pattern.l3
+$ funlang or_pattern.l3
 "medium"
 </code></pre>
 <h3 id="생성자와-or-패턴"><a class="header" href="#생성자와-or-패턴">생성자와 Or-패턴</a></h3>
@@ -474,7 +474,7 @@ let isVertical d =
     | East | West -&gt; false
 let result = (isVertical North, isVertical East)
 
-$ langthree or_ctor.l3
+$ funlang or_ctor.l3
 (true, false)
 </code></pre>
 <h3 id="문자열-or-패턴"><a class="header" href="#문자열-or-패턴">문자열 Or-패턴</a></h3>
@@ -487,7 +487,7 @@ let respond input =
     | _ -&gt; false
 let result = (respond "yes", respond "n", respond "maybe")
 
-$ langthree or_string.l3
+$ funlang or_string.l3
 (true, false, false)
 </code></pre>
 <h3 id="소진-검사와-or-패턴"><a class="header" href="#소진-검사와-or-패턴">소진 검사와 Or-패턴</a></h3>
@@ -505,7 +505,7 @@ let name c =
     | Green | Blue -&gt; "cool"
 let result = name Red
 
-$ langthree or_exhaust.l3
+$ funlang or_exhaust.l3
 "red"
 </code></pre>
 <p>위 예제에서 <code>Green | Blue</code>가 나머지 모든 경우를 커버하므로 소진 경고가 없습니다.</p>
@@ -526,7 +526,7 @@ let classify n =
     | _ -&gt; "negative"
 let result = classify 5
 
-$ langthree guard.l3
+$ funlang guard.l3
 "positive"
 </code></pre>
 <h3 id="범위-분류를-위한-가드-guards-for-range-classification"><a class="header" href="#범위-분류를-위한-가드-guards-for-range-classification">범위 분류를 위한 가드 (Guards for Range Classification)</a></h3>
@@ -541,7 +541,7 @@ let grade score =
     | _ -&gt; "F"
 let result = grade 85
 
-$ langthree grade.l3
+$ funlang grade.l3
 "B"
 </code></pre>
 <h3 id="생성자와-가드-결합"><a class="header" href="#생성자와-가드-결합">생성자와 가드 결합</a></h3>
@@ -562,7 +562,7 @@ let r2 = isLarge (Circle 5)
 let r3 = isLarge (Rect (20, 10))
 let result = (r1, r2, r3)
 
-$ langthree shape_guard.l3
+$ funlang shape_guard.l3
 (true, false, true)
 </code></pre>
 <h3 id="가드-폴스루-guard-fallthrough"><a class="header" href="#가드-폴스루-guard-fallthrough">가드 폴스루 (Guard Fallthrough)</a></h3>
@@ -578,7 +578,7 @@ let classify x =
     | _ -&gt; "negative"
 let result = classify 50
 
-$ langthree fallthrough.l3
+$ funlang fallthrough.l3
 "medium"
 </code></pre>
 <h2 id="계산된-값에-대한-match"><a class="header" href="#계산된-값에-대한-match">계산된 값에 대한 Match</a></h2>
@@ -593,7 +593,7 @@ let classify x =
     | _ -&gt; "large"
 let result = classify (0 - 42)
 
-$ langthree match_expr.l3
+$ funlang match_expr.l3
 "medium"
 </code></pre>
 <h2 id="완전성-검사-exhaustiveness-checking"><a class="header" href="#완전성-검사-exhaustiveness-checking">완전성 검사 (Exhaustiveness Checking)</a></h2>
@@ -608,7 +608,7 @@ let result =
     | Red -&gt; 1
     | Green -&gt; 2
 
-$ langthree exhaustive.l3
+$ funlang exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --&gt; :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -622,7 +622,7 @@ let result =
     | _ -&gt; "catch all"
     | 1 -&gt; "one"
 
-$ langthree redundant.l3
+$ funlang redundant.l3
 Warning: warning[W0002]: Redundant pattern match clause. This pattern is never reached
  --&gt; :0:0-1:0
    = hint: Remove this clause or reorder the patterns
@@ -649,7 +649,7 @@ let mix a b =
 
 let result = mix Red Blue
 
-$ langthree color_mix.l3
+$ funlang color_mix.l3
 "purple"
 </code></pre>
 <h2 id="let-패턴-구조-분해-let-pattern-destructuring"><a class="header" href="#let-패턴-구조-분해-let-pattern-destructuring">Let 패턴 구조 분해 (Let-Pattern Destructuring)</a></h2>
@@ -661,7 +661,7 @@ funlang&gt; let (a, b, c) = (1, 2, 3) in a + b + c
 6
 </code></pre>
 <h2 id="결정-트리-컴파일-decision-tree-compilation"><a class="header" href="#결정-트리-컴파일-decision-tree-compilation">결정 트리 컴파일 (Decision Tree Compilation)</a></h2>
-<p>LangThree는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
+<p>FunLang는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
 이진 결정 트리(binary decision tree)로 컴파일합니다. 이는 다음을 의미합니다:</p>
 <ul>
 <li><strong>중복 테스트 없음:</strong> 각 생성자는 실행 경로당 최대 한 번만 테스트됩니다</li>
@@ -692,9 +692,9 @@ let result =
         match xs with
         | [] -&gt; []
         | h :: t -&gt; if pred h then h :: takeWhile pred t else []
-    in takeWhile (fun x -&gt; x &lt; 5) [1; 2; 3; 4; 5; 6; 7]
+    takeWhile (fun x -&gt; x &lt; 5) [1; 2; 3; 4; 5; 6; 7]
 
-$ langthree take_while.l3
+$ funlang take_while.l3
 [1; 2; 3; 4]
 </code></pre>
 <h3 id="adt-표현식-평가기-adt-expression-evaluator"><a class="header" href="#adt-표현식-평가기-adt-expression-evaluator">ADT 표현식 평가기 (ADT Expression Evaluator)</a></h3>
@@ -707,9 +707,9 @@ type Expr =
 
 let result =
     let rec eval e = match e with | Num n -&gt; n | Add (a, b) -&gt; eval a + eval b | Mul (a, b) -&gt; eval a * eval b
-    in eval (Add (Mul (Num 3, Num 4), Num 5))
+    eval (Add (Mul (Num 3, Num 4), Num 5))
 
-$ langthree expr_eval.l3
+$ funlang expr_eval.l3
 17
 </code></pre>
 <p><code>eval (Add (Mul (Num 3, Num 4), Num 5))</code>는 <code>(3 * 4) + 5 = 17</code>을 계산합니다.</p>
@@ -721,15 +721,12 @@ let result =
         match xs with
         | [] -&gt; None
         | (k, v) :: rest -&gt; if k = key then Some v else lookup key rest
-    in
     let env = [(1, "one"); (2, "two"); (3, "three")]
-    in
     let r1 = lookup 2 env
-    in
     let r2 = lookup 9 env
-    in (r1, r2)
+    (r1, r2)
 
-$ langthree lookup.l3
+$ funlang lookup.l3
 (Some "two", None)
 </code></pre>
 <h3 id="패턴-매칭을-이용한-트리-순회"><a class="header" href="#패턴-매칭을-이용한-트리-순회">패턴 매칭을 이용한 트리 순회</a></h3>
@@ -742,17 +739,14 @@ type Tree =
 let result =
     // 트리의 깊이: 왼쪽/오른쪽 중 더 깊은 쪽 + 1
     let rec depth t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; 1 + max (depth l) (depth r)
-    in
     // 트리의 노드 수
     let rec size t = match t with | Leaf -&gt; 0 | Node (l, _, r) -&gt; 1 + size l + size r
-    in
     // 트리의 모든 값의 합
     let rec sumTree t = match t with | Leaf -&gt; 0 | Node (l, v, r) -&gt; sumTree l + v + sumTree r
-    in
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
-    in (depth t, size t, sumTree t)
+    (depth t, size t, sumTree t)
 
-$ langthree tree_ops.l3
+$ funlang tree_ops.l3
 (3, 4, 10)
 </code></pre>
 <h3 id="패턴-매칭을-이용한-삽입-정렬-insertion-sort"><a class="header" href="#패턴-매칭을-이용한-삽입-정렬-insertion-sort">패턴 매칭을 이용한 삽입 정렬 (Insertion Sort)</a></h3>
@@ -763,13 +757,12 @@ let sorted =
         match xs with
         | [] -&gt; x :: []
         | h :: t -&gt; if x &lt;= h then x :: h :: t else h :: insert x t
-    in
     let rec sort xs = match xs with | [] -&gt; [] | h :: t -&gt; insert h (sort t)
-    in sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
+    sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
 let result = sorted
 
-$ langthree isort.l3
+$ funlang isort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 </code></pre>
 <h2 id="요약"><a class="header" href="#요약">요약</a></h2>

@@ -3,12 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>CLI 참조 - LangThree Tutorial</title>
+        <title>CLI 참조 - FunLang Tutorial</title>
 
 
         <!-- Custom HTML head -->
 
-        <meta name="description" content="함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼">
+        <meta name="description" content="함수형 프로그래밍 경험자를 위한 FunLang 언어 튜토리얼">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff">
 
@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-8cfab617.js";
+            window.path_to_searchindex_js = "searchindex-f094f3d9.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-f1b237e8.js"></script>
+        <script src="toc-b938acb2.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -137,7 +137,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">LangThree Tutorial</h1>
+                    <h1 class="menu-title">FunLang Tutorial</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -175,37 +175,37 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="16장-cli-참조-cli-reference"><a class="header" href="#16장-cli-참조-cli-reference">16장: CLI 참조 (CLI Reference)</a></h1>
-<p>이 장에서는 LangThree의 모든 커맨드라인 모드와 옵션을 다룹니다.</p>
+<p>이 장에서는 FunLang의 모든 커맨드라인 모드와 옵션을 다룹니다.</p>
 <h2 id="표현식-모드"><a class="header" href="#표현식-모드">표현식 모드</a></h2>
 <p><code>--expr</code>로 단일 표현식을 평가합니다:</p>
-<pre><code>$ langthree --expr '1 + 2'
+<pre><code>$ funlang --expr '1 + 2'
 3
 </code></pre>
 <p>표현식은 파싱, 타입 검사, 평가를 거칩니다. 결과는 표준 출력으로 출력됩니다.</p>
 <p>다양한 결과 타입:</p>
-<pre><code>$ langthree --expr '42'
+<pre><code>$ funlang --expr '42'
 42
 
-$ langthree --expr '"hello"'
+$ funlang --expr '"hello"'
 "hello"
 
-$ langthree --expr 'true'
+$ funlang --expr 'true'
 true
 
-$ langthree --expr '[1; 2; 3]'
+$ funlang --expr '[1; 2; 3]'
 [1; 2; 3]
 
-$ langthree --expr '(1, "hello", true)'
+$ funlang --expr '(1, "hello", true)'
 (1, "hello", true)
 
-$ langthree --expr '()'
+$ funlang --expr '()'
 ()
 
-$ langthree --expr 'fun x -&gt; x + 1'
+$ funlang --expr 'fun x -&gt; x + 1'
 &lt;function&gt;
 </code></pre>
 <p>표현식 모드에서는 <code>let ... in</code> 구문으로 로컬 바인딩을 사용합니다:</p>
-<pre><code>$ langthree --expr 'let x = 5 in let y = 10 in x + y'
+<pre><code>$ funlang --expr 'let x = 5 in let y = 10 in x + y'
 15
 </code></pre>
 <p>표현식 모드는 한 줄만 지원하며, 들여쓰기를 지원하지 않습니다.</p>
@@ -215,7 +215,7 @@ $ langthree --expr 'fun x -&gt; x + 1'
 let greeting = "hello"
 let result = greeting + " world"
 
-$ langthree hello.l3
+$ funlang hello.l3
 "hello world"
 </code></pre>
 <p>파일 모드는 들여쓰기 기반 문법을 지원합니다. 마지막 <code>let</code> 바인딩의 값이
@@ -225,22 +225,22 @@ let _ = println "starting..."
 let name = "world"
 let result = "hello " + name
 
-$ langthree greet.l3
+$ funlang greet.l3
 starting...
 "hello world"
 </code></pre>
-<p>파일 모드는 LangThree의 모든 기능을 지원합니다: 타입 선언, 모듈,
+<p>파일 모드는 FunLang의 모든 기능을 지원합니다: 타입 선언, 모듈,
 예외, 들여쓰기 기반 패턴 매칭, 여러 줄 표현식.</p>
 <p><code>.l3</code> 확장자는 관례이며 강제되지 않습니다 – 어떤 파일 이름이든 사용 가능합니다.</p>
 <h2 id="ast-출력"><a class="header" href="#ast-출력">AST 출력</a></h2>
 <p><code>--emit-ast</code>로 파싱된 추상 구문 트리를 확인합니다:</p>
-<pre><code>$ langthree --emit-ast --expr '1 + 2'
+<pre><code>$ funlang --emit-ast --expr '1 + 2'
 Add (Number 1, Number 2)
 
-$ langthree --emit-ast --expr 'fun x -&gt; x + 1'
+$ funlang --emit-ast --expr 'fun x -&gt; x + 1'
 Lambda ("x", Add (Var "x", Number 1))
 
-$ langthree --emit-ast --expr 'let x = 5 in x + 1'
+$ funlang --emit-ast --expr 'let x = 5 in x + 1'
 Let ("x", Number 5, Add (Var "x", Number 1))
 </code></pre>
 <p>파일 모드에서는 각 선언이 표시됩니다:</p>
@@ -248,20 +248,20 @@ Let ("x", Number 5, Add (Var "x", Number 1))
 let x = 42
 let add a b = a + b
 
-$ langthree --emit-ast ast_demo.l3
+$ funlang --emit-ast ast_demo.l3
 LetDecl ("x", Number 42)
 LetDecl ("add", Lambda ("a", Lambda ("b", Add (Var "a", Var "b"))))
 </code></pre>
 <p>파싱 문제를 디버깅하는 데 유용합니다 – 코드가 의도한 대로 파싱되었는지 확인합니다.</p>
 <h2 id="타입-출력"><a class="header" href="#타입-출력">타입 출력</a></h2>
 <p><code>--emit-type</code>으로 추론된 타입을 확인합니다:</p>
-<pre><code>$ langthree --emit-type --expr '1 + 2'
+<pre><code>$ funlang --emit-type --expr '1 + 2'
 int
 
-$ langthree --emit-type --expr 'fun x -&gt; x + 1'
+$ funlang --emit-type --expr 'fun x -&gt; x + 1'
 int -&gt; int
 
-$ langthree --emit-type --expr '"hello"'
+$ funlang --emit-type --expr '"hello"'
 string
 </code></pre>
 <p>파일 모드에서는 사용자 정의 최상위 바인딩의 타입이 모두 표시됩니다
@@ -271,50 +271,149 @@ let x = 42
 let greet name = "hello " + name
 let result = greet "world"
 
-$ langthree --emit-type types_demo.l3
+$ funlang --emit-type types_demo.l3
 greet : string -&gt; string
 result : string
 x : int
 </code></pre>
 <p>다형 타입은 타입 변수를 표시합니다:</p>
-<pre><code>$ langthree --emit-type --expr 'fun x -&gt; x'
+<pre><code>$ funlang --emit-type --expr 'fun x -&gt; x'
 'a -&gt; 'a
 
-$ langthree --emit-type --expr 'fun f -&gt; fun x -&gt; f x'
+$ funlang --emit-type --expr 'fun f -&gt; fun x -&gt; f x'
 ('a -&gt; 'b) -&gt; 'a -&gt; 'b
 </code></pre>
 <h2 id="토큰-출력"><a class="header" href="#토큰-출력">토큰 출력</a></h2>
-<p><code>--emit-tokens</code>로 렉서 출력을 확인합니다:</p>
-<pre><code>$ langthree --emit-tokens --expr '1 + 2'
+<p><code>--emit-tokens</code>로 렉서의 원시 토큰을 확인합니다 (IndentFilter 적용 전):</p>
+<pre><code>$ funlang --emit-tokens --expr '1 + 2'
 NUMBER(1) PLUS NUMBER(2) EOF
 </code></pre>
-<p>파일 모드에서는 IndentFilter가 들여쓰기를 토큰으로 처리합니다:</p>
+<p>파일 모드에서는 <code>NEWLINE(n)</code> 토큰이 각 줄의 들여쓰기 수준을 나타냅니다:</p>
 <pre><code>$ cat tokens_demo.l3
 let result =
     if true then 1
     else 2
 
-$ langthree --emit-tokens tokens_demo.l3
+$ funlang --emit-tokens tokens_demo.l3
 LET IDENT(result) EQUALS NEWLINE(4) IF TRUE THEN NUMBER(1) NEWLINE(4) ELSE NUMBER(2) NEWLINE(0) EOF
 </code></pre>
-<p><code>NEWLINE(n)</code> 토큰은 각 줄 시작의 들여쓰기 수준을 나타냅니다.
-들여쓰기 문제를 디버깅하는 데 유용합니다 – 프로그램이 파일 모드에서 파싱에 실패할 때,
-토큰 출력을 통해 IndentFilter가 공백을 어떻게 해석하는지 확인할 수 있습니다.</p>
+<h2 id="필터된-토큰-출력"><a class="header" href="#필터된-토큰-출력">필터된 토큰 출력</a></h2>
+<p><code>--emit-filtered-tokens</code>로 IndentFilter를 거친 토큰을 확인합니다. <code>NEWLINE(n)</code>이 <code>INDENT</code>/<code>DEDENT</code>/<code>IN</code>/<code>SEMICOLON</code>으로 변환된 결과를 볼 수 있습니다:</p>
+<pre><code>$ cat filtered_demo.l3
+module M =
+    let x = 1
+    let y = 2
+let result = M.x + M.y
+
+$ funlang --emit-filtered-tokens filtered_demo.l3
+MODULE IDENT(M) EQUALS INDENT LET IDENT(x) EQUALS NUMBER(1) LET IDENT(y) EQUALS NUMBER(2) DEDENT LET IDENT(result) EQUALS IDENT(M) DOT IDENT(x) PLUS IDENT(M) DOT IDENT(y) EOF
+</code></pre>
+<p>들여쓰기 관련 파싱 문제를 디버깅할 때 유용합니다. <code>--emit-tokens</code>는 렉서의 원시 출력을 보여주고, <code>--emit-filtered-tokens</code>는 파서가 실제로 받는 토큰 스트림을 보여줍니다.</p>
+<h2 id="타입-체크만-수행"><a class="header" href="#타입-체크만-수행">타입 체크만 수행</a></h2>
+<p><code>--check</code>는 파일을 타입 체크하지만 실행하지 않습니다. <code>open</code>으로 임포트된 파일도 모두 포함됩니다:</p>
+<pre><code>$ cat good.l3
+let x = 1 + 2
+let y = x * 3
+
+$ funlang --check good.l3
+OK (0 warnings)
+</code></pre>
+<p>타입 오류가 있으면 에러 메시지만 출력하고 종료합니다:</p>
+<pre><code>$ cat bad.l3
+let x = 1 + "hello"
+
+$ funlang --check bad.l3
+error[E0301]: Type mismatch: expected int but got string
+ --&gt; bad.l3:1:6-18
+   = hint: Check that all branches of your expression return the same type
+</code></pre>
+<p>CI/CD 파이프라인이나 에디터 통합에서 코드를 실행하지 않고 검증할 때 유용합니다.</p>
+<h2 id="의존성-트리"><a class="header" href="#의존성-트리">의존성 트리</a></h2>
+<p><code>--deps</code>는 파일의 임포트 의존성 트리를 출력합니다:</p>
+<pre><code>$ funlang --deps main.l3
+main.l3
+  lib/math.fun
+    lib/helpers.fun
+  utils/format.fun
+    lib/math.fun (cached)
+</code></pre>
+<p>순환 의존성이 있으면 감지하여 보고합니다.</p>
+<h2 id="prelude-경로-설정"><a class="header" href="#prelude-경로-설정">Prelude 경로 설정</a></h2>
+<p><code>--prelude</code>로 Prelude 디렉토리 경로를 지정합니다:</p>
+<pre><code>$ funlang --prelude /path/to/my/Prelude myfile.l3
+</code></pre>
+<p>Prelude 경로 우선순위: <code>--prelude</code> &gt; <code>LANGTHREE_PRELUDE</code> 환경 변수 &gt; <code>funproj.toml</code> 설정 &gt; 자동 탐색.</p>
+<h2 id="프로젝트-빌드"><a class="header" href="#프로젝트-빌드">프로젝트 빌드</a></h2>
+<p><code>funproj.toml</code> 파일이 있는 디렉토리에서 <code>build</code>와 <code>test</code> 서브커맨드를 사용할 수 있습니다:</p>
+<pre><code>$ funlang build          # 모든 [[executable]] 타겟 타입 체크
+$ funlang build myapp    # 특정 타겟만 타입 체크
+$ funlang test           # 모든 [[test]] 타겟 실행
+$ funlang test mytest    # 특정 테스트만 실행
+</code></pre>
+<p><code>funproj.toml</code> 형식:</p>
+<pre><code class="language-toml">[project]
+name = "myproject"
+prelude = "Prelude"
+
+[[executable]]
+name = "myapp"
+main = "src/main.l3"
+
+[[test]]
+name = "mytest"
+main = "tests/test.l3"
+</code></pre>
 <h2 id="repl"><a class="header" href="#repl">REPL</a></h2>
 <p>인자 없이 <code>langthree</code>를 실행하여 대화형 세션을 시작합니다:</p>
-<pre><code>$ langthree
-FunLang REPL
-Type '#quit' or Ctrl+D to quit.
+<pre><code>$ funlang
+FunLang REPL v14.0
+Type :help for commands, #quit or Ctrl+D to exit.
 
 funlang&gt; 1 + 2
-3
-funlang&gt; let x = 5 in x * 2
-10
+- : int = 3
+funlang&gt; let x = 42
+val x : int = 42
+funlang&gt; let y = x * 2
+val y : int = 84
+funlang&gt; x + y
+- : int = 126
 funlang&gt; #quit
 </code></pre>
-<p>REPL은 한 줄 표현식을 평가합니다 (<code>--expr</code> 모드와 동일). 바인딩에는
-<code>let ... in</code> 구문을 사용합니다. 모듈 수준의 <code>let</code> (<code>in</code> 없이)은 지원되지 않습니다.</p>
-<p><code>#quit</code> 또는 Ctrl+D로 종료합니다.</p>
+<h3 id="영속적-바인딩"><a class="header" href="#영속적-바인딩">영속적 바인딩</a></h3>
+<p>REPL에서 <code>let</code> 바인딩은 다음 줄에서도 유지됩니다. 타입 선언, 모듈, 타입 클래스 인스턴스도 영속적입니다:</p>
+<pre><code>funlang&gt; type Color = | Red | Green | Blue
+type defined
+funlang&gt; deriving Show Color
+deriving applied
+funlang&gt; show Green
+- : string = "Green"
+</code></pre>
+<h3 id="repl-명령"><a class="header" href="#repl-명령">REPL 명령</a></h3>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>명령</th><th>설명</th></tr>
+</thead>
+<tbody>
+<tr><td><code>:type &lt;expr&gt;</code></td><td>표현식의 추론된 타입만 표시 (평가하지 않음)</td></tr>
+<tr><td><code>:load &lt;file&gt;</code></td><td>파일을 REPL 환경에 로드</td></tr>
+<tr><td><code>:help</code></td><td>사용 가능한 명령 목록</td></tr>
+<tr><td><code>#quit</code> / <code>#exit</code></td><td>REPL 종료 (Ctrl+D도 가능)</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code>funlang&gt; :type fun x y -&gt; x + y
+int -&gt; int -&gt; int
+funlang&gt; :type map
+('a -&gt; 'b) -&gt; 'a list -&gt; 'b list
+</code></pre>
+<h3 id="출력-형식"><a class="header" href="#출력-형식">출력 형식</a></h3>
+<ul>
+<li><strong>표현식</strong>: <code>- : int = 3</code> (타입과 값을 함께 표시)</li>
+<li><strong>선언</strong>: <code>val x : int = 42</code> (이름, 타입, 값)</li>
+<li><strong>타입 정의</strong>: <code>type defined</code></li>
+<li><strong>타입 클래스</strong>: <code>typeclass defined</code> / <code>instance defined</code></li>
+</ul>
 <h2 id="진단-모드-요약"><a class="header" href="#진단-모드-요약">진단 모드 요약</a></h2>
 <div class="table-wrapper">
 <table>
@@ -326,39 +425,78 @@ funlang&gt; #quit
 <tr><td><code>--expr</code></td><td>표현식 평가</td><td>표현식 결과</td><td>N/A</td></tr>
 <tr><td><code>--emit-ast</code></td><td>파싱된 AST 표시</td><td>표현식의 AST</td><td>모든 선언</td></tr>
 <tr><td><code>--emit-type</code></td><td>추론된 타입 표시</td><td>표현식의 타입</td><td>모든 바인딩 타입</td></tr>
-<tr><td><code>--emit-tokens</code></td><td>렉서 토큰 표시</td><td>원시 토큰</td><td>IndentFilter 적용 토큰</td></tr>
+<tr><td><code>--emit-tokens</code></td><td>렉서 원시 토큰 표시</td><td>원시 토큰</td><td>NEWLINE(n) 포함</td></tr>
+<tr><td><code>--emit-filtered-tokens</code></td><td>필터된 토큰 표시</td><td>필터된 토큰</td><td>INDENT/DEDENT/IN 포함</td></tr>
+<tr><td><code>--check</code></td><td>타입 체크만 (실행 안 함)</td><td>N/A</td><td>오류/경고 출력</td></tr>
+<tr><td><code>--deps</code></td><td>의존성 트리 표시</td><td>N/A</td><td>임포트 트리</td></tr>
+<tr><td><code>--prelude</code></td><td>Prelude 경로 지정</td><td>적용</td><td>적용</td></tr>
+<tr><td><code>build [name]</code></td><td>프로젝트 타입 체크</td><td>N/A</td><td>funproj.toml</td></tr>
+<tr><td><code>test [name]</code></td><td>프로젝트 테스트 실행</td><td>N/A</td><td>funproj.toml</td></tr>
 <tr><td><em>(인자 없음)</em></td><td>REPL 대화형 세션</td><td>줄 단위 평가</td><td>N/A</td></tr>
 </tbody>
 </table>
 </div>
 <p>진단 플래그는 <code>--expr</code> 또는 파일 이름과 함께 사용합니다:</p>
-<pre><code>$ langthree --emit-type --expr '1 + 2'
+<pre><code>$ funlang --emit-type --expr '1 + 2'
 int
 
-$ langthree --emit-type types_demo.l3
+$ funlang --emit-type types_demo.l3
 greet : string -&gt; string
 result : string
 x : int
 </code></pre>
 <h2 id="오류-메시지"><a class="header" href="#오류-메시지">오류 메시지</a></h2>
-<p>타입 오류에는 오류 코드, 소스 위치, 힌트가 포함됩니다:</p>
-<pre><code>$ langthree --expr '"hello" + 1'
+<p>타입 오류에는 오류 코드, 소스 위치, 소스 스니펫, 힌트가 포함됩니다. 파일 모드에서는 해당 소스 라인과 <code>^^^</code> 밑줄이 표시됩니다:</p>
+<pre><code>$ cat type_error.l3
+let x = 1
+let y = x + "hello"
+
+$ funlang type_error.l3
+error[E0301]: Type mismatch: expected int but got string
+ --&gt; type_error.l3:2:6-19
+    |
+  2 | let y = x + "hello"
+    |       ^^^^^^^^^^^^^
+   = hint: Check that all branches of your expression return the same type
+</code></pre>
+<p>표현식 모드에서는 소스 파일이 없으므로 위치만 표시됩니다:</p>
+<pre><code>$ funlang --expr '"hello" + 1'
 error[E0301]: Type mismatch: expected string but got int
  --&gt; &lt;expr&gt;:1:6-11
    = hint: Check that all branches of your expression return the same type
 </code></pre>
-<p>파싱 오류:</p>
-<pre><code>$ langthree --expr '1 +'
+<h3 id="did-you-mean-제안"><a class="header" href="#did-you-mean-제안">“Did you mean?” 제안</a></h3>
+<p>변수명이나 함수명에 오타가 있으면 유사한 이름을 제안합니다:</p>
+<pre><code>$ cat typo.l3
+let x = 1
+let result = prnt (to_string x)
+
+$ funlang typo.l3
+error[E0303]: Unbound variable: prnt
+ --&gt; typo.l3:2:11-17
+    |
+  2 | let result = prnt (to_string x)
+    |            ^^^^^^
+   = hint: Did you mean 'print'?
+</code></pre>
+<p>변수, 생성자, 모듈, 타입 클래스 이름에 대해 제안이 동작합니다.</p>
+<h3 id="파싱-오류"><a class="header" href="#파싱-오류">파싱 오류</a></h3>
+<p>파싱 오류에는 예상하지 못한 토큰과 소스 위치가 포함됩니다:</p>
+<pre><code>$ cat parse_err.l3
+let f x = = y
+
+$ funlang parse_err.l3
+Error: parse error: unexpected EQUALS at parse_err.l3:1:8
+    |
+  1 | let f x = = y
+    |         ^
+</code></pre>
+<p>표현식 모드의 파싱 오류는 위치 정보 없이 표시됩니다:</p>
+<pre><code>$ funlang --expr '1 +'
 Error: parse error
 </code></pre>
-<p>미정의 변수 오류:</p>
-<pre><code>$ langthree --expr 'foo'
-error[E0303]: Unbound variable: foo
- --&gt; &lt;expr&gt;:1:0-3
-   = hint: Make sure the variable is defined before use
-</code></pre>
 <h2 id="경고"><a class="header" href="#경고">경고</a></h2>
-<p>LangThree는 잠재적 문제에 대해 경고를 발생시킵니다. 경고는 실행을 막지 않으며,
+<p>FunLang는 잠재적 문제에 대해 경고를 발생시킵니다. 경고는 실행을 막지 않으며,
 프로그램은 그대로 실행됩니다.</p>
 <h3 id="w0001-불완전한-패턴-매칭"><a class="header" href="#w0001-불완전한-패턴-매칭">W0001: 불완전한 패턴 매칭</a></h3>
 <p>match 표현식이 모든 생성자를 다루지 않을 때 발생합니다:</p>
@@ -372,9 +510,12 @@ let result =
     | Red -&gt; 1
     | Green -&gt; 2
 
-$ langthree incomplete.l3
+$ funlang incomplete.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
- --&gt; :0:0-1:0
+ --&gt; incomplete.l3:6:4-8:16
+    |
+  6 |     match Red with
+    |     ^^^^^^^^^^^^^^
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
 1
 </code></pre>
@@ -392,9 +533,12 @@ let result =
     | Blue -&gt; 3
     | Red -&gt; 4
 
-$ langthree redundant.l3
+$ funlang redundant.l3
 Warning: warning[W0002]: Redundant pattern in clause 4. This case will never be reached.
- --&gt; :0:0-1:0
+ --&gt; redundant.l3:6:4-11:10
+    |
+  6 |     match Red with
+    |     ^^^^^^^^^^^^^^
    = hint: Remove the unreachable pattern
 1
 </code></pre>
@@ -408,7 +552,7 @@ let result =
     with
     | MyError msg -&gt; msg
 
-$ langthree handler.l3
+$ funlang handler.l3
 Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
  --&gt; :0:0-1:0
    = hint: Add a catch-all handler or handle all possible exceptions
