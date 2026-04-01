@@ -28,12 +28,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "GADT constructor uses splitGadt to decompose TEArrow into argTypes and returnType"
@@ -77,12 +77,12 @@ Each task was committed atomically:
 2. **Task 2: Parser grammar for GADT constructor syntax** - `75f36e9` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - GadtConstructorDecl variant, TEData variant, updated constructorSpanOf
-- `src/LangThree/Type.fs` - IsGadt and ExistentialVars fields on ConstructorInfo
-- `src/LangThree/Diagnostic.fs` - GadtAnnotationRequired, ExistentialEscape, GadtReturnTypeMismatch error kinds
-- `src/LangThree/Parser.fsy` - GADT constructor rule and type application rule
-- `src/LangThree/Elaborate.fs` - TEData handling, GadtConstructorDecl elaboration with existential detection
-- `src/LangThree/Format.fs` - TEData formatting support
+- `src/FunLang/Ast.fs` - GadtConstructorDecl variant, TEData variant, updated constructorSpanOf
+- `src/FunLang/Type.fs` - IsGadt and ExistentialVars fields on ConstructorInfo
+- `src/FunLang/Diagnostic.fs` - GadtAnnotationRequired, ExistentialEscape, GadtReturnTypeMismatch error kinds
+- `src/FunLang/Parser.fsy` - GADT constructor rule and type application rule
+- `src/FunLang/Elaborate.fs` - TEData handling, GadtConstructorDecl elaboration with existential detection
+- `src/FunLang/Format.fs` - TEData formatting support
 
 ## Decisions Made
 - Used `splitGadt` helper in parser action to decompose `TEArrow(args, ret)` into argTypes list and returnType, keeping a single grammar rule to avoid LALR conflicts

@@ -1,5 +1,5 @@
 // Test: multiple module-level mutable variables interacting
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let mut a = 1
 let mut b = 2

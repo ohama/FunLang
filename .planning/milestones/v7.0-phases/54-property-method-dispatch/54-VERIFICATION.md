@@ -32,8 +32,8 @@ score: 7/7 must-haves verified
 
 | Artifact                                                     | Expected                                              | Status    | Details                                                          |
 |--------------------------------------------------------------|-------------------------------------------------------|-----------|------------------------------------------------------------------|
-| `src/LangThree/Bidir.fs`                                     | TString and TArray cases in FieldAccess arm           | VERIFIED  | Lines 518-530: TString -> (Length/Contains), TArray _ -> (Length) |
-| `src/LangThree/Eval.fs`                                      | StringValue and ArrayValue cases in FieldAccess arm   | VERIFIED  | Lines 1092-1106: StringValue/ArrayValue dispatch before RecordValue |
+| `src/FunLang/Bidir.fs`                                     | TString and TArray cases in FieldAccess arm           | VERIFIED  | Lines 518-530: TString -> (Length/Contains), TArray _ -> (Length) |
+| `src/FunLang/Eval.fs`                                      | StringValue and ArrayValue cases in FieldAccess arm   | VERIFIED  | Lines 1092-1106: StringValue/ArrayValue dispatch before RecordValue |
 | `tests/flt/file/property/property-string-length.flt`         | flt test for .Length on strings                       | VERIFIED  | Exists, 14 lines, tests literal/variable/empty string           |
 | `tests/flt/file/property/property-array-length.flt`          | flt test for .Length on arrays                        | VERIFIED  | Exists, 11 lines, tests arrays of different sizes               |
 | `tests/flt/file/property/property-string-contains.flt`       | flt test for .Contains on strings                     | VERIFIED  | Exists, 13 lines, tests true/false/literal cases                |
@@ -63,7 +63,7 @@ None required. All goal truths verified programmatically via flt test execution 
 
 ## Test Results
 
-- `dotnet build src/LangThree/LangThree.fsproj -c Release`: Build succeeded (0 warnings, 0 errors)
+- `dotnet build src/FunLang/FunLang.fsproj -c Release`: Build succeeded (0 warnings, 0 errors)
 - `FsLit tests/flt/file/property/`: 3/3 passed
 - `FsLit tests/flt/`: 594/594 passed (no regressions)
 

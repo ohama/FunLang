@@ -1,7 +1,7 @@
-module LangThree.Tests.ModuleTests
+module FunLang.Tests.ModuleTests
 
 open Expecto
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 
 // Helper to lex and filter through IndentFilter
 let lexAndFilter (input: string) =

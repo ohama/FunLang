@@ -23,8 +23,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
     - Prelude/Array.fun
 
 key-decisions:
@@ -68,8 +68,8 @@ Each task was committed atomically:
 2. **Task 2: Add type schemes to TypeCheck.fs and wrappers to Prelude/Array.fun** - `9b4ce39` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - callValueRef + callValue helper; four Phase 40 HOF builtins; do-binding to wire callValueRef after eval
-- `src/LangThree/TypeCheck.fs` - Four Scheme entries for array HOF builtins in Phase 40 block
+- `src/FunLang/Eval.fs` - callValueRef + callValue helper; four Phase 40 HOF builtins; do-binding to wire callValueRef after eval
+- `src/FunLang/TypeCheck.fs` - Four Scheme entries for array HOF builtins in Phase 40 block
 - `Prelude/Array.fun` - iter, map, fold, init wrappers added to Array module
 
 ## Decisions Made
@@ -84,7 +84,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (adding callValue helper and builtins to Eval.fs)
 - **Issue:** Plan specified placing `callValue` before `initialBuiltinEnv` as a module-level `let`. But `eval` is defined much later (line 730+) as a mutually recursive function group. Compiler error: "The value or constructor 'eval' is not defined."
 - **Fix:** Replaced direct `callValue` with a `callValueRef` mutable ref initialized to a placeholder, plus a thin `callValue` wrapper. Added a `do` binding after `evalExpr` to set `callValueRef` to the real implementation.
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Verification:** dotnet build exits 0 warnings 0 errors; all four smoke tests pass
 - **Committed in:** ff33311 (Task 1 commit)
 
@@ -94,7 +94,7 @@ Each task was committed atomically:
 **Impact on plan:** Necessary to resolve F# forward reference constraint. No scope creep.
 
 ## Issues Encountered
-- Multi-arg lambda syntax `fun acc x ->` is a parse error in LangThree (single-param only). The plan's smoke test example used this syntax. Used `fun acc -> fun x -> acc + x` in testing instead. The builtin implementation is correct — this is a language limitation, not a bug in the builtins.
+- Multi-arg lambda syntax `fun acc x ->` is a parse error in FunLang (single-param only). The plan's smoke test example used this syntax. Used `fun acc -> fun x -> acc + x` in testing instead. The builtin implementation is correct — this is a language limitation, not a bug in the builtins.
 
 ## User Setup Required
 None - no external service configuration required.

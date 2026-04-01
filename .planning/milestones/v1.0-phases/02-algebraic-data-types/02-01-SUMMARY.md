@@ -25,12 +25,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/Ast.fs"
-    - "src/LangThree/Lexer.fsl"
-    - "src/LangThree/Parser.fsy"
-    - "src/LangThree/Format.fs"
-    - "src/LangThree/Elaborate.fs"
-    - "tests/LangThree.Tests/IntegrationTests.fs"
+    - "src/FunLang/Ast.fs"
+    - "src/FunLang/Lexer.fsl"
+    - "src/FunLang/Parser.fsy"
+    - "src/FunLang/Format.fs"
+    - "src/FunLang/Elaborate.fs"
+    - "tests/FunLang.Tests/IntegrationTests.fs"
 
 key-decisions:
   - "AND_KW token name (not AND) to avoid conflict with existing && operator token"
@@ -75,12 +75,12 @@ Each task was committed atomically:
 3. **Task 3: Add integration tests for type declaration parsing** - `1ed3e0d` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - TypeDecl, ConstructorDecl types; TEName variant; Decl.TypeDecl case
-- `src/LangThree/Lexer.fsl` - TYPE, OF, AND_KW keyword tokens
-- `src/LangThree/Parser.fsy` - TypeDeclaration, Constructors, TypeDeclContinuation grammar rules
-- `src/LangThree/Format.fs` - Format support for new tokens and TEName
-- `src/LangThree/Elaborate.fs` - TEName elaboration placeholder (fresh TVar)
-- `tests/LangThree.Tests/IntegrationTests.fs` - 6 type declaration parsing tests
+- `src/FunLang/Ast.fs` - TypeDecl, ConstructorDecl types; TEName variant; Decl.TypeDecl case
+- `src/FunLang/Lexer.fsl` - TYPE, OF, AND_KW keyword tokens
+- `src/FunLang/Parser.fsy` - TypeDeclaration, Constructors, TypeDeclContinuation grammar rules
+- `src/FunLang/Format.fs` - Format support for new tokens and TEName
+- `src/FunLang/Elaborate.fs` - TEName elaboration placeholder (fresh TVar)
+- `tests/FunLang.Tests/IntegrationTests.fs` - 6 type declaration parsing tests
 
 ## Decisions Made
 - **AND_KW token name:** Used AND_KW instead of AND to avoid conflict with existing `&&` operator token (AND)

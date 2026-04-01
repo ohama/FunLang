@@ -40,7 +40,7 @@ SYN-03 (trailing semicolon) is a pure grammar change: add one production to `Sem
 
 ### Recommended Project Structure
 ```
-src/LangThree/
+src/FunLang/
 ├── IndentFilter.fs      # Add BracketDepth to FilterState (SYN-02)
 ├── Parser.fsy           # Add trailing semicolon + list pattern rules (SYN-03, SYN-04)
 tests/flt/
@@ -48,7 +48,7 @@ tests/flt/
 └── file/list/           # Add file-mode tests for multi-line lists
 tests/flt/
 └── file/match/          # Add list pattern match tests
-tests/LangThree.Tests/
+tests/FunLang.Tests/
 └── IndentFilterTests.fs # Add bracket depth suppression unit tests
 ```
 
@@ -217,7 +217,7 @@ Verified patterns from codebase analysis:
 
 ### Current SemiExprList rule (to be modified for SYN-03)
 ```fsharp
-// Source: src/LangThree/Parser.fsy lines 284-286
+// Source: src/FunLang/Parser.fsy lines 284-286
 SemiExprList:
     | Expr                            { [$1] }
     | Expr SEMICOLON SemiExprList     { $1 :: $3 }
@@ -225,7 +225,7 @@ SemiExprList:
 
 ### Current FilterState record (to be modified for SYN-02)
 ```fsharp
-// Source: src/LangThree/IndentFilter.fs lines 25-36
+// Source: src/FunLang/IndentFilter.fs lines 25-36
 type FilterState = {
     IndentStack: int list
     LineNum: int
@@ -241,13 +241,13 @@ let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustS
 
 ### Empty list pattern (already working, reference for SYN-04)
 ```fsharp
-// Source: src/LangThree/Parser.fsy line 321
+// Source: src/FunLang/Parser.fsy line 321
 | LBRACKET RBRACKET           { EmptyListPat(ruleSpan parseState 1 2) }
 ```
 
 ### ConsPat handling in Eval.fs (reference — what SYN-04 desugars to)
 ```fsharp
-// Source: src/LangThree/Eval.fs lines 325-330
+// Source: src/FunLang/Eval.fs lines 325-330
 | EmptyListPat _, ListValue [] -> Some []
 | ConsPat (headPat, tailPat, _), ListValue (h :: t) ->
     match matchPattern headPat h with
@@ -260,7 +260,7 @@ let initialState = { IndentStack = [0]; LineNum = 1; Context = [TopLevel]; JustS
 
 ### RecordFieldBindings trailing semicolon (reference pattern for SYN-03)
 ```fsharp
-// Source: src/LangThree/Parser.fsy lines 548-550
+// Source: src/FunLang/Parser.fsy lines 548-550
 RecordFieldBindings:
     | IDENT EQUALS Expr                              { [($1, $3)] }
     | IDENT EQUALS Expr SEMICOLON RecordFieldBindings { ($1, $3) :: $5 }
@@ -283,7 +283,7 @@ Expected (fixed) filtered tokens after BracketDepth fix:
 ### Test file format for new flt tests
 ```
 // Test: multi-line list literal
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let result = [1;
   2;
@@ -315,15 +315,15 @@ let result = [1;
 2. **Do multi-line list literals need IndentFilterTests updates?**
    - What we know: `IndentFilterTests.fs` constructs `FilterState` records directly, and any new `BracketDepth` field will cause compile errors in those tests.
    - What's unclear: Exact count of affected test constructions.
-   - Recommendation: After adding the field, run `dotnet build tests/LangThree.Tests/` to find all affected lines and add `BracketDepth = 0` to each.
+   - Recommendation: After adding the field, run `dotnet build tests/FunLang.Tests/` to find all affected lines and add `BracketDepth = 0` to each.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/IndentFilter.fs` — Complete source read, FilterState record and filter function
-- `src/LangThree/Parser.fsy` — Complete source read, SemiExprList, Pattern, Atom rules
-- `src/LangThree/Ast.fs` — Complete source read, Pattern type, ConsPat, EmptyListPat
-- `src/LangThree/Eval.fs` — Verified matchPattern for ConsPat and EmptyListPat
+- `src/FunLang/IndentFilter.fs` — Complete source read, FilterState record and filter function
+- `src/FunLang/Parser.fsy` — Complete source read, SemiExprList, Pattern, Atom rules
+- `src/FunLang/Ast.fs` — Complete source read, Pattern type, ConsPat, EmptyListPat
+- `src/FunLang/Eval.fs` — Verified matchPattern for ConsPat and EmptyListPat
 - `.planning/REQUIREMENTS.md` — SYN-02, SYN-03, SYN-04 definitions
 - `langthree-constraints.md` — Constraints 3.3, 3.4, 3.5 descriptions
 

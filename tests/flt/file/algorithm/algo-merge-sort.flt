@@ -1,5 +1,5 @@
 // Test: merge sort algorithm
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sorted =
     let rec length xs = match xs with | [] -> 0 | _ :: t -> 1 + length t

@@ -30,7 +30,7 @@ key-decisions:
   - "Renamed section from '왜 타입 주석이 필요한가' to '타입 주석의 역할' to reflect optional-annotation behavior"
   - "Removed E0401 error example entirely — annotation is no longer required"
   - "Added 다형적 반환 타입 section after 재귀 GADT, before GADT 완전성 검사"
-  - "Updated Haskell/OCaml comparison tables and language summary table to show LangThree now supports polymorphic return"
+  - "Updated Haskell/OCaml comparison tables and language summary table to show FunLang now supports polymorphic return"
 
 patterns-established:
   - "Tutorial sections: annotation-free (polymorphic) → type-var annotation → concrete annotation"
@@ -57,8 +57,8 @@ completed: 2026-03-23
 - Replaced mandatory-annotation section with three-mode annotation guidance (none/`'a`/concrete)
 - Removed E0401 mandatory-annotation error example (now obsolete)
 - Updated Haskell comparison table: "필수" → "선택사항 (생략 시 다형적 반환)"
-- Updated OCaml comparison paragraph to credit LangThree going further than OCaml
-- Updated language summary table: LangThree row now shows polymorphic return as supported
+- Updated OCaml comparison paragraph to credit FunLang going further than OCaml
+- Updated language summary table: FunLang row now shows polymorphic return as supported
 - Updated GADT syntax summary table: annotation marked optional
 - Rebuilt mdBook successfully
 
@@ -75,8 +75,8 @@ Each task was committed atomically:
 - `docs/14-gadt.html` - Rebuilt HTML from mdBook
 
 ## Decisions Made
-- Updated both in-chapter comparison table (Haskell vs LangThree) and the multi-language summary table for consistency
-- Updated OCaml comparison paragraph to reflect LangThree's improvement over OCaml's require-explicit-annotation approach
+- Updated both in-chapter comparison table (Haskell vs FunLang) and the multi-language summary table for consistency
+- Updated OCaml comparison paragraph to reflect FunLang's improvement over OCaml's require-explicit-annotation approach
 - Updated GADT syntax summary table at chapter end so it stays accurate reference material
 
 ## Deviations from Plan
@@ -85,7 +85,7 @@ Each task was committed atomically:
 
 **1. [Rule 2 - Missing Critical] Updated additional comparison tables for consistency**
 - **Found during:** Task 1
-- **Issue:** Plan specified three changes, but the chapter contains two additional comparison tables (Haskell/LangThree inline table, and the multi-language summary table at the bottom) plus the GADT syntax summary table — all still described annotation as required or LangThree as limited to fixed return types
+- **Issue:** Plan specified three changes, but the chapter contains two additional comparison tables (Haskell/FunLang inline table, and the multi-language summary table at the bottom) plus the GADT syntax summary table — all still described annotation as required or FunLang as limited to fixed return types
 - **Fix:** Updated all tables and the OCaml comparison paragraph to be accurate with the new behavior
 - **Files modified:** tutorial/14-gadt.md
 - **Verification:** grep confirms no remaining inaccurate "필수" annotation statements; language table shows polymorphic return as supported

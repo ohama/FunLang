@@ -31,9 +31,9 @@ key-files:
     - tests/flt/file/implicit-in-mixed.flt
     - tests/flt/file/implicit-in-match-body.flt
   modified:
-    - src/LangThree/IndentFilter.fs
-    - src/LangThree/Parser.fsy
-    - tests/LangThree.Tests/IndentFilterTests.fs
+    - src/FunLang/IndentFilter.fs
+    - src/FunLang/Parser.fsy
+    - tests/FunLang.Tests/IndentFilterTests.fs
 
 key-decisions:
   - "InLetDecl with offside column replaces LetSeqDepth counter for let sequence tracking"
@@ -80,9 +80,9 @@ completed: 2026-03-20
    - 5 new .flt tests covering nested, letrec, module, mixed, match-body
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Core offside rule refactoring (InLetDecl, InExprBlock, InModule contexts)
-- `src/LangThree/Parser.fsy` - Grammar rules for INDENT Expr DEDENT and let...INDENT...DEDENT IN continuation
-- `tests/LangThree.Tests/IndentFilterTests.fs` - Updated FilterState records, updated expected tokens for implicit IN
+- `src/FunLang/IndentFilter.fs` - Core offside rule refactoring (InLetDecl, InExprBlock, InModule contexts)
+- `src/FunLang/Parser.fsy` - Grammar rules for INDENT Expr DEDENT and let...INDENT...DEDENT IN continuation
+- `tests/FunLang.Tests/IndentFilterTests.fs` - Updated FilterState records, updated expected tokens for implicit IN
 - `tests/flt/file/implicit-in-nested.flt` - Nested let blocks test
 - `tests/flt/file/implicit-in-letrec-multiline.flt` - Quicksort with let rec + multiline fun ->
 - `tests/flt/file/implicit-in-module-safe.flt` - Module lets not affected
@@ -105,7 +105,7 @@ completed: 2026-03-20
 - **Found during:** Task 3 (offside-based IN insertion)
 - **Issue:** Grammar had no rule for `LET IDENT EQUALS INDENT Expr DEDENT IN Expr` or general `INDENT Expr DEDENT`. Nested let blocks and match clause bodies with indentation failed to parse.
 - **Fix:** Added `INDENT Expr DEDENT -> $2` to Expr rule, `LET IDENT EQUALS INDENT Expr DEDENT IN Expr` and `LET REC IDENT IDENT EQUALS INDENT Expr DEDENT IN Expr` rules.
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** Nested let, match body, and all existing tests pass
 - **Committed in:** 9982e4e
 
@@ -113,7 +113,7 @@ completed: 2026-03-20
 - **Found during:** Task 5 (full test suite)
 - **Issue:** JustSawMatch flag from single-line `match x with | ...` was consumed on the next NEWLINE (end of line), pushing InMatch between InLetDecl and explicit IN. Explicit IN couldn't find InLetDecl to pop, causing spurious IN tokens on subsequent DEDENTs.
 - **Fix:** Made explicit IN handler search past InMatch/InTry at same indent level when looking for InLetDecl.
-- **Files modified:** src/LangThree/IndentFilter.fs
+- **Files modified:** src/FunLang/IndentFilter.fs
 - **Verification:** algo-insertion-sort.flt and 3 other previously-failing tests now pass
 - **Committed in:** 9982e4e
 
@@ -121,7 +121,7 @@ completed: 2026-03-20
 - **Found during:** Task 5 (full test suite)
 - **Issue:** When explicit IN follows a let binding, the offside rule also tried to insert implicit IN at the same position, producing double IN tokens.
 - **Fix:** Added nextIsExplicitIn guard to both same-level and DEDENT offside check paths.
-- **Files modified:** src/LangThree/IndentFilter.fs
+- **Files modified:** src/FunLang/IndentFilter.fs
 - **Verification:** algo-factorial.flt and 3 other previously-failing tests now pass
 - **Committed in:** 9982e4e
 

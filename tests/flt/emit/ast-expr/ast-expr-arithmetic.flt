@@ -1,4 +1,4 @@
 // Test: --emit-ast for Add expression
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast --expr "1 + 2"
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "1 + 2"
 // --- Output:
 Add (Number 1, Number 2)

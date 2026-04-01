@@ -47,7 +47,7 @@ Tutorial basics documentation with 78 runnable CLI-verified examples across 4 ch
 ## What Was Built
 
 **Chapter 1: Getting Started** (28 examples)
-- Running LangThree: --expr, file mode, --emit-ast, --emit-type, --repl
+- Running FunLang: --expr, file mode, --emit-ast, --emit-type, --repl
 - Integers, arithmetic, booleans, short-circuit evaluation
 - Strings, concatenation, built-in string functions
 - Comparison operators, conditionals, comments, unit type

@@ -32,18 +32,18 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Unify.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/MatchCompile.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Unify.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/MatchCompile.fs
 
 key-decisions:
   - "Char literal rules placed before type_var in Lexer.fsl (longest-match disambiguation)"
@@ -79,7 +79,7 @@ completed: 2026-03-24
 - Char pattern matching: `match c with | 'A' -> ...` works
 - `(x : char)` type annotation accepted
 - Ordered comparisons `<`, `>`, `<=`, `>=` now work on `string` and `char` (TYPE-06)
-- All 199 existing tests still pass; 0 warnings in LangThree.fsproj
+- All 199 existing tests still pass; 0 warnings in FunLang.fsproj
 
 ## Task Commits
 
@@ -89,18 +89,18 @@ completed: 2026-03-24
 **Plan metadata:** (pending docs commit)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added TEChar, Char expr, CharConst, CharValue with equality/compare/hash
-- `src/LangThree/Type.fs` - Added TChar to Type DU with formatType, apply, freeVars
-- `src/LangThree/Unify.fs` - Added TChar, TChar -> empty (auto-fix)
-- `src/LangThree/Lexer.fsl` - Added 5 char literal rules + TYPE_CHAR keyword
-- `src/LangThree/Parser.fsy` - Added CHAR, TYPE_CHAR tokens; grammar rules for expr/pattern/type
-- `src/LangThree/Elaborate.fs` - Added TEChar -> TChar in 3 functions
-- `src/LangThree/Bidir.fs` - Added Char synthesis; widened comparisons to int|string|char
-- `src/LangThree/Eval.fs` - Added Char eval, CharValue formatValue, CharValue valuesEqual, char_to_int/int_to_char builtins, extended comparison operators
-- `src/LangThree/TypeCheck.fs` - Added char_to_int/int_to_char type schemes; added Char to collectMatches
-- `src/LangThree/Infer.fs` - Added CharConst pattern inference and Char in deprecated inferWithContext
-- `src/LangThree/Format.fs` - Added CHAR/TYPE_CHAR tokens, Char expr, TEChar, CharConst
-- `src/LangThree/MatchCompile.fs` - Added CharConst in patternToConstructor, CharValue in matchesConstructor (auto-fix)
+- `src/FunLang/Ast.fs` - Added TEChar, Char expr, CharConst, CharValue with equality/compare/hash
+- `src/FunLang/Type.fs` - Added TChar to Type DU with formatType, apply, freeVars
+- `src/FunLang/Unify.fs` - Added TChar, TChar -> empty (auto-fix)
+- `src/FunLang/Lexer.fsl` - Added 5 char literal rules + TYPE_CHAR keyword
+- `src/FunLang/Parser.fsy` - Added CHAR, TYPE_CHAR tokens; grammar rules for expr/pattern/type
+- `src/FunLang/Elaborate.fs` - Added TEChar -> TChar in 3 functions
+- `src/FunLang/Bidir.fs` - Added Char synthesis; widened comparisons to int|string|char
+- `src/FunLang/Eval.fs` - Added Char eval, CharValue formatValue, CharValue valuesEqual, char_to_int/int_to_char builtins, extended comparison operators
+- `src/FunLang/TypeCheck.fs` - Added char_to_int/int_to_char type schemes; added Char to collectMatches
+- `src/FunLang/Infer.fs` - Added CharConst pattern inference and Char in deprecated inferWithContext
+- `src/FunLang/Format.fs` - Added CHAR/TYPE_CHAR tokens, Char expr, TEChar, CharConst
+- `src/FunLang/MatchCompile.fs` - Added CharConst in patternToConstructor, CharValue in matchesConstructor (auto-fix)
 
 ## Decisions Made
 - Char literal rules placed BEFORE type_var in Lexer.fsl using longest-match disambiguation (3-char literal beats 2-char type var)
@@ -116,7 +116,7 @@ completed: 2026-03-24
 - **Found during:** Task 2 (testing char_to_int)
 - **Issue:** `unifyWithContext` had no `| TChar, TChar ->` arm; `char_to_int 'A'` produced "expected char but got char" error
 - **Fix:** Added `| TChar, TChar -> empty` to Unify.fs
-- **Files modified:** `src/LangThree/Unify.fs`
+- **Files modified:** `src/FunLang/Unify.fs`
 - **Verification:** `char_to_int 'A'` returns 65
 - **Committed in:** 5140405 (Task 2 commit)
 
@@ -124,7 +124,7 @@ completed: 2026-03-24
 - **Found during:** Task 2 (FS0025 warning in MatchCompile.fs)
 - **Issue:** Decision tree compiler missing `CharConst` in `patternToConstructor` and `CharValue` in `matchesConstructor`; char patterns would fail at runtime
 - **Fix:** Added `| ConstPat(CharConst c, _) -> Some("#char_" + string (int c), 0)` and `| CharValue c2, c when c.StartsWith("#char_") -> string (int c2) = c.Substring(6)`
-- **Files modified:** `src/LangThree/MatchCompile.fs`
+- **Files modified:** `src/FunLang/MatchCompile.fs`
 - **Verification:** Char pattern matching `match c with | 'A' -> true | _ -> false` works
 - **Committed in:** 5140405 (Task 2 commit)
 

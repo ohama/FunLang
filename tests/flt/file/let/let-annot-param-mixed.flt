@@ -1,5 +1,5 @@
 // Test: PARAM-01 mixed annotated and plain params in let declarations
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let f (x : int) y (z : bool) = if z then x else y
 let g (a : string) (b : string) = a ^^ b

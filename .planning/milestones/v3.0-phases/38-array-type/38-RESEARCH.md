@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 38 adds fixed-size mutable arrays to LangThree. The work spans five files: `Ast.fs` (new `ArrayValue` DU case), `Type.fs` (new `TArray` type constructor), `Unify.fs` / `Bidir.fs` / `Infer.fs` (propagate `TArray`), `TypeCheck.fs` (add Array module type signatures), `Eval.fs` (add Array module runtime bindings and `formatValue` arm).
+Phase 38 adds fixed-size mutable arrays to FunLang. The work spans five files: `Ast.fs` (new `ArrayValue` DU case), `Type.fs` (new `TArray` type constructor), `Unify.fs` / `Bidir.fs` / `Infer.fs` (propagate `TArray`), `TypeCheck.fs` (add Array module type signatures), `Eval.fs` (add Array module runtime bindings and `formatValue` arm).
 
 The array module is delivered identically to the `List` prelude pattern: a `module Array = ...` block in a new `Prelude/Array.fun` file is not applicable here because the operations require mutation and F# backing — they must be BuiltinValue entries registered in a module-shaped `ModuleValueEnv`. The correct pattern is a **Prelude `.fun` file that wraps thin user-land helpers around native builtins** OR a **purely native module registered at startup** before prelude loads. Because `Array.create`, `Array.get`, `Array.set`, `Array.length` all need direct access to a mutable F# array, they must be BuiltinValue entries wired up in F# code (not `.fun` script), similarly to how `string_length`, `read_file`, etc. are in `initialBuiltinEnv`. The module shape (`Array.create` qualified access) is then built by placing those bindings inside a `ModuleValueEnv` entry in `initialBuiltinEnv` — **or** by loading a tiny `Prelude/Array.fun` that declares `module Array = ...` using the native flat builtins.
 
@@ -19,20 +19,20 @@ The cleanest approach that matches existing patterns: add six flat `array_create
 ### Core (all already in the project — no new packages)
 | Component | Location | Purpose | Notes |
 |-----------|----------|---------|-------|
-| `Ast.Value` DU | `src/LangThree/Ast.fs` | Carry array at runtime | Add `ArrayValue of Value array ref` |
-| `Type.Type` DU | `src/LangThree/Type.fs` | Array type constructor | Add `TArray of Type` |
-| `Eval.initialBuiltinEnv` | `src/LangThree/Eval.fs` | Register six native functions | Flat names `array_create` … |
-| `TypeCheck.initialTypeEnv` | `src/LangThree/TypeCheck.fs` | Register type signatures | Same flat names |
+| `Ast.Value` DU | `src/FunLang/Ast.fs` | Carry array at runtime | Add `ArrayValue of Value array ref` |
+| `Type.Type` DU | `src/FunLang/Type.fs` | Array type constructor | Add `TArray of Type` |
+| `Eval.initialBuiltinEnv` | `src/FunLang/Eval.fs` | Register six native functions | Flat names `array_create` … |
+| `TypeCheck.initialTypeEnv` | `src/FunLang/TypeCheck.fs` | Register type signatures | Same flat names |
 | `Prelude/Array.fun` | `Prelude/Array.fun` | Expose as `Array.*` + `open Array` | New file, same shape as `List.fun` |
 
 ### Supporting
 | Component | Location | Purpose | When to Use |
 |-----------|----------|---------|-------------|
-| `Unify.unifyWithContext` | `src/LangThree/Unify.fs` | Unify two `TArray t` | One new match arm |
-| `Type.apply` / `freeVars` / format | `src/LangThree/Type.fs` | Substitute / print `TArray` | Three one-liners |
-| `Bidir.synth` non-function guard | `src/LangThree/Bidir.fs` | Reject applying an array as a function | Add `TArray _` to the guard |
-| `Eval.formatValue` | `src/LangThree/Eval.fs` | Print array as `[|e1; e2; ...|]` | New match arm |
-| `Ast.Value.GetHashCode` / `valueEqual` | `src/LangThree/Ast.fs` | CustomEquality obligation | New match arms |
+| `Unify.unifyWithContext` | `src/FunLang/Unify.fs` | Unify two `TArray t` | One new match arm |
+| `Type.apply` / `freeVars` / format | `src/FunLang/Type.fs` | Substitute / print `TArray` | Three one-liners |
+| `Bidir.synth` non-function guard | `src/FunLang/Bidir.fs` | Reject applying an array as a function | Add `TArray _` to the guard |
+| `Eval.formatValue` | `src/FunLang/Eval.fs` | Print array as `[|e1; e2; ...|]` | New match arm |
+| `Ast.Value.GetHashCode` / `valueEqual` | `src/FunLang/Ast.fs` | CustomEquality obligation | New match arms |
 
 **Installation:** none — no new NuGet packages required.
 
@@ -40,7 +40,7 @@ The cleanest approach that matches existing patterns: add six flat `array_create
 
 ### Recommended Project Structure (changes only)
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs           # +ArrayValue of Value array ref
 ├── Type.fs          # +TArray of Type (+ apply, freeVars, format)
 ├── Unify.fs         # +TArray unification arm
@@ -226,7 +226,7 @@ TVar 0 is the conventional first generic variable in `Scheme`:
 
 ### Pitfall 5: Array.get/set out-of-bounds F# Exception Leaks
 **What goes wrong:** An unguarded `arr.[i]` in `array_get` throws an F# `System.IndexOutOfRangeException` that surfaces as an ugly .NET exception message.
-**How to avoid:** Add an explicit bounds check in each of `array_get` and `array_set` before indexing, and `failwithf` with a readable message (which becomes a `LangThreeException` caught by the user's try-with).
+**How to avoid:** Add an explicit bounds check in each of `array_get` and `array_set` before indexing, and `failwithf` with a readable message (which becomes a `FunLangException` caught by the user's try-with).
 
 ### Pitfall 6: Type Annotation Syntax for Arrays Not Supported
 **What goes wrong:** User writes `(arr : int array)` and gets a parse error.
@@ -294,7 +294,7 @@ open Array
 ### flt integration test skeleton
 ```
 // Test: Array.create and Array.set mutation
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let arr = Array.create 3 0
 let _ = Array.set arr 1 42
@@ -332,18 +332,18 @@ let result = Array.get arr 1
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct code reading: `src/LangThree/Ast.fs` — Value DU, CustomEquality implementation
-- Direct code reading: `src/LangThree/Type.fs` — Type DU, all propagation points
-- Direct code reading: `src/LangThree/Unify.fs` — unification patterns
-- Direct code reading: `src/LangThree/Bidir.fs` — non-function guard
-- Direct code reading: `src/LangThree/Eval.fs` — initialBuiltinEnv, formatValue, valuesEqual, ModuleValueEnv
-- Direct code reading: `src/LangThree/TypeCheck.fs` — initialTypeEnv, Scheme patterns
+- Direct code reading: `src/FunLang/Ast.fs` — Value DU, CustomEquality implementation
+- Direct code reading: `src/FunLang/Type.fs` — Type DU, all propagation points
+- Direct code reading: `src/FunLang/Unify.fs` — unification patterns
+- Direct code reading: `src/FunLang/Bidir.fs` — non-function guard
+- Direct code reading: `src/FunLang/Eval.fs` — initialBuiltinEnv, formatValue, valuesEqual, ModuleValueEnv
+- Direct code reading: `src/FunLang/TypeCheck.fs` — initialTypeEnv, Scheme patterns
 - Direct code reading: `Prelude/List.fun` — module wrapper + open pattern
 - Direct code reading: `tests/flt/file/record/record-mutable.flt` — SetField mutation semantics
 
 ### Secondary (MEDIUM confidence)
 - `tests/flt/file/module/module-qualified.flt` — confirms qualified access works through ModuleValueEnv
-- `src/LangThree/Elaborate.fs` — confirms `TEList -> TList` elaboration pattern; no `TEArray` exists yet
+- `src/FunLang/Elaborate.fs` — confirms `TEList -> TList` elaboration pattern; no `TEArray` exists yet
 
 ## Metadata
 

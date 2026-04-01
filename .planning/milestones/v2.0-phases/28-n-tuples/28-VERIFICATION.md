@@ -41,11 +41,11 @@ gaps:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | `LetPatDecl of pat: Pattern * body: Expr * Span` variant in `Decl` DU | VERIFIED | Line 290: variant present; line 316: `declSpanOf` arm present |
-| `src/LangThree/Parser.fsy` | Grammar rules `LET TuplePattern EQUALS Expr` | VERIFIED | Lines 509-512: both flat and indented-body rules present |
-| `src/LangThree/TypeCheck.fs` | `LetPatDecl` handler in `typeCheckDecls` fold | VERIFIED | Lines 586-602: full inference with `inferPattern`, `unify`, generalization |
-| `src/LangThree/Eval.fs` | `LetPatDecl` handler in `evalModuleDecls` fold | VERIFIED | Lines 784-791: `matchPattern` call with bindings fold into env |
-| `src/LangThree/Format.fs` | `LetPatDecl` match arm for exhaustiveness | VERIFIED | Lines 294-295: `Ast.LetPatDecl(pat, body, _)` arm present |
+| `src/FunLang/Ast.fs` | `LetPatDecl of pat: Pattern * body: Expr * Span` variant in `Decl` DU | VERIFIED | Line 290: variant present; line 316: `declSpanOf` arm present |
+| `src/FunLang/Parser.fsy` | Grammar rules `LET TuplePattern EQUALS Expr` | VERIFIED | Lines 509-512: both flat and indented-body rules present |
+| `src/FunLang/TypeCheck.fs` | `LetPatDecl` handler in `typeCheckDecls` fold | VERIFIED | Lines 586-602: full inference with `inferPattern`, `unify`, generalization |
+| `src/FunLang/Eval.fs` | `LetPatDecl` handler in `evalModuleDecls` fold | VERIFIED | Lines 784-791: `matchPattern` call with bindings fold into env |
+| `src/FunLang/Format.fs` | `LetPatDecl` match arm for exhaustiveness | VERIFIED | Lines 294-295: `Ast.LetPatDecl(pat, body, _)` arm present |
 | `tests/phase28.fun` | Regression test exercising all 4 success criteria | VERIFIED | File exists, runs clean, prints `(1, "hello", true)` |
 
 ### Key Link Verification
@@ -68,7 +68,7 @@ gaps:
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `src/LangThree/TypeCheck.fs` | 655 | `// ExceptionDecl: TODO in Plan 02` | Info | Pre-existing TODO unrelated to phase 28; no impact |
+| `src/FunLang/TypeCheck.fs` | 655 | `// ExceptionDecl: TODO in Plan 02` | Info | Pre-existing TODO unrelated to phase 28; no impact |
 
 No phase-28-introduced anti-patterns, stubs, or placeholder patterns found.
 

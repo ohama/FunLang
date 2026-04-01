@@ -1,5 +1,5 @@
 // Test: PARAM-02 annotated params in let rec ... and ... mutual recursion
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec isEven (n : int) = if n = 0 then true else isOdd (n - 1)
 and isOdd (n : int) = if n = 0 then false else isEven (n - 1)

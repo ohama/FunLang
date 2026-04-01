@@ -1,6 +1,6 @@
-# LangThree Language Specification
+# FunLang Language Specification
 
-ML 계열 함수형 프로그래밍 언어 LangThree의 형식 정의.
+ML 계열 함수형 프로그래밍 언어 FunLang의 형식 정의.
 
 ## 1. Lexical Specification
 

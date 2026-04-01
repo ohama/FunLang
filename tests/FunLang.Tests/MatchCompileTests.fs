@@ -1,7 +1,7 @@
-module LangThree.Tests.MatchCompileTests
+module FunLang.Tests.MatchCompileTests
 
 open Expecto
-open LangThree.Tests.ModuleTests  // reuse evalModule
+open FunLang.Tests.ModuleTests  // reuse evalModule
 
 [<Tests>]
 let matchCompileTests = testList "Match Compilation (Decision Tree)" [

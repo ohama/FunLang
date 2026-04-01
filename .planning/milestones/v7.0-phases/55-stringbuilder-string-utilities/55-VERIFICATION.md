@@ -6,15 +6,15 @@ score: 4/5 must-haves verified
 gaps:
   - truth: "StringBuilder() creates a builder, .Append('text') chains appends, .ToString() produces the final string"
     status: partial
-    reason: "Implementation is correct and verified against new binary, but flt tests (stringbuilder-basic.flt, stringbuilder-chaining.flt) reference old binary path /Users/ohama/vibe-coding/LangThree/... causing test suite to show 2 failures when run via FsLit"
+    reason: "Implementation is correct and verified against new binary, but flt tests (stringbuilder-basic.flt, stringbuilder-chaining.flt) reference old binary path /Users/ohama/vibe-coding/FunLang/... causing test suite to show 2 failures when run via FsLit"
     artifacts:
       - path: "tests/flt/file/string/stringbuilder-basic.flt"
-        issue: "Command line references /Users/ohama/vibe-coding/LangThree/... (old binary, no StringBuilder) instead of /Users/ohama/vibe/LangThree/... (new binary)"
+        issue: "Command line references /Users/ohama/vibe-coding/FunLang/... (old binary, no StringBuilder) instead of /Users/ohama/vibe/FunLang/... (new binary)"
       - path: "tests/flt/file/string/stringbuilder-chaining.flt"
-        issue: "Command line references /Users/ohama/vibe-coding/LangThree/... (old binary, no StringBuilder) instead of /Users/ohama/vibe/LangThree/..."
+        issue: "Command line references /Users/ohama/vibe-coding/FunLang/... (old binary, no StringBuilder) instead of /Users/ohama/vibe/FunLang/..."
     missing:
-      - "Update command path in stringbuilder-basic.flt from /Users/ohama/vibe-coding/LangThree/... to /Users/ohama/vibe/LangThree/..."
-      - "Update command path in stringbuilder-chaining.flt from /Users/ohama/vibe-coding/LangThree/... to /Users/ohama/vibe/LangThree/..."
+      - "Update command path in stringbuilder-basic.flt from /Users/ohama/vibe-coding/FunLang/... to /Users/ohama/vibe/FunLang/..."
+      - "Update command path in stringbuilder-chaining.flt from /Users/ohama/vibe-coding/FunLang/... to /Users/ohama/vibe/FunLang/..."
 ---
 
 # Phase 55: StringBuilder & String Utilities Verification Report
@@ -43,10 +43,10 @@ gaps:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Eval.fs` | EndsWith/StartsWith/Trim in StringValue FieldAccess arm; applyEprintfnArgs; eprintfn in initialBuiltinEnv; char_is_digit/char_to_upper etc.; StringBuilderValue constructor + FieldAccess | VERIFIED | All patterns confirmed at lines 1193-1207, 105-115, 289-293, 316-353, 1058-1068, 1215-1228 |
-| `src/LangThree/Bidir.fs` | EndsWith/StartsWith/Trim type rules; TData("StringBuilder",[]) constructor and FieldAccess arms | VERIFIED | Lines 534-536 (string methods), lines 67-74 (constructor), lines 546-554 (FieldAccess) |
-| `src/LangThree/TypeCheck.fs` | eprintfn scheme; char_is_digit etc. schemes; string_concat_list scheme | VERIFIED | Line 57 (eprintfn), lines 69-77 (char + string_concat_list) |
-| `src/LangThree/Ast.fs` | StringBuilderValue DU case with GetHashCode/valueEqual/valueCompare | VERIFIED | Lines 209, 232, 258, 271 |
+| `src/FunLang/Eval.fs` | EndsWith/StartsWith/Trim in StringValue FieldAccess arm; applyEprintfnArgs; eprintfn in initialBuiltinEnv; char_is_digit/char_to_upper etc.; StringBuilderValue constructor + FieldAccess | VERIFIED | All patterns confirmed at lines 1193-1207, 105-115, 289-293, 316-353, 1058-1068, 1215-1228 |
+| `src/FunLang/Bidir.fs` | EndsWith/StartsWith/Trim type rules; TData("StringBuilder",[]) constructor and FieldAccess arms | VERIFIED | Lines 534-536 (string methods), lines 67-74 (constructor), lines 546-554 (FieldAccess) |
+| `src/FunLang/TypeCheck.fs` | eprintfn scheme; char_is_digit etc. schemes; string_concat_list scheme | VERIFIED | Line 57 (eprintfn), lines 69-77 (char + string_concat_list) |
+| `src/FunLang/Ast.fs` | StringBuilderValue DU case with GetHashCode/valueEqual/valueCompare | VERIFIED | Lines 209, 232, 258, 271 |
 | `Prelude/Char.fun` | Char module wrapping char builtins | VERIFIED | 7 lines, exports IsDigit/ToUpper/IsLetter/IsUpper/IsLower/ToLower |
 | `Prelude/String.fun` | String module wrapping string_concat_list | VERIFIED | 3 lines, exports concat |
 | `Prelude/StringBuilder.fun` | StringBuilder module with create/append/toString | VERIFIED | 4 lines, uses stringbuilder_create/append/tostring builtins |
@@ -91,7 +91,7 @@ gaps:
 
 ### Build Status
 
-`dotnet build src/LangThree/LangThree.fsproj -c Release` — SUCCESS, 0 errors, 0 warnings
+`dotnet build src/FunLang/FunLang.fsproj -c Release` — SUCCESS, 0 errors, 0 warnings
 
 ### Test Results
 
@@ -113,7 +113,7 @@ The implementation for all 5 success criteria is correct and substantive. All ru
 - `eprintfn "error: %s" "oops"` writes to stderr (verified)
 - `StringBuilder()` creates a builder, `.Append("text")` appends and returns the same builder, `.ToString()` returns the accumulated string (verified with new binary)
 
-The single gap is that `stringbuilder-basic.flt` and `stringbuilder-chaining.flt` reference the old binary path `/Users/ohama/vibe-coding/LangThree/...` instead of `/Users/ohama/vibe/LangThree/...`. This causes these 2 tests to fail in the FsLit test suite, even though the underlying implementation is fully correct. The fix is a 1-line change in each test file.
+The single gap is that `stringbuilder-basic.flt` and `stringbuilder-chaining.flt` reference the old binary path `/Users/ohama/vibe-coding/FunLang/...` instead of `/Users/ohama/vibe/FunLang/...`. This causes these 2 tests to fail in the FsLit test suite, even though the underlying implementation is fully correct. The fix is a 1-line change in each test file.
 
 ---
 

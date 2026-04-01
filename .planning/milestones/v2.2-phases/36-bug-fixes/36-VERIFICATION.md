@@ -31,16 +31,16 @@ score: 4/4 must-haves verified
 
 | Artifact                                   | Expected                                                                 | Status     | Details                                                                                   |
 | ------------------------------------------ | ------------------------------------------------------------------------ | ---------- | ----------------------------------------------------------------------------------------- |
-| `src/LangThree/TypeCheck.fs`               | 5-arg `fileImportTypeChecker`; `typeCheckModuleWithPrelude` w/ initialModules | VERIFIED | 875 lines; delegate at line 598 is 5-arg returning 4-tuple; `typeCheckModuleWithPrelude` at line 846 accepts `initialModules` param |
-| `src/LangThree/Prelude.fs`                 | `PreludeResult` with `Modules`/`ModuleValueEnv`; `loadAndTypeCheckFileImpl` 4-tuple | VERIFIED | 193 lines; `PreludeResult` at line 13 has both fields; `loadAndTypeCheckFileImpl` at line 83 is 5-arg returning 4-tuple |
-| `src/LangThree/Program.fs`                 | Passes `prelude.Modules` and `prelude.ModuleValueEnv` to pipeline        | VERIFIED   | 242 lines; lines 108, 200 pass `prelude.Modules`; line 221 passes `prelude.ModuleValueEnv` |
+| `src/FunLang/TypeCheck.fs`               | 5-arg `fileImportTypeChecker`; `typeCheckModuleWithPrelude` w/ initialModules | VERIFIED | 875 lines; delegate at line 598 is 5-arg returning 4-tuple; `typeCheckModuleWithPrelude` at line 846 accepts `initialModules` param |
+| `src/FunLang/Prelude.fs`                 | `PreludeResult` with `Modules`/`ModuleValueEnv`; `loadAndTypeCheckFileImpl` 4-tuple | VERIFIED | 193 lines; `PreludeResult` at line 13 has both fields; `loadAndTypeCheckFileImpl` at line 83 is 5-arg returning 4-tuple |
+| `src/FunLang/Program.fs`                 | Passes `prelude.Modules` and `prelude.ModuleValueEnv` to pipeline        | VERIFIED   | 242 lines; lines 108, 200 pass `prelude.Modules`; line 221 passes `prelude.ModuleValueEnv` |
 | `Prelude/List.fun`                         | Content wrapped in `module List = ...` with `open List` at bottom        | VERIFIED   | Starts with `module List =`; ends with `open List`                                        |
 | `Prelude/Core.fun`                         | Wrapped in `module Core = ...` with `open Core`                          | VERIFIED   | Starts with `module Core =`                                                               |
 | `Prelude/Option.fun`                       | Wrapped in `module Option = ...` with `open Option`                      | VERIFIED   | Starts with `module Option =`                                                             |
 | `Prelude/Result.fun`                       | Wrapped in `module Result = ...` with `open Result`                      | VERIFIED   | Starts with `module Result =`                                                             |
-| `src/LangThree/Parser.fsy`                 | Option A TRY rules for bare `IDENT ARROW Expr`; no new S/R conflicts     | VERIFIED   | 713 lines; lines 204–207 add two `TRY Expr WITH IDENT ARROW Expr` rules; build: 0 errors, 0 new conflicts |
-| `tests/LangThree.Tests/ModuleTests.fs`     | `evalWithPrelude` helper + MOD-01/MOD-02 regression tests                 | VERIFIED   | 353 lines; `evalWithPrelude` at line 295; MOD-02 tests at line 316; MOD-01 tests at line 335 |
-| `tests/LangThree.Tests/ExceptionTests.fs`  | PAR-01 regression tests for inline try-with                               | VERIFIED   | 220 lines; PAR-01 testList at line 178 with 4 tests                                       |
+| `src/FunLang/Parser.fsy`                 | Option A TRY rules for bare `IDENT ARROW Expr`; no new S/R conflicts     | VERIFIED   | 713 lines; lines 204–207 add two `TRY Expr WITH IDENT ARROW Expr` rules; build: 0 errors, 0 new conflicts |
+| `tests/FunLang.Tests/ModuleTests.fs`     | `evalWithPrelude` helper + MOD-01/MOD-02 regression tests                 | VERIFIED   | 353 lines; `evalWithPrelude` at line 295; MOD-02 tests at line 316; MOD-01 tests at line 335 |
+| `tests/FunLang.Tests/ExceptionTests.fs`  | PAR-01 regression tests for inline try-with                               | VERIFIED   | 220 lines; PAR-01 testList at line 178 with 4 tests                                       |
 
 ### Key Link Verification
 

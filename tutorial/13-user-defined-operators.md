@@ -4,7 +4,7 @@
 
 사용자 정의 연산자는 바로 그 생각을 실현시켜주는 도구입니다. 함수 호출의 의미를 유지하면서, 코드가 마치 그 도메인의 고유한 언어처럼 읽히게 만들 수 있습니다. 파서 조합기 라이브러리에서 `<|>`로 대안을 표현하거나, 수식 라이브러리에서 `**`로 거듭제곱을 표현하는 것처럼, 연산자는 코드와 개념 사이의 거리를 좁혀줍니다.
 
-LangThree는 기호 문자로 구성된 사용자 정의 중위 연산자를 지원합니다. 이를 통해 DSL(도메인 특화 언어)을 만들거나, 반복적인 함수 호출을 간결한 표현으로 대체할 수 있습니다.
+FunLang는 기호 문자로 구성된 사용자 정의 중위 연산자를 지원합니다. 이를 통해 DSL(도메인 특화 언어)을 만들거나, 반복적인 함수 호출을 간결한 표현으로 대체할 수 있습니다.
 
 ## 연산자 정의하기
 
@@ -15,7 +15,7 @@ $ cat op_basic.l3
 let (++) xs ys = append xs ys
 let result = [1; 2] ++ [3; 4]
 
-$ langthree op_basic.l3
+$ funlang op_basic.l3
 [1; 2; 3; 4]
 ```
 
@@ -31,7 +31,7 @@ $ langthree op_basic.l3
 
 연산자를 직접 정의할 수 있게 되면 곧 이런 질문이 생깁니다: `a ++ b ** c`처럼 여러 연산자가 섞이면 어떤 순서로 계산될까요?
 
-LangThree는 OCaml에서 물려받은 우아한 해답을 씁니다. 연산자를 직접 파싱해서 우선순위를 결정하지 않고, 연산자의 **첫 번째 문자**만으로 우선순위 레벨을 결정합니다. 덕분에 여러분이 만드는 모든 연산자는 그 첫 글자를 통해 자동으로 적절한 우선순위 그룹에 속하게 됩니다.
+FunLang는 OCaml에서 물려받은 우아한 해답을 씁니다. 연산자를 직접 파싱해서 우선순위를 결정하지 않고, 연산자의 **첫 번째 문자**만으로 우선순위 레벨을 결정합니다. 덕분에 여러분이 만드는 모든 연산자는 그 첫 글자를 통해 자동으로 적절한 우선순위 그룹에 속하게 됩니다.
 
 연산자의 우선순위는 **첫 번째 문자**로 결정됩니다 (F#/OCaml 규칙):
 
@@ -53,7 +53,7 @@ LangThree는 OCaml에서 물려받은 우아한 해답을 씁니다. 연산자�
 
 ## 연산자를 함수로 사용하기
 
-연산자가 단순히 "중위 문법"이기만 하다면 그다지 강력하지 않을 것입니다. LangThree 연산자의 진가는 다시 일반 함수처럼 다룰 수 있다는 데 있습니다.
+연산자가 단순히 "중위 문법"이기만 하다면 그다지 강력하지 않을 것입니다. FunLang 연산자의 진가는 다시 일반 함수처럼 다룰 수 있다는 데 있습니다.
 
 괄호로 감싸면 연산자를 일반 함수처럼 사용할 수 있습니다:
 
@@ -62,7 +62,7 @@ $ cat op_as_func.l3
 let (++) xs ys = append xs ys
 let result = fold (++) [] [[1; 2]; [3]; [4; 5]]
 
-$ langthree op_as_func.l3
+$ funlang op_as_func.l3
 [1; 2; 3; 4; 5]
 ```
 
@@ -74,7 +74,7 @@ $ langthree op_as_func.l3
 
 ## Prelude 연산자
 
-LangThree를 시작하는 순간부터 바로 쓸 수 있는 세 개의 연산자가 Prelude에 정의되어 있습니다. 이 세 연산자는 각각 다른 우선순위 레벨에 걸쳐 있어서, 연산자 분류 체계를 이해하는 데도 좋은 예시입니다.
+FunLang를 시작하는 순간부터 바로 쓸 수 있는 세 개의 연산자가 Prelude에 정의되어 있습니다. 이 세 연산자는 각각 다른 우선순위 레벨에 걸쳐 있어서, 연산자 분류 체계를 이해하는 데도 좋은 예시입니다.
 
 | 연산자 | 타입 | 설명 | 예제 |
 |--------|------|------|------|
@@ -96,7 +96,7 @@ let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x 
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
-$ langthree qsort_op.l3
+$ funlang qsort_op.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -104,7 +104,7 @@ $ langthree qsort_op.l3
 
 ### 문자열 포매팅
 
-`^^`는 문자열 연결을 파이프라인과 자연스럽게 조합할 수 있게 해줍니다. 복잡한 문자열 포매팅 로직을 함수로 캡슐화하고, 그것을 파이프라인의 끝에 붙이는 패턴은 LangThree에서 자주 나타납니다.
+`^^`는 문자열 연결을 파이프라인과 자연스럽게 조합할 수 있게 해줍니다. 복잡한 문자열 포매팅 로직을 함수로 캡슐화하고, 그것을 파이프라인의 끝에 붙이는 패턴은 FunLang에서 자주 나타납니다.
 
 ```
 $ cat format_op.l3
@@ -113,7 +113,7 @@ let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string 
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList
 
-$ langthree format_op.l3
+$ funlang format_op.l3
 "[3, 4, 5]"
 ```
 
@@ -129,7 +129,7 @@ let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
 
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 
-$ langthree fallback_op.l3
+$ funlang fallback_op.l3
 Some 42
 ```
 
@@ -149,7 +149,7 @@ let r1 = 1 =? 1
 let r2 = 1 =? 2
 let result = r1 ^^ ", " ^^ r2
 
-$ langthree custom_op.l3
+$ funlang custom_op.l3
 "equal, not equal"
 ```
 

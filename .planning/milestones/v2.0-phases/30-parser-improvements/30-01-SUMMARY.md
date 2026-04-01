@@ -23,8 +23,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/IndentFilter.fs
-    - tests/LangThree.Tests/IndentFilterTests.fs
+    - src/FunLang/IndentFilter.fs
+    - tests/FunLang.Tests/IndentFilterTests.fs
 
 key-decisions:
   - "SYN-05: Use nextToken lookahead (already available as parameter) rather than adding a new JustSawElse state flag"
@@ -67,8 +67,8 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit to follow)
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Added ELSE filtering in `| _ ->` branch of `processNewlineWithContext`
-- `tests/LangThree.Tests/IndentFilterTests.fs` - Added `elseIndentationTests` test list with 3 new tests
+- `src/FunLang/IndentFilter.fs` - Added ELSE filtering in `| _ ->` branch of `processNewlineWithContext`
+- `tests/FunLang.Tests/IndentFilterTests.fs` - Added `elseIndentationTests` test list with 3 new tests
 
 ## Decisions Made
 - Used `nextToken` lookahead (already a parameter of `processNewlineWithContext`) instead of adding a new `JustSawElse` state flag — cleaner and avoids state management complexity (confirmed recommendation from research)

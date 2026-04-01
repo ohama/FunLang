@@ -45,15 +45,15 @@ key-files:
     - tests/flt/expr/loop/loop-for-empty-range.flt
     - tests/flt/expr/loop/loop-body-sequencing.flt
   modified:
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/IndentFilter.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/IndentFilter.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "Multi-statement while body uses inline ; (SeqExpr) not newline-based sequencing — newline implicit sequencing not implemented in this phase"
@@ -98,15 +98,15 @@ completed: 2026-03-27
 
 ## Files Created/Modified
 
-- `src/LangThree/Lexer.fsl` - Added WHILE FOR TO DOWNTO DO keyword tokens
-- `src/LangThree/Ast.fs` - Added WhileExpr and ForExpr to Expr DU with spanOf entries
-- `src/LangThree/Parser.fsy` - Declared 5 tokens; 6 grammar productions for while/for
-- `src/LangThree/IndentFilter.fs` - Added Parser.DO to PrevToken check for InExprBlock
-- `src/LangThree/Format.fs` - formatToken and formatAst cases for new tokens/nodes
-- `src/LangThree/Eval.fs` - WhileExpr uses F# while loop; ForExpr iterates [s..e] range
-- `src/LangThree/Bidir.fs` - Type-checks cond:bool (while), start/stop:int (for), binds loop var without mutableVars entry
-- `src/LangThree/Infer.fs` - Stub match arms returning TTuple []
-- `src/LangThree/TypeCheck.fs` - WhileExpr/ForExpr in collectMatches for exhaustiveness
+- `src/FunLang/Lexer.fsl` - Added WHILE FOR TO DOWNTO DO keyword tokens
+- `src/FunLang/Ast.fs` - Added WhileExpr and ForExpr to Expr DU with spanOf entries
+- `src/FunLang/Parser.fsy` - Declared 5 tokens; 6 grammar productions for while/for
+- `src/FunLang/IndentFilter.fs` - Added Parser.DO to PrevToken check for InExprBlock
+- `src/FunLang/Format.fs` - formatToken and formatAst cases for new tokens/nodes
+- `src/FunLang/Eval.fs` - WhileExpr uses F# while loop; ForExpr iterates [s..e] range
+- `src/FunLang/Bidir.fs` - Type-checks cond:bool (while), start/stop:int (for), binds loop var without mutableVars entry
+- `src/FunLang/Infer.fs` - Stub match arms returning TTuple []
+- `src/FunLang/TypeCheck.fs` - WhileExpr/ForExpr in collectMatches for exhaustiveness
 - `tests/flt/expr/loop/` - 7 new flt test files
 
 ## Decisions Made
@@ -123,7 +123,7 @@ completed: 2026-03-27
 - **Found during:** Task 1 (Format.fs update)
 - **Issue:** Plan specified formatAst cases but the formatToken function also needed new token cases for WHILE/FOR/TO/DOWNTO/DO
 - **Fix:** Added 5 formatToken match arms alongside the formatAst additions
-- **Files modified:** src/LangThree/Format.fs
+- **Files modified:** src/FunLang/Format.fs
 - **Verification:** Build succeeded with no exhaustive-match warnings
 - **Committed in:** `07a89de` (Task 1 commit)
 
@@ -131,7 +131,7 @@ completed: 2026-03-27
 - **Found during:** Task 2 (build verification after Eval/Bidir/Infer changes)
 - **Issue:** TypeCheck.fs collectMatches (line 268) had no wildcard fallback and warned FS0025 on ForExpr
 - **Fix:** Added WhileExpr and ForExpr cases to collectMatches, delegating recursively to sub-expressions
-- **Files modified:** src/LangThree/TypeCheck.fs
+- **Files modified:** src/FunLang/TypeCheck.fs
 - **Verification:** Build completed with 0 warnings, 0 errors
 - **Committed in:** `bdd2953` (Task 2 commit)
 

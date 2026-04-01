@@ -30,7 +30,7 @@ No new external libraries. All changes are within the interpreter source files.
 
 ### .NET Backing Type
 
-| LangThree Type | .NET Type | Why |
+| FunLang Type | .NET Type | Why |
 |----------------|-----------|-----|
 | `MutableListValue` | `System.Collections.Generic.List<Value>` | Dynamic resize; integer indexing; `.Count` property; `.Add(v)` method |
 
@@ -129,7 +129,7 @@ In the `IndexGet` arm (~line 933), add after `| HashtableValue ht, key ->`:
 ```fsharp
 | MutableListValue ml, IntValue i ->
     if i < 0 || i >= ml.Count then
-        raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+        raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
     ml.[i]
 ```
 
@@ -138,7 +138,7 @@ In the `IndexSet` arm (~line 948), add after `| HashtableValue ht, key ->`:
 ```fsharp
 | MutableListValue ml, IntValue i ->
     if i < 0 || i >= ml.Count then
-        raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+        raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
     ml.[i] <- newVal
     TupleValue []
 ```
@@ -239,7 +239,7 @@ module MutableList =
 
 ### Pattern 11: Test File Structure
 
-FsLit tests use `// --- Output:` (confirmed from Phase 55/56). Binary path: `/Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree`.
+FsLit tests use `// --- Output:` (confirmed from Phase 55/56). Binary path: `/Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang`.
 
 Place tests:
 - `tests/flt/file/mutablelist/mutablelist-basic.flt` — basic Add/indexing/Count
@@ -369,7 +369,7 @@ Place tests:
 // Source: ArrayValue IndexGet pattern, Eval.fs ~line 937
 | MutableListValue ml, IntValue i ->
     if i < 0 || i >= ml.Count then
-        raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+        raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
     ml.[i]
 ```
 
@@ -402,7 +402,7 @@ Place tests:
 
 ```
 // Test: MutableList basic Add, Count, indexing (COLL-04)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let ml = MutableList ()
 let _ = ml.Add(10)
@@ -422,7 +422,7 @@ let _ = println (to_string ml.[2])
 
 ```
 // Test: Hashtable.TryGetValue with present and missing keys (COLL-05)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let ht = Hashtable.create ()
 let _ = Hashtable.set ht "x" 42

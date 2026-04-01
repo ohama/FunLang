@@ -32,7 +32,7 @@ re_verification: false
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Parser.fsy` | Angle bracket type grammar rules; contains TypeArgList | VERIFIED (831 lines) | Contains `TypeArgList`, `AngleBracketTypeParams`, `IDENT LT TypeArgList GT` in AtomicType/AliasAtomicType, 4 angle bracket variants in TypeDeclaration, angle bracket TypeAliasDeclaration, 2 mutual recursion variants in TypeDeclContinuation |
+| `src/FunLang/Parser.fsy` | Angle bracket type grammar rules; contains TypeArgList | VERIFIED (831 lines) | Contains `TypeArgList`, `AngleBracketTypeParams`, `IDENT LT TypeArgList GT` in AtomicType/AliasAtomicType, 4 angle bracket variants in TypeDeclaration, angle bracket TypeAliasDeclaration, 2 mutual recursion variants in TypeDeclContinuation |
 | `tests/flt/file/adt/adt-angle-bracket.flt` | GEN-01 test: angle bracket ADT declaration | VERIFIED (10 lines) | Result<'a> ADT declared, pattern-matched, and used in List.fold — flt PASS |
 | `tests/flt/file/adt/adt-angle-bracket-multiarg.flt` | GEN-01 test: multi-arg angle bracket ADT | VERIFIED (11 lines) | Either<'a, 'b> with Left/Right constructors both exercised — flt PASS |
 | `tests/flt/file/alias/alias-angle-bracket.flt` | GEN-01 bonus: angle bracket type alias | VERIFIED (11 lines) | Pair<'a, 'b> alias for tuple type, destructured match — flt PASS |

@@ -1,18 +1,18 @@
 # Phase 59: Prelude Extensions - Research
 
 **Researched:** 2026-03-29
-**Domain:** LangThree interpreter — List/Array standard library functions (sort, search, transform, ofSeq)
+**Domain:** FunLang interpreter — List/Array standard library functions (sort, search, transform, ofSeq)
 **Confidence:** HIGH
 
 ## Summary
 
-Phase 59 adds the standard `List.*` and `Array.*` library functions that F# programmers expect: sorting, searching, filtering with predicates, index access, and conversion from native collections. The work splits cleanly into two categories: (1) functions that can be written as pure LangThree `.fun` implementations (aliases, simple recursion), and (2) functions that require new builtins in `Eval.fs` because they must inspect native collection `Value` variants (HashSetValue, QueueValue, MutableListValue) or apply native F# sort logic.
+Phase 59 adds the standard `List.*` and `Array.*` library functions that F# programmers expect: sorting, searching, filtering with predicates, index access, and conversion from native collections. The work splits cleanly into two categories: (1) functions that can be written as pure FunLang `.fun` implementations (aliases, simple recursion), and (2) functions that require new builtins in `Eval.fs` because they must inspect native collection `Value` variants (HashSetValue, QueueValue, MutableListValue) or apply native F# sort logic.
 
-For the pure `.fun` category: `List.head`, `List.tail`, `List.exists`, `List.item` are trivially aliases to already-existing `hd`, `tl`, `any`, `nth` in `List.fun`. `List.isEmpty`, `List.mapi`, `List.tryFind`, `List.choose`, and `List.distinctBy` can be written as recursive LangThree functions with no new builtins. `List.sort` can also be done in pure LangThree using a merge sort or insertion sort — no builtin is required because `Value` already implements `IComparable` (for `IntValue`, `StringValue`, `CharValue`, `BoolValue`) and LangThree's `<` operator works on those types.
+For the pure `.fun` category: `List.head`, `List.tail`, `List.exists`, `List.item` are trivially aliases to already-existing `hd`, `tl`, `any`, `nth` in `List.fun`. `List.isEmpty`, `List.mapi`, `List.tryFind`, `List.choose`, and `List.distinctBy` can be written as recursive FunLang functions with no new builtins. `List.sort` can also be done in pure FunLang using a merge sort or insertion sort — no builtin is required because `Value` already implements `IComparable` (for `IntValue`, `StringValue`, `CharValue`, `BoolValue`) and FunLang's `<` operator works on those types.
 
 For the builtin category: `List.sortBy` requires calling a user closure on each element to extract a key; this follows the exact `callValue` pattern used by `array_map`/`array_fold`. `List.ofSeq`, `Array.sort`, and `Array.ofSeq` all need new entries in `initialBuiltinEnv` in `Eval.fs` because they must pattern-match on `HashSetValue`/`QueueValue`/`MutableListValue` or mutate an `ArrayValue`.
 
-**Primary recommendation:** Implement aliases/pure functions directly in `Prelude/List.fun` as LangThree code. Add four new builtins to `Eval.fs`: `list_sort_by`, `list_of_seq`, `array_sort`, `array_of_seq`. Wire those builtins into the `List` and `Array` module declarations in the `.fun` files. No `Ast.fs`, `Parser.fsy`, `Bidir.fs`, or `TypeCheck.fs` changes are needed.
+**Primary recommendation:** Implement aliases/pure functions directly in `Prelude/List.fun` as FunLang code. Add four new builtins to `Eval.fs`: `list_sort_by`, `list_of_seq`, `array_sort`, `array_of_seq`. Wire those builtins into the `List` and `Array` module declarations in the `.fun` files. No `Ast.fs`, `Parser.fsy`, `Bidir.fs`, or `TypeCheck.fs` changes are needed.
 
 ## Standard Stack
 
@@ -22,9 +22,9 @@ No new external libraries. All changes are within existing interpreter source fi
 
 | File | What Changes | Notes |
 |------|--------------|-------|
-| `Prelude/List.fun` | Add sort, sortBy, tryFind, choose, distinctBy, exists, mapi, item, isEmpty, head, tail, ofSeq | Mix of pure LangThree + builtin wrappers |
+| `Prelude/List.fun` | Add sort, sortBy, tryFind, choose, distinctBy, exists, mapi, item, isEmpty, head, tail, ofSeq | Mix of pure FunLang + builtin wrappers |
 | `Prelude/Array.fun` | Add sort, ofSeq | Two new builtin wrappers |
-| `src/LangThree/Eval.fs` | Add `list_sort_by`, `list_of_seq`, `array_sort`, `array_of_seq` to `initialBuiltinEnv` | Four new BuiltinValue entries |
+| `src/FunLang/Eval.fs` | Add `list_sort_by`, `list_of_seq`, `array_sort`, `array_of_seq` to `initialBuiltinEnv` | Four new BuiltinValue entries |
 
 ### No Changes Required
 
@@ -55,7 +55,7 @@ These resolve at load time. No runtime overhead beyond a simple function call.
 
 ### Pattern 2: Pure Recursive Function in List.fun
 
-Functions with non-trivial logic can be written in LangThree directly:
+Functions with non-trivial logic can be written in FunLang directly:
 
 ```fsharp
 // List.mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
@@ -93,9 +93,9 @@ let rec distinctBy_helper f seen xs =
 let distinctBy f xs = distinctBy_helper f [] xs
 ```
 
-### Pattern 3: List.sort in Pure LangThree
+### Pattern 3: List.sort in Pure FunLang
 
-`List.sort` can be implemented as insertion sort in pure LangThree. The LangThree `<` and `>` operators already compare `IntValue`, `StringValue`, `CharValue` via `Value.valueCompare`. No builtin needed.
+`List.sort` can be implemented as insertion sort in pure FunLang. The FunLang `<` and `>` operators already compare `IntValue`, `StringValue`, `CharValue` via `Value.valueCompare`. No builtin needed.
 
 ```fsharp
 // Insertion sort — correct for all comparable element types
@@ -200,7 +200,7 @@ let ofSeq coll = array_of_seq coll
 ### Recommended Project Structure (No Changes)
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Eval.fs          # Add 4 new builtins to initialBuiltinEnv list
 └── (all other files unchanged)
 Prelude/
@@ -212,7 +212,7 @@ Prelude/
 
 - **Adding new Value DU cases:** There is no need for a new value type. All collection types are already in `Value`.
 - **Implementing distinctBy with a HashSet of keys:** Tempting but unnecessarily complex — a plain list comparison is correct and simpler. Reserve HashSet for when performance matters.
-- **Making List.sort a builtin:** Unnecessary. Pure LangThree insertion sort works because `<` already delegates to `Value.valueCompare`.
+- **Making List.sort a builtin:** Unnecessary. Pure FunLang insertion sort works because `<` already delegates to `Value.valueCompare`.
 - **Adding type annotations to List.fun functions:** The type checker is structural and infers types. Adding explicit type annotations in `.fun` files would be non-idiomatic and may cause errors.
 
 ## Don't Hand-Roll
@@ -231,7 +231,7 @@ Prelude/
 
 **What goes wrong:** Helper functions in `List.fun` like `mapi_helper` or `distinctBy_helper` become top-level bindings accessible as `mapi_helper xs`. Users could call them directly.
 
-**Why it happens:** LangThree modules export everything — there is no private/internal access modifier.
+**Why it happens:** FunLang modules export everything — there is no private/internal access modifier.
 
 **How to avoid:** Name helpers with a leading underscore convention (e.g., `_mapi_helper`) or use `let rec` with inner definitions if the language supports it. Alternatively, accept that helpers are visible (they are harmless in practice).
 
@@ -239,7 +239,7 @@ Prelude/
 
 ### Pitfall 2: List.sort Operator Comparison Breaks for Tuples/Records
 
-**What goes wrong:** Using `<` in pure LangThree sort will call `Value.valueCompare`, which returns 0 (equal) for TupleValue/ListValue/DataValue/RecordValue (the catch-all `| _ -> 0` case in `valueCompare`). Sort will appear to work on int/string lists but silently produce wrong results on complex types.
+**What goes wrong:** Using `<` in pure FunLang sort will call `Value.valueCompare`, which returns 0 (equal) for TupleValue/ListValue/DataValue/RecordValue (the catch-all `| _ -> 0` case in `valueCompare`). Sort will appear to work on int/string lists but silently produce wrong results on complex types.
 
 **Why it happens:** `Value.valueCompare` only fully implements comparison for scalar types (Int, Bool, String, Char).
 
@@ -267,7 +267,7 @@ Prelude/
 
 **What goes wrong:** If `List.fun` references `any` (which is defined in the same `List.fun` module), but the reference comes before the `any` binding, `tryFind` will fail.
 
-**Why it happens:** LangThree evaluates `.fun` files sequentially. Within a module block, bindings are processed top to bottom. Calling `any` inside `distinctBy_helper` requires `any` to already be bound.
+**Why it happens:** FunLang evaluates `.fun` files sequentially. Within a module block, bindings are processed top to bottom. Calling `any` inside `distinctBy_helper` requires `any` to already be bound.
 
 **How to avoid:** Define `any` before `distinctBy_helper`. Since `any` is already in the original `List.fun` (line 13), add new functions at the bottom of the `module List = ...` block after all existing bindings.
 
@@ -317,10 +317,10 @@ System.Array.Sort(arr, fun x y -> Value.valueCompare x y)
 
 `Value` implements `IComparable` (Ast.fs lines 247-251), so `System.Array.Sort` works directly even without the explicit `Comparison` delegate, but the explicit form is clearer about what comparison is used.
 
-### Verified Pattern: Pure LangThree Insertion Sort
+### Verified Pattern: Pure FunLang Insertion Sort
 
 ```fsharp
-// Source: standard insertion sort idiom, compatible with LangThree's match/if syntax
+// Source: standard insertion sort idiom, compatible with FunLang's match/if syntax
 let rec insert x xs =
     match xs with
     | [] -> [x]
@@ -337,9 +337,9 @@ This uses `<` which dispatches through `Value.valueCompare` at runtime. Works co
 
 | Requirement | Implementation Strategy | Location |
 |-------------|------------------------|----------|
-| PRE-01: List.sort, List.sortBy | `sort` = pure LangThree insertion sort; `sortBy` = wraps `list_sort_by` builtin | `List.fun` + `Eval.fs` |
-| PRE-02: List.tryFind, List.choose, List.distinctBy, List.exists | `tryFind`/`choose`/`distinctBy` = pure LangThree; `exists` = alias for `any` | `List.fun` only |
-| PRE-03: List.mapi, List.item, List.isEmpty, List.head, List.tail | `mapi` = pure LangThree with helper; `item`=`nth`, `head`=`hd`, `tail`=`tl` aliases; `isEmpty` = 1-line match | `List.fun` only |
+| PRE-01: List.sort, List.sortBy | `sort` = pure FunLang insertion sort; `sortBy` = wraps `list_sort_by` builtin | `List.fun` + `Eval.fs` |
+| PRE-02: List.tryFind, List.choose, List.distinctBy, List.exists | `tryFind`/`choose`/`distinctBy` = pure FunLang; `exists` = alias for `any` | `List.fun` only |
+| PRE-03: List.mapi, List.item, List.isEmpty, List.head, List.tail | `mapi` = pure FunLang with helper; `item`=`nth`, `head`=`hd`, `tail`=`tl` aliases; `isEmpty` = 1-line match | `List.fun` only |
 | PRE-04: List.ofSeq | Wraps `list_of_seq` builtin | `List.fun` + `Eval.fs` |
 | PRE-05: Array.sort, Array.ofSeq | Both wrap new builtins | `Array.fun` + `Eval.fs` |
 
@@ -360,7 +360,7 @@ This uses `<` which dispatches through `Value.valueCompare` at runtime. Works co
    - Recommendation: Accept the limitation; document it. Extending `valueCompare` for tuples is a separate concern.
 
 2. **distinctBy with large lists**
-   - What we know: The proposed pure LangThree implementation uses `any (fun k -> k = key) seen`, which is O(n^2).
+   - What we know: The proposed pure FunLang implementation uses `any (fun k -> k = key) seen`, which is O(n^2).
    - What's unclear: Is there a use case requiring large-list performance?
    - Recommendation: Use the simple O(n^2) implementation. For Phase 59, correctness matters more than performance.
 
@@ -372,11 +372,11 @@ This uses `<` which dispatches through `Value.valueCompare` at runtime. Works co
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct code inspection: `/Users/ohama/vibe/LangThree/src/LangThree/Eval.fs` — `initialBuiltinEnv`, `callValue`, `ForInExpr` eval arm
-- Direct code inspection: `/Users/ohama/vibe/LangThree/src/LangThree/Ast.fs` — `Value` DU, `valueCompare`, `IComparable` interface
-- Direct code inspection: `/Users/ohama/vibe/LangThree/Prelude/List.fun` — existing bindings (map, filter, fold, length, any, nth, hd, tl, etc.)
-- Direct code inspection: `/Users/ohama/vibe/LangThree/Prelude/Array.fun` — existing bindings (create, get, set, length, ofList, toList, iter, map, fold, init)
-- Direct code inspection: `/Users/ohama/vibe/LangThree/Prelude/HashSet.fun`, `Queue.fun`, `MutableList.fun` — existing module wrappers pattern
+- Direct code inspection: `/Users/ohama/vibe/FunLang/src/FunLang/Eval.fs` — `initialBuiltinEnv`, `callValue`, `ForInExpr` eval arm
+- Direct code inspection: `/Users/ohama/vibe/FunLang/src/FunLang/Ast.fs` — `Value` DU, `valueCompare`, `IComparable` interface
+- Direct code inspection: `/Users/ohama/vibe/FunLang/Prelude/List.fun` — existing bindings (map, filter, fold, length, any, nth, hd, tl, etc.)
+- Direct code inspection: `/Users/ohama/vibe/FunLang/Prelude/Array.fun` — existing bindings (create, get, set, length, ofList, toList, iter, map, fold, init)
+- Direct code inspection: `/Users/ohama/vibe/FunLang/Prelude/HashSet.fun`, `Queue.fun`, `MutableList.fun` — existing module wrappers pattern
 
 ### Secondary (MEDIUM confidence)
 - Phase 58 RESEARCH.md (`58-RESEARCH.md`) — confirms pattern: pure `.fun` implementations vs. builtins in `Eval.fs`, no parser/type changes needed for library additions
@@ -384,11 +384,11 @@ This uses `<` which dispatches through `Value.valueCompare` at runtime. Works co
 ## Metadata
 
 **Confidence breakdown:**
-- Which functions need builtins vs pure LangThree: HIGH — confirmed by reading Eval.fs and Ast.fs directly
+- Which functions need builtins vs pure FunLang: HIGH — confirmed by reading Eval.fs and Ast.fs directly
 - callValue pattern for user closures: HIGH — confirmed from array_map/array_fold/array_iter in Eval.fs
 - Collection ofSeq conversion: HIGH — exact Seq.toList calls already exist in ForInExpr eval arm
 - Array.sort via System.Array.Sort: HIGH — Value implements IComparable, standard .NET sort delegation works
-- Pure LangThree insertion sort: HIGH — < operator works on IntValue via valueCompare; confirmed from value comparison logic
+- Pure FunLang insertion sort: HIGH — < operator works on IntValue via valueCompare; confirmed from value comparison logic
 - List.sort for non-scalar types: MEDIUM — valueCompare returns 0 for tuples/records; may produce incorrect ordering but is harmless for Phase 59's success criteria
 
 **Research date:** 2026-03-29

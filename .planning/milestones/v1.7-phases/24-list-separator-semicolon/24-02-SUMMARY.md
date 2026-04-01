@@ -24,8 +24,8 @@ key-files:
   created: []
   modified:
     - tests/flt/ (78 files)
-    - tests/LangThree.Tests/MatchCompileTests.fs
-    - tests/LangThree.Tests/ExceptionTests.fs
+    - tests/FunLang.Tests/MatchCompileTests.fs
+    - tests/FunLang.Tests/ExceptionTests.fs
 
 key-decisions:
   - "Stack-based bracket tracking (not depth counters): innermost '[' means comma is a list separator"
@@ -72,14 +72,14 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 - `tests/flt/**/*.flt` (78 files) - list literals updated to semicolon syntax
-- `tests/LangThree.Tests/MatchCompileTests.fs` - list patterns in evalModule strings
-- `tests/LangThree.Tests/ExceptionTests.fs` - list patterns in evalModule strings
+- `tests/FunLang.Tests/MatchCompileTests.fs` - list patterns in evalModule strings
+- `tests/FunLang.Tests/ExceptionTests.fs` - list patterns in evalModule strings
 
 ## Decisions Made
 
 - **Stack-based approach over depth counters:** The initial depth-counter approach (`list_depth >= 1 AND paren_depth == 0`) failed for lists inside tuples like `([1, 2, 3], [4, 5])`. Switched to a bracket stack where the innermost context determines comma treatment — if innermost is `[`, the comma is a list separator.
 - **Emit test files excluded from transformation:** AST emit output uses `[...]` for F# list encoding of tuples and clauses (`Tuple [...]` uses commas, `TuplePat [...]` uses commas). These were reverted after the script incorrectly transformed them. The `Ast.List` node already uses semicolons from the Format.fs change in Plan 01.
-- **Release binary rebuild:** fslit tests invoke the Release binary at `src/LangThree/bin/Release/net10.0/LangThree`. The binary pre-dated Plan 24-01's parser change and needed `dotnet publish -c Release` to update.
+- **Release binary rebuild:** fslit tests invoke the Release binary at `src/FunLang/bin/Release/net10.0/FunLang`. The binary pre-dated Plan 24-01's parser change and needed `dotnet publish -c Release` to update.
 
 ## Deviations from Plan
 
@@ -105,7 +105,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (first test run showed 75 failures with "no more output")
 - **Issue:** `tests/flt/` commands invoke the Release binary which was built before Plan 24-01's parser change; it still rejected `[1; 2; 3]`
 - **Fix:** `dotnet publish -c Release` to rebuild
-- **Verification:** `LangThree --expr "[1; 2; 3]"` returns `[1; 2; 3]`
+- **Verification:** `FunLang --expr "[1; 2; 3]"` returns `[1; 2; 3]`
 - **Committed in:** a5dbde9
 
 ---

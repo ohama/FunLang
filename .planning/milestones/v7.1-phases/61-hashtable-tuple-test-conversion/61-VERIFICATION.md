@@ -23,7 +23,7 @@ score: 6/6 must-haves verified
 | 3  | Full flt test suite passes                                                                 | VERIFIED   | 637/637 passing confirmed by direct run                                                      |
 | 4  | No `kv.Key` / `kv.Value` / KeyValuePair-based code remains in flt tests                  | VERIFIED   | grep returns zero matches across all .flt files                                              |
 | 5  | HashtableValue iteration produces TupleValue, not RecordValue KeyValuePair                | VERIFIED   | Eval.fs line 1055: `TupleValue [kv.Key; kv.Value]`; Bidir.fs line 248: `TTuple [keyTy; valTy]` |
-| 6  | All flt files use correct binary path (no stale `/Users/ohama/vibe/LangThree`)            | VERIFIED   | `grep -r "vibe/LangThree" tests/flt` returns 0 matches                                      |
+| 6  | All flt files use correct binary path (no stale `/Users/ohama/vibe/FunLang`)            | VERIFIED   | `grep -r "vibe/FunLang" tests/flt` returns 0 matches                                      |
 
 **Score:** 6/6 truths verified
 
@@ -31,11 +31,11 @@ score: 6/6 must-haves verified
 
 | Artifact                                              | Expected                            | Status    | Details                                                          |
 |-------------------------------------------------------|-------------------------------------|-----------|------------------------------------------------------------------|
-| `src/LangThree/Ast.fs`                               | ForInExpr of var: Pattern           | VERIFIED  | Line 119: `ForInExpr of var: Pattern * collection: Expr * body: Expr * span: Span` |
-| `src/LangThree/Parser.fsy`                           | FOR TuplePattern IN rules + VarPat wrap | VERIFIED  | Lines 253-261: both IDENT (VarPat) and TuplePattern rules present |
-| `src/LangThree/Bidir.fs`                             | TTuple for THashtable; inferPattern binding | VERIFIED  | Lines 247-248: `THashtable -> TTuple [keyTy; valTy]`; lines 265-272: inferPattern |
-| `src/LangThree/Eval.fs`                              | TupleValue for HashtableValue; matchPattern binding | VERIFIED  | Lines 1054-1062: TupleValue + matchPattern loop env              |
-| `src/LangThree/Format.fs`                            | formatPattern for loop var          | VERIFIED  | Lines 217-218: `ForInExpr (pat, ...) -> formatPattern pat`       |
+| `src/FunLang/Ast.fs`                               | ForInExpr of var: Pattern           | VERIFIED  | Line 119: `ForInExpr of var: Pattern * collection: Expr * body: Expr * span: Span` |
+| `src/FunLang/Parser.fsy`                           | FOR TuplePattern IN rules + VarPat wrap | VERIFIED  | Lines 253-261: both IDENT (VarPat) and TuplePattern rules present |
+| `src/FunLang/Bidir.fs`                             | TTuple for THashtable; inferPattern binding | VERIFIED  | Lines 247-248: `THashtable -> TTuple [keyTy; valTy]`; lines 265-272: inferPattern |
+| `src/FunLang/Eval.fs`                              | TupleValue for HashtableValue; matchPattern binding | VERIFIED  | Lines 1054-1062: TupleValue + matchPattern loop env              |
+| `src/FunLang/Format.fs`                            | formatPattern for loop var          | VERIFIED  | Lines 217-218: `ForInExpr (pat, ...) -> formatPattern pat`       |
 | `tests/flt/file/hashtable/hashtable-forin.flt`       | for (k, v) in ht do syntax          | VERIFIED  | Line 6: `for (k, v) in ht do`                                   |
 | `tests/flt/file/hashtable/hashtable-dot-api.flt`     | Hashtable.tryGetValue/count/keys    | VERIFIED  | Uses `Hashtable.tryGetValue`, `Hashtable.count`, `Hashtable.keys` |
 | `tests/flt/file/hashtable/hashtable-keys-tryget.flt` | Hashtable.keys/tryGetValue/count    | VERIFIED  | Uses `Hashtable.keys`, `Hashtable.tryGetValue`, `Hashtable.count` |
@@ -61,7 +61,7 @@ score: 6/6 must-haves verified
 
 | File             | Line | Pattern                                   | Severity | Impact                                                                             |
 |------------------|------|-------------------------------------------|----------|------------------------------------------------------------------------------------|
-| `src/LangThree/Bidir.fs` | 644 | `TData("KeyValuePair", ...)` arm retained | INFO     | Intentionally kept per plan (dead code path — no LangThree code can produce TData KeyValuePair via hashtable iteration anymore, but arm is harmless) |
+| `src/FunLang/Bidir.fs` | 644 | `TData("KeyValuePair", ...)` arm retained | INFO     | Intentionally kept per plan (dead code path — no FunLang code can produce TData KeyValuePair via hashtable iteration anymore, but arm is harmless) |
 
 No blocker or warning-level anti-patterns found. The retained KeyValuePair field access arm in Bidir.fs is dead code (hashtable iteration now produces TTuple, not TData KeyValuePair), but it does not affect correctness and was explicitly kept per plan for future cleanup in Phase 62.
 

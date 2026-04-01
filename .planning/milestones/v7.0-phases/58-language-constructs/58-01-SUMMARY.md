@@ -16,8 +16,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
 
 decisions:
   - id: listcomp-range-desugaring
@@ -54,12 +54,12 @@ Added syntactic foundation for two new language features:
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | Add StringSliceExpr and ListCompExpr to Ast.fs | 65c155b | src/LangThree/Ast.fs |
-| 2 | Add parser grammar rules for string slicing and list comprehension | ee4204c | src/LangThree/Parser.fsy |
+| 1 | Add StringSliceExpr and ListCompExpr to Ast.fs | 65c155b | src/FunLang/Ast.fs |
+| 2 | Add parser grammar rules for string slicing and list comprehension | ee4204c | src/FunLang/Parser.fsy |
 
 ## Verification
 
-Build: `dotnet build src/LangThree/LangThree.fsproj -c Release`
+Build: `dotnet build src/FunLang/FunLang.fsproj -c Release`
 - 0 errors
 - 5 warnings (FS0025 incomplete pattern match in Eval.fs, Bidir.fs, TypeCheck.fs, Infer.fs, Format.fs — expected, will be resolved in Plan 02)
 - No new LALR shift/reduce or reduce/reduce conflicts introduced

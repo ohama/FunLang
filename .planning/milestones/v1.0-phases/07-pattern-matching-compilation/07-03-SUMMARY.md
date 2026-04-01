@@ -23,9 +23,9 @@ tech-stack:
 
 key-files:
   created:
-    - tests/LangThree.Tests/MatchCompileTests.fs
+    - tests/FunLang.Tests/MatchCompileTests.fs
   modified:
-    - tests/LangThree.Tests/LangThree.Tests.fsproj
+    - tests/FunLang.Tests/FunLang.Tests.fsproj
 
 key-decisions:
   - "Reuse evalModule helper from ModuleTests for end-to-end pipeline testing"
@@ -64,8 +64,8 @@ Each task was committed atomically:
 1. **Task 1: Create MatchCompileTests.fs with comprehensive pattern matching tests** - `9ec6558` (test)
 
 ## Files Created/Modified
-- `tests/LangThree.Tests/MatchCompileTests.fs` - 17 integration tests for decision tree compilation
-- `tests/LangThree.Tests/LangThree.Tests.fsproj` - Added MatchCompileTests.fs to test project
+- `tests/FunLang.Tests/MatchCompileTests.fs` - 17 integration tests for decision tree compilation
+- `tests/FunLang.Tests/FunLang.Tests.fsproj` - Added MatchCompileTests.fs to test project
 
 ## Decisions Made
 - Reused evalModule helper from ModuleTests for full parse+typecheck+eval pipeline testing

@@ -21,8 +21,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - tests/LangThree.Tests/IntegrationTests.fs
-    - tests/LangThree.Tests/RecordTests.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
+    - tests/FunLang.Tests/RecordTests.fs
 
 key-decisions:
   - "Use `| _ -> failtest \"Unexpected module variant\"` for outer module matches in test helpers (fail loudly)"
@@ -65,8 +65,8 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `tests/LangThree.Tests/IntegrationTests.fs` - Added wildcard catchall arms to 9 incomplete matches
-- `tests/LangThree.Tests/RecordTests.fs` - Added wildcard catchall arm to 1 incomplete match
+- `tests/FunLang.Tests/IntegrationTests.fs` - Added wildcard catchall arms to 9 incomplete matches
+- `tests/FunLang.Tests/RecordTests.fs` - Added wildcard catchall arm to 1 incomplete match
 
 ## Decisions Made
 - Outer module match wildcard in test helpers uses `failtest` (any unexpected module variant is a bug in test setup)

@@ -29,11 +29,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "ForInExpr var: string -> var: Pattern (enables tuple destructuring syntax)"
@@ -80,11 +80,11 @@ Each task was committed atomically:
 **Plan metadata:** (in final commit)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - ForInExpr var: Pattern (was string)
-- `src/LangThree/Parser.fsy` - FOR IDENT IN wraps in VarPat; new FOR TuplePattern IN rules
-- `src/LangThree/Bidir.fs` - inferPattern binding, TTuple for THashtable
-- `src/LangThree/Eval.fs` - matchPattern binding, TupleValue for HashtableValue
-- `src/LangThree/Format.fs` - formatPattern for loop var
+- `src/FunLang/Ast.fs` - ForInExpr var: Pattern (was string)
+- `src/FunLang/Parser.fsy` - FOR IDENT IN wraps in VarPat; new FOR TuplePattern IN rules
+- `src/FunLang/Bidir.fs` - inferPattern binding, TTuple for THashtable
+- `src/FunLang/Eval.fs` - matchPattern binding, TupleValue for HashtableValue
+- `src/FunLang/Format.fs` - formatPattern for loop var
 
 ## Decisions Made
 - Used `inferPattern` + `unifyWithContext` in Bidir.fs to bind the loop pattern — same approach as LetPat arm, ensures correct type unification for both VarPat and TuplePat

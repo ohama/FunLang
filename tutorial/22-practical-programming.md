@@ -1,6 +1,6 @@
 # 22장: 실용 프로그래밍 (Practical Programming)
 
-LangThree는 일상적인 프로그래밍을 더 편리하게 만드는 세 가지 기능을 제공합니다. 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, 그리고 Option/Result 유틸리티 함수입니다. 이 장에서는 각 기능을 코드 예제와 함께 살펴봅니다.
+FunLang는 일상적인 프로그래밍을 더 편리하게 만드는 세 가지 기능을 제공합니다. 뉴라인 암묵적 시퀀싱, 컬렉션 for-in 루프, 그리고 Option/Result 유틸리티 함수입니다. 이 장에서는 각 기능을 코드 예제와 함께 살펴봅니다.
 
 ## 뉴라인 암묵적 시퀀싱 (Newline Implicit Sequencing)
 
@@ -14,16 +14,16 @@ LangThree는 일상적인 프로그래밍을 더 편리하게 만드는 세 가�
 $ cat greet.l3
 let greet name =
     println ("Hello, " ^^ name)
-    println "Welcome to LangThree"
+    println "Welcome to FunLang"
 let _ = greet "Alice"
 
-$ langthree greet.l3
+$ funlang greet.l3
 Hello, Alice
-Welcome to LangThree
+Welcome to FunLang
 ()
 ```
 
-`greet` 함수는 `println ("Hello, " ^^ name)`과 `println "Welcome to LangThree"` 두 표현식을 순서대로 실행합니다. `println`의 반환값은 unit이므로, 마지막 `println`의 unit이 함수의 반환값이 됩니다.
+`greet` 함수는 `println ("Hello, " ^^ name)`과 `println "Welcome to FunLang"` 두 표현식을 순서대로 실행합니다. `println`의 반환값은 unit이므로, 마지막 `println`의 unit이 함수의 반환값이 됩니다.
 
 ### if/else 본체에서의 뉴라인 시퀀싱
 
@@ -40,7 +40,7 @@ let check x =
         0
 let result = check 5
 
-$ langthree check.l3
+$ funlang check.l3
 positive
 10
 ```
@@ -62,7 +62,7 @@ let _ =
     for n in nums do
         println (to_string n)
 
-$ langthree list_iter.l3
+$ funlang list_iter.l3
 1
 2
 3
@@ -83,7 +83,7 @@ let _ =
     for x in arr do
         println (to_string x)
 
-$ langthree arr_iter.l3
+$ funlang arr_iter.l3
 10
 20
 30
@@ -104,7 +104,7 @@ let _ = for (k, v) in ht do
   let _ = println k
   println v
 
-$ langthree ht_forin.l3
+$ funlang ht_forin.l3
 name
 Alice
 ()
@@ -131,7 +131,7 @@ let chained = optionBind (fun x -> if x > 10 then Some (x + 1) else None) double
 let _ = println (to_string doubled)
 let _ = println (to_string chained)
 
-$ langthree option_map_bind.l3
+$ funlang option_map_bind.l3
 Some 42
 Some 43
 ()
@@ -154,7 +154,7 @@ let _ = println (to_string fallback)
 let _ = println (to_string filtered)
 let _ = println (to_string rejected)
 
-$ langthree option_default_filter.l3
+$ funlang option_default_filter.l3
 42
 0
 Some 10
@@ -178,7 +178,7 @@ let _ = println (to_string mapped)
 let _ = println (to_string asOption)
 let _ = println (to_string errCase)
 
-$ langthree result_map_opt.l3
+$ funlang result_map_opt.l3
 Ok 84
 Some 84
 None
@@ -217,7 +217,7 @@ let process items =
     ()
 let _ = process [Some 1; None; Some 3]
 
-$ langthree process.l3
+$ funlang process.l3
 Some 2
 None
 Some 6

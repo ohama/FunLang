@@ -34,7 +34,7 @@ key-files:
     - tests/flt/expr/seq/seq-trailing.flt
     - tests/flt/expr/seq/seq-list-no-conflict.flt
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "SeqExpr nonterminal approach (OCaml-style) chosen over precedence declarations"
@@ -77,7 +77,7 @@ Each task was committed atomically:
 2. **Task 2: Write flt tests for SEQ-01, SEQ-02, SEQ-03 and run them** - `ecfa12b` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - SeqExpr nonterminal added; ~30 statement-position rules updated to use SeqExpr
+- `src/FunLang/Parser.fsy` - SeqExpr nonterminal added; ~30 statement-position rules updated to use SeqExpr
 - `tests/flt/expr/seq/seq-basic.flt` - SEQ-01: println "hello"; println "world"
 - `tests/flt/expr/seq/seq-chained.flt` - SEQ-02: let mut + x <- 1; x <- x+1; x <- x+1; x -> 3
 - `tests/flt/expr/seq/seq-in-block.flt` - SEQ-03: sequencing in indented block

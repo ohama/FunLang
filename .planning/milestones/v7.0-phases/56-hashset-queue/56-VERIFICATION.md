@@ -26,7 +26,7 @@ score: 9/9 must-haves verified
 | 6 | q.Enqueue(v) adds v to back, returns unit | VERIFIED | `Eval.fs:1314-1329` Enqueue returns TupleValue []; queue-basic.flt: Enqueue(10/20/30) then Count=3 |
 | 7 | q.Dequeue() removes and returns front element | VERIFIED | `Eval.fs:1314-1329` Dequeue returns q.Dequeue(); queue-basic.flt: Dequeue()=10 then Dequeue()=20 (FIFO) |
 | 8 | q.Count returns integer count of elements (property, no ()) | VERIFIED | `Eval.fs:1329` `IntValue q.Count`; queue-basic.flt: Count decrements correctly |
-| 9 | Dequeue on empty queue raises LangThreeException with message | VERIFIED | `Eval.fs:1325` raises `LangThreeException (StringValue "Queue.Dequeue: queue is empty")`; queue-error.flt passes |
+| 9 | Dequeue on empty queue raises FunLangException with message | VERIFIED | `Eval.fs:1325` raises `FunLangException (StringValue "Queue.Dequeue: queue is empty")`; queue-error.flt passes |
 
 **Score:** 9/9 truths verified
 
@@ -34,16 +34,16 @@ score: 9/9 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | HashSetValue/QueueValue DU cases with GetHashCode, valueEqual, valueCompare, formatValue | VERIFIED | Lines 210-211 (DU cases), 235-236 (GetHashCode), 263-264 (valueEqual), 278-279 (valueCompare); formatValue in Eval.fs lines 161-166 |
-| `src/LangThree/Eval.fs` | Constructor interception + FieldAccess dispatch + raw builtins + formatValue | VERIFIED | Constructor: lines 1126-1138; FieldAccess: lines 1303-1330; builtins: lines 661-712; formatValue: lines 161-166 |
-| `src/LangThree/Bidir.fs` | Constructor type synthesis TData("HashSet",[]) / TData("Queue",[]); FieldAccess type rules | VERIFIED | Constructor: lines 75-90; FieldAccess: lines 572-594 |
-| `src/LangThree/TypeCheck.fs` | hashset_*/queue_* raw builtins in initialTypeEnv | VERIFIED | Lines 172-188: 8 builtins with full polymorphic schemes |
+| `src/FunLang/Ast.fs` | HashSetValue/QueueValue DU cases with GetHashCode, valueEqual, valueCompare, formatValue | VERIFIED | Lines 210-211 (DU cases), 235-236 (GetHashCode), 263-264 (valueEqual), 278-279 (valueCompare); formatValue in Eval.fs lines 161-166 |
+| `src/FunLang/Eval.fs` | Constructor interception + FieldAccess dispatch + raw builtins + formatValue | VERIFIED | Constructor: lines 1126-1138; FieldAccess: lines 1303-1330; builtins: lines 661-712; formatValue: lines 161-166 |
+| `src/FunLang/Bidir.fs` | Constructor type synthesis TData("HashSet",[]) / TData("Queue",[]); FieldAccess type rules | VERIFIED | Constructor: lines 75-90; FieldAccess: lines 572-594 |
+| `src/FunLang/TypeCheck.fs` | hashset_*/queue_* raw builtins in initialTypeEnv | VERIFIED | Lines 172-188: 8 builtins with full polymorphic schemes |
 | `Prelude/HashSet.fun` | HashSet.create/add/contains/count module API | VERIFIED | 5-line module wrapping hashset_* builtins |
 | `Prelude/Queue.fun` | Queue.create/enqueue/dequeue/count module API | VERIFIED | 5-line module wrapping queue_* builtins |
 | `tests/flt/file/hashset/hashset-basic.flt` | Integer HashSet test (COLL-02) | VERIFIED | Tests Add true/false, Contains, Count |
 | `tests/flt/file/hashset/hashset-strings.flt` | String HashSet test (COLL-02) | VERIFIED | Tests Add/Contains/Count with strings |
 | `tests/flt/file/queue/queue-basic.flt` | FIFO Queue integer test (COLL-03) | VERIFIED | Tests Enqueue/Dequeue/Count FIFO order |
-| `tests/flt/file/queue/queue-error.flt` | Empty dequeue error test (COLL-03) | VERIFIED | try-with catches LangThreeException |
+| `tests/flt/file/queue/queue-error.flt` | Empty dequeue error test (COLL-03) | VERIFIED | try-with catches FunLangException |
 
 ### Key Link Verification
 

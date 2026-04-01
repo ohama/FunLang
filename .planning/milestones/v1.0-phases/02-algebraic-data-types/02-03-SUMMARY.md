@@ -28,14 +28,14 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Infer.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Format.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Infer.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Format.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Uppercase first char = constructor, lowercase = variable in pattern parser"
@@ -80,14 +80,14 @@ Each task was committed atomically:
 3. **Task 3: Wire ConstructorEnv through module-level type checking and add tests** - `9ccf6df` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added ConstructorPat variant to Pattern type, updated patternSpanOf
-- `src/LangThree/Parser.fsy` - Uppercase/lowercase pattern disambiguation, parenthesized patterns
-- `src/LangThree/Infer.fs` - Extended inferPattern with ConstructorEnv param and ConstructorPat case
-- `src/LangThree/Bidir.fs` - Threaded ConstructorEnv through synth/check, added synthTopWithCtors
-- `src/LangThree/TypeCheck.fs` - Added typeCheckModule for ADT-aware module type checking
-- `src/LangThree/Diagnostic.fs` - Added UnboundConstructor and ArityMismatch error kinds
-- `src/LangThree/Format.fs` - Added ConstructorPat formatting
-- `tests/LangThree.Tests/IntegrationTests.fs` - 4 new ADT pattern matching tests
+- `src/FunLang/Ast.fs` - Added ConstructorPat variant to Pattern type, updated patternSpanOf
+- `src/FunLang/Parser.fsy` - Uppercase/lowercase pattern disambiguation, parenthesized patterns
+- `src/FunLang/Infer.fs` - Extended inferPattern with ConstructorEnv param and ConstructorPat case
+- `src/FunLang/Bidir.fs` - Threaded ConstructorEnv through synth/check, added synthTopWithCtors
+- `src/FunLang/TypeCheck.fs` - Added typeCheckModule for ADT-aware module type checking
+- `src/FunLang/Diagnostic.fs` - Added UnboundConstructor and ArityMismatch error kinds
+- `src/FunLang/Format.fs` - Added ConstructorPat formatting
+- `tests/FunLang.Tests/IntegrationTests.fs` - 4 new ADT pattern matching tests
 
 ## Decisions Made
 - Uppercase first character distinguishes constructors from variables in patterns (F#/OCaml convention)
@@ -103,7 +103,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (integration tests)
 - **Issue:** Nested constructor patterns like `Some (Some x)` failed to parse because parser had no rule for `(Pattern)` without commas
 - **Fix:** Added `LPAREN Pattern RPAREN { $2 }` rule to Pattern production
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** testMatchWithNestedConstructors passes
 - **Committed in:** 9ccf6df (Task 3 commit)
 
@@ -111,7 +111,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (build warnings)
 - **Issue:** Format.fs had incomplete pattern match warning for ConstructorPat
 - **Fix:** Added ConstructorPat case to formatPattern function
-- **Files modified:** src/LangThree/Format.fs
+- **Files modified:** src/FunLang/Format.fs
 - **Verification:** Build warning eliminated
 - **Committed in:** 34b7a2b (Task 1 commit)
 

@@ -29,15 +29,15 @@ score: 4/4 must-haves verified
 
 | Artifact                          | Expected                                       | Status     | Details                                        |
 | --------------------------------- | ---------------------------------------------- | ---------- | ---------------------------------------------- |
-| `src/LangThree/Ast.fs`           | GadtConstructorDecl variant, TEData variant     | VERIFIED   | Line 148: GadtConstructorDecl; Line 138: TEData |
-| `src/LangThree/Type.fs`          | ConstructorInfo with IsGadt, ExistentialVars    | VERIFIED   | Lines 28-29: Both fields present               |
-| `src/LangThree/Diagnostic.fs`    | GadtAnnotationRequired, ExistentialEscape, GadtReturnTypeMismatch | VERIFIED | Lines 33-35 definitions, E0401/E0402/E0403 codes |
-| `src/LangThree/Parser.fsy`       | GADT constructor grammar rule                  | VERIFIED   | Line 304: GadtConstructorDecl construction      |
-| `src/LangThree/Elaborate.fs`     | GADT constructor elaboration, existential detection | VERIFIED | GadtConstructorDecl handler with collectTypeExprVars, IsGadt sweep |
-| `src/LangThree/Bidir.fs`         | GADT check-mode refinement, synth-mode error   | VERIFIED   | isGadtMatch helper (line 15), synth error (275), check refinement (444) |
-| `src/LangThree/Exhaustive.fs`    | filterPossibleConstructors                     | VERIFIED   | Line 236: GADT-aware filtering function         |
-| `src/LangThree/TypeCheck.fs`     | Wired filterPossibleConstructors               | VERIFIED   | filterPossibleConstructors called in exhaustiveness path |
-| `tests/LangThree.Tests/GadtTests.fs` | Comprehensive GADT test suite              | VERIFIED   | 250 lines, 17 tests across 6 categories        |
+| `src/FunLang/Ast.fs`           | GadtConstructorDecl variant, TEData variant     | VERIFIED   | Line 148: GadtConstructorDecl; Line 138: TEData |
+| `src/FunLang/Type.fs`          | ConstructorInfo with IsGadt, ExistentialVars    | VERIFIED   | Lines 28-29: Both fields present               |
+| `src/FunLang/Diagnostic.fs`    | GadtAnnotationRequired, ExistentialEscape, GadtReturnTypeMismatch | VERIFIED | Lines 33-35 definitions, E0401/E0402/E0403 codes |
+| `src/FunLang/Parser.fsy`       | GADT constructor grammar rule                  | VERIFIED   | Line 304: GadtConstructorDecl construction      |
+| `src/FunLang/Elaborate.fs`     | GADT constructor elaboration, existential detection | VERIFIED | GadtConstructorDecl handler with collectTypeExprVars, IsGadt sweep |
+| `src/FunLang/Bidir.fs`         | GADT check-mode refinement, synth-mode error   | VERIFIED   | isGadtMatch helper (line 15), synth error (275), check refinement (444) |
+| `src/FunLang/Exhaustive.fs`    | filterPossibleConstructors                     | VERIFIED   | Line 236: GADT-aware filtering function         |
+| `src/FunLang/TypeCheck.fs`     | Wired filterPossibleConstructors               | VERIFIED   | filterPossibleConstructors called in exhaustiveness path |
+| `tests/FunLang.Tests/GadtTests.fs` | Comprehensive GADT test suite              | VERIFIED   | 250 lines, 17 tests across 6 categories        |
 
 ### Key Link Verification
 

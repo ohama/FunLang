@@ -144,7 +144,7 @@ For methods returning functions (future phases), return the arrow type:
 
 No structural changes needed. All changes are in existing files:
 ```
-src/LangThree/
+src/FunLang/
 ├── Eval.fs      -- Extend FieldAccess arm with value-type dispatch
 ├── Bidir.fs     -- Extend FieldAccess arm with TString/TArray type rules
 └── tests/flt/
@@ -260,7 +260,7 @@ src/LangThree/
 ### flt Test Format
 ```
 // Test: .Length property on strings
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let s = "hello"
 let n = s.Length
@@ -274,7 +274,7 @@ let _ = println (to_string m)
 
 ```
 // Test: .Length property on arrays
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let arr = Array.create 3 0
 let n = arr.Length

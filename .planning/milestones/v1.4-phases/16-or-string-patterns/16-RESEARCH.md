@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds two pattern matching features to LangThree: or-patterns (`| 1 | 2 | 3 -> expr`) and string constant patterns (`| "hello" -> expr`). Both are standard ML-family features with well-understood semantics.
+This phase adds two pattern matching features to FunLang: or-patterns (`| 1 | 2 | 3 -> expr`) and string constant patterns (`| "hello" -> expr`). Both are standard ML-family features with well-understood semantics.
 
 The string pattern change is straightforward: add `StringConst of string` to the `Constant` DU, then propagate through all consumers (parser, eval, type checker, match compiler, exhaustiveness, format). The or-pattern is more nuanced due to an LALR(1) parsing ambiguity with `|` used as both match-clause separator and or-pattern combinator, requiring a grammar restructuring approach.
 
@@ -55,7 +55,7 @@ No new libraries needed. This phase extends existing modules only.
 
 **Why `Pattern list` (not binary `Pattern * Pattern`):** A list representation avoids deep nesting for `| 1 | 2 | 3 | 4` which would otherwise become `OrPat(OrPat(OrPat(1, 2), 3), 4)`. The list `OrPat([1; 2; 3; 4])` is simpler to process in all consumers.
 
-**Restriction:** For simplicity, LangThree or-patterns will NOT support variable bindings in alternatives. Only constant patterns, constructor patterns (nullary), wildcard, and empty-list patterns are allowed within or-alternatives. This avoids the complexity of checking that all alternatives bind the same variables with the same types. The restriction should be enforced during type checking with a clear error message.
+**Restriction:** For simplicity, FunLang or-patterns will NOT support variable bindings in alternatives. Only constant patterns, constructor patterns (nullary), wildcard, and empty-list patterns are allowed within or-alternatives. This avoids the complexity of checking that all alternatives bind the same variables with the same types. The restriction should be enforced during type checking with a clear error message.
 
 ### Pattern 3: Or-Pattern Parsing in LALR(1)
 
@@ -164,7 +164,7 @@ let rec expandPattern (pat: Pattern) : Pattern list =
 
 ### Pattern 6: Or-Pattern in Type Checking (Infer.fs)
 
-**What:** All alternatives in an or-pattern must have the same type. No variable bindings allowed (LangThree restriction).
+**What:** All alternatives in an or-pattern must have the same type. No variable bindings allowed (FunLang restriction).
 
 ```fsharp
 // In inferPattern:
@@ -190,7 +190,7 @@ let rec expandPattern (pat: Pattern) : Pattern list =
 ```
 
 ### Anti-Patterns to Avoid
-- **Do NOT make or-patterns introduce variable bindings.** OCaml/F# require all alternatives to bind the same names with the same types. This is complex. LangThree should forbid it.
+- **Do NOT make or-patterns introduce variable bindings.** OCaml/F# require all alternatives to bind the same names with the same types. This is complex. FunLang should forbid it.
 - **Do NOT use a separate token for or-pattern `|`.** Reuse `PIPE`. The grammar structure disambiguates.
 - **Do NOT handle string patterns as special cases in MatchCompile.** Use the same `#prefix_value` naming convention as IntConst and BoolConst.
 
@@ -228,7 +228,7 @@ let rec expandPattern (pat: Pattern) : Pattern list =
 
 ### Pitfall 6: Exhaustive.fs astPatToCasePat Treats ConstPat as Wildcard
 **What goes wrong:** Currently `astPatToCasePat` (line 308) maps ALL `ConstPat` to `WildcardPat`. This means int/bool/string constant patterns are invisible to exhaustiveness checking for non-ADT types. This is a pre-existing limitation, not introduced by this phase.
-**How to avoid:** This is acceptable for now. LangThree only checks exhaustiveness for ADT-typed scrutinees. String/int/bool exhaustiveness would require infinite constructor sets.
+**How to avoid:** This is acceptable for now. FunLang only checks exhaustiveness for ADT-typed scrutinees. String/int/bool exhaustiveness would require infinite constructor sets.
 
 ## Code Examples
 
@@ -341,7 +341,7 @@ let expandOrPatterns (clauses: MatchClause list) : MatchClause list =
 - Jules Jacobs pattern matching compilation algorithm as implemented in MatchCompile.fs
 
 ### Secondary (MEDIUM confidence)
-- F# and OCaml language specifications for or-pattern semantics (no variable bindings in LangThree simplification)
+- F# and OCaml language specifications for or-pattern semantics (no variable bindings in FunLang simplification)
 - LALR(1) grammar analysis for `PIPE` disambiguation
 
 ## Metadata

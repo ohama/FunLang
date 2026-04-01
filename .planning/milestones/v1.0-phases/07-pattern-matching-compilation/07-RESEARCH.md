@@ -39,7 +39,7 @@ This phase requires no external libraries -- it is a pure algorithmic implementa
 
 ### Recommended Project Structure
 ```
-src/LangThree/
+src/FunLang/
   MatchCompile.fs   # NEW: Decision tree types + compilation algorithm
   Eval.fs           # MODIFIED: evaluate decision trees instead of sequential clauses
   Exhaustive.fs     # UNCHANGED: static exhaustiveness/redundancy checking
@@ -250,7 +250,7 @@ let splitClauses (testVar: TestVar) (ctorName: string) (arity: int)
 
 ### Pitfall 2: Non-Constructor Pattern Types
 **What goes wrong:** The algorithm handles `ConstructorPat` but crashes or miscompiles `ConstPat`, `ConsPat`, `EmptyListPat`, `TuplePat`, `RecordPat`.
-**Why it happens:** Jacobs' paper focuses on ADT constructors. LangThree's pattern language is richer.
+**Why it happens:** Jacobs' paper focuses on ADT constructors. FunLang's pattern language is richer.
 **How to avoid:** Map each pattern type to a constructor-like test before compilation:
 
 | Pattern | Constructor Name | Arity | Sub-patterns |
@@ -416,8 +416,8 @@ let matchClausesToRows (scrutineeVar: TestVar) (clauses: MatchClause list) : Mat
 **Confidence breakdown:**
 - Standard stack: HIGH - No external dependencies; pure F# algorithmic code
 - Architecture: HIGH - Algorithm fully specified in 5-page paper with reference Scala implementation; codebase is well-understood
-- Pitfalls: HIGH - Guard handling and non-constructor patterns are known challenges, documented in Yorick Peterse's implementation and verified against LangThree's pattern types
-- Code examples: HIGH - Derived from Jacobs' reference Scala implementation, translated to F# with LangThree-specific adaptations
+- Pitfalls: HIGH - Guard handling and non-constructor patterns are known challenges, documented in Yorick Peterse's implementation and verified against FunLang's pattern types
+- Code examples: HIGH - Derived from Jacobs' reference Scala implementation, translated to F# with FunLang-specific adaptations
 
 **Research date:** 2026-03-10
 **Valid until:** Indefinite (stable algorithms, no framework churn)

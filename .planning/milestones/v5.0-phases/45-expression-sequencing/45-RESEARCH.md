@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds `e1; e2` expression sequencing to LangThree. The core challenge is that SEMICOLON is already used as a list element separator (`[1; 2; 3]`) and as a record field separator (`{x = 1; y = 2}`). Naively adding `Expr SEMICOLON Expr` to the `Expr` rule would create immediate LALR(1) shift/reduce conflicts in every list and record context.
+This phase adds `e1; e2` expression sequencing to FunLang. The core challenge is that SEMICOLON is already used as a list element separator (`[1; 2; 3]`) and as a record field separator (`{x = 1; y = 2}`). Naively adding `Expr SEMICOLON Expr` to the `Expr` rule would create immediate LALR(1) shift/reduce conflicts in every list and record context.
 
 The standard solution — used by OCaml's own grammar — is to introduce a separate `SeqExpr` nonterminal that wraps `Expr` and additionally allows sequencing. Sequencing is only valid at "statement positions": function bodies, match clause bodies, let-binding bodies, and the top-level start rule. Inside list literals and record expressions, only plain `Expr` is accepted, which does not include sequencing. This is context-free disambiguation by grammar structure, requiring no GLR parsing, no lexer hack, and no precedence trick.
 
@@ -311,11 +311,11 @@ let lst = [1; 2; 3]
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Parser.fsy` — all grammar rules
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/IndentFilter.fs` — offside rule logic
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Ast.fs` — `LetPat(WildcardPat, ...)` node
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Bidir.fs` — type checker handling of LetPat
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — evaluator handling of LetPat
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Parser.fsy` — all grammar rules
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/IndentFilter.fs` — offside rule logic
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Ast.fs` — `LetPat(WildcardPat, ...)` node
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Bidir.fs` — type checker handling of LetPat
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — evaluator handling of LetPat
 - `https://raw.githubusercontent.com/ocaml/ocaml/trunk/parsing/parser.mly` — `fun_seq_expr`, `seq_expr`, `expr_semi_list` grammar structure confirming the `SeqExpr` separation approach
 
 ### Secondary (MEDIUM confidence)

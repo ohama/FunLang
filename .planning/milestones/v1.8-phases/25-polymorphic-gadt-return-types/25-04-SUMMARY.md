@@ -28,8 +28,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Bidir.fs
-    - tests/LangThree.Tests/GadtTests.fs
+    - src/FunLang/Bidir.fs
+    - tests/FunLang.Tests/GadtTests.fs
     - tests/flt/file/adt/gadt-poly-eval.flt
 
 key-decisions:
@@ -76,8 +76,8 @@ completed: 2026-03-23
 
 ## Files Created/Modified
 
-- `src/LangThree/Bidir.fs` - Added `isPolyExpected` and polymorphic/concrete branch split in GADT folder (lines ~538-660)
-- `tests/LangThree.Tests/GadtTests.fs` - Added `parseAndEval` helper and `GADT-05` testList with 3 tests
+- `src/FunLang/Bidir.fs` - Added `isPolyExpected` and polymorphic/concrete branch split in GADT folder (lines ~538-660)
+- `tests/FunLang.Tests/GadtTests.fs` - Added `parseAndEval` helper and `GADT-05` testList with 3 tests
 - `tests/flt/file/adt/gadt-poly-eval.flt` - Updated to two-branch cross-type eval (output: 42 then true)
 
 ## Decisions Made

@@ -28,7 +28,7 @@ key-files:
     - tests/flt/file/lambda-tuple-basic.flt
     - tests/flt/file/lambda-tuple-nested.flt
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "Negative pattern: MINUS NUMBER in Pattern rule, no AST/Eval changes needed"
@@ -69,7 +69,7 @@ Each task was committed atomically:
 3. **Task 3: Add fslit tests** - `b035299` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added MINUS NUMBER pattern rule and FUN TuplePattern ARROW Expr rule
+- `src/FunLang/Parser.fsy` - Added MINUS NUMBER pattern rule and FUN TuplePattern ARROW Expr rule
 - `tests/flt/file/pat-negative-int.flt` - Negative integer pattern matching with -1, 0, 1, wildcard
 - `tests/flt/file/pat-negative-match.flt` - Negative pattern in temperature classification function
 - `tests/flt/file/lambda-tuple-basic.flt` - Basic tuple lambda with 2-tuple and swap

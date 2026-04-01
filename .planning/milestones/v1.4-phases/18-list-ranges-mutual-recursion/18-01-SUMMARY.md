@@ -18,14 +18,14 @@ key-files:
     - tests/flt/file/range-empty.flt
     - tests/flt/file/range-single.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Format.fs
 decisions:
   - id: "18-01-D1"
     decision: "Step value in [start..step..stop] is used directly as step (F# semantics), not as second element"

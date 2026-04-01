@@ -50,12 +50,12 @@ dotnet add package Expecto --version 10.2.0
 ### Recommended Project Structure
 Current structure is correct and follows F# compiler conventions:
 ```
-src/LangThree/
+src/FunLang/
 ├── IndentFilter.fs      # Token stream filter (NEWLINE → INDENT/DEDENT)
 ├── Lexer.fsl            # Lexer emits NEWLINE(col), rejects tabs
 ├── Parser.fsy           # Parser consumes INDENT/DEDENT tokens
 └── Ast.fs               # AST definitions
-tests/LangThree.Tests/
+tests/FunLang.Tests/
 ├── IndentFilterTests.fs # Unit tests for filter logic
 └── IntegrationTests.fs  # End-to-end parsing tests
 ```
@@ -334,7 +334,7 @@ someFunction5
 
 ### Indented Let Expressions (Already Implemented)
 ```fsharp
-// Source: Current LangThree implementation
+// Source: Current FunLang implementation
 // Parser.fsy rule:
 // | LET IDENT EQUALS INDENT Expr DEDENT
 
@@ -404,7 +404,7 @@ Things that couldn't be fully resolved:
 ### Primary (HIGH confidence)
 - [F# Code Formatting Guidelines - Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/style-guide/formatting) - Match expression formatting, function application rules, indentation conventions
 - [F# Compiler Source - LexFilter.fs](https://github.com/dotnet/fsharp/blob/main/src/fsharp/LexFilter.fs) - Token stream filtering architecture (referenced but not directly accessed)
-- Current LangThree implementation - IndentFilter.fs, Parser.fsy, Lexer.fsl (analyzed directly)
+- Current FunLang implementation - IndentFilter.fs, Parser.fsy, Lexer.fsl (analyzed directly)
 
 ### Secondary (MEDIUM confidence)
 - [F# syntax: indentation and verbosity | F# for fun and profit](https://fsharpforfunandprofit.com/posts/fsharp-syntax/) - Offside rule explanation

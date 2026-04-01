@@ -1,5 +1,5 @@
 // Test: Wrong nested module name produces E0502 with qualified path
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 module A =
     module B =

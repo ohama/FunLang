@@ -51,7 +51,7 @@ score: 4/4 must-haves verified
 |-----------------------------------------|-------------------------------------|-----------------------------------------|----------|--------------------------------------------------------------------------------|
 | nlseq-structural-terminator.flt         | SEMICOLON injection logic           | if/else with multi-statement then-block | VERIFIED | if x > 2 then / println "big" / 42 / else / 0 — output `big\n42` not garbled   |
 | nlseq-multiline-app.flt                 | INDENT/DEDENT handling              | add3 with each arg on indented line     | VERIFIED | add3 / 1 / 2 / 3 (each deeper-indented) evaluates to 6, not split expressions  |
-| tutorial/22-practical-programming.md   | LangThree binary                    | examples verified against binary output | VERIFIED | SUMMARY notes all 8 examples run through binary; one bug fixed (^ → ^^ for string concat) |
+| tutorial/22-practical-programming.md   | FunLang binary                    | examples verified against binary output | VERIFIED | SUMMARY notes all 8 examples run through binary; one bug fixed (^ → ^^ for string concat) |
 | tutorial/SUMMARY.md                    | tutorial/22-practical-programming.md | mdBook link after chapter 21           | VERIFIED | `- [실용 프로그래밍](22-practical-programming.md)` on line 28, after 21-imperative-ergonomics.md on line 27 |
 
 ### Requirements Coverage

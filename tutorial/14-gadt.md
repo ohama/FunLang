@@ -111,7 +111,7 @@ type Expr 'a =
     | BoolLit : bool -> bool Expr
 let result = IntLit 42
 
-$ langthree expr.l3
+$ funlang expr.l3
 IntLit 42
 ```
 
@@ -147,7 +147,7 @@ let eval e =
     : int)
 let result = eval (IntLit 42)
 
-$ langthree eval.l3
+$ funlang eval.l3
 42
 ```
 
@@ -216,7 +216,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Add (IntLit 20, IntLit 12)))
 
-$ langthree calc.l3
+$ funlang calc.l3
 42
 ```
 
@@ -246,7 +246,7 @@ let eval e =
 let _ = printf "%d\n" (eval (IntLit 42))
 let result = eval (BoolLit true)
 
-$ langthree poly-eval.l3
+$ funlang poly-eval.l3
 42
 true
 ```
@@ -272,7 +272,7 @@ let eval_int e =
     : int)
 let result = eval_int (IntLit 7)
 
-$ langthree filter.l3
+$ funlang filter.l3
 7
 ```
 
@@ -298,7 +298,7 @@ let show_int v =
     : string)
 let result = show_int (VInt 99)
 
-$ langthree typed.l3
+$ funlang typed.l3
 "99"
 ```
 
@@ -336,7 +336,7 @@ let result =
         : int)
     eval (Add (IntLit 10, Neg (IntLit 3)))
 
-$ langthree typed_eval.l3
+$ funlang typed_eval.l3
 7
 ```
 
@@ -351,7 +351,7 @@ $ langthree typed_eval.l3
 
 ## 다른 언어의 GADT
 
-GADT는 LangThree만의 기능이 아닙니다. 여러 언어가 같은 아이디어를 각자의 방식으로 표현합니다. 다른 언어의 접근법을 비교하면 GADT의 본질이 더 명확해집니다.
+GADT는 FunLang만의 기능이 아닙니다. 여러 언어가 같은 아이디어를 각자의 방식으로 표현합니다. 다른 언어의 접근법을 비교하면 GADT의 본질이 더 명확해집니다.
 
 ### Haskell — GADT의 원조
 
@@ -373,20 +373,20 @@ eval (Add x y)   = eval x + eval y
 
 Haskell에서 주목할 점은 `eval`의 반환 타입이 `a`라는 것입니다. `IntLit` 분기에서 `a = Int`로 정제되므로 `n :: Int`를 그대로 반환할 수 있고, `BoolLit` 분기에서는 `a = Bool`로 정제되므로 `b :: Bool`을 반환할 수 있습니다. **반환 타입이 입력에 따라 달라지는 함수를 타입 안전하게 정의한 것입니다.** Haskell은 타입 추론이 강력해서 `(match ... : int)` 같은 명시적 주석 없이도 동작하는 경우가 많습니다.
 
-LangThree와 비교하면:
+FunLang와 비교하면:
 
-| | Haskell | LangThree |
+| | Haskell | FunLang |
 |---|---------|-----------|
 | 구문 | `IntLit :: Int -> Expr Int` | `IntLit : int -> int Expr` |
 | 타입 매개변수 위치 | 뒤 (`Expr Int`) | 앞 (`int Expr`) |
 | match 주석 | 대부분 불필요 (타입 추론) | 선택사항 (생략 시 다형적 반환) |
 | 다형적 반환 | `eval :: Expr a -> a` 가능 | `eval : 'a Expr -> 'a` 가능 |
 
-Haskell의 `eval :: Expr a -> a`는 "정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다"를 타입 하나로 표현합니다. LangThree도 주석 없이 `let eval e = match e with | IntLit n -> n | BoolLit b -> b`처럼 쓰면 `eval : 'a Expr -> 'a` 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 `(match ... : int)` 주석을 추가하면 됩니다.
+Haskell의 `eval :: Expr a -> a`는 "정수 표현식을 넣으면 정수가 나오고, 불리언 표현식을 넣으면 불리언이 나온다"를 타입 하나로 표현합니다. FunLang도 주석 없이 `let eval e = match e with | IntLit n -> n | BoolLit b -> b`처럼 쓰면 `eval : 'a Expr -> 'a` 타입이 추론됩니다 — Haskell과 동등한 수준의 다형적 반환을 지원합니다. 반환 타입을 하나로 고정하고 싶을 때는 `(match ... : int)` 주석을 추가하면 됩니다.
 
-### OCaml — LangThree의 직접적 영감
+### OCaml — FunLang의 직접적 영감
 
-OCaml은 4.0부터 GADT를 지원합니다. LangThree의 GADT 구현은 OCaml의 접근법에서 직접적인 영감을 받았습니다:
+OCaml은 4.0부터 GADT를 지원합니다. FunLang의 GADT 구현은 OCaml의 접근법에서 직접적인 영감을 받았습니다:
 
 ```ocaml
 type _ expr =
@@ -400,9 +400,9 @@ let eval : type a. a expr -> a = function
   | Add (x, y) -> eval x + eval y
 ```
 
-OCaml에서 `type a.`는 **locally abstract type** 선언입니다. 컴파일러에게 "이 함수 안에서 GADT 타입 정제를 수행하라"고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. LangThree는 주석 없이도 자동으로 다형적 타입 변수를 생성하여 타입 정제를 수행하는 방식으로, OCaml보다 한 걸음 더 나아갔습니다. 반환 타입을 하나로 고정하고 싶을 때는 여전히 `(match ... : int)` 주석을 사용할 수 있습니다.
+OCaml에서 `type a.`는 **locally abstract type** 선언입니다. 컴파일러에게 "이 함수 안에서 GADT 타입 정제를 수행하라"고 알려줍니다. 주석 없이는 OCaml도 타입 정제를 할 수 없습니다. FunLang는 주석 없이도 자동으로 다형적 타입 변수를 생성하여 타입 정제를 수행하는 방식으로, OCaml보다 한 걸음 더 나아갔습니다. 반환 타입을 하나로 고정하고 싶을 때는 여전히 `(match ... : int)` 주석을 사용할 수 있습니다.
 
-OCaml 구문에서 `type _ expr`의 `_`는 타입 매개변수를 익명으로 선언합니다. 각 생성자가 자신의 반환 타입에서 이 매개변수를 구체화합니다. LangThree에서는 `type Expr 'a`로 매개변수에 이름을 줍니다.
+OCaml 구문에서 `type _ expr`의 `_`는 타입 매개변수를 익명으로 선언합니다. 각 생성자가 자신의 반환 타입에서 이 매개변수를 구체화합니다. FunLang에서는 `type Expr 'a`로 매개변수에 이름을 줍니다.
 
 ### Scala — sealed trait으로 유사 구현
 
@@ -421,7 +421,7 @@ def eval[A](e: Expr[A]): A = e match {
 }
 ```
 
-Scala에서 `IntLit extends Expr[Int]`은 "IntLit은 Expr의 타입 매개변수를 Int로 고정한다"는 뜻입니다. 이것이 LangThree의 `IntLit : int -> int Expr`과 정확히 같은 의미입니다. Scala의 패턴 매칭에서도 `case IntLit(n) =>`에 진입하면 컴파일러가 `A = Int`를 추론합니다.
+Scala에서 `IntLit extends Expr[Int]`은 "IntLit은 Expr의 타입 매개변수를 Int로 고정한다"는 뜻입니다. 이것이 FunLang의 `IntLit : int -> int Expr`과 정확히 같은 의미입니다. Scala의 패턴 매칭에서도 `case IntLit(n) =>`에 진입하면 컴파일러가 `A = Int`를 추론합니다.
 
 객체지향 배경에서 왔다면 이 Scala 코드가 가장 친숙하게 느껴질 것입니다. `extends Expr[Int]`는 상속처럼 보이지만, 실제로는 GADT의 "생성자가 반환 타입을 고정한다"는 것과 동일한 효과를 냅니다.
 
@@ -475,12 +475,12 @@ Rust에서 이 문제를 해결하려면 trait object나 enum + 런타임 태그
 |------|----------|------|----------|-----------|
 | **Haskell** | 네이티브 (`GADTs` 확장) | `data Expr a where IntLit :: Int -> Expr Int` | 대부분 불필요 | `eval :: Expr a -> a` 가능 |
 | **OCaml** | 네이티브 (4.0+) | `type _ expr = IntLit : int -> int expr` | `type a.` 필요 | 가능 |
-| **LangThree** | 네이티브 | `IntLit : int -> int Expr` | 선택사항 (생략 시 다형적) | `eval : 'a Expr -> 'a` 가능 |
+| **FunLang** | 네이티브 | `IntLit : int -> int Expr` | 선택사항 (생략 시 다형적) | `eval : 'a Expr -> 'a` 가능 |
 | **Scala** | sealed trait으로 유사 | `case class IntLit(n: Int) extends Expr[Int]` | 불필요 | 가능 |
 | **TypeScript** | 판별 유니온 (제한적) | `{ tag: "int"; value: number }` | 불필요 | 유니온 반환만 |
 | **Rust** | 미지원 | — | — | — |
 
-LangThree의 GADT는 OCaml의 설계를 가장 가깝게 따르며, Haskell보다 단순하지만 핵심 기능(타입 정제, 불가능한 분기 제거, 컴파일 시점 타입 안전성)은 동일하게 제공합니다.
+FunLang의 GADT는 OCaml의 설계를 가장 가깝게 따르며, Haskell보다 단순하지만 핵심 기능(타입 정제, 불가능한 분기 제거, 컴파일 시점 타입 안전성)은 동일하게 제공합니다.
 
 ## ADT vs GADT: 언제 무엇을 쓸까
 

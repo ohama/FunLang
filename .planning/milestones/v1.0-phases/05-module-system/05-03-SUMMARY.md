@@ -28,11 +28,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/TypeCheck.fs"
-    - "src/LangThree/Program.fs"
-    - "tests/LangThree.Tests/GadtTests.fs"
-    - "tests/LangThree.Tests/RecordTests.fs"
-    - "tests/LangThree.Tests/IntegrationTests.fs"
+    - "src/FunLang/TypeCheck.fs"
+    - "src/FunLang/Program.fs"
+    - "tests/FunLang.Tests/GadtTests.fs"
+    - "tests/FunLang.Tests/RecordTests.fs"
+    - "tests/FunLang.Tests/IntegrationTests.fs"
 
 key-decisions:
   - "ModuleExports captures only new bindings (not inherited from parent scope) for clean module isolation"
@@ -75,11 +75,11 @@ Each task was committed atomically:
 2. **Task 2: Extend typeCheckModule for module system and update Program.fs caller** - `49d9896` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/TypeCheck.fs` - ModuleExports type, helper functions (openModuleExports, resolveModule, detectCircularDeps, buildDependencyGraph, checkMatchWarnings, validateUniqueRecordFields), typeCheckDecls, updated typeCheckModule
-- `src/LangThree/Program.fs` - Updated to handle 3-tuple return type and NamedModule/NamespacedModule variants
-- `tests/LangThree.Tests/GadtTests.fs` - Updated Ok pattern matching for 3-tuple
-- `tests/LangThree.Tests/RecordTests.fs` - Updated Ok pattern matching for 3-tuple
-- `tests/LangThree.Tests/IntegrationTests.fs` - Updated Ok pattern matching for 3-tuple
+- `src/FunLang/TypeCheck.fs` - ModuleExports type, helper functions (openModuleExports, resolveModule, detectCircularDeps, buildDependencyGraph, checkMatchWarnings, validateUniqueRecordFields), typeCheckDecls, updated typeCheckModule
+- `src/FunLang/Program.fs` - Updated to handle 3-tuple return type and NamedModule/NamespacedModule variants
+- `tests/FunLang.Tests/GadtTests.fs` - Updated Ok pattern matching for 3-tuple
+- `tests/FunLang.Tests/RecordTests.fs` - Updated Ok pattern matching for 3-tuple
+- `tests/FunLang.Tests/IntegrationTests.fs` - Updated Ok pattern matching for 3-tuple
 
 ## Decisions Made
 - ModuleExports captures only new bindings defined in the module scope, not inherited bindings from parent scope, ensuring clean module isolation
@@ -95,7 +95,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (extending typeCheckModule)
 - **Issue:** Test files destructured the old 2-tuple return type (warnings, recEnv), failing to compile with new 3-tuple
 - **Fix:** Updated all Ok pattern matches in GadtTests.fs, RecordTests.fs, IntegrationTests.fs to use 3-tuple
-- **Files modified:** tests/LangThree.Tests/GadtTests.fs, tests/LangThree.Tests/RecordTests.fs, tests/LangThree.Tests/IntegrationTests.fs
+- **Files modified:** tests/FunLang.Tests/GadtTests.fs, tests/FunLang.Tests/RecordTests.fs, tests/FunLang.Tests/IntegrationTests.fs
 - **Verification:** All 132 tests pass
 - **Committed in:** 49d9896 (Task 2 commit)
 

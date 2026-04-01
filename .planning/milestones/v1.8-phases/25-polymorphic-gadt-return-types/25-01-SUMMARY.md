@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Bidir.fs
-    - tests/LangThree.Tests/GadtTests.fs
+    - src/FunLang/Bidir.fs
+    - tests/FunLang.Tests/GadtTests.fs
 
 key-decisions:
   - "Use InCheckMode context wrapper when delegating from synth to check for GADT match"
@@ -67,8 +67,8 @@ completed: 2026-03-23
 
 ## Files Created/Modified
 
-- `src/LangThree/Bidir.fs` - synth Match branch: replaced raise with freshVar + check delegation + else guard
-- `tests/LangThree.Tests/GadtTests.fs` - GADT-04 test group updated from E0401-expected to success-expected
+- `src/FunLang/Bidir.fs` - synth Match branch: replaced raise with freshVar + check delegation + else guard
+- `tests/FunLang.Tests/GadtTests.fs` - GADT-04 test group updated from E0401-expected to success-expected
 
 ## Decisions Made
 
@@ -84,7 +84,7 @@ completed: 2026-03-23
 - **Found during:** Task 1 build
 - **Issue:** The old code used the GADT `if` arm as a terminating guard (always raised). After replacing the raise with a return value, F# required an explicit `else` branch because `if/then` without `else` must return `unit`.
 - **Fix:** Added `else` keyword before `let s1, scrutTy = synth ...` (the non-GADT path), which F# accepts as a valid if/then/else expression.
-- **Files modified:** src/LangThree/Bidir.fs
+- **Files modified:** src/FunLang/Bidir.fs
 - **Verification:** Build succeeded with 0 errors after fix
 - **Committed in:** 01647d4
 
@@ -92,7 +92,7 @@ completed: 2026-03-23
 - **Found during:** Task 2 test run
 - **Issue:** GADT-04 tests verified the old E0401 error path; those inputs now type-check successfully
 - **Fix:** Updated the 3 tests to verify successful type-checking and absence of E0401
-- **Files modified:** tests/LangThree.Tests/GadtTests.fs
+- **Files modified:** tests/FunLang.Tests/GadtTests.fs
 - **Verification:** All 196 tests pass
 - **Committed in:** 01647d4
 

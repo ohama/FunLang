@@ -1,7 +1,7 @@
 # Phase 60: Builtins & Prelude Modules - Research
 
 **Researched:** 2026-03-29
-**Domain:** LangThree interpreter — Eval.fs builtins, TypeCheck.fs type schemes, Prelude .fun module files
+**Domain:** FunLang interpreter — Eval.fs builtins, TypeCheck.fs type schemes, Prelude .fun module files
 **Confidence:** HIGH
 
 ## Summary
@@ -21,8 +21,8 @@ This is an internal language implementation project. There is no external packag
 ### Core Files
 | File | Purpose | Role in This Phase |
 |------|---------|-------------------|
-| `src/LangThree/Eval.fs` | Runtime evaluator | Add 5 new builtin entries to `initialBuiltinEnv` |
-| `src/LangThree/TypeCheck.fs` | Type checker | Add 5 new type schemes to `initialTypeEnv` |
+| `src/FunLang/Eval.fs` | Runtime evaluator | Add 5 new builtin entries to `initialBuiltinEnv` |
+| `src/FunLang/TypeCheck.fs` | Type checker | Add 5 new type schemes to `initialTypeEnv` |
 | `Prelude/String.fun` | String module | Add endsWith, startsWith, trim, length, contains |
 | `Prelude/Hashtable.fun` | Hashtable module | Add tryGetValue, count |
 | `Prelude/StringBuilder.fun` | StringBuilder module | Rename append to add |
@@ -30,10 +30,10 @@ This is an internal language implementation project. There is no external packag
 ### No Changes Needed
 | File | Reason |
 |------|--------|
-| `src/LangThree/Ast.fs` | No new value types |
-| `src/LangThree/Bidir.fs` | No new type synthesis rules needed |
-| `src/LangThree/Parser.fsy` | No new syntax |
-| `src/LangThree/Lexer.fsl` | No new tokens |
+| `src/FunLang/Ast.fs` | No new value types |
+| `src/FunLang/Bidir.fs` | No new type synthesis rules needed |
+| `src/FunLang/Parser.fsy` | No new syntax |
+| `src/FunLang/Lexer.fsl` | No new tokens |
 
 ## Architecture Patterns
 
@@ -180,7 +180,7 @@ All flt tests use `// --- Output:` (not `// --- Stdout:`). The FsLit runner only
 
 ```flt
 // Test: String module endsWith/startsWith/trim (BLT-01, BLT-02, BLT-03, MOD-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = println (to_string (String.endsWith "hello.txt" ".txt"))
 let _ = println (to_string (String.startsWith "hello" "he"))
@@ -356,7 +356,7 @@ module StringBuilder =
 
 ```
 // Test: String module endsWith, startsWith, trim (BLT-01..03, MOD-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = println (to_string (String.endsWith "hello.txt" ".txt"))
 let _ = println (to_string (String.startsWith "hello" "he"))
@@ -372,7 +372,7 @@ hi
 
 ```
 // Test: Hashtable.tryGetValue and Hashtable.count (BLT-04, BLT-05, MOD-02)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let ht = Hashtable.create ()
 let _ = Hashtable.set ht "a" 1
@@ -393,7 +393,7 @@ let _ = println (to_string (Hashtable.count ht))
 
 ```
 // Test: StringBuilder.add (renamed from append, MOD-03)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sb = StringBuilder.create ()
 let _ = StringBuilder.add sb "hello"
@@ -437,11 +437,11 @@ hello world
 ## Sources
 
 ### Primary (HIGH confidence)
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — Full `initialBuiltinEnv` map inspected; all 5 builtin implementation patterns verified against existing code at lines 189-780
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/TypeCheck.fs` — Full `initialTypeEnv` map inspected; all type scheme patterns verified at lines 15-210
-- `/Users/ohama/vibe-coding/LangThree/Prelude/String.fun`, `Hashtable.fun`, `StringBuilder.fun` — Current state of all 3 modules inspected
-- `/Users/ohama/vibe-coding/LangThree/.planning/milestones/v7.1-REQUIREMENTS.md` — BLT-01..05, MOD-01..03 requirements read directly
-- `/Users/ohama/vibe-coding/LangThree/.planning/STATE.md` — Prior decisions including `StringBuilder.append` conflict confirmed
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — Full `initialBuiltinEnv` map inspected; all 5 builtin implementation patterns verified against existing code at lines 189-780
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/TypeCheck.fs` — Full `initialTypeEnv` map inspected; all type scheme patterns verified at lines 15-210
+- `/Users/ohama/vibe-coding/FunLang/Prelude/String.fun`, `Hashtable.fun`, `StringBuilder.fun` — Current state of all 3 modules inspected
+- `/Users/ohama/vibe-coding/FunLang/.planning/milestones/v7.1-REQUIREMENTS.md` — BLT-01..05, MOD-01..03 requirements read directly
+- `/Users/ohama/vibe-coding/FunLang/.planning/STATE.md` — Prior decisions including `StringBuilder.append` conflict confirmed
 
 ### Secondary (MEDIUM confidence)
 - Existing flt test files inspected: `stringbuilder-prelude.flt`, `hashtable-keys-tryget.flt`, `property-string-length.flt`, `property-string-contains.flt` — output format verified

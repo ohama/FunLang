@@ -24,9 +24,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
+    - src/FunLang/Eval.fs
 
 key-decisions:
   - "SemiExprList is a separate grammar rule from ExprList — tuples keep COMMA, lists use SEMICOLON"
@@ -73,9 +73,9 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/Parser.fsy` - Added SemiExprList rule; changed list literal from COMMA ExprList to SEMICOLON SemiExprList
-- `src/LangThree/Format.fs` - Ast.List case: `String.concat "; "` (was `", "`)
-- `src/LangThree/Eval.fs` - ListValue case: `String.concat "; "` (was `", "`)
+- `src/FunLang/Parser.fsy` - Added SemiExprList rule; changed list literal from COMMA ExprList to SEMICOLON SemiExprList
+- `src/FunLang/Format.fs` - Ast.List case: `String.concat "; "` (was `", "`)
+- `src/FunLang/Eval.fs` - ListValue case: `String.concat "; "` (was `", "`)
 
 ## Decisions Made
 

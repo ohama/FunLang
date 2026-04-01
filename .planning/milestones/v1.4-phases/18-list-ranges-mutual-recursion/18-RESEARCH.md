@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds two independent features to LangThree: (1) list range syntax `[1..5]` and `[1..2..10]` for generating integer lists, and (2) mutual recursive function declarations at module level using `let rec f x = ... and g y = ...` syntax.
+This phase adds two independent features to FunLang: (1) list range syntax `[1..5]` and `[1..2..10]` for generating integer lists, and (2) mutual recursive function declarations at module level using `let rec f x = ... and g y = ...` syntax.
 
 For list ranges, a new `DOTDOT` token (`..`) must be added to the lexer. The key challenge is LALR(1) ambiguity: since `DOT` (`.`) already exists for field access, the lexer must match `..` before `.` (longer match wins in FsLex). The parser needs new productions inside the `Atom` rule for `LBRACKET Expr DOTDOT Expr RBRACKET` and `LBRACKET Expr DOTDOT Expr DOTDOT Expr RBRACKET`.
 
@@ -369,7 +369,7 @@ LetRecContinuation:
 ## Sources
 
 ### Primary (HIGH confidence)
-- LangThree source code: Ast.fs, Parser.fsy, Lexer.fsl, Eval.fs, TypeCheck.fs, Bidir.fs, Infer.fs
+- FunLang source code: Ast.fs, Parser.fsy, Lexer.fsl, Eval.fs, TypeCheck.fs, Bidir.fs, Infer.fs
 - F# language specification: range expression syntax `[start..step..stop]`
 - FsLex documentation: longest-match semantics for lexer rules
 

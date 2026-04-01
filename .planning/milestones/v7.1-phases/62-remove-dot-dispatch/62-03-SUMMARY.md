@@ -26,15 +26,15 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
 
 key-decisions:
   - "Value-type dot dispatch (string.Length, array.Length, sb.Append, etc.) is fully dead code after Plans 01+02 migrated all flt tests to module API"
   - "Both Eval.fs and Bidir.fs FieldAccess handlers now have clean two-branch structure: record access + error fallthrough"
 
 patterns-established:
-  - "Module API is the only way to call collection/string methods in LangThree — dot notation removed"
+  - "Module API is the only way to call collection/string methods in FunLang — dot notation removed"
 
 # Metrics
 duration: 6min
@@ -69,8 +69,8 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/Eval.fs` - Removed 95 lines; FieldAccess handler now has only RecordValue arm and error fallthrough
-- `src/LangThree/Bidir.fs` - Removed 75 lines; FieldAccess synth handler now has only TData record arm and error fallthrough
+- `src/FunLang/Eval.fs` - Removed 95 lines; FieldAccess handler now has only RecordValue arm and error fallthrough
+- `src/FunLang/Bidir.fs` - Removed 75 lines; FieldAccess synth handler now has only TData record arm and error fallthrough
 
 ## Decisions Made
 
@@ -91,7 +91,7 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 - v7.1 Remove Dot Notation milestone is complete
-- LangThree now has a clean purely functional module API with no OOP-style dot dispatch
+- FunLang now has a clean purely functional module API with no OOP-style dot dispatch
 - No blockers for future phases
 
 ---

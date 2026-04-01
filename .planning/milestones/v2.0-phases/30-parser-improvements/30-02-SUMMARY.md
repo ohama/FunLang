@@ -27,9 +27,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Eval.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Eval.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Expression LetRec uses BuiltinValue + mutable envRef (not FunctionValue). FunctionValue fails inside lambda bodies due to trampoline losing the self-binding."
@@ -76,9 +76,9 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Four grammar changes: multi-param expr LetRec (2 rules), unit param Decl (2 rules), unit param Expr (2 rules), top-level let-in Decl (1 rule)
-- `src/LangThree/Eval.fs` - LetRec case rewritten to use BuiltinValue + envRef pattern
-- `tests/LangThree.Tests/IntegrationTests.fs` - 7 new integration tests for SYN-01/06/07/08 + local evalModule helper
+- `src/FunLang/Parser.fsy` - Four grammar changes: multi-param expr LetRec (2 rules), unit param Decl (2 rules), unit param Expr (2 rules), top-level let-in Decl (1 rule)
+- `src/FunLang/Eval.fs` - LetRec case rewritten to use BuiltinValue + envRef pattern
+- `tests/FunLang.Tests/IntegrationTests.fs` - 7 new integration tests for SYN-01/06/07/08 + local evalModule helper
 
 ## Decisions Made
 - Expression LetRec uses BuiltinValue + mutable envRef (not FunctionValue). The naive FunctionValue approach fails when LetRec is inside a lambda body: the trampoline loop re-applies the outer funcExpr on recursive tail calls, losing the self-binding from `applyFunc`'s augmentation step.

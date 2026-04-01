@@ -29,8 +29,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "hashtable_trygetvalue returns TupleValue [BoolValue true/false; value_or_unit] matching .NET TryGetValue pattern"
@@ -73,11 +73,11 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - Added 42 lines: BLT-01..05 builtin entries in initialBuiltinEnv
-- `src/LangThree/TypeCheck.fs` - Added 9 lines: BLT-01..05 type schemes in initialTypeEnv
+- `src/FunLang/Eval.fs` - Added 42 lines: BLT-01..05 builtin entries in initialBuiltinEnv
+- `src/FunLang/TypeCheck.fs` - Added 9 lines: BLT-01..05 type schemes in initialTypeEnv
 
 ## Decisions Made
-- hashtable_trygetvalue returns `TupleValue [BoolValue false; TupleValue []]` for missing keys (unit as the "empty" value, consistent with LangThree's unit = empty tuple convention)
+- hashtable_trygetvalue returns `TupleValue [BoolValue false; TupleValue []]` for missing keys (unit as the "empty" value, consistent with FunLang's unit = empty tuple convention)
 - Scheme([0; 1], ...) used for both hashtable builtins so both 'k and 'v type variables are properly quantified — required for correct type inference when pattern-matching the return tuple
 - String builtins are Scheme([], ...) (monomorphic) since they only operate on the concrete string type
 

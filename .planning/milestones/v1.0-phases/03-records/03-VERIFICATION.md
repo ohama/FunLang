@@ -32,16 +32,16 @@ score: 7/7 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | Record AST nodes (RecordExpr, FieldAccess, RecordUpdate, SetField, RecordPat, RecordDecl, RecordFieldDecl, RecordValue) | VERIFIED | 235 lines. All 8 record-related types/variants present. RecordValue uses `Map<string, Value ref>` for mutable support. |
-| `src/LangThree/Type.fs` | RecordFieldInfo, RecordTypeInfo, RecordEnv | VERIFIED | 169 lines. RecordFieldInfo has Name/FieldType/IsMutable/Index. RecordTypeInfo has TypeParams/Fields/ResultType. RecordEnv is `Map<string, RecordTypeInfo>`. |
-| `src/LangThree/Elaborate.fs` | elaborateRecordDecl function | VERIFIED | 143 lines. `elaborateRecordDecl` maps RecordDecl to (name, RecordTypeInfo), handling type params, field types, mutability. Shares `substTypeExprWithMap` with ADT elaboration. |
-| `src/LangThree/Diagnostic.fs` | Record error kinds | VERIFIED | 296 lines. 7 record-specific error kinds: UnboundField, DuplicateFieldName, MissingFields, ImmutableFieldAssignment, DuplicateRecordField, NotARecord, FieldAccessOnNonRecord. Each has error code (E0307-E0313) and hint. |
-| `src/LangThree/Lexer.fsl` | LBRACE, RBRACE, SEMICOLON, DOT, MUTABLE, LARROW tokens | VERIFIED | 135 lines. All 6 tokens emitted: `{`, `}`, `;`, `.`, `mutable` keyword, `<-` operator. |
-| `src/LangThree/Parser.fsy` | Record grammar rules | VERIFIED | 380 lines. Full grammar: RecordDeclaration, RecordFields, RecordField (with mutable), RecordExprInner, RecordFieldBindings, RecordPatFields, FieldAccess (Atom DOT IDENT), SetField (Atom DOT IDENT LARROW Expr). |
-| `src/LangThree/Bidir.fs` | Record type checking (synth cases) | VERIFIED | 441 lines. 4 record synth cases: RecordExpr (field resolution + type checking), FieldAccess (field type lookup), RecordUpdate (field validation), SetField (IsMutable check, returns TTuple []). |
-| `src/LangThree/Eval.fs` | Record evaluation | VERIFIED | 354 lines. 4 record eval cases: RecordExpr (create with ref cells + type name resolution), FieldAccess (deref), RecordUpdate (copy with fresh refs), SetField (in-place mutation). Plus structural equality and pattern matching. |
-| `src/LangThree/TypeCheck.fs` | Module-level record integration | VERIFIED | 235 lines. `typeCheckModule` builds RecordEnv from RecordTypeDecl, validates globally unique field names, passes recEnv to Bidir.synth. collectMatches handles record expression variants. |
-| `tests/LangThree.Tests/RecordTests.fs` | Integration tests for REC-01 through REC-07 | VERIFIED | 313 lines, 26 tests. Full coverage: type declaration (3), creation (2), field access (3), copy-and-update (4), pattern matching (2), structural equality (3), mutable fields (5), error cases (4). |
+| `src/FunLang/Ast.fs` | Record AST nodes (RecordExpr, FieldAccess, RecordUpdate, SetField, RecordPat, RecordDecl, RecordFieldDecl, RecordValue) | VERIFIED | 235 lines. All 8 record-related types/variants present. RecordValue uses `Map<string, Value ref>` for mutable support. |
+| `src/FunLang/Type.fs` | RecordFieldInfo, RecordTypeInfo, RecordEnv | VERIFIED | 169 lines. RecordFieldInfo has Name/FieldType/IsMutable/Index. RecordTypeInfo has TypeParams/Fields/ResultType. RecordEnv is `Map<string, RecordTypeInfo>`. |
+| `src/FunLang/Elaborate.fs` | elaborateRecordDecl function | VERIFIED | 143 lines. `elaborateRecordDecl` maps RecordDecl to (name, RecordTypeInfo), handling type params, field types, mutability. Shares `substTypeExprWithMap` with ADT elaboration. |
+| `src/FunLang/Diagnostic.fs` | Record error kinds | VERIFIED | 296 lines. 7 record-specific error kinds: UnboundField, DuplicateFieldName, MissingFields, ImmutableFieldAssignment, DuplicateRecordField, NotARecord, FieldAccessOnNonRecord. Each has error code (E0307-E0313) and hint. |
+| `src/FunLang/Lexer.fsl` | LBRACE, RBRACE, SEMICOLON, DOT, MUTABLE, LARROW tokens | VERIFIED | 135 lines. All 6 tokens emitted: `{`, `}`, `;`, `.`, `mutable` keyword, `<-` operator. |
+| `src/FunLang/Parser.fsy` | Record grammar rules | VERIFIED | 380 lines. Full grammar: RecordDeclaration, RecordFields, RecordField (with mutable), RecordExprInner, RecordFieldBindings, RecordPatFields, FieldAccess (Atom DOT IDENT), SetField (Atom DOT IDENT LARROW Expr). |
+| `src/FunLang/Bidir.fs` | Record type checking (synth cases) | VERIFIED | 441 lines. 4 record synth cases: RecordExpr (field resolution + type checking), FieldAccess (field type lookup), RecordUpdate (field validation), SetField (IsMutable check, returns TTuple []). |
+| `src/FunLang/Eval.fs` | Record evaluation | VERIFIED | 354 lines. 4 record eval cases: RecordExpr (create with ref cells + type name resolution), FieldAccess (deref), RecordUpdate (copy with fresh refs), SetField (in-place mutation). Plus structural equality and pattern matching. |
+| `src/FunLang/TypeCheck.fs` | Module-level record integration | VERIFIED | 235 lines. `typeCheckModule` builds RecordEnv from RecordTypeDecl, validates globally unique field names, passes recEnv to Bidir.synth. collectMatches handles record expression variants. |
+| `tests/FunLang.Tests/RecordTests.fs` | Integration tests for REC-01 through REC-07 | VERIFIED | 313 lines, 26 tests. Full coverage: type declaration (3), creation (2), field access (3), copy-and-update (4), pattern matching (2), structural equality (3), mutable fields (5), error cases (4). |
 
 ### Key Link Verification
 
@@ -71,8 +71,8 @@ score: 7/7 must-haves verified
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `src/LangThree/Exhaustive.fs` | 250 | Missing `RecordPat` case in `astPatToCasePat` (compiler warning FS0025) | Warning | No functional impact -- RecordPat should map to WildcardPat for ADT exhaustiveness. Compiler emits warning but match will throw at runtime only if RecordPat reaches this code path (unlikely since exhaustiveness checking is ADT-only). |
-| `src/LangThree/Elaborate.fs` | 57 | Comment "placeholder" on TEName handling | Info | Pre-existing from Phase 2. Not record-specific. TEName resolves to TData correctly via `substTypeExprWithMap`. |
+| `src/FunLang/Exhaustive.fs` | 250 | Missing `RecordPat` case in `astPatToCasePat` (compiler warning FS0025) | Warning | No functional impact -- RecordPat should map to WildcardPat for ADT exhaustiveness. Compiler emits warning but match will throw at runtime only if RecordPat reaches this code path (unlikely since exhaustiveness checking is ADT-only). |
+| `src/FunLang/Elaborate.fs` | 57 | Comment "placeholder" on TEName handling | Info | Pre-existing from Phase 2. Not record-specific. TEName resolves to TData correctly via `substTypeExprWithMap`. |
 
 ### Human Verification Required
 

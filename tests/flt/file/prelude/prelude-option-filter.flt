@@ -1,5 +1,5 @@
 // Test: Prelude optionFilter keeps Some when pred holds, drops otherwise
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let r1 = optionFilter (fun x -> x > 0) (Some 42)
 let r2 = optionFilter (fun x -> x > 0) (Some (-1))

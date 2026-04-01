@@ -42,8 +42,8 @@ re_verification:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Bidir.fs` | isPolyExpected flag + per-branch independent result type | VERIFIED | `isPolyExpected` added before folder; polymorphic mode: bodyS not composed into cross-branch accumulator; concrete mode unchanged |
-| `tests/LangThree.Tests/GadtTests.fs` | GADT-05 tests for cross-type polymorphic return | VERIFIED | 3-test GADT-05 group: type-checks without E0301, IntLit→42, BoolLit→true |
+| `src/FunLang/Bidir.fs` | isPolyExpected flag + per-branch independent result type | VERIFIED | `isPolyExpected` added before folder; polymorphic mode: bodyS not composed into cross-branch accumulator; concrete mode unchanged |
+| `tests/FunLang.Tests/GadtTests.fs` | GADT-05 tests for cross-type polymorphic return | VERIFIED | 3-test GADT-05 group: type-checks without E0301, IntLit→42, BoolLit→true |
 | `tests/flt/file/adt/gadt-poly-eval.flt` | two-branch cross-type eval flt test | VERIFIED | Uses `eval (IntLit 42)` + `eval (BoolLit true)` via printf; expected output 42/true; passes in 442/442 |
 | `tests/flt/file/adt/gadt-poly-return.flt` | 'a annotation flt test | VERIFIED | `let f e = (match e with ... : 'a)` with function parameter form; outputs 42 |
 | `tutorial/14-gadt.md` | Ch14 with accurate polymorphic return section | VERIFIED | Stale "지원하지 않습니다" disclaimer removed from Haskell comparison (line 342); replaced with accurate description |
@@ -91,7 +91,7 @@ Plan 25-04 introduced `isPolyExpected` — a flag set to `true` when `apply s1 e
 
 **Gaps closed by plan 25-05 (tutorial accuracy):**
 
-COV-04 required removing the single stale disclaimer in the Haskell comparison section (line 342) that said LangThree could not achieve `eval : 'a Expr -> 'a`. The `다형적 반환 타입` section (lines 208-228) and "주석 없음" section (lines 151-182) were already accurate from plan 25-03. The Haskell comparison paragraph was corrected and the mdBook HTML rebuilt.
+COV-04 required removing the single stale disclaimer in the Haskell comparison section (line 342) that said FunLang could not achieve `eval : 'a Expr -> 'a`. The `다형적 반환 타입` section (lines 208-228) and "주석 없음" section (lines 151-182) were already accurate from plan 25-03. The Haskell comparison paragraph was corrected and the mdBook HTML rebuilt.
 
 **No regressions detected:** 199/199 F# unit tests and 442/442 fslit tests pass.
 

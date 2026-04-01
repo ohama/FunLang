@@ -1,5 +1,5 @@
 // Test: --prelude flag sets Prelude directory path; Prelude functions are available
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --prelude /Users/ohama/vibe-coding/LangThree/Prelude %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --prelude /Users/ohama/vibe-coding/LangThree/Prelude %input
 // --- Input:
 let result = abs (0 - 5)
 // --- Output:

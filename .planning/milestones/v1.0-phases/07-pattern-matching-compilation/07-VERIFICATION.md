@@ -30,11 +30,11 @@ score: 5/5 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/MatchCompile.fs` | Decision tree types, compilation algorithm, tree evaluator | VERIFIED | 236 lines. 10 functions: types, patternToConstructor, extractSubPatterns, pushVarBindings, selectTestVariable, splitClauses, compile, matchesConstructor, destructureValue, evalDecisionTree, compileMatch. No stubs, no TODOs. |
-| `src/LangThree/Eval.fs` (Match case) | Wired to use MatchCompile instead of sequential matching | VERIFIED | Match case calls `MatchCompile.compileMatch` + `MatchCompile.evalDecisionTree` (lines 172-175). TryWith exception handlers correctly still use `evalMatchClauses` (line 432). |
-| `tests/LangThree.Tests/MatchCompileTests.fs` | Integration and structural tests | VERIFIED | 188 lines. 17 tests covering ADT, nested, list, tuple, constant, record, when guard, wildcard, and edge case patterns. Plus 1 structural redundancy verification test. |
-| `src/LangThree/LangThree.fsproj` | MatchCompile.fs in build order | VERIFIED | MatchCompile.fs compiled before Eval.fs (line 94). |
-| `tests/LangThree.Tests/LangThree.Tests.fsproj` | MatchCompileTests.fs included | VERIFIED | MatchCompileTests.fs included in test project (line 14). |
+| `src/FunLang/MatchCompile.fs` | Decision tree types, compilation algorithm, tree evaluator | VERIFIED | 236 lines. 10 functions: types, patternToConstructor, extractSubPatterns, pushVarBindings, selectTestVariable, splitClauses, compile, matchesConstructor, destructureValue, evalDecisionTree, compileMatch. No stubs, no TODOs. |
+| `src/FunLang/Eval.fs` (Match case) | Wired to use MatchCompile instead of sequential matching | VERIFIED | Match case calls `MatchCompile.compileMatch` + `MatchCompile.evalDecisionTree` (lines 172-175). TryWith exception handlers correctly still use `evalMatchClauses` (line 432). |
+| `tests/FunLang.Tests/MatchCompileTests.fs` | Integration and structural tests | VERIFIED | 188 lines. 17 tests covering ADT, nested, list, tuple, constant, record, when guard, wildcard, and edge case patterns. Plus 1 structural redundancy verification test. |
+| `src/FunLang/FunLang.fsproj` | MatchCompile.fs in build order | VERIFIED | MatchCompile.fs compiled before Eval.fs (line 94). |
+| `tests/FunLang.Tests/FunLang.Tests.fsproj` | MatchCompileTests.fs included | VERIFIED | MatchCompileTests.fs included in test project (line 14). |
 
 ### Key Link Verification
 

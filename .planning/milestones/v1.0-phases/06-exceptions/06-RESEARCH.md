@@ -6,11 +6,11 @@
 
 ## Summary
 
-This phase adds exception declarations, `raise`, and `try...with` expressions to LangThree. The language already has ADT constructors, pattern matching with exhaustiveness checking, and a bidirectional type checker -- exceptions build directly on all of these.
+This phase adds exception declarations, `raise`, and `try...with` expressions to FunLang. The language already has ADT constructors, pattern matching with exhaustiveness checking, and a bidirectional type checker -- exceptions build directly on all of these.
 
 F# exceptions are structurally identical to single-case discriminated union constructors. An `exception Foo of int` declaration creates a constructor `Foo` that wraps an int, but all exceptions share a single open type (`exn`). Unlike closed ADTs, the exception type is *open* -- new cases can be added anywhere, so exhaustiveness checking must treat exception handlers as inherently non-exhaustive (wildcard required for safety, or emit a warning).
 
-The `when` guard feature (EXC-05) is new to LangThree -- match expressions do not currently support guards. The implementation should add `when` guards to both `try...with` handlers AND standard `match` expressions simultaneously, since they share the same MatchClause infrastructure.
+The `when` guard feature (EXC-05) is new to FunLang -- match expressions do not currently support guards. The implementation should add `when` guards to both `try...with` handlers AND standard `match` expressions simultaneously, since they share the same MatchClause infrastructure.
 
 **Primary recommendation:** Model exceptions as an open variant of the existing ADT constructor system. Reuse `ConstructorPat`/`DataValue` patterns with a new `exn` base type. Use F#'s .NET `System.Exception` as the runtime mechanism (F# exceptions ARE .NET exceptions).
 
@@ -90,12 +90,12 @@ This is a **cross-cutting change** that affects:
     // Runtime representation of an exception value
 
 // In F# host: use a .NET exception to carry the value
-exception LangThreeException of Value
+exception FunLangException of Value
 ```
 
 The evaluator uses F#'s own exception mechanism:
-- `raise` evaluates its argument, wraps in `LangThreeException`, throws
-- `try...with` uses F# `try...with` to catch `LangThreeException`, then pattern matches the carried `Value`
+- `raise` evaluates its argument, wraps in `FunLangException`, throws
+- `try...with` uses F# `try...with` to catch `FunLangException`, then pattern matches the carried `Value`
 
 ### Error Codes
 
@@ -117,7 +117,7 @@ Following the existing convention (E01xx indent, E02xx ADT, E03xx records, E04xx
 3. Lexer tokens: EXCEPTION, RAISE, TRY, WHEN
 4. Parser rules: exception decl, raise expr, try-with, when guards
 5. Elaborate.fs: elaborateExceptionDecl
-6. Eval.fs: LangThreeException, raise eval, try-with eval, when guard eval
+6. Eval.fs: FunLangException, raise eval, try-with eval, when guard eval
 7. Bidir.fs: synth/check for Raise, TryWith, when guards
 8. TypeCheck.fs: typeCheckDecls for ExceptionDecl
 9. Exhaustive.fs: handle open type (exn handlers always need wildcard)
@@ -159,7 +159,7 @@ let elaborateExceptionDecl (name: string) (dataType: TypeExpr option) : string *
 // In Eval.fs
 | Raise (arg, _) ->
     let exnVal = eval recEnv moduleEnv env arg
-    raise (LangThreeException exnVal)
+    raise (FunLangException exnVal)
 ```
 
 ### Pattern 3: Try-With Expression
@@ -173,7 +173,7 @@ let elaborateExceptionDecl (name: string) (dataType: TypeExpr option) : string *
     try
         eval recEnv moduleEnv env body
     with
-    | LangThreeException exnVal ->
+    | FunLangException exnVal ->
         evalMatchClauses recEnv moduleEnv env exnVal handlers
 
 // In Bidir.fs synth
@@ -245,7 +245,7 @@ and evalMatchClauses recEnv moduleEnv env scrutinee clauses =
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
 | Exception propagation | Custom stack unwinding | F#'s native `try`/`with` + .NET exceptions | Battle-tested, correct stack unwinding, zero cost when not thrown |
-| Exception value transport | Custom global mutable state | `exception LangThreeException of Value` | F# DU exception carries payload through .NET exception mechanism |
+| Exception value transport | Custom global mutable state | `exception FunLangException of Value` | F# DU exception carries payload through .NET exception mechanism |
 | Pattern matching in handlers | Separate handler matching | Reuse existing `matchPattern` + `evalMatchClauses` | Already handles all pattern types correctly |
 | Guard type checking | New type check function | Add guard parameter to existing synth Match logic | Same type checking applies |
 
@@ -371,7 +371,7 @@ MatchClauses:
 ### F# Runtime Exception Definition
 ```fsharp
 // In Eval.fs or a new shared module
-exception LangThreeException of Value
+exception FunLangException of Value
 ```
 
 ## State of the Art

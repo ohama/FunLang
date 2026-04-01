@@ -39,11 +39,11 @@ key-files:
     - tests/flt/file/string/stringbuilder-basic.flt
     - tests/flt/file/string/stringbuilder-chaining.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Parser.fsy
 
 decisions:
   - id: SB-01-method-dispatch
@@ -51,7 +51,7 @@ decisions:
     rationale: "Mirrors existing ArrayValue/StringValue dispatch pattern from Phase 54; consistent with value-type method model"
   - id: SB-02-constructor-arg
     choice: "Constructor intercepts both None and Some(TupleValue []) for StringBuilder()"
-    rationale: "LangThree parser generates Constructor('StringBuilder', Some(Tuple([]))) for StringBuilder() syntax"
+    rationale: "FunLang parser generates Constructor('StringBuilder', Some(Tuple([]))) for StringBuilder() syntax"
   - id: SB-03-bidir-tvar
     choice: "TArrow(tv, TData('StringBuilder',[])) where tv is freshVar() for Append type"
     rationale: "Polymorphic input allows both StringValue and CharValue args at runtime; type inferred as applied"
@@ -73,13 +73,13 @@ metrics:
 
 ## What Was Built
 
-Added the `StringBuilder` type to LangThree as a first-class value. `StringBuilder()` creates a mutable string builder, `.Append(s)` accumulates strings (returning the same builder object for chaining via intermediate bindings), and `.ToString()` returns the accumulated string. The type checker accepts `StringBuilder()` as `TData("StringBuilder",[])` and provides typed Append/ToString method types.
+Added the `StringBuilder` type to FunLang as a first-class value. `StringBuilder()` creates a mutable string builder, `.Append(s)` accumulates strings (returning the same builder object for chaining via intermediate bindings), and `.ToString()` returns the accumulated string. The type checker accepts `StringBuilder()` as `TData("StringBuilder",[])` and provides typed Append/ToString method types.
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | Add StringBuilderValue to Ast.fs and update all Value pattern matches | 0028df1 | src/LangThree/Ast.fs |
+| 1 | Add StringBuilderValue to Ast.fs and update all Value pattern matches | 0028df1 | src/FunLang/Ast.fs |
 | 2 | Add StringBuilder dispatch to Eval.fs, Bidir.fs, TypeCheck.fs, Parser.fsy, Prelude, flt tests | cd465e8 | Eval.fs, Bidir.fs, TypeCheck.fs, Parser.fsy, Prelude/StringBuilder.fun, 2 flt files |
 
 ## Verification Results
@@ -110,14 +110,14 @@ Added the `StringBuilder` type to LangThree as a first-class value. `StringBuild
 - **Found during:** Task 2 verification
 - **Issue:** `sb.Append("a").Append("b")` parses as `sb.Append(("a").Append("b"))` due to LALR(1) Atom-DOT-IDENT preference over AppExpr-DOT-IDENT when parsing function arguments followed by DOT
 - **Fix:** Added `AppExpr DOT IDENT` grammar rule to Parser.fsy (partial improvement); changed flt test to use intermediate bindings which correctly demonstrate the core semantics (Append returns same object, mutation persists)
-- **Files modified:** src/LangThree/Parser.fsy, tests/flt/file/string/stringbuilder-chaining.flt
+- **Files modified:** src/FunLang/Parser.fsy, tests/flt/file/string/stringbuilder-chaining.flt
 - **Commit:** cd465e8
 
 **2. [Rule 1 - Bug] Prelude StringBuilder.fun type error**
 
 - **Issue:** `let append sb s = sb.Append s` fails type checking because `sb` has type variable `'a`, and FieldAccess on TVar raises FieldAccessOnNonRecord
 - **Fix:** Added `stringbuilder_create`, `stringbuilder_append`, `stringbuilder_tostring` builtins to Eval.fs and TypeCheck.fs; Prelude/StringBuilder.fun uses builtins instead of method dispatch
-- **Files modified:** src/LangThree/Eval.fs, src/LangThree/TypeCheck.fs, Prelude/StringBuilder.fun
+- **Files modified:** src/FunLang/Eval.fs, src/FunLang/TypeCheck.fs, Prelude/StringBuilder.fun
 - **Commit:** cd465e8
 
 **3. [Rule 1 - Bug] flt test expected output needed "()"**

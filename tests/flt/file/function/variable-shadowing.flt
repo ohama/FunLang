@@ -1,5 +1,5 @@
 // Test: inner let binding shadows outer
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let x = 1 in let x = 2 in x
 // --- Output:

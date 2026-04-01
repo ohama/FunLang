@@ -1,6 +1,6 @@
-# LangThree Next Features Survey
+# FunLang Next Features Survey
 
-현재 LangThree는 v13.0까지 95 phase를 거쳐 성숙한 ML 계열 인터프리터가 되었다.
+현재 FunLang는 v13.0까지 95 phase를 거쳐 성숙한 ML 계열 인터프리터가 되었다.
 이 문서는 개발자 경험(DX) 관점에서 추가할 수 있는 모든 기능을 조사하고 우선순위를 매긴다.
 
 **최종 업데이트:** 2026-04-01 (v13.0 Standard Library Extension 이후)
@@ -59,7 +59,7 @@
 
 ## 2. 언어 서버 (LSP)
 
-IDE 지원의 핵심. LangThree는 이미 LSP에 필요한 대부분의 정보를 갖추고 있다.
+IDE 지원의 핵심. FunLang는 이미 LSP에 필요한 대부분의 정보를 갖추고 있다.
 
 ### 이미 있는 것 (LSP 피드로 활용 가능)
 - 모든 AST 노드에 Span (파일/줄/컬럼)

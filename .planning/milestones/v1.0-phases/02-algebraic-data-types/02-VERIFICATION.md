@@ -38,17 +38,17 @@ re_verification:
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | TypeDecl, ConstructorDecl, ConstructorPat, DataValue, Constructor AST nodes | VERIFIED | All present. 212 lines, substantive. |
-| `src/LangThree/Type.fs` | TData, ConstructorInfo, ConstructorEnv types | VERIFIED | TData (line 13), ConstructorInfo (line 24-28), ConstructorEnv (line 31). 149 lines. |
-| `src/LangThree/Parser.fsy` | TypeDeclaration, Constructor grammar rules | VERIFIED | Lines 257-290 (TypeDeclaration); lines 131-133, 151-156 (Constructor exprs); lines 187-199 (constructor patterns). 327 lines. |
-| `src/LangThree/Lexer.fsl` | TYPE, OF, AND_KW tokens | VERIFIED | Lines 52-54. |
-| `src/LangThree/Elaborate.fs` | elaborateTypeDecl converting TypeDecl to ConstructorEnv | VERIFIED | Lines 71-110. 121 lines. |
-| `src/LangThree/Bidir.fs` | synth handles Constructor expr and ConstructorPat | VERIFIED | Constructor case (lines 46-87); Match case (lines 259-275). 343 lines. |
-| `src/LangThree/Infer.fs` | inferPattern handles ConstructorPat | VERIFIED | Lines 87-132. |
-| `src/LangThree/TypeCheck.fs` | typeCheckModule builds ConstructorEnv, calls exhaustiveness/redundancy checks | VERIFIED | Lines 74-104 (ConstructorEnv building), lines 130-194 (collectMatches + exhaustiveness/redundancy wiring). Returns Result<Diagnostic list, Diagnostic>. |
-| `src/LangThree/Eval.fs` | Constructor -> DataValue evaluation; ConstructorPat matching | VERIFIED | Lines 235-237 (eval), lines 60-67 (matchPattern). |
-| `src/LangThree/Exhaustive.fs` | Maranget algorithm, astPatToCasePat, getConstructorsFromEnv | VERIFIED | Algorithm intact, astPatToCasePat (line 249), getConstructorsFromEnv (line 234). No failwith stubs remain. Called from TypeCheck.fs. |
-| `src/LangThree/Diagnostic.fs` | NonExhaustiveMatch, RedundantPattern warning kinds | VERIFIED | Lines 25-26 (TypeErrorKind variants), lines 186-195 (W0001/W0002 formatting), lines 228-231 (warning[] header for W-prefixed codes). |
+| `src/FunLang/Ast.fs` | TypeDecl, ConstructorDecl, ConstructorPat, DataValue, Constructor AST nodes | VERIFIED | All present. 212 lines, substantive. |
+| `src/FunLang/Type.fs` | TData, ConstructorInfo, ConstructorEnv types | VERIFIED | TData (line 13), ConstructorInfo (line 24-28), ConstructorEnv (line 31). 149 lines. |
+| `src/FunLang/Parser.fsy` | TypeDeclaration, Constructor grammar rules | VERIFIED | Lines 257-290 (TypeDeclaration); lines 131-133, 151-156 (Constructor exprs); lines 187-199 (constructor patterns). 327 lines. |
+| `src/FunLang/Lexer.fsl` | TYPE, OF, AND_KW tokens | VERIFIED | Lines 52-54. |
+| `src/FunLang/Elaborate.fs` | elaborateTypeDecl converting TypeDecl to ConstructorEnv | VERIFIED | Lines 71-110. 121 lines. |
+| `src/FunLang/Bidir.fs` | synth handles Constructor expr and ConstructorPat | VERIFIED | Constructor case (lines 46-87); Match case (lines 259-275). 343 lines. |
+| `src/FunLang/Infer.fs` | inferPattern handles ConstructorPat | VERIFIED | Lines 87-132. |
+| `src/FunLang/TypeCheck.fs` | typeCheckModule builds ConstructorEnv, calls exhaustiveness/redundancy checks | VERIFIED | Lines 74-104 (ConstructorEnv building), lines 130-194 (collectMatches + exhaustiveness/redundancy wiring). Returns Result<Diagnostic list, Diagnostic>. |
+| `src/FunLang/Eval.fs` | Constructor -> DataValue evaluation; ConstructorPat matching | VERIFIED | Lines 235-237 (eval), lines 60-67 (matchPattern). |
+| `src/FunLang/Exhaustive.fs` | Maranget algorithm, astPatToCasePat, getConstructorsFromEnv | VERIFIED | Algorithm intact, astPatToCasePat (line 249), getConstructorsFromEnv (line 234). No failwith stubs remain. Called from TypeCheck.fs. |
+| `src/FunLang/Diagnostic.fs` | NonExhaustiveMatch, RedundantPattern warning kinds | VERIFIED | Lines 25-26 (TypeErrorKind variants), lines 186-195 (W0001/W0002 formatting), lines 228-231 (warning[] header for W-prefixed codes). |
 
 ### Key Link Verification
 

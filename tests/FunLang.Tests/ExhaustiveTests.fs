@@ -1,4 +1,4 @@
-module LangThree.Tests.ExhaustiveTests
+module FunLang.Tests.ExhaustiveTests
 
 open Expecto
 open Exhaustive

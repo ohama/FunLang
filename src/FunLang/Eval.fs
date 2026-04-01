@@ -4,7 +4,7 @@ open Ast
 open Type
 
 /// Exception type for raise/try-with runtime support
-exception LangThreeException of Value
+exception FunLangException of Value
 
 /// Empty environment for top-level evaluation
 /// Phase 5: Env type now defined in Ast.fs for mutual recursion with Value
@@ -367,10 +367,10 @@ let initialBuiltinEnv : Env =
                 applyEprintfnArgs fmt specifiers []
             | _ -> failwith "eprintfn: first argument must be a format string")
 
-        // failwith : string -> 'a  (raises LangThreeException so try-with can catch it)
+        // failwith : string -> 'a  (raises FunLangException so try-with can catch it)
         "failwith", BuiltinValue (fun v ->
             match v with
-            | StringValue msg -> raise (LangThreeException (StringValue msg))
+            | StringValue msg -> raise (FunLangException (StringValue msg))
             | _ -> failwith "failwith: expected string argument")
 
         // Phase 29: char_to_int : char -> int
@@ -434,7 +434,7 @@ let initialBuiltinEnv : Env =
             match v with
             | StringValue path ->
                 if not (System.IO.File.Exists path) then
-                    raise (LangThreeException (StringValue (sprintf "read_file: file not found: %s" path)))
+                    raise (FunLangException (StringValue (sprintf "read_file: file not found: %s" path)))
                 StringValue (System.IO.File.ReadAllText path)
             | _ -> failwith "read_file: expected string argument")
 
@@ -487,7 +487,7 @@ let initialBuiltinEnv : Env =
             match v with
             | StringValue path ->
                 if not (System.IO.File.Exists path) then
-                    raise (LangThreeException (StringValue (sprintf "read_lines: file not found: %s" path)))
+                    raise (FunLangException (StringValue (sprintf "read_lines: file not found: %s" path)))
                 let lines = System.IO.File.ReadAllLines path
                 ListValue (lines |> Array.toList |> List.map StringValue)
             | _ -> failwith "read_lines: expected string argument")
@@ -521,7 +521,7 @@ let initialBuiltinEnv : Env =
             | StringValue varName ->
                 let value = System.Environment.GetEnvironmentVariable(varName)
                 if value = null then
-                    raise (LangThreeException (StringValue (sprintf "get_env: variable '%s' not set" varName)))
+                    raise (FunLangException (StringValue (sprintf "get_env: variable '%s' not set" varName)))
                 else StringValue value
             | _ -> failwith "get_env: expected string argument")
 
@@ -546,7 +546,7 @@ let initialBuiltinEnv : Env =
             match v with
             | StringValue path ->
                 if not (System.IO.Directory.Exists path) then
-                    raise (LangThreeException (StringValue (sprintf "dir_files: directory not found: %s" path)))
+                    raise (FunLangException (StringValue (sprintf "dir_files: directory not found: %s" path)))
                 let files = System.IO.Directory.GetFiles(path)
                 ListValue (files |> Array.toList |> List.map StringValue)
             | _ -> failwith "dir_files: expected string argument")
@@ -585,7 +585,7 @@ let initialBuiltinEnv : Env =
                 match arrVal, idxVal with
                 | ArrayValue arr, IntValue i ->
                     if i < 0 || i >= arr.Length then
-                        raise (LangThreeException (StringValue (sprintf "Array.get: index %d out of bounds (length %d)" i arr.Length)))
+                        raise (FunLangException (StringValue (sprintf "Array.get: index %d out of bounds (length %d)" i arr.Length)))
                     arr.[i]
                 | _ -> failwith "Array.get: expected (array, int)"))
 
@@ -596,7 +596,7 @@ let initialBuiltinEnv : Env =
                     match arrVal, idxVal with
                     | ArrayValue arr, IntValue i ->
                         if i < 0 || i >= arr.Length then
-                            raise (LangThreeException (StringValue (sprintf "Array.set: index %d out of bounds (length %d)" i arr.Length)))
+                            raise (FunLangException (StringValue (sprintf "Array.set: index %d out of bounds (length %d)" i arr.Length)))
                         arr.[i] <- newVal
                         TupleValue []
                     | _ -> failwith "Array.set: expected (array, int)")))
@@ -662,7 +662,7 @@ let initialBuiltinEnv : Env =
         "hashtable_create", BuiltinValue (fun _ ->
             HashtableValue (System.Collections.Generic.Dictionary<Value, Value>()))
 
-        // hashtable_get : hashtable<'k, 'v> -> 'k -> 'v   (raises LangThreeException if missing)
+        // hashtable_get : hashtable<'k, 'v> -> 'k -> 'v   (raises FunLangException if missing)
         "hashtable_get", BuiltinValue (fun htVal ->
             BuiltinValue (fun keyVal ->
                 match htVal with
@@ -670,7 +670,7 @@ let initialBuiltinEnv : Env =
                     match ht.TryGetValue(keyVal) with
                     | true, v -> v
                     | false, _ ->
-                        raise (LangThreeException (StringValue (sprintf "Hashtable.get: key not found")))
+                        raise (FunLangException (StringValue (sprintf "Hashtable.get: key not found")))
                 | _ -> failwith "Hashtable.get: expected hashtable"))
 
         // hashtable_set : hashtable<'k, 'v> -> 'k -> 'v -> unit
@@ -786,7 +786,7 @@ let initialBuiltinEnv : Env =
                 match qVal with
                 | QueueValue q ->
                     if q.Count = 0 then
-                        raise (LangThreeException (StringValue "Queue.Dequeue: queue is empty"))
+                        raise (FunLangException (StringValue "Queue.Dequeue: queue is empty"))
                     else q.Dequeue()
                 | _ -> failwith "queue_dequeue: expected Queue"))
 
@@ -814,7 +814,7 @@ let initialBuiltinEnv : Env =
                 match mlVal, idxVal with
                 | MutableListValue ml, IntValue i ->
                     if i < 0 || i >= ml.Count then
-                        raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                        raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
                     ml.[i]
                 | _ -> failwith "mutablelist_get: expected MutableList and int"))
 
@@ -825,7 +825,7 @@ let initialBuiltinEnv : Env =
                     match mlVal, idxVal with
                     | MutableListValue ml, IntValue i ->
                         if i < 0 || i >= ml.Count then
-                            raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                            raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
                         ml.[i] <- newVal
                         TupleValue []
                     | _ -> failwith "mutablelist_set: expected MutableList and int")))
@@ -1109,15 +1109,15 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         match collVal, idxVal with
         | ArrayValue arr, IntValue i ->
             if i < 0 || i >= arr.Length then
-                raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+                raise (FunLangException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
             arr.[i]
         | HashtableValue ht, key ->
             match ht.TryGetValue(key) with
             | true, v -> v
-            | false, _ -> raise (LangThreeException (StringValue "Hashtable key not found"))
+            | false, _ -> raise (FunLangException (StringValue "Hashtable key not found"))
         | MutableListValue ml, IntValue i ->
             if i < 0 || i >= ml.Count then
-                raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
             ml.[i]
         | _ -> failwith "IndexGet: expected array, hashtable, or MutableList"
 
@@ -1129,7 +1129,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
         match collVal, idxVal with
         | ArrayValue arr, IntValue i ->
             if i < 0 || i >= arr.Length then
-                raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+                raise (FunLangException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
             arr.[i] <- newVal
             TupleValue []
         | HashtableValue ht, key ->
@@ -1137,7 +1137,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             TupleValue []
         | MutableListValue ml, IntValue i ->
             if i < 0 || i >= ml.Count then
-                raise (LangThreeException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
+                raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
             ml.[i] <- newVal
             TupleValue []
         | _ -> failwith "IndexSet: expected array, hashtable, or MutableList"
@@ -1502,18 +1502,18 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     // TryWith body is NOT tail position (exception handler needs stack frame)
     | Raise(arg, _) ->
         let exnVal = eval recEnv moduleEnv env false arg
-        raise (LangThreeException exnVal)
+        raise (FunLangException exnVal)
     | TryWith(body, handlers, _) ->
         try
             eval recEnv moduleEnv env false body
         with
-        | LangThreeException exnVal ->
+        | FunLangException exnVal ->
             try
                 evalMatchClauses recEnv moduleEnv env tailPos exnVal handlers
             with
             | e when e.Message = "Match failure: no pattern matched" ->
                 // No handler matched: re-raise the original exception
-                raise (LangThreeException exnVal)
+                raise (FunLangException exnVal)
 
     // Phase 9 (Pipe & Composition): Pipe and composition operators
     // PipeRight uses same trampoline pattern as App (Phase 15)

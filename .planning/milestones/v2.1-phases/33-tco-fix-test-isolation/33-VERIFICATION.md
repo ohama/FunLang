@@ -30,10 +30,10 @@ score: 5/5 must-haves verified
 
 | Artifact                               | Expected                                              | Status     | Details                                                                                   |
 | -------------------------------------- | ----------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------- |
-| `src/LangThree/Eval.fs` line 777       | `eval recEnv moduleEnv callEnv true funcBody`         | VERIFIED   | Line 777 reads exactly `eval recEnv moduleEnv callEnv true funcBody` — LetRec TCO enabled |
-| `src/LangThree/Eval.fs` line 1039      | `eval recEnv modEnv callEnv true body`                | VERIFIED   | Line 1039 reads exactly `eval recEnv modEnv callEnv true body` — LetRecDecl TCO enabled  |
-| `src/LangThree/MatchCompile.fs`        | Local counter in `compileMatch`, no module-level state | VERIFIED  | `let mutable nextVar = 0` at line 233, inside `compileMatch` scope only                  |
-| `src/LangThree/MatchCompile.fs compile` | `compile (freshTestVar: unit -> TestVar) ...`         | VERIFIED   | Line 126: `let rec compile (freshTestVar: unit -> TestVar) (clauses: MatchRow list)`      |
+| `src/FunLang/Eval.fs` line 777       | `eval recEnv moduleEnv callEnv true funcBody`         | VERIFIED   | Line 777 reads exactly `eval recEnv moduleEnv callEnv true funcBody` — LetRec TCO enabled |
+| `src/FunLang/Eval.fs` line 1039      | `eval recEnv modEnv callEnv true body`                | VERIFIED   | Line 1039 reads exactly `eval recEnv modEnv callEnv true body` — LetRecDecl TCO enabled  |
+| `src/FunLang/MatchCompile.fs`        | Local counter in `compileMatch`, no module-level state | VERIFIED  | `let mutable nextVar = 0` at line 233, inside `compileMatch` scope only                  |
+| `src/FunLang/MatchCompile.fs compile` | `compile (freshTestVar: unit -> TestVar) ...`         | VERIFIED   | Line 126: `let rec compile (freshTestVar: unit -> TestVar) (clauses: MatchRow list)`      |
 
 ### Key Link Verification
 
@@ -68,9 +68,9 @@ None required — all success criteria are programmatically verifiable and have 
 
 Phase 33 fully achieves its goal. Both sub-plans executed cleanly:
 
-**Plan 01 (TCO fix):** Two one-character changes in `src/LangThree/Eval.fs` — `tailPos=false` changed to `true` at lines 777 (LetRec) and 1039 (LetRecDecl). This restored TCO for all three `let rec` forms by allowing the existing App trampoline to catch TailCall values produced by recursive bodies.
+**Plan 01 (TCO fix):** Two one-character changes in `src/FunLang/Eval.fs` — `tailPos=false` changed to `true` at lines 777 (LetRec) and 1039 (LetRecDecl). This restored TCO for all three `let rec` forms by allowing the existing App trampoline to catch TailCall values produced by recursive bodies.
 
-**Plan 02 (Test isolation):** Three module-level declarations (`nextTestVar`, `freshTestVar`, `resetTestVarCounter`) removed from `src/LangThree/MatchCompile.fs`. The counter is now a local `let mutable nextVar = 0` inside `compileMatch`, with `freshTestVar` threaded as an explicit parameter to the recursive `compile` function. This eliminates the race condition that caused TestVar ID collisions under parallel test execution.
+**Plan 02 (Test isolation):** Three module-level declarations (`nextTestVar`, `freshTestVar`, `resetTestVarCounter`) removed from `src/FunLang/MatchCompile.fs`. The counter is now a local `let mutable nextVar = 0` inside `compileMatch`, with `freshTestVar` threaded as an explicit parameter to the recursive `compile` function. This eliminates the race condition that caused TestVar ID collisions under parallel test execution.
 
 All five success criteria are confirmed against the actual codebase.
 

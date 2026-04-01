@@ -86,7 +86,7 @@ error[E0301]: Type mismatch: expected int but got unit
 
 ## Example
 
-LangThree v5.0에서 실제로 적용한 2가지 사례:
+FunLang v5.0에서 실제로 적용한 2가지 사례:
 
 ### 사례 1: 표현식 시퀀싱 (`e1; e2`)
 

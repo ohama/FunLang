@@ -159,12 +159,12 @@ Wait — `array_get` vs `hashtable_get` depends on the type of `$1`. At parse ti
     match collVal, idxVal with
     | ArrayValue arr, IntValue i ->
         if i < 0 || i >= arr.Length then
-            raise (LangThreeException (StringValue (sprintf "Index %d out of bounds (length %d)" i arr.Length)))
+            raise (FunLangException (StringValue (sprintf "Index %d out of bounds (length %d)" i arr.Length)))
         arr.[i]
     | HashtableValue ht, key ->
         match ht.TryGetValue(key) with
         | true, v -> v
-        | false, _ -> raise (LangThreeException (StringValue "Key not found"))
+        | false, _ -> raise (FunLangException (StringValue "Key not found"))
     | _ -> failwith "IndexGet: expected array or hashtable"
 
 | IndexSet (collExpr, idxExpr, valExpr, _) ->
@@ -174,7 +174,7 @@ Wait — `array_get` vs `hashtable_get` depends on the type of `$1`. At parse ti
     match collVal, idxVal with
     | ArrayValue arr, IntValue i ->
         if i < 0 || i >= arr.Length then
-            raise (LangThreeException (StringValue (sprintf "Index %d out of bounds (length %d)" i arr.Length)))
+            raise (FunLangException (StringValue (sprintf "Index %d out of bounds (length %d)" i arr.Length)))
         arr.[i] <- newVal
         TupleValue []
     | HashtableValue ht, key ->
@@ -223,7 +223,7 @@ This mirrors exactly how `SetField` (`Atom DOT IDENT LARROW Expr`) lives in `Exp
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
 | Array bounds checking | Custom check code | Reuse existing `array_get`/`array_set` logic in eval | Bounds check already in builtins; copy-paste creates drift |
-| Hashtable missing-key error | New error path | Reuse existing `hashtable_get` error path | Already raises `LangThreeException` with correct message |
+| Hashtable missing-key error | New error path | Reuse existing `hashtable_get` error path | Already raises `FunLangException` with correct message |
 | New type `TIndexable` | Union type for array+hashtable | Match on `TArray`/`THashtable` in Bidir.fs | Adding a type risks breaking unification; match-based dispatch is simpler |
 | DOTDOT conflict avoidance | Lookahead hack | Correct fslex rule order | fslex uses longest-match; `.[` (2 chars) always beats `.` (1 char) |
 
@@ -414,12 +414,12 @@ This ensures that newlines inside `.[  ]` don't generate spurious INDENT/DEDENT 
     match collVal, idxVal with
     | ArrayValue arr, IntValue i ->
         if i < 0 || i >= arr.Length then
-            raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+            raise (FunLangException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
         arr.[i]
     | HashtableValue ht, key ->
         match ht.TryGetValue(key) with
         | true, v -> v
-        | false, _ -> raise (LangThreeException (StringValue "Hashtable key not found"))
+        | false, _ -> raise (FunLangException (StringValue "Hashtable key not found"))
     | _ -> failwith "IndexGet: expected array or hashtable"
 
 | IndexSet (collExpr, idxExpr, valExpr, _) ->
@@ -429,7 +429,7 @@ This ensures that newlines inside `.[  ]` don't generate spurious INDENT/DEDENT 
     match collVal, idxVal with
     | ArrayValue arr, IntValue i ->
         if i < 0 || i >= arr.Length then
-            raise (LangThreeException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
+            raise (FunLangException (StringValue (sprintf "Array index %d out of bounds (length %d)" i arr.Length)))
         arr.[i] <- newVal
         TupleValue []
     | HashtableValue ht, key ->
@@ -506,13 +506,13 @@ And a corresponding format in the `formatTypeError` function:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Lexer.fsl` — confirmed lexer rule order and DOT/DOTDOT/LBRACKET rules
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Parser.fsy` — confirmed Atom/Expr grammar structure, existing FieldAccess/SetField pattern
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Ast.fs` — confirmed Expr union, Value union, spanOf function
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Bidir.fs` — confirmed SetField/FieldAccess type check pattern, mutableVars, synth function signature
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — confirmed eval function signature, array_get/array_set/hashtable_get/hashtable_set builtins
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/IndentFilter.fs` — confirmed LBRACKET bracket tracking
-- Direct source code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/TypeCheck.fs` — confirmed collectMatches/collectTryWiths/rewriteModuleAccess patterns
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Lexer.fsl` — confirmed lexer rule order and DOT/DOTDOT/LBRACKET rules
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Parser.fsy` — confirmed Atom/Expr grammar structure, existing FieldAccess/SetField pattern
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Ast.fs` — confirmed Expr union, Value union, spanOf function
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Bidir.fs` — confirmed SetField/FieldAccess type check pattern, mutableVars, synth function signature
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — confirmed eval function signature, array_get/array_set/hashtable_get/hashtable_set builtins
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/IndentFilter.fs` — confirmed LBRACKET bracket tracking
+- Direct source code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/TypeCheck.fs` — confirmed collectMatches/collectTryWiths/rewriteModuleAccess patterns
 
 ### Secondary (MEDIUM confidence)
 - Analogy to F# compiler: F# uses `.[` as a single token for array indexing, supporting the DOTLBRACKET approach

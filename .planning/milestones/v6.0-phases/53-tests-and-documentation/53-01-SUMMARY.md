@@ -77,7 +77,7 @@ Each task was committed atomically:
 **1. [Rule 1 - Bug] flt input trailing-newline causes parse error for multiline app test**
 
 - **Found during:** Task 2 (nlseq-multiline-app.flt)
-- **Issue:** Plan's suggested input ended with `        3` as the last line; flt runner strips trailing newline, causing parse error in LangThree binary
+- **Issue:** Plan's suggested input ended with `        3` as the last line; flt runner strips trailing newline, causing parse error in FunLang binary
 - **Fix:** Added `let _ = result` after the multiline application block so the last line is a well-formed top-level declaration
 - **Files modified:** tests/flt/expr/seq/nlseq-multiline-app.flt
 - **Verification:** `../fslit/dist/FsLit tests/flt/expr/seq/nlseq-multiline-app.flt` passes; full seq/ suite 12/12 pass

@@ -56,7 +56,7 @@ completed: 2026-03-25
 
 ## Accomplishments
 
-- TST-14: uncaught failwith exits 1 with LangThreeException stderr, and inline `try failwith "boom" with e ->` catches and returns handler value
+- TST-14: uncaught failwith exits 1 with FunLangException stderr, and inline `try failwith "boom" with e ->` catches and returns handler value
 - TST-15: module-level `let (a, b) = (10, 20)` destructures and `a + b` evaluates to 30
 - TST-16: `open "file.fun"` followed by `Math.square 7` resolves to 49 without E0313 (bash -c wrapper pre-creates /tmp lib file)
 - TST-17: `List.length` and `List.map` through Prelude qualified access work correctly

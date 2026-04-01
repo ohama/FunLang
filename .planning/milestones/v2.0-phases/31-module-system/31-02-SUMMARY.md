@@ -28,7 +28,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - tests/LangThree.Tests/ModuleTests.fs
+    - tests/FunLang.Tests/ModuleTests.fs
 
 key-decisions:
   - "MOD-05 recEnv scoping already correct in TypeCheck.fs: validateUniqueRecordFields only checks direct RecordTypeDecl in flat decl list (not inside ModuleDecl), and parent rEnv is returned unchanged from ModuleDecl arm — no fix needed"
@@ -70,7 +70,7 @@ completed: 2026-03-25
 
 ## Files Created/Modified
 
-- `tests/LangThree.Tests/ModuleTests.fs` - Added `evalFileModule` helper + `fileImportTests` test list (5 tests, testSequenced)
+- `tests/FunLang.Tests/ModuleTests.fs` - Added `evalFileModule` helper + `fileImportTests` test list (5 tests, testSequenced)
 
 ## Decisions Made
 
@@ -91,7 +91,7 @@ completed: 2026-03-25
 - **Found during:** Task 2 (running dotnet test)
 - **Issue:** File import tests use shared global mutables (`currentTypeCheckingFile`, `currentEvalFile`). Parallel test execution caused path resolution races: test A would set `currentTypeCheckingFile` to its temp path, then test B would overwrite it before test A's `loadAndTypeCheckFileImpl` ran, causing `File.Exists` to fail on the wrong path.
 - **Fix:** Wrapped `fileImportTests` in `testSequenced(...)` so the 5 file import tests run sequentially.
-- **Files modified:** tests/LangThree.Tests/ModuleTests.fs
+- **Files modified:** tests/FunLang.Tests/ModuleTests.fs
 - **Verification:** 10 consecutive runs all pass
 - **Committed in:** `db3c3a4`
 
@@ -100,23 +100,23 @@ completed: 2026-03-25
 - **Found during:** Task 2 (first test run: "FileImport type checker not initialized")
 - **Issue:** The `fileImportTypeChecker` delegate in TypeCheck.fs defaults to an error stub. It's replaced by Prelude.fs's `do` block — but only when the Prelude F# module is first accessed. Test helpers only use TypeCheck/Eval/Parser, never touching Prelude, so the delegate remained as the error stub.
 - **Fix:** Added `let _initPrelude = Prelude.emptyPrelude` at the start of `evalFileModule` to trigger Prelude module initialization.
-- **Files modified:** tests/LangThree.Tests/ModuleTests.fs
+- **Files modified:** tests/FunLang.Tests/ModuleTests.fs
 - **Committed in:** `db3c3a4`
 
 **3. [Rule 1 - Bug] 'end' keyword not supported; 'module X = ...' uses indentation**
 
 - **Found during:** Task 2 (parse error on SC-2, SC-3, SC-4 tests)
-- **Issue:** Plan template used `module A = ... end` syntax. LangThree uses indentation-based module blocks, no `end` keyword.
+- **Issue:** Plan template used `module A = ... end` syntax. FunLang uses indentation-based module blocks, no `end` keyword.
 - **Fix:** Rewrote test strings to use `module A =\n    let x = 10\n\n` style (trailing blank line ends block).
-- **Files modified:** tests/LangThree.Tests/ModuleTests.fs
+- **Files modified:** tests/FunLang.Tests/ModuleTests.fs
 - **Committed in:** `db3c3a4`
 
 **4. [Rule 1 - Bug] `M1.Tok { ... }` is not valid record creation syntax**
 
 - **Found during:** Task 2 (analyzing SC-4 test design)
-- **Issue:** Plan specified `let t = M1.Tok { kind = "id"; value = 42 }` but LangThree creates records via `{ field = value }` literals — no type-name prefix. Parser would treat `M1.Tok` as a constructor call applied to the record literal.
+- **Issue:** Plan specified `let t = M1.Tok { kind = "id"; value = 42 }` but FunLang creates records via `{ field = value }` literals — no type-name prefix. Parser would treat `M1.Tok` as a constructor call applied to the record literal.
 - **Fix:** Used `open M1` to bring M1.Tok into scope, then `let t = { kind = "id"; value = 42 }` resolves to M1.Tok via exact field-set matching.
-- **Files modified:** tests/LangThree.Tests/ModuleTests.fs
+- **Files modified:** tests/FunLang.Tests/ModuleTests.fs
 - **Committed in:** `db3c3a4`
 
 ---

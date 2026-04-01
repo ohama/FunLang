@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 10 adds the `()` unit value and `unit` type to the LangThree interpreter. The language is written in F# / .NET 10 using fslex/fsyacc, with Hindley-Milner type inference (bidirectional). The codebase already has the runtime value representation (`TupleValue []` / `TTuple []`) used for mutable field assignment results. The work is surgical: extend the parser to recognize `()` as a literal, wire `unit` as a type keyword, fix `formatType` to render `TTuple []` as `"unit"`, and add pattern/parameter support for `()`.
+Phase 10 adds the `()` unit value and `unit` type to the FunLang interpreter. The language is written in F# / .NET 10 using fslex/fsyacc, with Hindley-Milner type inference (bidirectional). The codebase already has the runtime value representation (`TupleValue []` / `TTuple []`) used for mutable field assignment results. The work is surgical: extend the parser to recognize `()` as a literal, wire `unit` as a type keyword, fix `formatType` to render `TTuple []` as `"unit"`, and add pattern/parameter support for `()`.
 
 The standard approach for unit in ML-family interpreters is to treat it as a zero-element tuple — exactly what this codebase already does at the value/type level. No new AST node or Value variant is needed. All changes are surface-level wiring.
 
@@ -24,7 +24,7 @@ This phase operates entirely within the existing project stack. No new external 
 |------|---------|---------|-------|
 | F# / .NET 10 | 10 | Implementation language | All source files confirmed |
 | FsLexYacc | embedded | Lexer (Lexer.fsl) + Parser (Parser.fsy) | Tokens defined in Parser.fsy |
-| Expecto | embedded | Unit test framework | Tests in `tests/LangThree.Tests/` |
+| Expecto | embedded | Unit test framework | Tests in `tests/FunLang.Tests/` |
 
 ### No New Libraries Required
 

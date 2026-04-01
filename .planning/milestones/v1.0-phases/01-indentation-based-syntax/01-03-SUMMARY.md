@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/IndentFilter.fs
-    - tests/LangThree.Tests/IndentFilterTests.fs
+    - src/FunLang/IndentFilter.fs
+    - tests/FunLang.Tests/IndentFilterTests.fs
 
 key-decisions:
   - "formatExpectedIndents shows all valid indent levels from stack plus 'or a new indent level' for clarity"
@@ -68,8 +68,8 @@ Each task was committed atomically:
 2. **Task 2: Add tests for error messages and indent width validation** - `5cffefb` (test)
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Added validateIndentWidth and formatExpectedIndents functions, updated error messages throughout, fixed EOF DEDENT emission
-- `tests/LangThree.Tests/IndentFilterTests.fs` - Added 5 new test cases for error messages and indent width validation, updated existing tests for new signature
+- `src/FunLang/IndentFilter.fs` - Added validateIndentWidth and formatExpectedIndents functions, updated error messages throughout, fixed EOF DEDENT emission
+- `tests/FunLang.Tests/IndentFilterTests.fs` - Added 5 new test cases for error messages and indent width validation, updated existing tests for new signature
 
 ## Decisions Made
 
@@ -96,7 +96,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (test writing)
 - **Issue:** testStrictIndentWidthMultiple failed - only emitting 1 DEDENT instead of 2 at EOF. While loop was calling processNewline which returned multiple DEDENTs, but code was ignoring the returned tokens and only yielding one Parser.DEDENT per iteration
 - **Fix:** Changed `yield Parser.DEDENT` to `yield! tokens` to emit all DEDENTs returned by processNewline
-- **Files modified:** src/LangThree/IndentFilter.fs
+- **Files modified:** src/FunLang/IndentFilter.fs
 - **Verification:** testStrictIndentWidthMultiple now passes, all 34 tests pass
 - **Committed in:** 5cffefb (Task 2 commit)
 
@@ -104,7 +104,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (test compilation)
 - **Issue:** processNewline signature changed to include config parameter, existing tests calling old signature failed to compile
 - **Fix:** Added defaultConfig parameter to all processNewline test calls
-- **Files modified:** tests/LangThree.Tests/IndentFilterTests.fs
+- **Files modified:** tests/FunLang.Tests/IndentFilterTests.fs
 - **Verification:** All tests compile and pass
 - **Committed in:** 5cffefb (Task 2 commit)
 

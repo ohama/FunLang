@@ -25,10 +25,10 @@ tech-stack:
 
 key-files:
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "OpenDecl path is string list (not single string) to support qualified opens like open A.B.C"
@@ -70,10 +70,10 @@ Each task was committed atomically:
 2. **Task 2: Lexer keywords and Parser token declarations** - `f4fcc99` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added ModuleDecl, OpenDecl, NamespaceDecl to Decl; NamedModule, NamespacedModule to Module; span extractors
-- `src/LangThree/Diagnostic.fs` - Added CircularModuleDependency, UnresolvedModule, DuplicateModuleName, ForwardModuleReference error kinds with E0501-E0504 codes
-- `src/LangThree/Lexer.fsl` - Added module, namespace, open keyword rules
-- `src/LangThree/Parser.fsy` - Added MODULE, NAMESPACE, OPEN token declarations and QualifiedIdent rule
+- `src/FunLang/Ast.fs` - Added ModuleDecl, OpenDecl, NamespaceDecl to Decl; NamedModule, NamespacedModule to Module; span extractors
+- `src/FunLang/Diagnostic.fs` - Added CircularModuleDependency, UnresolvedModule, DuplicateModuleName, ForwardModuleReference error kinds with E0501-E0504 codes
+- `src/FunLang/Lexer.fsl` - Added module, namespace, open keyword rules
+- `src/FunLang/Parser.fsy` - Added MODULE, NAMESPACE, OPEN token declarations and QualifiedIdent rule
 
 ## Decisions Made
 - OpenDecl path is `string list` (not single string) to support qualified opens like `open A.B.C`

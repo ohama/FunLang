@@ -1,6 +1,6 @@
-# LangThree Native Compilation Research
+# FunLang Native Compilation Research
 
-> LangThree 인터프리터에 gcc/clang 기반 네이티브 컴파일 백엔드를 추가하는 것에 대한 타당성 조사
+> FunLang 인터프리터에 gcc/clang 기반 네이티브 컴파일 백엔드를 추가하는 것에 대한 타당성 조사
 
 ## 1. 현재 아키텍처
 
@@ -17,7 +17,7 @@ Source (.fun) → Lexer → IndentFilter → Parser → AST → TypeCheck → Ev
 
 ## 2. 컴파일 전략 비교
 
-### Option A: LangThree → C → gcc/clang
+### Option A: FunLang → C → gcc/clang
 
 | 항목 | 설명 |
 |------|------|
@@ -26,7 +26,7 @@ Source (.fun) → Lexer → IndentFilter → Parser → AST → TypeCheck → Ev
 | **장점** | gcc/clang의 성숙한 최적화 활용, 크로스플랫폼, 디버깅 용이 |
 | **단점** | C의 제약 (TCO 보장 없음, GC 없음, 클로저 직접 지원 없음) |
 
-### Option B: LangThree → LLVM IR → binary
+### Option B: FunLang → LLVM IR → binary
 
 | 항목 | 설명 |
 |------|------|
@@ -51,7 +51,7 @@ Source (.fun) → Lexer → IndentFilter → Parser → AST → TypeCheck → Ev
 ### 3.1. 클로저 (Closures)
 
 ```
-// LangThree
+// FunLang
 let adder x = fun y -> x + y
 ```
 
@@ -76,7 +76,7 @@ Value adder(Value x) {
 ### 3.2. ADT (Algebraic Data Types)
 
 ```
-// LangThree
+// FunLang
 type Shape = Circle of int | Rect of int * int
 ```
 
@@ -163,7 +163,7 @@ jmp_buf exception_handler;
 | **MLton** | SML → C | ~50-100x (GHC급) |
 | **Gambit Scheme** | Scheme → C | ~10-30x |
 
-### 4.4. LangThree 특화 예상
+### 4.4. FunLang 특화 예상
 
 함수형 언어 특성 (클로저, ADT, 리스트 처리)을 고려한 워크로드별 예상:
 
@@ -245,7 +245,7 @@ langthree compile -o script script.fun    # .fun → .c → gcc → binary
 
 | 질문 | 답변 |
 |------|------|
-| **가능한가?** | 가능. Scheme/SML 계열에서 검증된 기법들이 LangThree에 적용 가능 |
+| **가능한가?** | 가능. Scheme/SML 계열에서 검증된 기법들이 FunLang에 적용 가능 |
 | **얼마나 빨라지나?** | **15-40x** (C boxed), 핫패스 monomorphization 시 최대 100x |
 | **노력 대비 가치?** | 대규모 프로젝트. 바이트코드 VM을 먼저 구현하면 5-10x를 훨씬 적은 노력으로 얻을 수 있음 |
 | **권장 경로** | IR 도입 → 바이트코드 VM → C backend 순서로 단계적 접근 |

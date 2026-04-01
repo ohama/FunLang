@@ -1,5 +1,5 @@
 // Test LOOP-01 + SeqExpr: while loop body using ; sequencing
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let mut i = 0
 let mut acc = 0

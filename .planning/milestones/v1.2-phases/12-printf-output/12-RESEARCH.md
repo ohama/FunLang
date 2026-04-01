@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 12 adds `print`, `println`, and `printf` as built-in functions to LangThree. The codebase already has the exact pattern needed: Phase 11 introduced `BuiltinValue of fn:(Value->Value)` in the Value DU and `initialBuiltinEnv : Env` in Eval.fs. All three print functions slot into these existing extension points with zero new infrastructure.
+Phase 12 adds `print`, `println`, and `printf` as built-in functions to FunLang. The codebase already has the exact pattern needed: Phase 11 introduced `BuiltinValue of fn:(Value->Value)` in the Value DU and `initialBuiltinEnv : Env` in Eval.fs. All three print functions slot into these existing extension points with zero new infrastructure.
 
 `print` and `println` are trivial: they take one string argument, write to stdout, and return `TupleValue []` (unit). `printf` is the key challenge: it is variadic in concept but the language only supports curried function application. The approach is to implement `printf` as a curried function that accumulates argument values one at a time, consuming format specifiers (`%d`, `%s`, `%b`) left-to-right. When all specifiers are consumed, the formatted string is flushed to stdout.
 
@@ -50,7 +50,7 @@ The type system challenge is that `printf "x=%d, s=%s" 42 "hi"` has type `unit`,
 No new files needed. Changes go in:
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Eval.fs          # Add print/println/printf to initialBuiltinEnv
 ├── TypeCheck.fs     # Add type schemes to initialTypeEnv
 └── tests/flt/

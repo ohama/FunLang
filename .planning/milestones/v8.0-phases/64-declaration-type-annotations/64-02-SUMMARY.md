@@ -31,7 +31,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "No ParamList + return type productions added: MixedParamList subsumes ParamList (Choice1Of2 covers all plain params)"
@@ -75,7 +75,7 @@ Each task was committed atomically:
 2. **Task 2: Add return type annotation productions to LetRecDeclaration and LetRecContinuation** - `d6d2dcc` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added return type annotation productions (75 lines added total across both tasks)
+- `src/FunLang/Parser.fsy` - Added return type annotation productions (75 lines added total across both tasks)
 
 ## Decisions Made
 - **No ParamList + return type needed**: Since Plan 01 removed ParamList in favor of MixedParamList, only `MixedParamList + return type` productions are needed. Plain params (formerly ParamList) are handled via `Choice1Of2` in MixedParamList.

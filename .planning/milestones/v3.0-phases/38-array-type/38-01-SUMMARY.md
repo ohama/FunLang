@@ -32,11 +32,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Unify.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Unify.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
 
 key-decisions:
   - "ArrayValue of Value array (no outer ref) — fixed-size arrays mutate elements in place, no need to replace the whole array"
@@ -80,11 +80,11 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - ArrayValue DU case + GetHashCode/valueEqual/valueCompare arms
-- `src/LangThree/Eval.fs` - valuesEqual arm (false) + formatValue arm ([|...|])
-- `src/LangThree/Type.fs` - TArray DU case + formatType/formatTypeNormalized/apply/freeVars arms
-- `src/LangThree/Unify.fs` - TArray t1, TArray t2 unification arm
-- `src/LangThree/Bidir.fs` - TArray _ added to NotAFunction guard
+- `src/FunLang/Ast.fs` - ArrayValue DU case + GetHashCode/valueEqual/valueCompare arms
+- `src/FunLang/Eval.fs` - valuesEqual arm (false) + formatValue arm ([|...|])
+- `src/FunLang/Type.fs` - TArray DU case + formatType/formatTypeNormalized/apply/freeVars arms
+- `src/FunLang/Unify.fs` - TArray t1, TArray t2 unification arm
+- `src/FunLang/Bidir.fs` - TArray _ added to NotAFunction guard
 
 ## Decisions Made
 - Used `Value array` (no outer `ref`) for ArrayValue — in-place mutation via `arr.[i] <- v` is sufficient for fixed-size arrays; wrapping in a ref cell adds indirection with no benefit
@@ -99,7 +99,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (build verification)
 - **Issue:** After adding ArrayValue to the DU, `formatValue` in Eval.fs produced FS0025 incomplete match warning. The plan assigned formatValue to Task 2, but the build could not pass Task 1's zero-warning requirement without it.
 - **Fix:** Added the `ArrayValue arr -> sprintf "[|%s|]" ...` arm to formatValue as part of Task 1 compilation fix. Task 2 then confirmed it was already present.
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Verification:** Zero warnings after adding the arm; build succeeded.
 - **Committed in:** 83ff07b (Task 1 commit)
 

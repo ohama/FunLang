@@ -61,7 +61,7 @@ external libraries are needed.
 
 ### Existing Project Structure (relevant files)
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs           # Add FileImportDecl here
 ├── Lexer.fsl        # OPEN already lexed; no change needed (STRING already a token)
 ├── Parser.fsy       # Add OPEN STRING grammar rule
@@ -269,7 +269,7 @@ the set; if so, raise a cycle error. After loading, remove it from the set.
 
 ### File Loading Pattern (from Prelude.fs)
 ```fsharp
-// Source: src/LangThree/Prelude.fs (lines 77-118)
+// Source: src/FunLang/Prelude.fs (lines 77-118)
 // This is the reference pattern to adapt for FileImportDecl:
 
 let private loadSingleFile
@@ -315,7 +315,7 @@ let resolveImportPath (importPath: string) (importingFile: string) : string =
 
 ### Parser Grammar Addition (fsyacc)
 ```fsharp
-// Source: src/LangThree/Parser.fsy (add alongside existing OPEN QualifiedIdent rules)
+// Source: src/FunLang/Parser.fsy (add alongside existing OPEN QualifiedIdent rules)
 // In Decls production, add:
 | OPEN STRING
     { [FileImportDecl($2, ruleSpan parseState 1 2)] }
@@ -325,7 +325,7 @@ let resolveImportPath (importPath: string) (importingFile: string) : string =
 
 ### Existing OpenDecl Handling (reference for FileImportDecl handler shape)
 ```fsharp
-// Source: src/LangThree/Eval.fs lines 854-865
+// Source: src/FunLang/Eval.fs lines 854-865
 | OpenDecl(path, _) ->
     match path with
     | [name] ->
@@ -375,16 +375,16 @@ let resolveImportPath (importPath: string) (importingFile: string) : string =
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/Prelude.fs` — Complete reference implementation of file loading pipeline (parse → type check → eval → merge environments)
-- `src/LangThree/Ast.fs` — Current AST including `OpenDecl of path: string list * Span` and `ModuleDecl`
-- `src/LangThree/Parser.fsy` — Grammar: `OPEN QualifiedIdent` (lines 523-526), `parseModule` rule (lines 480-488)
-- `src/LangThree/TypeCheck.fs` — `OpenDecl` handling (lines 700-715), `ModuleDecl` handling (lines 670-698), `typeCheckDecls` fold
-- `src/LangThree/Eval.fs` — `OpenDecl` handling (lines 854-865), `ModuleDecl` handling (lines 825-853), `evalModuleDecls`
-- `src/LangThree/Bidir.fs` — `RecordExpr` field-name resolution (lines 395-423), `FieldAccess` type checking (lines 425-442)
-- `src/LangThree/Diagnostic.fs` — Existing E0501-E0504 module error codes
+- `src/FunLang/Prelude.fs` — Complete reference implementation of file loading pipeline (parse → type check → eval → merge environments)
+- `src/FunLang/Ast.fs` — Current AST including `OpenDecl of path: string list * Span` and `ModuleDecl`
+- `src/FunLang/Parser.fsy` — Grammar: `OPEN QualifiedIdent` (lines 523-526), `parseModule` rule (lines 480-488)
+- `src/FunLang/TypeCheck.fs` — `OpenDecl` handling (lines 700-715), `ModuleDecl` handling (lines 670-698), `typeCheckDecls` fold
+- `src/FunLang/Eval.fs` — `OpenDecl` handling (lines 854-865), `ModuleDecl` handling (lines 825-853), `evalModuleDecls`
+- `src/FunLang/Bidir.fs` — `RecordExpr` field-name resolution (lines 395-423), `FieldAccess` type checking (lines 425-442)
+- `src/FunLang/Diagnostic.fs` — Existing E0501-E0504 module error codes
 - `.planning/REQUIREMENTS.md` — MOD-01, MOD-02, MOD-05 requirement text
 - `.planning/ROADMAP.md` — Phase 31 success criteria
-- `tests/LangThree.Tests/ModuleTests.fs` — Existing module test suite (209 tests passing)
+- `tests/FunLang.Tests/ModuleTests.fs` — Existing module test suite (209 tests passing)
 
 ### Secondary (MEDIUM confidence)
 - Manual testing via `dotnet run` confirmed: MOD-02 already works (multiple `module X =` blocks), ADT type isolation works, record creation with unique field names across modules works

@@ -28,8 +28,8 @@ score: 3/3 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/IndentFilter.fs` | BracketDepth field in FilterState; NEWLINE suppression inside brackets | VERIFIED | `BracketDepth: int` at line 33; guarded arm `NEWLINE _ when state.BracketDepth > 0` at line 231, before unguarded arm at line 235 |
-| `src/LangThree/Parser.fsy` | `SemiPatList` nonterminal; `desugarListPat` helper; trailing-semi production in `SemiExprList` | VERIFIED | `desugarListPat` at lines 22-25 in header; `SemiExprList` has 3 productions at lines 291-294 including `Expr SEMICOLON { [$1] }`; `SemiPatList` at lines 297-300; list literal pattern rules at lines 337-340 |
+| `src/FunLang/IndentFilter.fs` | BracketDepth field in FilterState; NEWLINE suppression inside brackets | VERIFIED | `BracketDepth: int` at line 33; guarded arm `NEWLINE _ when state.BracketDepth > 0` at line 231, before unguarded arm at line 235 |
+| `src/FunLang/Parser.fsy` | `SemiPatList` nonterminal; `desugarListPat` helper; trailing-semi production in `SemiExprList` | VERIFIED | `desugarListPat` at lines 22-25 in header; `SemiExprList` has 3 productions at lines 291-294 including `Expr SEMICOLON { [$1] }`; `SemiPatList` at lines 297-300; list literal pattern rules at lines 337-340 |
 | `tests/flt/expr/list/list-multiline.flt` | flt test for multi-line list in expression mode | VERIFIED | File exists; input is `[` on one line with elements on subsequent lines; expected output `[1; 2; 3]` |
 | `tests/flt/file/list/list-multiline-file.flt` | flt test for multi-line list in file mode | VERIFIED | File exists |
 | `tests/flt/expr/list/list-trailing-semi.flt` | flt test for trailing semicolon | VERIFIED | File exists; input `[1; 2; 3;]`; expected `[1; 2; 3]` |

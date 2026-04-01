@@ -88,8 +88,8 @@ completed: 2026-03-23
 **1. [Rule 1 - Bug] Release binary was stale — rebuilt before running tests**
 - **Found during:** Task 2 (running tests)
 - **Issue:** Release binary dated Mar 20, plan 01 Bidir.fs changes committed later. Tests were invoking old code that still raised E0401.
-- **Fix:** Ran `dotnet publish src/LangThree/LangThree.fsproj -c Release` to rebuild
-- **Files modified:** src/LangThree/bin/Release/net10.0/ (binary)
+- **Fix:** Ran `dotnet publish src/FunLang/FunLang.fsproj -c Release` to rebuild
+- **Files modified:** src/FunLang/bin/Release/net10.0/ (binary)
 - **Verification:** E0401 no longer raised; tests proceed to type-check
 - **Committed in:** Not committed (binary is gitignored)
 

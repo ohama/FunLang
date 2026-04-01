@@ -55,7 +55,7 @@ completed: 2026-03-19
 - Chapter 5: Algebraic Data Types (11 examples) -- enums, parametric types, recursive/mutual types, exhaustiveness
 - Chapter 6: Records (10 examples) -- field access, copy-update, mutable fields, pattern matching, equality
 - Chapter 7: GADTs (7 examples) -- GADT syntax, type refinement, annotation requirement, exhaustiveness filtering
-- All 28 examples verified against actual LangThree CLI output
+- All 28 examples verified against actual FunLang CLI output
 
 ## Task Commits
 

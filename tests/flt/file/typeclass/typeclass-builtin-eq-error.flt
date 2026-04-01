@@ -1,5 +1,5 @@
 // Test: eq on function type produces NoInstance error for Eq
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 let result = eq (fun x -> x) (fun x -> x)
 // --- ExitCode: 1

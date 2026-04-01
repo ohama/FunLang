@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds an F#-style module system to LangThree. The work is purely internal -- no new external libraries are needed. The implementation extends the existing AST, parser, type checker, and evaluator with module-related constructs: `module` declarations (top-level and nested), `namespace` declarations, `open` for imports, qualified name access (`Module.function`), and implicit module from filename.
+This phase adds an F#-style module system to FunLang. The work is purely internal -- no new external libraries are needed. The implementation extends the existing AST, parser, type checker, and evaluator with module-related constructs: `module` declarations (top-level and nested), `namespace` declarations, `open` for imports, qualified name access (`Module.function`), and implicit module from filename.
 
 The current codebase already has a `Module` AST node (`Module of decls: Decl list * Span`) and a `parseModule` entry point, but these represent a flat list of declarations with no module/namespace nesting. The key challenge is extending this flat structure to support nested scoped environments while maintaining the existing pipeline: `parseModule -> typeCheckModule -> eval`.
 
@@ -63,7 +63,7 @@ Module
 
 ### Recommended New/Modified Files
 ```
-src/LangThree/
+src/FunLang/
   Ast.fs           -- Add ModuleDecl, OpenDecl, NamespaceDecl to Decl; QualifiedName expr
   Lexer.fsl        -- Add MODULE, NAMESPACE, OPEN tokens
   Parser.fsy       -- Add module/namespace/open grammar rules
@@ -78,7 +78,7 @@ src/LangThree/
 **When to use:** Name resolution during type checking and evaluation.
 **Example:**
 ```fsharp
-// Source: Architecture design for LangThree module system
+// Source: Architecture design for FunLang module system
 type ModuleEnv = {
     Name: string
     Values: TypeEnv                    // let bindings
@@ -94,7 +94,7 @@ type ModuleEnv = {
 **When to use:** Parsing and evaluating qualified module member access.
 **Example:**
 ```fsharp
-// Source: LangThree AST extension design
+// Source: FunLang AST extension design
 // Option A: Reuse existing FieldAccess for qualified names
 //   Parser already has: Atom DOT IDENT -> FieldAccess
 //   At evaluation time, distinguish record field vs module member

@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "Constructor-local type vars get fresh indices via freshTypeVarIndex, extending paramMap per-constructor"
@@ -66,8 +66,8 @@ Each task was committed atomically:
 2. **Task 2: Wire GADT elaboration into typeCheckModule** - `b0181ea` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Elaborate.fs` - Added collectTypeExprVars helper, constructor-local var allocation, IsGadt sweep logic
-- `src/LangThree/TypeCheck.fs` - Updated inferTypeFromPatterns to handle GADT constructors with generic type reconstruction
+- `src/FunLang/Elaborate.fs` - Added collectTypeExprVars helper, constructor-local var allocation, IsGadt sweep logic
+- `src/FunLang/TypeCheck.fs` - Updated inferTypeFromPatterns to handle GADT constructors with generic type reconstruction
 
 ## Decisions Made
 - Constructor-local type variables allocated via freshTypeVarIndex with per-constructor extended paramMap (not shared across constructors)

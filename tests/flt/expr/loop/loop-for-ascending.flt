@@ -1,5 +1,5 @@
 // Test LOOP-02: for loop ascending, i takes values 0 through 3
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let mut total = 0
 let _ =

@@ -26,12 +26,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Type.fs
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Unify.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Unify.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "TEName in elaborateTypeDecl produces TData(name, []) for recursive/named type references"
@@ -73,12 +73,12 @@ Each task was committed atomically:
 3. **Task 3: Add unit tests for type elaboration** - `3fe2a5a` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Type.fs` - TData constructor, ConstructorInfo/ConstructorEnv types, formatType/apply/freeVars updates
-- `src/LangThree/Elaborate.fs` - elaborateTypeDecl function with substTypeExpr for type param resolution
-- `src/LangThree/Unify.fs` - TData pairwise unification support
-- `src/LangThree/Bidir.fs` - TData in NotAFunction check
-- `src/LangThree/Infer.fs` - TData in NotAFunction check
-- `tests/LangThree.Tests/IntegrationTests.fs` - 3 elaboration tests (simple, parametric, recursive ADT)
+- `src/FunLang/Type.fs` - TData constructor, ConstructorInfo/ConstructorEnv types, formatType/apply/freeVars updates
+- `src/FunLang/Elaborate.fs` - elaborateTypeDecl function with substTypeExpr for type param resolution
+- `src/FunLang/Unify.fs` - TData pairwise unification support
+- `src/FunLang/Bidir.fs` - TData in NotAFunction check
+- `src/FunLang/Infer.fs` - TData in NotAFunction check
+- `tests/FunLang.Tests/IntegrationTests.fs` - 3 elaboration tests (simple, parametric, recursive ADT)
 
 ## Decisions Made
 - TEName in elaborateTypeDecl produces TData(name, []) for recursive and named type references (not a type variable, not an error)
@@ -92,7 +92,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (Type.fs extension)
 - **Issue:** Plan only specified Type.fs changes, but Unify.fs needs TData case for correct unification
 - **Fix:** Added TData pairwise unification case in unifyWithContext
-- **Files modified:** src/LangThree/Unify.fs
+- **Files modified:** src/FunLang/Unify.fs
 - **Verification:** Build succeeds, all tests pass
 - **Committed in:** 9484d20 (Task 1 commit)
 
@@ -100,7 +100,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (Type.fs extension)
 - **Issue:** NotAFunction checks enumerated concrete types but didn't include TData
 - **Fix:** Added TData _ to pattern match in both Bidir.fs and Infer.fs
-- **Files modified:** src/LangThree/Bidir.fs, src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Bidir.fs, src/FunLang/Infer.fs
 - **Verification:** Build succeeds
 - **Committed in:** 9484d20 (Task 1 commit)
 
@@ -108,7 +108,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (test writing)
 - **Issue:** Plan used TEVar "IntList" for recursive type reference, but IntList is a named type (TEName), not a type variable (TEVar)
 - **Fix:** Used Ast.TEName "IntList" in test and handled TEName in elaborateTypeDecl
-- **Files modified:** tests/LangThree.Tests/IntegrationTests.fs
+- **Files modified:** tests/FunLang.Tests/IntegrationTests.fs
 - **Verification:** Test passes correctly with TData("IntList", []) result
 - **Committed in:** 3fe2a5a (Task 3 commit)
 

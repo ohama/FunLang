@@ -6,10 +6,10 @@ tags: [fsharp, builtin, type-system, elaborator, failwith, option]
 
 requires:
   - phase: prior-phases
-    provides: LangThreeException, initialBuiltinEnv, initialTypeEnv, Elaborate.fs TEData case
+    provides: FunLangException, initialBuiltinEnv, initialTypeEnv, Elaborate.fs TEData case
 
 provides:
-  - failwith builtin function (raises LangThreeException, polymorphic return type)
+  - failwith builtin function (raises FunLangException, polymorphic return type)
   - lowercase option/result as aliases for Option/Result in type annotations
 
 affects:
@@ -25,13 +25,13 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Elaborate.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Elaborate.fs
 
 key-decisions:
   - "failwith return type is Scheme([0], TArrow(TString, TVar 0)) - polymorphic to unify with any branch type"
-  - "failwith raises LangThreeException (not System.Exception) so try-with in user code can catch it"
+  - "failwith raises FunLangException (not System.Exception) so try-with in user code can catch it"
   - "option/result normalization done in Elaborate.fs TEData case only, not TEName (TEName is correct as fresh TVar)"
 
 patterns-established:
@@ -54,7 +54,7 @@ completed: 2026-03-24
 - **Files modified:** 3
 
 ## Accomplishments
-- `failwith "msg"` now works in user code: raises `LangThreeException(StringValue msg)`, catchable by `try-with`
+- `failwith "msg"` now works in user code: raises `FunLangException(StringValue msg)`, catchable by `try-with`
 - `failwith` has polymorphic return type so it works in if-else branches without type errors
 - `int option` and `string option` in type annotations normalize to `Option` and unify with `TData("Option", ...)`
 - `result` similarly normalizes to `Result`
@@ -66,13 +66,13 @@ completed: 2026-03-24
 2. **Task 2: Add option/result type alias (TYPE-03)** - `9420977` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - Added `failwith` entry to `initialBuiltinEnv`
-- `src/LangThree/TypeCheck.fs` - Added `failwith` type scheme to `initialTypeEnv`
-- `src/LangThree/Elaborate.fs` - Added canonical name normalization in `TEData` cases of `elaborateWithVars` and `substTypeExprWithMap`
+- `src/FunLang/Eval.fs` - Added `failwith` entry to `initialBuiltinEnv`
+- `src/FunLang/TypeCheck.fs` - Added `failwith` type scheme to `initialTypeEnv`
+- `src/FunLang/Elaborate.fs` - Added canonical name normalization in `TEData` cases of `elaborateWithVars` and `substTypeExprWithMap`
 
 ## Decisions Made
 - `failwith` uses `Scheme([0], TArrow(TString, TVar 0))` — polymorphic return unifies with any expected type, matching `raise`'s behavior. Using unit return would break `if cond then failwith "msg" else value` patterns.
-- `failwith` raises `LangThreeException(StringValue msg)` — the only exception type caught by the language's `try-with` evaluator. Using `System.Exception` would make it uncatchable in user code.
+- `failwith` raises `FunLangException(StringValue msg)` — the only exception type caught by the language's `try-with` evaluator. Using `System.Exception` would make it uncatchable in user code.
 - `option`/`result` normalization is in `TEData` case only — `TEName` is intentionally left as a fresh `TVar` for bare named types; changing it would incorrectly resolve `TEName "option"` to `TData("Option", [])` with no type args.
 
 ## Deviations from Plan

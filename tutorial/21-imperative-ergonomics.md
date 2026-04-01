@@ -1,10 +1,10 @@
 # 명령형 에르고노믹스 (Imperative Ergonomics)
 
-LangThree는 명령형 스타일 코드를 더 자연스럽게 작성할 수 있는 네 가지 문법 기능을 제공합니다. 이 장에서는 표현식 시퀀싱, 루프, 인덱싱 문법, else 없는 if 표현식을 살펴봅니다.
+FunLang는 명령형 스타일 코드를 더 자연스럽게 작성할 수 있는 네 가지 문법 기능을 제공합니다. 이 장에서는 표현식 시퀀싱, 루프, 인덱싱 문법, else 없는 if 표현식을 살펴봅니다.
 
 ## 표현식 시퀀싱 (Expression Sequencing)
 
-함수형 언어에서 여러 부수 효과(side effect)를 순서대로 실행하려면 전통적으로 `let _ = e1 in e2` 패턴을 사용했습니다. LangThree에서는 `;` 연산자로 이를 간결하게 쓸 수 있습니다.
+함수형 언어에서 여러 부수 효과(side effect)를 순서대로 실행하려면 전통적으로 `let _ = e1 in e2` 패턴을 사용했습니다. FunLang에서는 `;` 연산자로 이를 간결하게 쓸 수 있습니다.
 
 `e1; e2`는 `e1`을 평가한 뒤 그 결과를 버리고, `e2`를 평가하여 그 값을 반환합니다.
 
@@ -12,7 +12,7 @@ LangThree는 명령형 스타일 코드를 더 자연스럽게 작성할 수 있
 $ cat seq_basic.l3
 let _ = println "hello"; println "world"
 
-$ langthree seq_basic.l3
+$ funlang seq_basic.l3
 hello
 world
 ()
@@ -24,7 +24,7 @@ world
 $ cat seq_chain.l3
 let result = let mut x = 0 in x <- 1; x <- x + 1; x <- x + 1; x
 
-$ langthree seq_chain.l3
+$ funlang seq_chain.l3
 3
 ```
 
@@ -36,7 +36,7 @@ let f () =
     println "a"; println "b"; println "c"
 let result = f ()
 
-$ langthree seq_block.l3
+$ funlang seq_block.l3
 a
 b
 c
@@ -57,7 +57,7 @@ let mut i = 0
 let _ = while i < 3 do i <- i + 1
 let _ = println (to_string i)
 
-$ langthree while_basic.l3
+$ funlang while_basic.l3
 3
 ()
 ```
@@ -73,7 +73,7 @@ let _ =
         sum <- sum + count; count <- count + 1
 let _ = println (to_string sum)
 
-$ langthree while_body.l3
+$ funlang while_body.l3
 6
 ()
 ```
@@ -94,7 +94,7 @@ let _ =
         total <- total + i
 let _ = println (to_string total)
 
-$ langthree for_asc.l3
+$ funlang for_asc.l3
 6
 ()
 ```
@@ -111,7 +111,7 @@ let _ =
         total <- total + i
 let _ = println (to_string total)
 
-$ langthree for_desc.l3
+$ funlang for_desc.l3
 6
 ()
 ```
@@ -128,7 +128,7 @@ let _ =
     for i = 0 to 9 do
         i <- 42
 
-$ langthree for_err.l3
+$ funlang for_err.l3
 error[E0320]: Cannot assign to immutable variable 'i'. ...
  --> for_err.l3:3:8-15
     |
@@ -159,7 +159,7 @@ let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 let _ = println (to_string arr.[2])
 
-$ langthree arr_index_read.l3
+$ funlang arr_index_read.l3
 10
 20
 30
@@ -176,7 +176,7 @@ let _ = arr.[1] <- 99
 let _ = println (to_string arr.[0])
 let _ = println (to_string arr.[1])
 
-$ langthree arr_index_write.l3
+$ funlang arr_index_write.l3
 42
 99
 ()
@@ -196,7 +196,7 @@ let _ = hashtable_set ht "y" 200
 let _ = println (to_string ht.["x"])
 let _ = println (to_string ht.["y"])
 
-$ langthree ht_index_read.l3
+$ funlang ht_index_read.l3
 100
 200
 ()
@@ -212,7 +212,7 @@ let _ = ht.["score"] <- 95
 let _ = println ht.["name"]
 let _ = println (to_string ht.["score"])
 
-$ langthree ht_index_write.l3
+$ funlang ht_index_write.l3
 Alice
 95
 ()
@@ -235,7 +235,7 @@ let _ = matrix.[1] <- row1
 let _ = println (to_string matrix.[0].[0])
 let _ = println (to_string matrix.[1].[1])
 
-$ langthree matrix.l3
+$ funlang matrix.l3
 1
 4
 ()
@@ -254,7 +254,7 @@ $ cat if_then.l3
 let x = 5
 let _ = if x > 0 then println "positive"
 
-$ langthree if_then.l3
+$ funlang if_then.l3
 positive
 ()
 ```
@@ -267,7 +267,7 @@ let mut x = 0
 let _ = if true then x <- 42
 let result = x
 
-$ langthree if_then_mut.l3
+$ funlang if_then_mut.l3
 42
 ```
 
@@ -277,7 +277,7 @@ $ langthree if_then_mut.l3
 $ cat if_then_err.l3
 let _ = if true then 42
 
-$ langthree if_then_err.l3
+$ funlang if_then_err.l3
 error[E0301]: Type mismatch: expected int but got unit
  --> if_then_err.l3:1:6-23
     |
@@ -305,7 +305,7 @@ let _ =
         if arr.[i] % 2 = 0 then even_count <- even_count + 1
 let result = even_count
 
-$ langthree imperative_example.l3
+$ funlang imperative_example.l3
 3
 ```
 

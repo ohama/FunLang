@@ -1,6 +1,6 @@
-# LangThree Architecture Guide
+# FunLang Architecture Guide
 
-LangThree 인터프리터의 파이프라인 설계와 각 컴포넌트의 역할.
+FunLang 인터프리터의 파이프라인 설계와 각 컴포넌트의 역할.
 
 ## 1. Pipeline Overview
 
@@ -258,7 +258,7 @@ type Value =
 ## 4. File Structure
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Lexer.fsl          # Token definitions (fslex)
 ├── Parser.fsy         # Grammar rules (fsyacc)
 ├── Ast.fs             # AST node types
@@ -277,7 +277,7 @@ src/LangThree/
 ├── Diagnostic.fs      # Error/warning formatting, source snippets, "Did you mean?" suggestions
 ├── Program.fs         # CLI entry point (--expr, file, --emit-ast, etc.)
 ├── Repl.fs            # Interactive REPL (v14.0: persistent bindings, :type/:load commands)
-└── LangThree.fsproj   # Project file
+└── FunLang.fsproj   # Project file
 ```
 
 ## 5. Key Design Patterns

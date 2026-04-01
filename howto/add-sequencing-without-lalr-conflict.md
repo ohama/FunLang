@@ -76,14 +76,14 @@ SeqExpr:
 ### Step 4: 빌드 후 충돌 확인
 
 ```bash
-dotnet build src/LangThree/LangThree.fsproj -c Release
+dotnet build src/FunLang/FunLang.fsproj -c Release
 ```
 
 fsyacc가 SEMICOLON 관련 shift/reduce 충돌을 보고하면, Step 3의 "Expr 유지" 목록에서 누락된 곳이 있다. 에러 메시지가 어떤 규칙에서 충돌하는지 알려주므로 해당 위치를 `Expr`로 되돌린다.
 
 ## Example
 
-LangThree의 실제 구현. 30개 규칙을 업데이트했지만 Eval.fs, Bidir.fs, TypeCheck.fs 변경은 0이다:
+FunLang의 실제 구현. 30개 규칙을 업데이트했지만 Eval.fs, Bidir.fs, TypeCheck.fs 변경은 0이다:
 
 ```fsharp
 // Parser.fsy

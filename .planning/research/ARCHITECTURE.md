@@ -1,4 +1,4 @@
-# Architecture Patterns: Type Classes in LangThree
+# Architecture Patterns: Type Classes in FunLang
 
 **Domain:** Adding type classes (ad-hoc polymorphism) to an existing ML-style interpreter
 **Researched:** 2026-03-31
@@ -9,7 +9,7 @@
 ## Overview
 
 This document covers the integration architecture for adding Haskell-style type classes to the
-existing LangThree interpreter. The chosen implementation strategy is **dictionary passing**:
+existing FunLang interpreter. The chosen implementation strategy is **dictionary passing**:
 type class constraints are elaborated into explicit dictionary arguments during type checking,
 and dictionary values are constructed and passed at call sites during evaluation.
 
@@ -463,7 +463,7 @@ The features form a strict dependency chain. Each phase is independently testabl
 
 **Does not require:** Parser changes, new AST nodes.
 
-**Test:** F# unit tests in `LangThree.Tests` validating that `Scheme` with constraints can be
+**Test:** F# unit tests in `FunLang.Tests` validating that `Scheme` with constraints can be
 created, that `generalize` preserves constraints, and that `resolveConstraint` finds the right
 instance by linear search.
 
@@ -695,21 +695,21 @@ checking, not before. The correct location is inline in `Bidir.fs` `synth`, driv
 ## Files Changed by Component
 
 ### Phase 1 — Core infrastructure
-- `src/LangThree/Type.fs` — Scheme, Constraint, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv
+- `src/FunLang/Type.fs` — Scheme, Constraint, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv
 
 ### Phase 2 — Parsing
-- `src/LangThree/Lexer.fsl` — TYPECLASS, INSTANCE, FATARROW tokens
-- `src/LangThree/Parser.fsy` — ClassDecl, InstanceDecl, TEConstrained rules
-- `src/LangThree/Ast.fs` — ClassDecl, InstanceDecl Decl variants; TEConstrained TypeExpr variant
+- `src/FunLang/Lexer.fsl` — TYPECLASS, INSTANCE, FATARROW tokens
+- `src/FunLang/Parser.fsy` — ClassDecl, InstanceDecl, TEConstrained rules
+- `src/FunLang/Ast.fs` — ClassDecl, InstanceDecl Decl variants; TEConstrained TypeExpr variant
 
 ### Phase 3 — Type checking wiring
-- `src/LangThree/TypeCheck.fs` — thread ClassEnv/InstanceEnv, process ClassDecl/InstanceDecl
-- `src/LangThree/Bidir.fs` — Var case: constraint resolution + dict arg insertion
-- `src/LangThree/Infer.fs` — instantiate and generalize: constraint threading
+- `src/FunLang/TypeCheck.fs` — thread ClassEnv/InstanceEnv, process ClassDecl/InstanceDecl
+- `src/FunLang/Bidir.fs` — Var case: constraint resolution + dict arg insertion
+- `src/FunLang/Infer.fs` — instantiate and generalize: constraint threading
 
 ### Phase 4 — Evaluation
-- `src/LangThree/TypeCheck.fs` — construct RecordValue dicts for instance declarations
-- `src/LangThree/Eval.fs` — minimal or no changes (elaboration already rewrites AST)
+- `src/FunLang/TypeCheck.fs` — construct RecordValue dicts for instance declarations
+- `src/FunLang/Eval.fs` — minimal or no changes (elaboration already rewrites AST)
 
 ---
 

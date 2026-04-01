@@ -1,4 +1,4 @@
-# Project Milestones: LangThree
+# Project Milestones: FunLang
 
 ## v10.0 Type Classes (Shipped: 2026-03-31)
 
@@ -410,7 +410,7 @@
 
 ## v1.3 Tutorial Documentation (Shipped: 2026-03-19)
 
-**Delivered:** 함수형 프로그래밍 경험자를 위한 포괄적 LangThree 튜토리얼 13개 챕터, 224개 CLI-verified 예제
+**Delivered:** 함수형 프로그래밍 경험자를 위한 포괄적 FunLang 튜토리얼 13개 챕터, 224개 CLI-verified 예제
 
 **Phases completed:** 13-14 (4 plans total)
 

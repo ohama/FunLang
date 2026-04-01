@@ -30,11 +30,11 @@ tech-stack:
 
 key-files:
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - src/LangThree/Prelude.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - src/FunLang/Prelude.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "recEnv as first param to eval (parallel to how ctorEnv is added to synth in Bidir)"
@@ -80,11 +80,11 @@ Each task was committed atomically:
 2. **Task 2: Update all eval callers, migrate file path to module pipeline** - `a2556ba` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - RecordEnv param on eval/evalMatchClauses, record eval cases, formatValue, matchPattern, equality
-- `src/LangThree/Program.fs` - --file uses parseModule+typeCheckModule, --expr passes Map.empty
-- `src/LangThree/Repl.fs` - passes Map.empty for recEnv
-- `src/LangThree/Prelude.fs` - passes Map.empty for recEnv
-- `tests/LangThree.Tests/IntegrationTests.fs` - parseAndEvalModule helper updated for new eval signature
+- `src/FunLang/Eval.fs` - RecordEnv param on eval/evalMatchClauses, record eval cases, formatValue, matchPattern, equality
+- `src/FunLang/Program.fs` - --file uses parseModule+typeCheckModule, --expr passes Map.empty
+- `src/FunLang/Repl.fs` - passes Map.empty for recEnv
+- `src/FunLang/Prelude.fs` - passes Map.empty for recEnv
+- `tests/FunLang.Tests/IntegrationTests.fs` - parseAndEvalModule helper updated for new eval signature
 
 ## Decisions Made
 - recEnv added as first parameter to eval (not last) for consistency with how Bidir adds contextual params
@@ -100,7 +100,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (updating external callers)
 - **Issue:** IntegrationTests.fs parseAndEvalModule calls Eval.eval directly, needed Map.empty for recEnv
 - **Fix:** Added Map.empty as first argument to Eval.eval call in test helper
-- **Files modified:** tests/LangThree.Tests/IntegrationTests.fs
+- **Files modified:** tests/FunLang.Tests/IntegrationTests.fs
 - **Verification:** All 89 tests pass
 - **Committed in:** a2556ba (Task 2 commit)
 

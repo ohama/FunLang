@@ -28,10 +28,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Exhaustive.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/TypeCheck.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Exhaustive.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/TypeCheck.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Infer scrutinee type from constructor patterns rather than re-synthesizing (avoids scope issues with function parameters)"
@@ -70,10 +70,10 @@ Each task was committed atomically:
 2. **Task 2: Wire exhaustiveness and redundancy checking into TypeCheck.fs with integration tests** - `02d7b2c` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Exhaustive.fs` - Added getConstructorsFromEnv (ConstructorEnv lookup) and astPatToCasePat (Ast.Pattern to CasePat conversion), removed failwith stub
-- `src/LangThree/Diagnostic.fs` - Added NonExhaustiveMatch/RedundantPattern TypeErrorKind variants, W-prefix warning formatting
-- `src/LangThree/TypeCheck.fs` - Added collectMatches for recursive match collection, wired checkExhaustive/checkRedundant into typeCheckModule, changed return type to Result<Diagnostic list, Diagnostic>
-- `tests/LangThree.Tests/IntegrationTests.fs` - Added 4 integration tests for exhaustiveness/redundancy warnings
+- `src/FunLang/Exhaustive.fs` - Added getConstructorsFromEnv (ConstructorEnv lookup) and astPatToCasePat (Ast.Pattern to CasePat conversion), removed failwith stub
+- `src/FunLang/Diagnostic.fs` - Added NonExhaustiveMatch/RedundantPattern TypeErrorKind variants, W-prefix warning formatting
+- `src/FunLang/TypeCheck.fs` - Added collectMatches for recursive match collection, wired checkExhaustive/checkRedundant into typeCheckModule, changed return type to Result<Diagnostic list, Diagnostic>
+- `tests/FunLang.Tests/IntegrationTests.fs` - Added 4 integration tests for exhaustiveness/redundancy warnings
 
 ## Decisions Made
 - **Infer scrutinee type from constructor patterns:** Instead of re-synthesizing the scrutinee expression (which fails for function parameters not in the module-level type environment), we look at the constructor patterns in the match clauses and resolve the ADT type from the ConstructorEnv. This is reliable since any ADT match must have at least one constructor pattern.
@@ -87,7 +87,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (wiring exhaustiveness into TypeCheck.fs)
 - **Issue:** Plan specified re-synthesizing scrutinee via `Bidir.synth ctorEnv [] env scrutinee`, but function parameters (e.g., `x` in `let f x = match x with ...`) are not in the module-level finalEnv, causing UnboundVar errors
 - **Fix:** Instead of re-synthesizing, infer the ADT type from the first constructor pattern found in the match clauses via ConstructorEnv lookup
-- **Files modified:** src/LangThree/TypeCheck.fs
+- **Files modified:** src/FunLang/TypeCheck.fs
 - **Verification:** All 89 tests pass including the 4 new integration tests
 - **Committed in:** 02d7b2c (Task 2 commit)
 

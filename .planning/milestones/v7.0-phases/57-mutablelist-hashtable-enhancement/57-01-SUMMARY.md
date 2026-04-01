@@ -17,10 +17,10 @@ key-files:
   created:
     - Prelude/MutableList.fun
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
 
 decisions:
   - id: raw-builtins-for-prelude
@@ -45,8 +45,8 @@ Added `MutableList` as a new native collection type following the Phase 56 HashS
 2. **Eval.fs** — Four integration points:
    - Constructor interception: `"MutableList"` → `MutableListValue(List<Value>())` (handles both `MutableList()` and `MutableList ()`).
    - FieldAccess dispatch: `.Add(v)` returns `TupleValue []` (mutates list), `.Count` returns `IntValue` directly (not wrapped in BuiltinValue).
-   - IndexGet: bounds-checked `ml.[i]` raising `LangThreeException` on out-of-bounds.
-   - IndexSet: bounds-checked `ml.[i] <- v` raising `LangThreeException` on out-of-bounds.
+   - IndexGet: bounds-checked `ml.[i]` raising `FunLangException` on out-of-bounds.
+   - IndexSet: bounds-checked `ml.[i] <- v` raising `FunLangException` on out-of-bounds.
    - Raw builtins: `mutablelist_create`, `mutablelist_add`, `mutablelist_get`, `mutablelist_set`, `mutablelist_count`.
 
 3. **Bidir.fs** — Four type rules:
@@ -92,7 +92,7 @@ Build: zero errors, zero warnings.
 - **Found during:** Task 2 when testing Prelude/MutableList.fun with dot-dispatch
 - **Issue:** Prelude functions using dot-dispatch (`ml.Add v`, `ml.[i]`) caused type error warning "Cannot access field on non-record type 'v'" because `ml` is a TVar in the Prelude function body
 - **Fix:** Added raw builtins `mutablelist_create/add/get/set/count` in Eval.fs and TypeCheck.fs; rewrote Prelude/MutableList.fun to use raw builtins (identical pattern to HashSet/Queue Preludes)
-- **Files modified:** src/LangThree/Eval.fs, src/LangThree/TypeCheck.fs, Prelude/MutableList.fun
+- **Files modified:** src/FunLang/Eval.fs, src/FunLang/TypeCheck.fs, Prelude/MutableList.fun
 - **Commit:** 5d62920
 
 ## Next Phase Readiness

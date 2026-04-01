@@ -18,14 +18,14 @@ key-files:
     - tests/flt/file/tco-match.flt
     - tests/flt/file/tco-non-tail.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/MatchCompile.fs
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
-    - tests/LangThree.Tests/RecordTests.fs
-    - tests/LangThree.Tests/ModuleTests.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/MatchCompile.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
+    - tests/FunLang.Tests/RecordTests.fs
+    - tests/FunLang.Tests/ModuleTests.fs
 decisions:
   - id: "15-01-D1"
     title: "TailCall returned from App in tail position"

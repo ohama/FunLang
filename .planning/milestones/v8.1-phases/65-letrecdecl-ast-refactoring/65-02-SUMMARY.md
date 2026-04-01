@@ -28,9 +28,9 @@ key-files:
     - tests/flt/file/let/letrec-decl-param-annotation.flt
     - tests/flt/file/let/letrec-decl-param-annotation-error.flt
   modified:
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
 
 key-decisions:
   - "Used elaborateTypeExpr directly (bare call via open Elaborate) rather than any wrapper"
@@ -70,9 +70,9 @@ Each task was committed atomically:
 2. **Task 2: Add flt tests for annotation enforcement** - `955c23f` (test)
 
 ## Files Created/Modified
-- `src/LangThree/TypeCheck.fs` - LetRecDecl funcTypes mapping uses elaborateTypeExpr for annotated params
-- `src/LangThree/Bidir.fs` - LetRec synthesis uses elaborateTypeExpr for annotated params
-- `src/LangThree/Infer.fs` - LetRec inference uses elaborateTypeExpr for annotated params
+- `src/FunLang/TypeCheck.fs` - LetRecDecl funcTypes mapping uses elaborateTypeExpr for annotated params
+- `src/FunLang/Bidir.fs` - LetRec synthesis uses elaborateTypeExpr for annotated params
+- `src/FunLang/Infer.fs` - LetRec inference uses elaborateTypeExpr for annotated params
 - `tests/flt/file/let/letrec-decl-param-annotation.flt` - Positive tests: mutual rec, expr-level, unannotated regression
 - `tests/flt/file/let/letrec-decl-param-annotation-error.flt` - Negative test: type mismatch on annotated param
 

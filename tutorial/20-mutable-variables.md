@@ -12,7 +12,7 @@ let mut x = 5
 let _ = x <- 10
 let result = x
 
-$ langthree mut_basic.l3
+$ funlang mut_basic.l3
 10
 ```
 
@@ -24,7 +24,7 @@ let mut x = 5
 let r = x <- 10
 let result = r
 
-$ langthree mut_unit.l3
+$ funlang mut_unit.l3
 ()
 ```
 
@@ -42,7 +42,7 @@ let _ = counter <- counter + 1
 let _ = counter <- counter + 1
 let result = counter
 
-$ langthree mut_toplevel.l3
+$ funlang mut_toplevel.l3
 3
 ```
 
@@ -60,7 +60,7 @@ let mut greeting = "hello"
 let _ = greeting <- "world"
 let result = greeting
 
-$ langthree mut_string.l3
+$ funlang mut_string.l3
 "world"
 ```
 
@@ -72,7 +72,7 @@ let mut flag = true
 let _ = flag <- false
 let result = flag
 
-$ langthree mut_bool.l3
+$ funlang mut_bool.l3
 false
 ```
 
@@ -90,7 +90,7 @@ let _ = x <- 10
 let _ = y <- 20
 let result = (x, y)
 
-$ langthree mut_multi.l3
+$ funlang mut_multi.l3
 (10, 20)
 ```
 
@@ -110,7 +110,7 @@ let counter () =
     n
 let result = counter ()
 
-$ langthree mut_func.l3
+$ funlang mut_func.l3
 3
 ```
 
@@ -129,7 +129,7 @@ let _ = inc ()
 let _ = inc ()
 let result = count
 
-$ langthree mut_closure.l3
+$ funlang mut_closure.l3
 3
 ```
 
@@ -146,7 +146,7 @@ let _ = add 20
 let _ = add 30
 let result = total
 
-$ langthree mut_closure2.l3
+$ funlang mut_closure2.l3
 60
 ```
 
@@ -164,7 +164,7 @@ let _ = inc 0
 let _ = dec 0
 let result = get 0
 
-$ langthree mut_shared.l3
+$ funlang mut_shared.l3
 2
 ```
 
@@ -184,7 +184,7 @@ let rec sum_list lst =
 let _ = sum_list [1; 2; 3; 4; 5]
 let result = total
 
-$ langthree mut_recursive.l3
+$ funlang mut_recursive.l3
 15
 ```
 
@@ -203,7 +203,7 @@ let result =
     let _ = x <- 20
     (inner, x)
 
-$ langthree mut_shadow.l3
+$ funlang mut_shadow.l3
 (200, 20)
 ```
 
@@ -227,7 +227,7 @@ let result =
         | E -> x <- x + 1
     x
 
-$ langthree mut_try.l3
+$ funlang mut_try.l3
 43
 ```
 
@@ -248,7 +248,7 @@ let _ = Counter.inc 0
 let _ = Counter.inc 0
 let result = Counter.get 0
 
-$ langthree mut_module.l3
+$ funlang mut_module.l3
 2
 ```
 
@@ -272,7 +272,7 @@ let mut arr = Array.create 2 0
 let _ = arr <- Array.ofList [100; 200]
 let _ = println (to_string (Array.get arr 0))
 
-$ langthree mut_collections.l3
+$ funlang mut_collections.l3
 [10; 20]
 (10, 20)
 100
@@ -293,7 +293,7 @@ let _ = x <- 99
 let _ = println (to_string y)
 let _ = println (to_string x)
 
-$ langthree mut_passval.l3
+$ funlang mut_passval.l3
 15
 99
 ```
@@ -310,7 +310,7 @@ let mut x = 5
 let _ = x <- x |> (fun n -> n * 2)
 let result = x
 
-$ langthree mut_pipe.l3
+$ funlang mut_pipe.l3
 10
 ```
 
@@ -326,7 +326,7 @@ let mut x = 0
 let _ = x <- if true then 42 else 0
 let result = x
 
-$ langthree mut_cond.l3
+$ funlang mut_cond.l3
 42
 ```
 
@@ -343,7 +343,7 @@ let _ = label <-
     | _ -> "other"
 let result = label
 
-$ langthree mut_match.l3
+$ funlang mut_match.l3
 "one"
 ```
 
@@ -360,7 +360,7 @@ $ cat mut_err_immutable.l3
 let x = 5
 let _ = x <- 10
 
-$ langthree mut_err_immutable.l3
+$ funlang mut_err_immutable.l3
 error[E0320]: Cannot assign to immutable variable 'x'. ...
  --> mut_err_immutable.l3:2:6-14
     |
@@ -380,7 +380,7 @@ $ cat mut_err_type.l3
 let mut x = 5
 let _ = x <- "hello"
 
-$ langthree mut_err_type.l3
+$ funlang mut_err_type.l3
 error[E0301]: Type mismatch: expected int but got string
  --> mut_err_type.l3:2:6-20
     |
@@ -392,7 +392,7 @@ error[E0301]: Type mismatch: expected int but got string
 
 ## 불변 vs 가변
 
-LangThree는 기본적으로 불변을 선호합니다. 가변 변수는 필요할 때만 사용하세요.
+FunLang는 기본적으로 불변을 선호합니다. 가변 변수는 필요할 때만 사용하세요.
 
 | 항목 | 불변 (`let`) | 가변 (`let mut`) |
 |------|-------------|-----------------|
@@ -414,7 +414,7 @@ LangThree는 기본적으로 불변을 선호합니다. 가변 변수는 필요�
 - 재귀와 `fold`로 누적이 가능한 경우
 - 패턴 매칭으로 분기 처리하는 경우
 
-대부분의 LangThree 코드는 `let`만으로 충분합니다. `let mut`은 가변 상태가 코드를 더 명확하고 간결하게 만드는 경우에 사용하세요.
+대부분의 FunLang 코드는 `let`만으로 충분합니다. `let mut`은 가변 상태가 코드를 더 명확하고 간결하게 만드는 경우에 사용하세요.
 
 ## 구문 요약
 

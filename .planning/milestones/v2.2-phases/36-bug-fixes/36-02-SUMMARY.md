@@ -25,8 +25,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
-    - tests/LangThree.Tests/ExceptionTests.fs
+    - src/FunLang/Parser.fsy
+    - tests/FunLang.Tests/ExceptionTests.fs
 
 key-decisions:
   - "Option B (TryWithClauses nonterminal) caused +17 S/R conflicts; Option A (bare IDENT rules) adds zero"
@@ -65,8 +65,8 @@ completed: 2026-03-25
 
 ## Files Created/Modified
 
-- `src/LangThree/Parser.fsy` - Added two TRY rules for `TRY Expr WITH IDENT ARROW Expr` (inline and indented forms); no TryWithClauses nonterminal (Option A)
-- `tests/LangThree.Tests/ExceptionTests.fs` - New `testList "PAR-01: Inline try-with (no leading pipe)"` with 4 regression tests
+- `src/FunLang/Parser.fsy` - Added two TRY rules for `TRY Expr WITH IDENT ARROW Expr` (inline and indented forms); no TryWithClauses nonterminal (Option A)
+- `tests/FunLang.Tests/ExceptionTests.fs` - New `testList "PAR-01: Inline try-with (no leading pipe)"` with 4 regression tests
 
 ## Decisions Made
 
@@ -81,7 +81,7 @@ completed: 2026-03-25
 - **Found during:** Task 1 (Parser.fsy changes)
 - **Issue:** TryWithClauses with `| Pattern ARROW Expr` alternative introduced 17 new S/R conflicts (403→420)
 - **Fix:** Removed TryWithClauses nonterminal; added two explicit `TRY Expr WITH IDENT ARROW Expr` rules (Option A as specified in plan)
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** Build shows 0 new conflicts; `try ... with e -> ...` evaluates correctly
 - **Committed in:** 4d11368 (Task 1 commit)
 
@@ -89,7 +89,7 @@ completed: 2026-03-25
 - **Found during:** Task 2 (test execution)
 - **Issue:** `evalModule "let result = try failwith \"boom\" with e -> \"caught\""` threw "Undefined variable: failwith" because `evalModule` doesn't load Prelude
 - **Fix:** Changed test to use `exception Err\nlet result = try raise Err with e -> "caught"` which works with bare eval environment
-- **Files modified:** tests/LangThree.Tests/ExceptionTests.fs
+- **Files modified:** tests/FunLang.Tests/ExceptionTests.fs
 - **Verification:** All 218 tests pass
 - **Committed in:** c6ba720 (Task 2 commit)
 

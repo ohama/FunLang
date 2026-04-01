@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds `while cond do body` and `for i = start to/downto end do body` loops to LangThree. All five keywords (`while`, `for`, `to`, `downto`, `do`) are currently absent from the lexer and parser — none are reserved. They must be added as new tokens.
+This phase adds `while cond do body` and `for i = start to/downto end do body` loops to FunLang. All five keywords (`while`, `for`, `to`, `downto`, `do`) are currently absent from the lexer and parser — none are reserved. They must be added as new tokens.
 
 Both loop constructs return `unit` (`TupleValue []`). The `while` loop evaluates its body in a F# `while` loop until the condition is `BoolValue false`. The `for` loop binds the loop variable as a plain immutable `int` (NOT a `RefValue`) in the environment, iterates over a range, and executes the body for each value.
 
@@ -45,7 +45,7 @@ Both constructs are straightforward new `Expr` grammar rules using `SeqExpr` for
 
 Changes span exactly these files:
 ```
-src/LangThree/
+src/FunLang/
 ├── Lexer.fsl     # Add 5 new keyword tokens
 ├── Parser.fsy    # Add token declarations + 2 grammar rules in Expr
 ├── Ast.fs        # Add WhileExpr, ForExpr to Expr DU + spanOf cases
@@ -464,7 +464,7 @@ loop-for-with-array.flt      — for loop populating an array
 **Example FLT for LOOP-01:**
 ```
 // Test LOOP-01: while loop repeats body until condition false
-// --- Command: .../LangThree %input
+// --- Command: .../FunLang %input
 // --- Input:
 let mut i = 0
 let _ =
@@ -479,7 +479,7 @@ let _ = println (to_string i)
 **Example FLT for LOOP-04:**
 ```
 // Test LOOP-04: for loop variable is immutable (cannot assign)
-// --- Command: .../LangThree %input
+// --- Command: .../FunLang %input
 // --- Input:
 let _ =
     for i = 0 to 9 do
@@ -506,7 +506,7 @@ E0320
    - Recommendation: Run test suite after adding `to` keyword; if tests break, investigate. Unlikely issue.
 
 2. **For-loop variable type annotation**
-   - What we know: F# requires `for i = 0 to 9` where `i` is always `int`. LangThree follows suit.
+   - What we know: F# requires `for i = 0 to 9` where `i` is always `int`. FunLang follows suit.
    - What's unclear: Should we support `for (i: int) = 0 to 9`? Probably not needed for Phase 46.
    - Recommendation: Do not add annotation syntax for loop variable in Phase 46. Type is always inferred as `int`.
 
@@ -523,13 +523,13 @@ E0320
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Lexer.fsl` — all current keywords, no `while`/`for`/`do`/`to`/`downto`
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Parser.fsy` — all grammar rules, `SeqExpr` available, no loop rules
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Ast.fs` — current `Expr` DU, `LetMut`/`Assign` pattern from Phase 42
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — `LetMut`/`Assign` eval pattern, `Var` dereferences `RefValue` transparently
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Bidir.fs` — `mutableVars` set, `LetMut`/`Assign` type-check pattern, `ImmutableVariableAssignment` check
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/IndentFilter.fs` — `PrevToken` handling for `InExprBlock`, `DO` not currently tracked
-- Direct inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Diagnostic.fs` — `ImmutableVariableAssignment` error kind, E0320
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Lexer.fsl` — all current keywords, no `while`/`for`/`do`/`to`/`downto`
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Parser.fsy` — all grammar rules, `SeqExpr` available, no loop rules
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Ast.fs` — current `Expr` DU, `LetMut`/`Assign` pattern from Phase 42
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — `LetMut`/`Assign` eval pattern, `Var` dereferences `RefValue` transparently
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Bidir.fs` — `mutableVars` set, `LetMut`/`Assign` type-check pattern, `ImmutableVariableAssignment` check
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/IndentFilter.fs` — `PrevToken` handling for `InExprBlock`, `DO` not currently tracked
+- Direct inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Diagnostic.fs` — `ImmutableVariableAssignment` error kind, E0320
 - Direct inspection of `.planning/phases/45-expression-sequencing/45-RESEARCH.md` — `SeqExpr` nonterminal fully implemented in Phase 45
 
 ### Secondary (MEDIUM confidence)
@@ -547,4 +547,4 @@ E0320
 - `to` keyword safety with `to_string`: HIGH — fslex longest-match rule guarantees no conflict
 
 **Research date:** 2026-03-28
-**Valid until:** Stable for this codebase (LangThree grammar stable, Phase 45 SeqExpr complete)
+**Valid until:** Stable for this codebase (FunLang grammar stable, Phase 45 SeqExpr complete)

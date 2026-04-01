@@ -55,7 +55,7 @@ completed: 2026-03-29
 - **Files modified:** 28
 
 ## Accomplishments
-- All 39 stale `/Users/ohama/vibe/LangThree` paths replaced with `/Users/ohama/vibe-coding/LangThree` via batch sed
+- All 39 stale `/Users/ohama/vibe/FunLang` paths replaced with `/Users/ohama/vibe-coding/FunLang` via batch sed
 - `hashtable-forin.flt` now uses `for (k, v) in ht do` tuple destructuring (exercising Plan 61-01's ForInExpr Pattern support)
 - `hashtable-dot-api.flt` fully converted: `ht.TryGetValue` → `Hashtable.tryGetValue`, `ht.Count` → `Hashtable.count`, `ht.Keys` → `Hashtable.keys`
 - `hashtable-keys-tryget.flt` written fresh with module functions (was untracked new file)

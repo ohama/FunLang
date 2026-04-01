@@ -28,12 +28,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/Ast.fs"
-    - "src/LangThree/Bidir.fs"
-    - "src/LangThree/TypeCheck.fs"
-    - "src/LangThree/Eval.fs"
-    - "src/LangThree/Infer.fs"
-    - "tests/LangThree.Tests/RecordTests.fs"
+    - "src/FunLang/Ast.fs"
+    - "src/FunLang/Bidir.fs"
+    - "src/FunLang/TypeCheck.fs"
+    - "src/FunLang/Eval.fs"
+    - "src/FunLang/Infer.fs"
+    - "tests/FunLang.Tests/RecordTests.fs"
 
 key-decisions:
   - "TTuple [] as unit type representation (no dedicated TUnit in Type system)"
@@ -76,12 +76,12 @@ Each task was committed atomically:
 2. **Task 2: Update existing record tests and add mutable field tests** - `f9ae92b` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - RecordValue changed to use `Map<string, Value ref>`
-- `src/LangThree/Bidir.fs` - SetField synth case with IsMutable validation
-- `src/LangThree/TypeCheck.fs` - SetField case in collectMatches
-- `src/LangThree/Eval.fs` - All record operations updated for ref cells; SetField evaluation added
-- `src/LangThree/Infer.fs` - Record expression stubs added to deprecated inferWithContext
-- `tests/LangThree.Tests/RecordTests.fs` - 5 mutable field tests added
+- `src/FunLang/Ast.fs` - RecordValue changed to use `Map<string, Value ref>`
+- `src/FunLang/Bidir.fs` - SetField synth case with IsMutable validation
+- `src/FunLang/TypeCheck.fs` - SetField case in collectMatches
+- `src/FunLang/Eval.fs` - All record operations updated for ref cells; SetField evaluation added
+- `src/FunLang/Infer.fs` - Record expression stubs added to deprecated inferWithContext
+- `tests/FunLang.Tests/RecordTests.fs` - 5 mutable field tests added
 
 ## Decisions Made
 - Used `TTuple []` as unit type for SetField return (no dedicated TUnit exists in the type system)
@@ -96,7 +96,7 @@ Each task was committed atomically:
 - **Found during:** Task 1
 - **Issue:** Infer.fs inferWithContext had incomplete pattern match warnings for RecordExpr, FieldAccess, RecordUpdate (pre-existing) plus SetField (new)
 - **Fix:** Added catch-all stub returning `(empty, freshVar())` for all record expression types
-- **Files modified:** src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Infer.fs
 - **Verification:** Compiler warnings reduced from 5 to 1 (only Exhaustive.fs RecordPat remains)
 - **Committed in:** cd4e92d (Task 1 commit)
 

@@ -23,14 +23,14 @@ No new libraries. All fixes are internal to existing F# source files.
 ### Files Under Change
 | File | Purpose | Bug(s) Addressed |
 |------|---------|-----------------|
-| `src/LangThree/Prelude.fs` | File import TC + eval delegates; loadPrelude | MOD-01, MOD-02 |
-| `src/LangThree/TypeCheck.fs` | `fileImportTypeChecker` delegate signature | MOD-01 |
-| `src/LangThree/Eval.fs` | `fileImportEvaluator` delegate signature | MOD-01 |
-| `src/LangThree/Program.fs` | Run pipeline wires TC and eval results | MOD-01 |
-| `src/LangThree/Parser.fsy` | TRY-WITH grammar rule | PAR-01 |
+| `src/FunLang/Prelude.fs` | File import TC + eval delegates; loadPrelude | MOD-01, MOD-02 |
+| `src/FunLang/TypeCheck.fs` | `fileImportTypeChecker` delegate signature | MOD-01 |
+| `src/FunLang/Eval.fs` | `fileImportEvaluator` delegate signature | MOD-01 |
+| `src/FunLang/Program.fs` | Run pipeline wires TC and eval results | MOD-01 |
+| `src/FunLang/Parser.fsy` | TRY-WITH grammar rule | PAR-01 |
 | `Prelude/List.fun` (and others) | Prelude source files | MOD-02 |
-| `tests/LangThree.Tests/ModuleTests.fs` | New regression tests | all |
-| `tests/LangThree.Tests/ExceptionTests.fs` | New PAR-01 regression test | PAR-01 |
+| `tests/FunLang.Tests/ModuleTests.fs` | New regression tests | all |
+| `tests/FunLang.Tests/ExceptionTests.fs` | New PAR-01 regression test | PAR-01 |
 
 ## Architecture Patterns
 
@@ -284,14 +284,14 @@ TryWithClauses:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source reading of `src/LangThree/TypeCheck.fs` — `typeCheckDecls`, `fileImportTypeChecker`, `mergeModuleExportsForTypeCheck`, `rewriteModuleAccess`, `typeCheckModuleWithPrelude`
-- Direct source reading of `src/LangThree/Prelude.fs` — `loadAndTypeCheckFileImpl`, `loadAndEvalFileImpl`, `loadPrelude`
-- Direct source reading of `src/LangThree/Eval.fs` — `fileImportEvaluator`, `evalModuleDecls`, `FileImportDecl` arm
-- Direct source reading of `src/LangThree/Bidir.fs` — `FieldAccess` case, `FieldAccessOnNonRecord` raise
-- Direct source reading of `src/LangThree/Parser.fsy` — `TRY Expr WITH MatchClauses`, `MatchClauses`, `TryWithClauses` gap
-- Direct source reading of `src/LangThree/Program.fs` — run pipeline, `_modules` discard on line 204
+- Direct source reading of `src/FunLang/TypeCheck.fs` — `typeCheckDecls`, `fileImportTypeChecker`, `mergeModuleExportsForTypeCheck`, `rewriteModuleAccess`, `typeCheckModuleWithPrelude`
+- Direct source reading of `src/FunLang/Prelude.fs` — `loadAndTypeCheckFileImpl`, `loadAndEvalFileImpl`, `loadPrelude`
+- Direct source reading of `src/FunLang/Eval.fs` — `fileImportEvaluator`, `evalModuleDecls`, `FileImportDecl` arm
+- Direct source reading of `src/FunLang/Bidir.fs` — `FieldAccess` case, `FieldAccessOnNonRecord` raise
+- Direct source reading of `src/FunLang/Parser.fsy` — `TRY Expr WITH MatchClauses`, `MatchClauses`, `TryWithClauses` gap
+- Direct source reading of `src/FunLang/Program.fs` — run pipeline, `_modules` discard on line 204
 - Direct source reading of `Prelude/List.fun` — flat top-level bindings, no module wrapper
-- Direct source reading of `tests/LangThree.Tests/ModuleTests.fs` — test helper patterns
+- Direct source reading of `tests/FunLang.Tests/ModuleTests.fs` — test helper patterns
 
 ### Secondary (MEDIUM confidence)
 - `Diagnostic.fs` — confirmed E0313 = `FieldAccessOnNonRecord`

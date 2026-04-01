@@ -37,13 +37,13 @@ key-files:
     - tests/flt/expr/loop/loop-for-in-empty.flt
     - tests/flt/expr/loop/loop-for-in-immutable-error.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "Use freshVar() not freshTVar() — the codebase uses freshVar for fresh type variables in Bidir"
@@ -86,13 +86,13 @@ Each task was committed atomically:
 3. **Task 3: Four flt integration tests** - `f3dbdca` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added ForInExpr DU case and span extractor arm
-- `src/LangThree/Parser.fsy` - Added FOR IDENT IN grammar rules (inline + indented)
-- `src/LangThree/Bidir.fs` - ForInExpr synth with TList/TArray unification, immutable var binding
-- `src/LangThree/Eval.fs` - ForInExpr eval iterating ListValue/ArrayValue elements
-- `src/LangThree/Infer.fs` - ForInExpr passthrough
-- `src/LangThree/Format.fs` - ForInExpr AST formatter passthrough
-- `src/LangThree/TypeCheck.fs` - ForInExpr arms in all 4 recursive helpers
+- `src/FunLang/Ast.fs` - Added ForInExpr DU case and span extractor arm
+- `src/FunLang/Parser.fsy` - Added FOR IDENT IN grammar rules (inline + indented)
+- `src/FunLang/Bidir.fs` - ForInExpr synth with TList/TArray unification, immutable var binding
+- `src/FunLang/Eval.fs` - ForInExpr eval iterating ListValue/ArrayValue elements
+- `src/FunLang/Infer.fs` - ForInExpr passthrough
+- `src/FunLang/Format.fs` - ForInExpr AST formatter passthrough
+- `src/FunLang/TypeCheck.fs` - ForInExpr arms in all 4 recursive helpers
 - `tests/flt/expr/loop/loop-for-in-list.flt` - FORIN-01: list iteration
 - `tests/flt/expr/loop/loop-for-in-array.flt` - FORIN-02: array iteration
 - `tests/flt/expr/loop/loop-for-in-immutable-error.flt` - FORIN-03: E0320 on loop var assignment
@@ -111,7 +111,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (Bidir.fs implementation)
 - **Issue:** Plan code used `freshTVar()` but the function is named `freshVar()` in Bidir.fs
 - **Fix:** Replaced all three occurrences of `freshTVar()` with `freshVar()`
-- **Files modified:** src/LangThree/Bidir.fs
+- **Files modified:** src/FunLang/Bidir.fs
 - **Verification:** Build succeeded with 0 errors
 - **Committed in:** a2bb2e6 (Task 2 commit)
 

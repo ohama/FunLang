@@ -1,5 +1,5 @@
 // Test: function parameter is always immutable, assignment produces E0320
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let f x = x <- 10
 // --- ExitCode: 1

@@ -44,7 +44,7 @@ No new dependencies. Use existing F# compiler and FsLexYacc toolchain.
 
 ### Recommended Project Structure
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs           # Add TypeDecl, extend Decl for type declarations
 ├── Type.fs          # Add TData constructor, ConstructorEnv
 ├── Parser.fsy       # Add type declaration grammar rules

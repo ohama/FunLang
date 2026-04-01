@@ -37,21 +37,21 @@ Tomlyn 2.3.0 (released 2026-03-29) supports net10.0 directly, uses a `System.Tex
 
 **Installation:**
 ```bash
-dotnet add src/LangThree/LangThree.fsproj package Tomlyn --version 2.3.0
+dotnet add src/FunLang/FunLang.fsproj package Tomlyn --version 2.3.0
 ```
 
 ## Architecture Patterns
 
 ### Recommended Project Structure
 ```
-src/LangThree/
+src/FunLang/
 ├── Cli.fs              # Extended with Build/Test subcommand DU types
 ├── ProjectFile.fs      # NEW: TOML deserialization + FunProjConfig F# record
 ├── Program.fs          # Extended with build/test dispatch branches
 └── ...existing files...
 ```
 
-`ProjectFile.fs` must be added to `LangThree.fsproj` BEFORE `Cli.fs` (since `Cli.fs` doesn't depend on it, but `Program.fs` uses both — actually `Program.fs` uses it directly, so `ProjectFile.fs` can go between `Prelude.fs` and `Cli.fs` or between `Cli.fs` and `Program.fs`; it has no dependencies beyond `System.IO` and Tomlyn).
+`ProjectFile.fs` must be added to `FunLang.fsproj` BEFORE `Cli.fs` (since `Cli.fs` doesn't depend on it, but `Program.fs` uses both — actually `Program.fs` uses it directly, so `ProjectFile.fs` can go between `Prelude.fs` and `Cli.fs` or between `Cli.fs` and `Program.fs`; it has no dependencies beyond `System.IO` and Tomlyn).
 
 ### Pattern 1: Tomlyn POCO Deserialization for funproj.toml
 
@@ -62,7 +62,7 @@ The TOML structure:
 ```toml
 [project]
 name = "funlexyacc"
-prelude = "../LangThree/Prelude"
+prelude = "../FunLang/Prelude"
 
 [[executable]]
 name = "funlex"
@@ -346,7 +346,7 @@ Key: `Eval.scriptArgs` should be empty for test targets (no argv passed through)
 ### Pitfall 4: Missing `open Tomlyn` in ProjectFile.fs
 **What goes wrong:** `TomlSerializer` not found at compile time.
 **Why it happens:** Tomlyn is a separate namespace from the F# standard library.
-**How to avoid:** Add `open Tomlyn` at top of `ProjectFile.fs`. Add the package reference to `LangThree.fsproj` before compiling.
+**How to avoid:** Add `open Tomlyn` at top of `ProjectFile.fs`. Add the package reference to `FunLang.fsproj` before compiling.
 
 ### Pitfall 5: `resolvePreludeDir` Signature Change Breaks Existing Call Sites
 **What goes wrong:** Adding `projPrelude: string option` parameter to `resolvePreludeDir` breaks existing callers in `Program.fs`.
@@ -514,7 +514,7 @@ elif results.Contains Build then
 // name = "main"
 // main = "main.fun"
 // EOF
-// printf "let x : int = 42\n" > $DIR/main.fun && LT=.../LangThree && cd $DIR && $LT build 2>&1'
+// printf "let x : int = 42\n" > $DIR/main.fun && LT=.../FunLang && cd $DIR && $LT build 2>&1'
 // --- Output:
 // CONTAINS: OK: main
 ```
@@ -553,9 +553,9 @@ elif results.Contains Build then
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/Cli.fs` - Current Argu DU definition (Phase 67 complete state)
-- `src/LangThree/Prelude.fs` - `loadPrelude`, `resolvePreludeDir`, `tcCache`/`evalCache` (Phase 67 complete state)
-- `src/LangThree/Program.fs` - Full dispatch chain with `--check` branch as template for build targets
+- `src/FunLang/Cli.fs` - Current Argu DU definition (Phase 67 complete state)
+- `src/FunLang/Prelude.fs` - `loadPrelude`, `resolvePreludeDir`, `tcCache`/`evalCache` (Phase 67 complete state)
+- `src/FunLang/Program.fs` - Full dispatch chain with `--check` branch as template for build targets
 - `survey/project-build-system-design.md` sections 3.1, 4.5, 6 - funproj.toml format design
 - NuGet Gallery Tomlyn 2.3.0 - Version 2.3.0 confirmed current stable, net10.0 supported
 - Argu tutorial (fsprojects.github.io) - Subcommand `ParseResults<T>` pattern with `CliPrefix.None`

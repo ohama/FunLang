@@ -30,7 +30,7 @@ key-files:
     - tests/flt/expr/printf-no-spec.flt
     - tests/flt/file/print-sequence.flt
   modified:
-    - src/LangThree/Program.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "fslit substitutes %s in Command lines (like %input); tests whose --expr contains %s must use %input file-mode instead"
@@ -79,7 +79,7 @@ metrics:
 - `tests/flt/expr/printf-multi.flt` — `printf "%d and %s" 42 "hi"` via `%input` file-mode
 - `tests/flt/expr/printf-no-spec.flt` — `printf "done"` outputs `done()`
 - `tests/flt/file/print-sequence.flt` — two `let _ = print` declarations followed by `let result = 42`; output is `ab42`
-- `src/LangThree/Program.fs` — file-mode result printing: `eval ... lastBody` → `Map.tryFind lastName finalEnv`
+- `src/FunLang/Program.fs` — file-mode result printing: `eval ... lastBody` → `Map.tryFind lastName finalEnv`
 
 ## Decisions Made
 
@@ -97,7 +97,7 @@ metrics:
 - **Found during:** Task 1 (printf-str.flt and printf-multi.flt testing)
 - **Issue:** `let _ = printf "%s" "hi"` in file mode output `hihi()` — `hi` appeared twice because Program.fs called `eval recEnv moduleEnv finalEnv lastBody` to get the display value, re-executing the print side effect
 - **Fix:** Changed to `Map.tryFind lastName finalEnv` — the value was already computed by `evalModuleDecls`; look it up directly
-- **Files modified:** `src/LangThree/Program.fs` (lines 202-206)
+- **Files modified:** `src/FunLang/Program.fs` (lines 202-206)
 - **Verification:** `let _ = printf "%s" "hi"` in file mode now outputs `hi()` (one occurrence); `let-sequence.flt` still outputs `30`; all 196 F# unit tests pass; all 201 fslit tests pass
 - **Committed in:** `ff87136` (part of Task 1 commit)
 

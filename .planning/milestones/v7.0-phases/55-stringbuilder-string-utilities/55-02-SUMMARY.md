@@ -23,7 +23,7 @@ tech-stack:
     - "Prelude/*.fun files loaded alphabetically by loadPrelude() -- Char.fun and String.fun auto-registered"
     - "string_concat_list named to avoid collision with existing string_concat (string -> string -> string)"
     - "Char module uses qualified syntax only (no open) -- Char.IsDigit not IsDigit in flat namespace"
-    - "flt tests for new builtins must use new binary path /Users/ohama/vibe/LangThree/... not old vibe-coding path"
+    - "flt tests for new builtins must use new binary path /Users/ohama/vibe/FunLang/... not old vibe-coding path"
     - "to_string on CharValue uses formatValue which produces quoted output e.g. 'A' not A"
 
 key-files:
@@ -33,8 +33,8 @@ key-files:
     - tests/flt/file/char/char-module-isdigit-toupper.flt
     - tests/flt/file/string/str-concat-module.flt
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 decisions:
   - id: STR-02-char-module
@@ -85,7 +85,7 @@ Added 6 char builtins and 1 string_concat_list builtin to Eval.fs/TypeCheck.fs, 
 **1. [Rule 1 - Bug] flt command path and char output format**
 
 - **Found during:** Task 2 verification
-- **Issue 1:** Plan used old `/Users/ohama/vibe-coding/LangThree/...` command path; new binary is at `/Users/ohama/vibe/LangThree/...`. New flt files pointed to correct new binary path.
+- **Issue 1:** Plan used old `/Users/ohama/vibe-coding/FunLang/...` command path; new binary is at `/Users/ohama/vibe/FunLang/...`. New flt files pointed to correct new binary path.
 - **Issue 2:** Plan expected `A` in flt test output for `to_string upper`; actual output is `'A'` (CharValue formatValue includes quotes). Expected output corrected.
 - **Fix:** Updated both flt test files with correct binary path and correct char output expectation.
 - **Files modified:** tests/flt/file/char/char-module-isdigit-toupper.flt

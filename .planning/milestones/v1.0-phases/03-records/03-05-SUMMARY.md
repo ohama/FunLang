@@ -29,9 +29,9 @@ tech-stack:
 
 key-files:
   created:
-    - tests/LangThree.Tests/RecordTests.fs
+    - tests/FunLang.Tests/RecordTests.fs
   modified:
-    - tests/LangThree.Tests/LangThree.Tests.fsproj
+    - tests/FunLang.Tests/FunLang.Tests.fsproj
 
 key-decisions:
   - "Structural equality tested via if-then-else wrapper (let result = if a = b then 1 else 0) to avoid parser ambiguity with = in let bindings"
@@ -71,11 +71,11 @@ Each task was committed atomically:
 2. **Task 2: Fix integration issues** - No commit (no issues found, all tests passed)
 
 ## Files Created/Modified
-- `tests/LangThree.Tests/RecordTests.fs` - 21 integration tests for records (266 lines)
-- `tests/LangThree.Tests/LangThree.Tests.fsproj` - Added RecordTests.fs to compilation
+- `tests/FunLang.Tests/RecordTests.fs` - 21 integration tests for records (266 lines)
+- `tests/FunLang.Tests/FunLang.Tests.fsproj` - Added RecordTests.fs to compilation
 
 ## Decisions Made
-- Equality operator `=` in LangThree is ambiguous with `let` binding `=` in contexts like `let result = a = b`. Used if-then-else wrapper pattern: `let result = if a = b then 1 else 0`
+- Equality operator `=` in FunLang is ambiguous with `let` binding `=` in contexts like `let result = a = b`. Used if-then-else wrapper pattern: `let result = if a = b then 1 else 0`
 - No fixes needed for Task 2 -- all record features work correctly end-to-end
 
 ## Deviations from Plan

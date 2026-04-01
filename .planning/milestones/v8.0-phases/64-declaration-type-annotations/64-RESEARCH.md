@@ -21,10 +21,10 @@ This is an internal language extension — no external libraries involved.
 ### Core
 | Component | File | Purpose | Why Standard |
 |-----------|------|---------|--------------|
-| Parser.fsy | src/LangThree/Parser.fsy | FsLexYacc grammar rules | Only grammar entry point |
-| Ast.fs | src/LangThree/Ast.fs | AST node definitions | Already has LambdaAnnot, Annot |
-| Eval.fs | src/LangThree/Eval.fs | Runtime evaluation | LambdaAnnot already handled |
-| Infer.fs | src/LangThree/Infer.fs | Type inference | LambdaAnnot already handled |
+| Parser.fsy | src/FunLang/Parser.fsy | FsLexYacc grammar rules | Only grammar entry point |
+| Ast.fs | src/FunLang/Ast.fs | AST node definitions | Already has LambdaAnnot, Annot |
+| Eval.fs | src/FunLang/Eval.fs | Runtime evaluation | LambdaAnnot already handled |
+| Infer.fs | src/FunLang/Infer.fs | Type inference | LambdaAnnot already handled |
 
 ### Supporting
 | Component | File | Purpose | When to Use |
@@ -36,7 +36,7 @@ This is an internal language extension — no external libraries involved.
 
 ### Recommended Project Structure
 ```
-src/LangThree/
+src/FunLang/
 ├── Parser.fsy        # Add MixedParamList, return type annotation productions
 ├── Ast.fs            # No changes (LambdaAnnot and Annot already exist)
 ├── Eval.fs           # No changes (both nodes already handled)
@@ -283,7 +283,7 @@ match lambda with
 ### flt test: mixed annotated params (PARAM-01)
 ```
 // Test: let declaration with mixed annotated and plain parameters (PARAM-01)
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let f (x : int) y (z : bool) = if z then x else y
 let result = f 10 20 true
@@ -294,7 +294,7 @@ let result = f 10 20 true
 ### flt test: return type annotation (RET-01)
 ```
 // Test: let declaration with return type annotation (RET-01)
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let add x : int = x + 1
 let result = add 41
@@ -305,7 +305,7 @@ let result = add 41
 ### flt test: param + return type (RET-02)
 ```
 // Test: parameter annotation and return type annotation combined (RET-02)
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let isPos (x : int) : bool = x > 0
 let result = isPos 5
@@ -316,7 +316,7 @@ true
 ### flt test: mutual recursion with annotated params (PARAM-02)
 ```
 // Test: mutual recursion with annotated parameters (PARAM-02)
-// --- Command: /path/to/LangThree %input
+// --- Command: /path/to/FunLang %input
 // --- Input:
 let rec isEven (n : int) = if n = 0 then true else isOdd (n - 1)
 and isOdd (n : int) = if n = 0 then false else isEven (n - 1)
@@ -358,12 +358,12 @@ true
 ## Sources
 
 ### Primary (HIGH confidence)
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/Parser.fsy` — Full grammar examined, all relevant productions identified
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/Ast.fs` — Confirmed `LambdaAnnot`, `Annot`, `LetRecDecl` shape
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — Confirmed LambdaAnnot and Annot eval (type erasure at lines 1325-1330)
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/Infer.fs` — Confirmed LambdaAnnot and Annot inference (lines 211-223)
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/TypeCheck.fs` — Confirmed LetRecDecl type check structure (lines 852-900)
-- `/Users/ohama/vibe-coding/LangThree/.planning/REQUIREMENTS.md` — PARAM-01/02, RET-01/02 exact requirements
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/Parser.fsy` — Full grammar examined, all relevant productions identified
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/Ast.fs` — Confirmed `LambdaAnnot`, `Annot`, `LetRecDecl` shape
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — Confirmed LambdaAnnot and Annot eval (type erasure at lines 1325-1330)
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/Infer.fs` — Confirmed LambdaAnnot and Annot inference (lines 211-223)
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/TypeCheck.fs` — Confirmed LetRecDecl type check structure (lines 852-900)
+- `/Users/ohama/vibe-coding/FunLang/.planning/REQUIREMENTS.md` — PARAM-01/02, RET-01/02 exact requirements
 
 ### Secondary (MEDIUM confidence)
 - Existing test files in `tests/flt/file/` — pattern for flt test format confirmed

@@ -33,8 +33,8 @@ score: 8/8 must-haves verified
 
 | Artifact                                                                  | Expected                                        | Status     | Details                                                       |
 | ------------------------------------------------------------------------- | ----------------------------------------------- | ---------- | ------------------------------------------------------------- |
-| `src/LangThree/Eval.fs`                                                   | 5 new builtin entries in initialBuiltinEnv      | VERIFIED   | Lines 237-261 (string), 668-682 (hashtable); real impls       |
-| `src/LangThree/TypeCheck.fs`                                              | 5 new type schemes in initialTypeEnv            | VERIFIED   | Lines 35-37 (string), 169-170 (hashtable); correct schemes    |
+| `src/FunLang/Eval.fs`                                                   | 5 new builtin entries in initialBuiltinEnv      | VERIFIED   | Lines 237-261 (string), 668-682 (hashtable); real impls       |
+| `src/FunLang/TypeCheck.fs`                                              | 5 new type schemes in initialTypeEnv            | VERIFIED   | Lines 35-37 (string), 169-170 (hashtable); correct schemes    |
 | `Prelude/String.fun`                                                      | endsWith, startsWith, trim, length, contains    | VERIFIED   | 7-line file, 6 functions including concat                     |
 | `Prelude/Hashtable.fun`                                                   | tryGetValue, count added to existing 6          | VERIFIED   | 9-line file, 8 functions total                                |
 | `Prelude/StringBuilder.fun`                                               | add (not append) wrapping stringbuilder_append  | VERIFIED   | 4-line file, uses `add` correctly                             |
@@ -47,9 +47,9 @@ score: 8/8 must-haves verified
 
 | From                       | To                          | Via                                       | Status   | Details                                         |
 | -------------------------- | --------------------------- | ----------------------------------------- | -------- | ----------------------------------------------- |
-| `Prelude/String.fun`       | `src/LangThree/Eval.fs`     | string_endswith, string_startswith, string_trim | WIRED | Direct builtin calls in wrapper functions       |
-| `Prelude/Hashtable.fun`    | `src/LangThree/Eval.fs`     | hashtable_trygetvalue, hashtable_count    | WIRED    | Direct builtin calls in wrapper functions       |
-| `Prelude/StringBuilder.fun`| `src/LangThree/Eval.fs`     | stringbuilder_append                      | WIRED    | `let add sb s = stringbuilder_append sb s`      |
+| `Prelude/String.fun`       | `src/FunLang/Eval.fs`     | string_endswith, string_startswith, string_trim | WIRED | Direct builtin calls in wrapper functions       |
+| `Prelude/Hashtable.fun`    | `src/FunLang/Eval.fs`     | hashtable_trygetvalue, hashtable_count    | WIRED    | Direct builtin calls in wrapper functions       |
+| `Prelude/StringBuilder.fun`| `src/FunLang/Eval.fs`     | stringbuilder_append                      | WIRED    | `let add sb s = stringbuilder_append sb s`      |
 | `Eval.fs` builtins         | `TypeCheck.fs` type schemes | Matching names in both initialBuiltinEnv / initialTypeEnv | WIRED | All 5 names match exactly |
 
 ### Requirements Coverage

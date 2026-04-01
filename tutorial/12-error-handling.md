@@ -2,7 +2,7 @@
 
 프로그램에서 실패는 피할 수 없습니다. 파일이 없을 수 있고, 네트워크가 끊길 수 있고, 사용자가 잘못된 입력을 줄 수 있습니다. 문제는 "실패가 발생하는가?"가 아니라 "실패를 어떻게 표현하고 처리하는가?"입니다.
 
-11장에서 예외(Exception)를 배웠습니다. 예외는 강력하지만, 함수의 시그니처만 봐서는 그 함수가 실패할 수 있는지 알 수 없다는 근본적인 한계가 있습니다. LangThree는 예외 외에도 `Option`과 `Result`라는 두 가지 타입 기반 접근법을 제공합니다. 이 세 가지 중 어떤 것을 선택하느냐에 따라 코드의 안전성, 합성 가능성, 가독성이 크게 달라집니다.
+11장에서 예외(Exception)를 배웠습니다. 예외는 강력하지만, 함수의 시그니처만 봐서는 그 함수가 실패할 수 있는지 알 수 없다는 근본적인 한계가 있습니다. FunLang는 예외 외에도 `Option`과 `Result`라는 두 가지 타입 기반 접근법을 제공합니다. 이 세 가지 중 어떤 것을 선택하느냐에 따라 코드의 안전성, 합성 가능성, 가독성이 크게 달라집니다.
 
 이 장은 같은 문제를 세 가지 방식으로 풀어보고, 각각의 장단점을 비교한 뒤, 실전에서의 선택 기준을 제시합니다. 함수형 프로그래밍 커뮤니티에서 왜 "예외보다 타입을 써라"라고 말하는지, 그 이유를 직접 확인하게 됩니다.
 
@@ -25,7 +25,7 @@ let rec find pred = fun xs ->
 
 let result = try find (fun x -> x > 3) [1; 2; 3; 4; 5] with | NotFound -> 0 - 1
 
-$ langthree find_exc.l3
+$ funlang find_exc.l3
 4
 ```
 
@@ -41,7 +41,7 @@ let rec find pred = fun xs ->
 
 let result = optionDefault (0 - 1) (find (fun x -> x > 3) [1; 2; 3; 4; 5])
 
-$ langthree find_opt.l3
+$ funlang find_opt.l3
 4
 ```
 
@@ -57,7 +57,7 @@ let rec find pred = fun xs ->
 
 let result = resultDefault (0 - 1) (find (fun x -> x > 3) [1; 2; 3; 4; 5])
 
-$ langthree find_res.l3
+$ funlang find_res.l3
 4
 ```
 
@@ -118,7 +118,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ langthree chain_exc.l3
+$ funlang chain_exc.l3
 (2, -1, -2)
 ```
 
@@ -136,7 +136,7 @@ let r2 = compute "0"
 let r3 = compute "abc"
 let result = (r1, r2, r3)
 
-$ langthree chain_res.l3
+$ funlang chain_res.l3
 (Ok 3, Error "div/0", Error "invalid: abc")
 ```
 
@@ -172,7 +172,7 @@ let rec searchList pred = fun xs -> fun i ->
 
 let result = searchList (fun x -> x = 999999) [1..1000000] 0
 
-$ langthree tco_result.l3
+$ funlang tco_result.l3
 Ok 999998
 ```
 
@@ -191,7 +191,7 @@ let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |> optionBind safeHead |> optionBind (safeDivide 100) |> optionDefault 0
 
-$ langthree option_use.l3
+$ funlang option_use.l3
 10
 ```
 
@@ -210,7 +210,7 @@ let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 <|> safeDivide 10 2 <|> Some 0
 
-$ langthree fallback.l3
+$ funlang fallback.l3
 Some 5
 ```
 
@@ -232,7 +232,7 @@ let r2 = validate "" 25
 let r3 = validate "Bob" (0 - 5)
 let result = (r1, r2, r3)
 
-$ langthree result_use.l3
+$ funlang result_use.l3
 (Ok "Alice (30)", Error "name cannot be empty", Error "age cannot be negative")
 ```
 
@@ -254,7 +254,7 @@ let rec processAll xs = match xs with | [] -> 0 | h :: t -> if h < 0 then raise 
 
 let result = processAll [1; 2; 3; 4; 5]
 
-$ langthree exception_use.l3
+$ funlang exception_use.l3
 15
 ```
 

@@ -34,13 +34,13 @@ key-files:
     - tests/flt/emit/ast-pat/ast-pat-string.flt
     - tests/flt/emit/ast-pat/ast-pat-or.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Eval.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/MatchCompile.fs
-    - src/LangThree/Exhaustive.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Eval.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/MatchCompile.fs
+    - src/FunLang/Exhaustive.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "Unparenthesized or-patterns via OrPattern nonterminal -- zero LALR(1) conflicts"
@@ -83,13 +83,13 @@ completed: 2026-03-19
 4. **Task 4: Add fslit tests** - `defb2f9` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - StringConst in Constant DU, OrPat in Pattern DU, patternSpanOf
-- `src/LangThree/Parser.fsy` - STRING pattern rule, OrPattern nonterminal, MatchClauses updated
-- `src/LangThree/Eval.fs` - matchPattern for StringConst and OrPat
-- `src/LangThree/Infer.fs` - inferPattern for StringConst (TString) and OrPat (unify alternatives)
-- `src/LangThree/MatchCompile.fs` - #str_ constructor, expandOrPatterns, OrPat defensive cases
-- `src/LangThree/Exhaustive.fs` - specializeRow for OrPat, astPatToCasePat for Ast.OrPat
-- `src/LangThree/Format.fs` - formatPattern for StringConst and OrPat
+- `src/FunLang/Ast.fs` - StringConst in Constant DU, OrPat in Pattern DU, patternSpanOf
+- `src/FunLang/Parser.fsy` - STRING pattern rule, OrPattern nonterminal, MatchClauses updated
+- `src/FunLang/Eval.fs` - matchPattern for StringConst and OrPat
+- `src/FunLang/Infer.fs` - inferPattern for StringConst (TString) and OrPat (unify alternatives)
+- `src/FunLang/MatchCompile.fs` - #str_ constructor, expandOrPatterns, OrPat defensive cases
+- `src/FunLang/Exhaustive.fs` - specializeRow for OrPat, astPatToCasePat for Ast.OrPat
+- `src/FunLang/Format.fs` - formatPattern for StringConst and OrPat
 
 ## Decisions Made
 - **Unparenthesized or-patterns:** The OrPattern nonterminal (Pattern | Pattern PIPE OrPattern) disambiguates PIPE usage naturally in LALR(1) without any shift/reduce conflicts. No need for parenthesized fallback.
@@ -104,12 +104,12 @@ completed: 2026-03-19
 - **Found during:** Task 3
 - **Issue:** specializeRow calls itself for OrPat alternatives but was not declared `let rec`
 - **Fix:** Changed to `let rec specializeRow`
-- **Files modified:** src/LangThree/Exhaustive.fs
+- **Files modified:** src/FunLang/Exhaustive.fs
 - **Committed in:** 021d862
 
 **2. [Rule 1 - Bug] fslit test indentation issues**
 - **Found during:** Task 4
-- **Issue:** Match pipes must align with match keyword in LangThree's indent-sensitive parser
+- **Issue:** Match pipes must align with match keyword in FunLang's indent-sensitive parser
 - **Fix:** Restructured test files to use function body indentation pattern
 - **Files modified:** tests/flt/file/pat-or-int.flt, pat-or-string.flt, pat-or-bool.flt, pat-string-basic.flt, pat-string-multi.flt
 - **Committed in:** defb2f9

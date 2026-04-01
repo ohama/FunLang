@@ -21,12 +21,12 @@ key-files:
     - tests/flt/file/prelude/prelude-list-ofseq.flt
     - tests/flt/file/prelude/prelude-array-sort-ofseq.flt
   modified:
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/TypeCheck.fs
 
 decisions:
   - list_of_seq and array_of_seq type schemes changed from TList/TArray input to TVar 0 so HashSet/Queue/MutableList can be passed
   - List.mapi test uses curried lambda (fun i -> fun x -> ...) not multi-arg (fun i x -> ...) since multi-arg lambda parse fails
-  - List.distinctBy test uses % 2 not mod 2 since mod is not a keyword in LangThree
+  - List.distinctBy test uses % 2 not mod 2 since mod is not a keyword in FunLang
   - HashSet order is non-deterministic so test uses List.length not content comparison
 
 metrics:
@@ -74,15 +74,15 @@ Five flt integration tests covering all Phase 59 Prelude extension requirements 
 
 Same fix applied to `array_of_seq`: `TList (TVar 0)` → `TVar 0`.
 
-**Files modified:** `src/LangThree/TypeCheck.fs` lines 204-209
+**Files modified:** `src/FunLang/TypeCheck.fs` lines 204-209
 
 **Commit:** 2899f72
 
 ## Language Quirks Discovered
 
-1. **Multi-arg lambda `(fun i x -> ...)` fails to parse** — LangThree lambdas must be curried: `(fun i -> fun x -> ...)`. The plan used the multi-arg form; corrected to curried form in the test.
+1. **Multi-arg lambda `(fun i x -> ...)` fails to parse** — FunLang lambdas must be curried: `(fun i -> fun x -> ...)`. The plan used the multi-arg form; corrected to curried form in the test.
 
-2. **`mod` is not a keyword** — LangThree uses `%` for integer modulo. The plan snippet used `x mod 2`; corrected to `x % 2`.
+2. **`mod` is not a keyword** — FunLang uses `%` for integer modulo. The plan snippet used `x mod 2`; corrected to `x % 2`.
 
 3. **`Some 3` not `Some(3)`** — The plan description said Option values print as `"Some(2)"` but actual output is `Some 3` (no parens). The flt test uses the verified actual output.
 
@@ -109,18 +109,18 @@ Change: +5 new tests, 0 regressions
 - **Found during:** Task 1 (prelude-list-ofseq.flt)
 - **Issue:** Type checker rejected `List.ofSeq hs` where `hs : HashSet` because `list_of_seq` was typed as `'a list -> 'b list`
 - **Fix:** Changed both `list_of_seq` and `array_of_seq` input types from `TList (TVar 0)` to `TVar 0` in `TypeCheck.fs`
-- **Files modified:** `src/LangThree/TypeCheck.fs`
+- **Files modified:** `src/FunLang/TypeCheck.fs`
 - **Commit:** 2899f72
 
 **2. [Rule 1 - Bug] Multi-arg lambda syntax unsupported in plan snippet**
 
 - **Found during:** Task 1 (prelude-list-transform.flt)
-- **Issue:** `(fun i x -> i + x)` is a parse error in LangThree
+- **Issue:** `(fun i x -> i + x)` is a parse error in FunLang
 - **Fix:** Changed to curried form `(fun i -> fun x -> i + x)` in test
 - **Files modified:** `tests/flt/file/prelude/prelude-list-transform.flt`
 - **Commit:** 2899f72
 
-**3. [Rule 1 - Bug] `mod` operator not in LangThree**
+**3. [Rule 1 - Bug] `mod` operator not in FunLang**
 
 - **Found during:** Task 1 (prelude-list-search.flt)
 - **Issue:** `x mod 2` is "Unbound variable: mod" error

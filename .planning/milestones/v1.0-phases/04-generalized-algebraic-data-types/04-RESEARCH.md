@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase extends LangThree's existing ADT infrastructure (Phase 2) with Generalized Algebraic Data Types (GADTs). GADTs generalize ordinary sum types by allowing each constructor to specify a distinct return type, enabling type refinement during pattern matching. The key implementation challenge is integrating GADT type refinement into the existing bidirectional type checker (Bidir.fs) while requiring mandatory type annotations on GADT match expressions (since full GADT inference is undecidable).
+This phase extends FunLang's existing ADT infrastructure (Phase 2) with Generalized Algebraic Data Types (GADTs). GADTs generalize ordinary sum types by allowing each constructor to specify a distinct return type, enabling type refinement during pattern matching. The key implementation challenge is integrating GADT type refinement into the existing bidirectional type checker (Bidir.fs) while requiring mandatory type annotations on GADT match expressions (since full GADT inference is undecidable).
 
 The standard approach, based on the Peyton Jones et al. "Simple unification-based type inference for GADTs" (ICFP 2006), distinguishes between "rigid" types (known from annotations) and "wobbly" types (inferred). Type refinement only applies to rigid types, making inference predictable. The existing codebase already has bidirectional checking with synth/check modes, ConstructorEnv with ArgType/ResultType, and unification -- all of which extend naturally to support GADTs.
 
@@ -34,7 +34,7 @@ GADT implementation is purely a type system extension. No external libraries nee
 ### Recommended Change Scope
 
 ```
-src/LangThree/
+src/FunLang/
   Ast.fs            # New GADT constructor declaration AST node
   Parser.fsy        # GADT constructor syntax: Name : ArgType -> ReturnType
   Lexer.fsl         # No changes needed (COLON already exists)
@@ -338,7 +338,7 @@ type TypeErrorKind =
 | Wobbly/rigid types (Peyton Jones 2006) | OutsideIn(X) with local assumptions (Vytiniotis 2011) | 2011 | OutsideIn is more principled but more complex; wobbly/rigid is simpler for a teaching/small language |
 | No GADT inference, annotations everywhere | Partial inference with principal types (Garrigue 2013) | 2013 | OCaml's approach allows more inference; GHC still requires more annotations |
 
-**For LangThree:** Use the simpler wobbly/rigid approach (Peyton Jones 2006). The codebase already has bidirectional checking which naturally provides rigid types via `check` mode. This is sufficient and simpler than OutsideIn(X).
+**For FunLang:** Use the simpler wobbly/rigid approach (Peyton Jones 2006). The codebase already has bidirectional checking which naturally provides rigid types via `check` mode. This is sufficient and simpler than OutsideIn(X).
 
 ## Open Questions
 
@@ -373,7 +373,7 @@ type TypeErrorKind =
 ### Secondary (MEDIUM confidence)
 - [GHC User's Guide - GADTs](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/gadt.html) -- GHC's pattern matching requirements (rigid scrutinee, result type)
 - [Bidirectional Typing survey](https://dl.acm.org/doi/fullHtml/10.1145/3450952) -- Dunfield & Krishnaswami, comprehensive reference
-- Vytiniotis et al., "OutsideIn(X)" (JFP 2011) -- more principled but complex approach (not recommended for LangThree)
+- Vytiniotis et al., "OutsideIn(X)" (JFP 2011) -- more principled but complex approach (not recommended for FunLang)
 
 ### Tertiary (LOW confidence)
 - [Scala 3 GADTs internals](https://www.scala-lang.org/api/3.3.4/docs/docs/internals/gadts.html) -- implementation notes from Scala team

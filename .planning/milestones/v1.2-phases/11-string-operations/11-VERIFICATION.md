@@ -39,11 +39,11 @@ score: 10/10 must-haves verified
 
 | Artifact | Description | Exists | Substantive | Wired | Status |
 |----------|-------------|--------|-------------|-------|--------|
-| `src/LangThree/Ast.fs` | BuiltinValue DU case + CustomEquality | YES | YES (275+ lines) | YES | VERIFIED |
-| `src/LangThree/Eval.fs` | App dispatch, formatValue case, initialBuiltinEnv | YES | YES (500+ lines) | YES | VERIFIED |
-| `src/LangThree/TypeCheck.fs` | 6 type schemes in initialTypeEnv | YES | YES (300+ lines) | YES | VERIFIED |
-| `src/LangThree/Program.fs` | initialBuiltinEnv merge at startup | YES | YES | YES | VERIFIED |
-| `src/LangThree/Repl.fs` | initialBuiltinEnv merge in startRepl | YES | YES | YES | VERIFIED |
+| `src/FunLang/Ast.fs` | BuiltinValue DU case + CustomEquality | YES | YES (275+ lines) | YES | VERIFIED |
+| `src/FunLang/Eval.fs` | App dispatch, formatValue case, initialBuiltinEnv | YES | YES (500+ lines) | YES | VERIFIED |
+| `src/FunLang/TypeCheck.fs` | 6 type schemes in initialTypeEnv | YES | YES (300+ lines) | YES | VERIFIED |
+| `src/FunLang/Program.fs` | initialBuiltinEnv merge at startup | YES | YES | YES | VERIFIED |
+| `src/FunLang/Repl.fs` | initialBuiltinEnv merge in startRepl | YES | YES | YES | VERIFIED |
 | `tests/flt/expr/str-length.flt` | string_length integration test | YES | YES | YES (PASS) | VERIFIED |
 | `tests/flt/expr/str-concat.flt` | string_concat integration test | YES | YES | YES (PASS) | VERIFIED |
 | `tests/flt/expr/str-sub.flt` | string_sub integration test | YES | YES | YES (PASS) | VERIFIED |
@@ -88,7 +88,7 @@ None. The implementation contains no TODO/FIXME/placeholder comments, no empty h
 
 ### Build Verification
 
-`dotnet build src/LangThree/LangThree.fsproj` output:
+`dotnet build src/FunLang/FunLang.fsproj` output:
 
 ```
 Build succeeded.
@@ -102,7 +102,7 @@ Pre-existing warnings in `Exhaustive.fs` (FS0025) and `Format.fs` (FS0025) were 
 
 ### Test Suite Verification
 
-- **F# unit tests:** 196/196 passed (`dotnet test tests/LangThree.Tests/`)
+- **F# unit tests:** 196/196 passed (`dotnet test tests/FunLang.Tests/`)
 - **fslit tests:** 193/193 passed (`fslit tests/flt/`)
   - 6 new expr tests: all PASS (str-length, str-concat, str-sub, str-contains, str-to-string, str-to-int)
   - 1 new type-decl test: PASS (type-decl-str-builtins)

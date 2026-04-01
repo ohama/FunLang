@@ -35,14 +35,14 @@ key-files:
     - tests/flt/emit/type-expr/type-expr-compose.flt
     - tests/flt/file/pipe-with-prelude.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Infer.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Infer.fs
 
 key-decisions:
   - "Unique compose variable names per closure (composeCounter) to avoid stack overflow in chained composition"
@@ -83,14 +83,14 @@ Each task was committed atomically:
 3. **Task 3: fslit integration tests** - `800da59` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - PipeRight, ComposeRight, ComposeLeft Expr variants + spanOf cases
-- `src/LangThree/Lexer.fsl` - |>, >>, << token rules (before single-char prefixes)
-- `src/LangThree/Parser.fsy` - Token declarations, precedence, grammar rules
-- `src/LangThree/Format.fs` - formatAst and formatToken cases for new nodes
-- `src/LangThree/Bidir.fs` - synth cases for pipe (reversed application) and composition (arrow unification)
-- `src/LangThree/Eval.fs` - eval cases with closure-based composition using unique variable names
-- `src/LangThree/TypeCheck.fs` - Traversal cases in collectMatches, collectModuleRefs, rewriteModuleAccess, collectTryWiths
-- `src/LangThree/Infer.fs` - Stub cases in deprecated inferWithContext for pattern completeness
+- `src/FunLang/Ast.fs` - PipeRight, ComposeRight, ComposeLeft Expr variants + spanOf cases
+- `src/FunLang/Lexer.fsl` - |>, >>, << token rules (before single-char prefixes)
+- `src/FunLang/Parser.fsy` - Token declarations, precedence, grammar rules
+- `src/FunLang/Format.fs` - formatAst and formatToken cases for new nodes
+- `src/FunLang/Bidir.fs` - synth cases for pipe (reversed application) and composition (arrow unification)
+- `src/FunLang/Eval.fs` - eval cases with closure-based composition using unique variable names
+- `src/FunLang/TypeCheck.fs` - Traversal cases in collectMatches, collectModuleRefs, rewriteModuleAccess, collectTryWiths
+- `src/FunLang/Infer.fs` - Stub cases in deprecated inferWithContext for pattern completeness
 
 ## Decisions Made
 - **Unique compose variable names:** Chained composition (`f >> g >> h`) caused stack overflow when all closures used the same `__compose_x` parameter name. Fixed by using a mutable counter to generate unique names (`__compose_x_1`, `__compose_f_1`, etc.) per closure.
@@ -105,7 +105,7 @@ Each task was committed atomically:
 - **Found during:** Task 3 (compose-chain.flt test)
 - **Issue:** All composed closures used identical parameter name `__compose_x`, causing infinite recursion when chained
 - **Fix:** Added `composeCounter` for unique variable names per composition closure
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Verification:** `(fun x -> x + 1) >> (fun x -> x * 2) >> (fun x -> x - 1)` applied to 3 gives 7
 - **Committed in:** 800da59 (Task 3 commit)
 
@@ -120,7 +120,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (build warnings)
 - **Issue:** Deprecated `inferWithContext` in Infer.fs missing cases for new Expr variants
 - **Fix:** Added stub cases returning `(empty, freshVar())`
-- **Files modified:** src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Infer.fs
 - **Committed in:** 1e7c34e (Task 2 commit)
 
 ---

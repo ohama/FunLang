@@ -1,14 +1,14 @@
 # Phase 61: Hashtable Tuple & Test Conversion - Research
 
 **Researched:** 2026-03-29
-**Domain:** LangThree interpreter — AST, Parser, Bidir.fs type-checking, Eval.fs runtime, flt test file paths
+**Domain:** FunLang interpreter — AST, Parser, Bidir.fs type-checking, Eval.fs runtime, flt test file paths
 **Confidence:** HIGH
 
 ## Summary
 
-Phase 61 has two distinct requirements. STR-01 changes how hashtable for-in iteration works: instead of producing a `KeyValuePair` record that users access via `.Key` and `.Value`, the loop variable becomes a `(key, value)` tuple enabling direct pattern destructuring like `for (k, v) in ht do`. TST-01 fixes the 5 currently failing flt tests — all caused by wrong binary path (`/Users/ohama/vibe/LangThree/...` instead of `/Users/ohama/vibe-coding/LangThree/...`) and converts the 3 dot-notation hashtable tests to use module function equivalents.
+Phase 61 has two distinct requirements. STR-01 changes how hashtable for-in iteration works: instead of producing a `KeyValuePair` record that users access via `.Key` and `.Value`, the loop variable becomes a `(key, value)` tuple enabling direct pattern destructuring like `for (k, v) in ht do`. TST-01 fixes the 5 currently failing flt tests — all caused by wrong binary path (`/Users/ohama/vibe/FunLang/...` instead of `/Users/ohama/vibe-coding/FunLang/...`) and converts the 3 dot-notation hashtable tests to use module function equivalents.
 
-Running the full test suite (`../fslit/dist/FsLit tests/flt/`) currently reports 632/637 passing (at the test suite level) or 409/414 for file tests. The 5 failures are: `hashtable-forin.flt`, `hashtable-dot-api.flt`, `hashtable-keys-tryget.flt`, `property-count-consistency.flt`, and `str-concat-module.flt`. All 5 use the stale binary path `/Users/ohama/vibe/LangThree/...`. There are 39 flt files total with this stale path, but only 5 are currently failing because the rest either pass (the binary happens to exist at the old path) or their test logic was updated. The 3 hashtable tests that use dot notation (`ht.TryGetValue`, `ht.Count`, `ht.Keys`, `kv.Key`, `kv.Value`) must be converted to module functions as part of TST-01.
+Running the full test suite (`../fslit/dist/FsLit tests/flt/`) currently reports 632/637 passing (at the test suite level) or 409/414 for file tests. The 5 failures are: `hashtable-forin.flt`, `hashtable-dot-api.flt`, `hashtable-keys-tryget.flt`, `property-count-consistency.flt`, and `str-concat-module.flt`. All 5 use the stale binary path `/Users/ohama/vibe/FunLang/...`. There are 39 flt files total with this stale path, but only 5 are currently failing because the rest either pass (the binary happens to exist at the old path) or their test logic was updated. The 3 hashtable tests that use dot notation (`ht.TryGetValue`, `ht.Count`, `ht.Keys`, `kv.Key`, `kv.Value`) must be converted to module functions as part of TST-01.
 
 The core implementation insight: `ForInExpr` currently has `var: string`. To support `for (k, v) in ht do`, the AST must change `var: string` to `var: Pattern`. This cascades through 8 files (Ast.fs, Parser.fsy, Bidir.fs, Eval.fs, TypeCheck.fs, Infer.fs, Format.fs) but each change is localized and follows existing pattern-matching infrastructure that already handles `TuplePat` in `LetPat`, `matchPattern`, and lambda desugaring.
 
@@ -22,13 +22,13 @@ This is an internal language implementation project with no external dependencie
 
 | File | Purpose | Role in This Phase |
 |------|---------|-------------------|
-| `src/LangThree/Ast.fs` | AST definition | Change `ForInExpr.var: string` to `ForInExpr.var: Pattern` |
-| `src/LangThree/Parser.fsy` | fsyacc grammar | Add `FOR TuplePattern IN` rules alongside existing `FOR IDENT IN` |
-| `src/LangThree/Bidir.fs` | Bidirectional type-checker | Change `THashtable` case to emit `TTuple [keyTy; valTy]`; remove KeyValuePair field access; bind pattern in loopEnv |
-| `src/LangThree/Eval.fs` | Runtime evaluator | Change HashtableValue case to produce `TupleValue [k; v]`; use `matchPattern` to bind loop variable |
-| `src/LangThree/TypeCheck.fs` | Type check + module analysis | Update `rewriteModuleAccess` and collection functions that destructure ForInExpr |
-| `src/LangThree/Infer.fs` | Type inference | Update `ForInExpr` match arm (trivial — ignores var) |
-| `src/LangThree/Format.fs` | AST formatter | Update `ForInExpr` match arm for debug output |
+| `src/FunLang/Ast.fs` | AST definition | Change `ForInExpr.var: string` to `ForInExpr.var: Pattern` |
+| `src/FunLang/Parser.fsy` | fsyacc grammar | Add `FOR TuplePattern IN` rules alongside existing `FOR IDENT IN` |
+| `src/FunLang/Bidir.fs` | Bidirectional type-checker | Change `THashtable` case to emit `TTuple [keyTy; valTy]`; remove KeyValuePair field access; bind pattern in loopEnv |
+| `src/FunLang/Eval.fs` | Runtime evaluator | Change HashtableValue case to produce `TupleValue [k; v]`; use `matchPattern` to bind loop variable |
+| `src/FunLang/TypeCheck.fs` | Type check + module analysis | Update `rewriteModuleAccess` and collection functions that destructure ForInExpr |
+| `src/FunLang/Infer.fs` | Type inference | Update `ForInExpr` match arm (trivial — ignores var) |
+| `src/FunLang/Format.fs` | AST formatter | Update `ForInExpr` match arm for debug output |
 | `tests/flt/file/hashtable/*.flt` | Integration tests | Fix path, convert dot-notation to module functions |
 
 ### No Changes Needed
@@ -36,9 +36,9 @@ This is an internal language implementation project with no external dependencie
 | File | Reason |
 |------|--------|
 | `Prelude/Hashtable.fun` | Already has `tryGetValue` and `count` module functions |
-| `src/LangThree/Lexer.fsl` | No new tokens — LPAREN and IDENT already tokenized |
-| `src/LangThree/MatchCompile.fs` | ForInExpr not involved in match compilation |
-| `src/LangThree/Exhaustive.fs` | ForInExpr not involved in exhaustiveness checking |
+| `src/FunLang/Lexer.fsl` | No new tokens — LPAREN and IDENT already tokenized |
+| `src/FunLang/MatchCompile.fs` | ForInExpr not involved in match compilation |
+| `src/FunLang/Exhaustive.fs` | ForInExpr not involved in exhaustiveness checking |
 
 ### Alternatives Considered
 
@@ -180,7 +180,7 @@ for elemVal in elements do
 
 ### Pattern 6: TST-01 — flt Path Fix
 
-**What:** 39 flt files have `// --- Command: /Users/ohama/vibe/LangThree/...`. All need `vibe/LangThree` → `vibe-coding/LangThree`.
+**What:** 39 flt files have `// --- Command: /Users/ohama/vibe/FunLang/...`. All need `vibe/FunLang` → `vibe-coding/FunLang`.
 
 **Affected files (5 currently failing):**
 - `tests/flt/file/hashtable/hashtable-forin.flt`
@@ -195,7 +195,7 @@ These must also be fixed for portability, even though they currently pass.
 **Sed command for path fix:**
 ```bash
 find tests/flt -name "*.flt" -exec \
-  sed -i '' 's|/Users/ohama/vibe/LangThree|/Users/ohama/vibe-coding/LangThree|g' {} \;
+  sed -i '' 's|/Users/ohama/vibe/FunLang|/Users/ohama/vibe-coding/FunLang|g' {} \;
 ```
 
 ### Pattern 7: Dot-Notation to Module Function Conversion
@@ -269,7 +269,7 @@ let _ = println (to_string (Hashtable.count ht))
 
 - **Forgetting to remove KeyValuePair field access from Bidir.fs:** After STR-01, the `TData("KeyValuePair", [keyTy; valTy])` arm in the field access case (lines 637-642) should be removed, otherwise it becomes dead code and may mislead future maintainers. However, removing it before all dot-notation tests are converted will break tests.
 - **Fixing stale paths one-by-one:** Use sed to batch-fix all 39 files at once. Doing them individually is error-prone and wasteful.
-- **Assuming TST-01 is trivial:** The 34 files that currently pass with the stale path pass only because the old binary happens to still exist at `/Users/ohama/vibe/LangThree/...`. These should all be fixed for long-term correctness.
+- **Assuming TST-01 is trivial:** The 34 files that currently pass with the stale path pass only because the old binary happens to still exist at `/Users/ohama/vibe/FunLang/...`. These should all be fixed for long-term correctness.
 - **Parser rule ordering:** In fsyacc, `FOR IDENT IN` and `FOR TuplePattern IN` may cause shift/reduce conflicts if ordering is wrong. `TuplePattern` starts with `LPAREN` which is unambiguous vs `IDENT`, so no conflict exists — but add `TuplePattern` rules AFTER `IDENT` rules to be safe.
 
 ## Don't Hand-Roll
@@ -302,7 +302,7 @@ let _ = println (to_string (Hashtable.count ht))
 
 **What goes wrong:** Developer fixes only the 5 currently-failing tests, leaving 34 with stale paths that will break if the old binary path disappears.
 **Why it happens:** The 34 other files happen to pass because the binary at the old path still exists.
-**How to avoid:** Run `grep -r "vibe/LangThree" tests/flt --include="*.flt" -l | wc -l` to verify 39 files; fix all of them.
+**How to avoid:** Run `grep -r "vibe/FunLang" tests/flt --include="*.flt" -l | wc -l` to verify 39 files; fix all of them.
 **Warning signs:** CI failure on a different machine where old binary path doesn't exist.
 
 ### Pitfall 4: Parser Shift/Reduce Conflict With TuplePattern
@@ -396,11 +396,11 @@ To find the exact helper name, read the `LetPat` branch in Bidir.fs.
 
 ```bash
 # Fix all 39 stale-path flt files at once
-find /Users/ohama/vibe-coding/LangThree/tests/flt -name "*.flt" -exec \
-  sed -i '' 's|/Users/ohama/vibe/LangThree|/Users/ohama/vibe-coding/LangThree|g' {} \;
+find /Users/ohama/vibe-coding/FunLang/tests/flt -name "*.flt" -exec \
+  sed -i '' 's|/Users/ohama/vibe/FunLang|/Users/ohama/vibe-coding/FunLang|g' {} \;
 
 # Verify no stale paths remain
-grep -r "vibe/LangThree" /Users/ohama/vibe-coding/LangThree/tests/flt --include="*.flt" | wc -l
+grep -r "vibe/FunLang" /Users/ohama/vibe-coding/FunLang/tests/flt --include="*.flt" | wc -l
 # Expected: 0
 ```
 
@@ -438,15 +438,15 @@ grep -r "vibe/LangThree" /Users/ohama/vibe-coding/LangThree/tests/flt --include=
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Ast.fs` — ForInExpr definition at line 119
-- Direct code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Parser.fsy` — ForInExpr rules at lines 253-256; TuplePattern at line 396
-- Direct code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Eval.fs` — ForInExpr eval at lines 1044-1062; matchPattern at lines 904-956
-- Direct code inspection of `/Users/ohama/vibe-coding/LangThree/src/LangThree/Bidir.fs` — ForInExpr type-check at lines 231-267; KeyValuePair field access at lines 636-642
+- Direct code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Ast.fs` — ForInExpr definition at line 119
+- Direct code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Parser.fsy` — ForInExpr rules at lines 253-256; TuplePattern at line 396
+- Direct code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Eval.fs` — ForInExpr eval at lines 1044-1062; matchPattern at lines 904-956
+- Direct code inspection of `/Users/ohama/vibe-coding/FunLang/src/FunLang/Bidir.fs` — ForInExpr type-check at lines 231-267; KeyValuePair field access at lines 636-642
 - Direct test run: `../fslit/dist/FsLit tests/flt/file/` — 409/414 passing; 5 failures all identified as stale binary path
 - Manual invocation of failing test content: confirms tests work correctly with current binary
 
 ### Secondary (MEDIUM confidence)
-- Grep of all 39 stale-path flt files — confirmed by `grep -r "vibe/LangThree" tests/flt --include="*.flt" -l | wc -l` returning 39
+- Grep of all 39 stale-path flt files — confirmed by `grep -r "vibe/FunLang" tests/flt --include="*.flt" -l | wc -l` returning 39
 - Phase 60 RESEARCH.md — confirms module functions `tryGetValue`, `count`, `keys` are already available
 
 ## Metadata

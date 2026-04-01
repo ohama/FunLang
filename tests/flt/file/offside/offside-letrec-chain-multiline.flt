@@ -1,5 +1,5 @@
 // Test: multiple let rec with multiline fun -> bodies
-// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sorted =
     let rec filter pred = fun xs ->

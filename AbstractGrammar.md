@@ -1,8 +1,8 @@
-# LangThree Abstract Grammar
+# FunLang Abstract Grammar
 
 ## 소개
 
-이 문서는 LangThree 언어의 형식 추상 문법(formal abstract grammar)을 정의한다.
+이 문서는 FunLang 언어의 형식 추상 문법(formal abstract grammar)을 정의한다.
 `Parser.fsy`의 구체적 문법(concrete grammar)과 `Ast.fs`의 AST 정의로부터 도출되었으며,
 렉서 세부 사항(공백, 주석, 들여쓰기 필터)은 생략하고 언어의 구조적 본질만을 기술한다.
 
@@ -326,7 +326,7 @@ mutablelist                  -- 가변 동적 리스트 (v7.0)
                              -- (n >= 2)
 
 -- 예외 타입
-exn                          -- 예외 (LangThreeException 래퍼)
+exn                          -- 예외 (FunLangException 래퍼)
 ```
 
 ### 6.1 Prelude 타입
@@ -512,7 +512,7 @@ type ('a, 'b) Result = Ok of 'a | Error of 'b
 
 ## 9. 들여쓰기 규칙 요약 (Indentation Rules — Summary)
 
-LangThree는 Python 방식의 들여쓰기 기반 블록 구조를 사용한다.
+FunLang는 Python 방식의 들여쓰기 기반 블록 구조를 사용한다.
 `IndentFilter`가 raw 토큰 스트림에서 `INDENT`/`DEDENT` 토큰을 생성하여 파서에 전달한다.
 
 - 탭 문자 사용 금지 — 스페이스만 허용

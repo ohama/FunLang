@@ -20,7 +20,7 @@ let result =
     | Green -> "green"
     | Blue -> "blue"
 
-$ langthree color.l3
+$ funlang color.l3
 "green"
 ```
 
@@ -44,7 +44,7 @@ let result =
     | East -> "right"
     | West -> "left"
 
-$ langthree direction.l3
+$ funlang direction.l3
 "up"
 ```
 
@@ -65,11 +65,11 @@ let area s =
     | Rect (w, h) -> w * h
 let result = area (Rect (3, 4))
 
-$ langthree shape.l3
+$ funlang shape.l3
 12
 ```
 
-`Circle`은 반지름 하나를 담고, `Rect`는 너비와 높이 두 개를 담습니다. 서로 다른 케이스가 서로 다른 구조를 가질 수 있다는 것이 ADT의 힘입니다. Python에서 이를 표현하려면 별도의 클래스를 만들고 공통 기반 클래스를 상속받아야 하지만, LangThree에서는 한 줄로 끝납니다.
+`Circle`은 반지름 하나를 담고, `Rect`는 너비와 높이 두 개를 담습니다. 서로 다른 케이스가 서로 다른 구조를 가질 수 있다는 것이 ADT의 힘입니다. Python에서 이를 표현하려면 별도의 클래스를 만들고 공통 기반 클래스를 상속받아야 하지만, FunLang에서는 한 줄로 끝납니다.
 
 패턴 매칭에서 `Rect (w, h)`처럼 쓰면 생성자에 담긴 데이터가 자동으로 구조 분해(destructuring)됩니다. 별도의 getter나 필드 접근이 필요 없습니다.
 
@@ -88,7 +88,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ langthree option.l3
+$ funlang option.l3
 42
 ```
 
@@ -97,7 +97,7 @@ $ langthree option.l3
 `--emit-type`으로 추론된 타입을 확인할 수 있습니다:
 
 ```
-$ langthree --emit-type option.l3
+$ funlang --emit-type option.l3
 result : int
 x : Option<int>
 ```
@@ -116,7 +116,7 @@ let result =
     | Left n -> n
     | Right s -> string_length s
 
-$ langthree either.l3
+$ funlang either.l3
 42
 ```
 
@@ -136,11 +136,11 @@ let result =
     let rec sum xs = match xs with | Nil -> 0 | Cons (x, rest) -> x + sum rest in
     sum xs
 
-$ langthree intlist.l3
+$ funlang intlist.l3
 6
 ```
 
-`Cons (1, Cons (2, Cons (3, Nil)))`는 [1; 2; 3] 리스트를 직접 구현한 것입니다. LangThree의 내장 리스트도 사실 이런 식으로 동작합니다. 재귀 타입은 재귀 함수와 자연스럽게 짝을 이룹니다 — 타입의 구조가 함수의 구조를 그대로 반영합니다.
+`Cons (1, Cons (2, Cons (3, Nil)))`는 [1; 2; 3] 리스트를 직접 구현한 것입니다. FunLang의 내장 리스트도 사실 이런 식으로 동작합니다. 재귀 타입은 재귀 함수와 자연스럽게 짝을 이룹니다 — 타입의 구조가 함수의 구조를 그대로 반영합니다.
 
 깊이(depth) 함수를 가진 이진 트리:
 
@@ -155,7 +155,7 @@ let result =
     let rec depth t = match t with | Leaf _ -> 1 | Branch (l, r) -> 1 + max (depth l) (depth r) in
     depth t
 
-$ langthree tree.l3
+$ funlang tree.l3
 3
 ```
 
@@ -176,7 +176,7 @@ type Tree =
 and Forest = Empty | Trees of Tree * Forest
 let result = Node (Trees (Leaf 1, Trees (Leaf 2, Empty)))
 
-$ langthree mutual.l3
+$ funlang mutual.l3
 Node (Trees ((Leaf 1, Trees ((Leaf 2, Empty)))))
 ```
 
@@ -197,7 +197,7 @@ let result =
     | Red -> 1
     | Green -> 2
 
-$ langthree exhaustive.l3
+$ funlang exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --> :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -224,7 +224,7 @@ let result =
     let rec eval e = match e with | Num n -> n | Plus (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b in
     eval e
 
-$ langthree calc.l3
+$ funlang calc.l3
 14
 ```
 
@@ -242,7 +242,7 @@ type Age = int
 let greet name age = name + " is " + to_string age
 let result = greet "Alice" 30
 
-$ langthree alias_basic.l3
+$ funlang alias_basic.l3
 "Alice is 30"
 ```
 
@@ -267,7 +267,7 @@ let swap p =
 
 let result = swap (1, 2)
 
-$ langthree alias_complex.l3
+$ funlang alias_complex.l3
 (2, 1)
 ```
 
@@ -289,8 +289,8 @@ $ cat alias_emit.l3
 type Name = string
 let x = "hello"
 
-$ langthree --emit-type alias_emit.l3
+$ funlang --emit-type alias_emit.l3
 x : string
 ```
 
-`Name`이 아닌 `string`으로 표시됩니다. 컴파일러 입장에서 별칭은 완전히 투명하기 때문입니다. 이 점이 Haskell의 `newtype`과 다른 부분입니다 — `newtype`은 별도의 타입으로 취급되지만, LangThree의 타입 별칭은 단순히 다른 이름일 뿐입니다.
+`Name`이 아닌 `string`으로 표시됩니다. 컴파일러 입장에서 별칭은 완전히 투명하기 때문입니다. 이 점이 Haskell의 `newtype`과 다른 부분입니다 — `newtype`은 별도의 타입으로 취급되지만, FunLang의 타입 별칭은 단순히 다른 이름일 뿐입니다.

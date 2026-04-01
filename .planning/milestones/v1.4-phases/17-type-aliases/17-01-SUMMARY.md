@@ -19,11 +19,11 @@ key-files:
     - tests/flt/file/alias-list.flt
     - tests/flt/emit/type-decl/type-decl-alias.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
 decisions:
   - id: D17-01
     title: "Transparent aliases via AliasTypeExpr grammar"

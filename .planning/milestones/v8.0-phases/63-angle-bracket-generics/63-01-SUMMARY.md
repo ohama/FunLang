@@ -28,7 +28,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "Reuse LT/GT tokens for angle brackets — LALR(1) disambiguates by parser state"
@@ -75,7 +75,7 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added TypeArgList, AngleBracketTypeParams rules and angle bracket alternatives in all type declaration rules
+- `src/FunLang/Parser.fsy` - Added TypeArgList, AngleBracketTypeParams rules and angle bracket alternatives in all type declaration rules
 
 ## Decisions Made
 - **Reuse LT/GT tokens** instead of separate LANGLE/RANGLE — the LALR(1) parser disambiguates since type rules and expression rules are in disjoint states. This avoids lexer complications.
@@ -90,7 +90,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (testing `type Map<'k, 'v> = ...`)
 - **Issue:** Plan specified reusing `TypeParams` inside angle brackets, but `TypeParams` is space-separated (`'a 'b`). `<'k, 'v>` with a comma requires a different rule.
 - **Fix:** Added `AngleBracketTypeParams` rule (comma-separated TYPE_VARs) and used it in all angle bracket declaration rules instead of `TypeParams`.
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** `type Map<'k, 'v> = Empty | Node of 'k * 'v` parses correctly
 - **Committed in:** 015552a (Task 2 commit)
 

@@ -21,7 +21,7 @@ let double x = x * 2
 let inc x = x + 1
 let result = 5 |> double |> inc
 
-$ langthree pipe_chain.l3
+$ funlang pipe_chain.l3
 11
 ```
 
@@ -38,7 +38,7 @@ funlang> "hello" |> string_length
 5
 ```
 
-커링된 내장 함수는 파이프와 자연스럽게 결합됩니다. LangThree의 내장 함수들은 모두 커링을 지원하므로, 인자를 부분적으로 적용한 뒤 파이프로 연결할 수 있습니다:
+커링된 내장 함수는 파이프와 자연스럽게 결합됩니다. FunLang의 내장 함수들은 모두 커링을 지원하므로, 인자를 부분적으로 적용한 뒤 파이프로 연결할 수 있습니다:
 
 ```
 funlang> "world" |> string_concat "hello "
@@ -69,7 +69,7 @@ let inc x = x + 1
 let f = double >> inc
 let result = f 5
 
-$ langthree compose_fwd.l3
+$ funlang compose_fwd.l3
 11
 ```
 
@@ -88,7 +88,7 @@ let inc x = x + 1
 let g = inc << double
 let result = g 5
 
-$ langthree compose_bwd.l3
+$ funlang compose_bwd.l3
 11
 ```
 
@@ -108,7 +108,7 @@ let sub3 x = x - 3
 let f = add1 >> mul2 >> sub3
 let result = f 5
 
-$ langthree compose_chain.l3
+$ funlang compose_chain.l3
 9
 ```
 
@@ -128,7 +128,7 @@ let double x = x * 2
 let inc x = x + 1
 let result = 5 |> double |> inc
 
-$ langthree pipe_example.l3
+$ funlang pipe_example.l3
 11
 ```
 
@@ -142,7 +142,7 @@ let transform = double >> inc
 let a = transform 5
 let result = transform 10
 
-$ langthree comp_example.l3
+$ funlang comp_example.l3
 21
 ```
 
@@ -158,7 +158,7 @@ $ langthree comp_example.l3
 $ cat pipeline.l3
 let result = 42 |> to_string |> string_concat "answer: "
 
-$ langthree pipeline.l3
+$ funlang pipeline.l3
 "answer: 42"
 ```
 
@@ -169,7 +169,7 @@ $ cat formatter.l3
 let format_num = to_string >> string_concat "value="
 let result = format_num 99
 
-$ langthree formatter.l3
+$ funlang formatter.l3
 "value=99"
 ```
 
@@ -185,20 +185,20 @@ Prelude가 제공하는 연산자를 파이프라인과 결합하면 더 간결�
 $ cat pipeline_ops.l3
 let result = [1..3] ++ [10..13] ++ [20..22]
 
-$ langthree pipeline_ops.l3
+$ funlang pipeline_ops.l3
 [1; 2; 3; 10; 11; 12; 13; 20; 21; 22]
 ```
 
 **`^^` (문자열 연결):**
 
-`string_concat` 대신 `^^` 연산자를 사용하면 더 읽기 쉽습니다. Python의 `+` 나 JavaScript의 `+`처럼 직관적인데, LangThree에서 `+`는 정수 덧셈에 예약되어 있으므로 문자열에는 별도의 연산자를 씁니다:
+`string_concat` 대신 `^^` 연산자를 사용하면 더 읽기 쉽습니다. Python의 `+` 나 JavaScript의 `+`처럼 직관적인데, FunLang에서 `+`는 정수 덧셈에 예약되어 있으므로 문자열에는 별도의 연산자를 씁니다:
 
 ```
 $ cat string_ops.l3
 let greet name = "Hello, " ^^ name ^^ "!"
 let result = greet "Alice"
 
-$ langthree string_ops.l3
+$ funlang string_ops.l3
 "Hello, Alice!"
 ```
 
@@ -211,7 +211,7 @@ $ cat option_ops.l3
 let tryParse s = match s with | "42" -> Some 42 | _ -> None
 let result = tryParse "abc" <|> tryParse "42" <|> Some 0
 
-$ langthree option_ops.l3
+$ funlang option_ops.l3
 Some 42
 ```
 
@@ -226,7 +226,7 @@ let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string 
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList
 
-$ langthree mixed_pipeline.l3
+$ funlang mixed_pipeline.l3
 "[3, 4, 5]"
 ```
 

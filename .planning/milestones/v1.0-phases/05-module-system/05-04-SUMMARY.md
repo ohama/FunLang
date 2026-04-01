@@ -31,12 +31,12 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - src/LangThree/Prelude.fs
-    - tests/LangThree.Tests/RecordTests.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - src/FunLang/Prelude.fs
+    - tests/FunLang.Tests/RecordTests.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "ModuleValueEnv has CtorEnv for constructor qualified access separate from Values"
@@ -80,12 +80,12 @@ Each task was committed atomically:
 3. **Task 3: Wire module pipeline through Program.fs** - `25ed3eb` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - ModuleValueEnv type, moduleEnv threading, FieldAccess module dispatch, evalModuleDecls
-- `src/LangThree/Program.fs` - evalModuleDecls pipeline wiring, moduleEnv propagation
-- `src/LangThree/Repl.fs` - Updated eval call with moduleEnv parameter
-- `src/LangThree/Prelude.fs` - Updated eval call with moduleEnv parameter
-- `tests/LangThree.Tests/RecordTests.fs` - Updated eval call with moduleEnv parameter
-- `tests/LangThree.Tests/IntegrationTests.fs` - Updated eval call with moduleEnv parameter
+- `src/FunLang/Eval.fs` - ModuleValueEnv type, moduleEnv threading, FieldAccess module dispatch, evalModuleDecls
+- `src/FunLang/Program.fs` - evalModuleDecls pipeline wiring, moduleEnv propagation
+- `src/FunLang/Repl.fs` - Updated eval call with moduleEnv parameter
+- `src/FunLang/Prelude.fs` - Updated eval call with moduleEnv parameter
+- `tests/FunLang.Tests/RecordTests.fs` - Updated eval call with moduleEnv parameter
+- `tests/FunLang.Tests/IntegrationTests.fs` - Updated eval call with moduleEnv parameter
 
 ## Decisions Made
 - ModuleValueEnv has separate CtorEnv (Map<string, Value>) for constructor qualified access, keeping it distinct from general Values

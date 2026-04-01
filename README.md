@@ -1,4 +1,4 @@
-# LangThree
+# FunLang
 
 FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어.
 
@@ -8,11 +8,11 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 
 > **GitHub Pages 설정 후 바로 볼 수 있습니다:**
 >
-> https://ohama.github.io/LangThree/
+> https://ohama.github.io/FunLang/
 >
 > Settings → Pages → Source: `Deploy from a branch` → Branch: `master` / `/docs` → Save
 
-[LangThree Tutorial](https://ohama.github.io/LangThree/) — 23 chapters, 300+ runnable examples
+[FunLang Tutorial](https://ohama.github.io/FunLang/) — 23 chapters, 300+ runnable examples
 
 ## Features
 
@@ -77,20 +77,20 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 
 ```bash
 # Build
-dotnet build src/LangThree/LangThree.fsproj -c Release
+dotnet build src/FunLang/FunLang.fsproj -c Release
 
 # REPL
-src/LangThree/bin/Release/net10.0/LangThree
+src/FunLang/bin/Release/net10.0/FunLang
 
 # Expression mode
-src/LangThree/bin/Release/net10.0/LangThree --expr '1 + 2 * 3'
+src/FunLang/bin/Release/net10.0/FunLang --expr '1 + 2 * 3'
 # => 7
 
 # File mode
-src/LangThree/bin/Release/net10.0/LangThree myfile.l3
+src/FunLang/bin/Release/net10.0/FunLang myfile.l3
 
 # Type inference
-src/LangThree/bin/Release/net10.0/LangThree --emit-type --expr 'fun x -> x + 1'
+src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr 'fun x -> x + 1'
 # => int -> int
 ```
 
@@ -275,10 +275,10 @@ and stateB xs = match xs with | [] -> "ended in B" | 1 :: rest -> stateA rest | 
 ## Project Structure
 
 ```
-LangThree/
-├── src/LangThree/       # Interpreter source (~16,200 LOC F#)
+FunLang/
+├── src/FunLang/       # Interpreter source (~16,200 LOC F#)
 ├── tests/
-│   ├── LangThree.Tests/ # F# unit tests (224 tests)
+│   ├── FunLang.Tests/ # F# unit tests (224 tests)
 │   └── flt/             # fslit integration tests (698 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
 │       ├── file/        # File-mode tests (472 tests, 34 subdirs)
@@ -303,7 +303,7 @@ LangThree/
 
 ```bash
 # F# unit tests (224)
-dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
+dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 
 # fslit integration tests (698)
 /path/to/fslit tests/flt/

@@ -1,12 +1,12 @@
 # 11장: 예외 (Exceptions)
 
-오류 처리는 모든 언어에서 쉽지 않은 문제입니다. 함수형 언어들은 보통 두 가지 접근을 씁니다. 하나는 `Option`이나 `Result` 같은 타입으로 오류를 값으로 표현하는 방법이고, 다른 하나는 예외(exception)를 발생시켜 호출 스택을 타고 올라가는 방법입니다. LangThree는 둘 다 지원하며, 이 장에서는 예외 메커니즘을 다룹니다.
+오류 처리는 모든 언어에서 쉽지 않은 문제입니다. 함수형 언어들은 보통 두 가지 접근을 씁니다. 하나는 `Option`이나 `Result` 같은 타입으로 오류를 값으로 표현하는 방법이고, 다른 하나는 예외(exception)를 발생시켜 호출 스택을 타고 올라가는 방법입니다. FunLang는 둘 다 지원하며, 이 장에서는 예외 메커니즘을 다룹니다.
 
 예외는 "예상치 못한 상황"을 처리할 때 강력합니다. 깊이 중첩된 함수 안에서 발생한 오류를 모든 계층에서 하나씩 전달하지 않고, 한 번에 적절한 핸들러까지 올려보낼 수 있습니다. 다만, 예외를 남용하면 제어 흐름을 추적하기 어려워지므로, 정말 예외적인 상황에만 쓰는 것이 좋습니다. 예외와 `Option`/`Result` 중 언제 어떤 것을 써야 하는지는 바로 다음 [12장: 에러 처리 전략](12-error-handling.md)에서 비교합니다.
 
 ## 예외 선언
 
-`exception`으로 예외 타입을 선언합니다. LangThree의 예외는 ADT의 생성자와 비슷하게 생겼습니다. 이름을 선언하고, `raise`로 발생시키고, `try-with`로 잡습니다:
+`exception`으로 예외 타입을 선언합니다. FunLang의 예외는 ADT의 생성자와 비슷하게 생겼습니다. 이름을 선언하고, `raise`로 발생시키고, `try-with`로 잡습니다:
 
 ```
 $ cat exc_basic.l3
@@ -17,13 +17,13 @@ with
 | NotFound -> 42
 | _ -> 0
 
-$ langthree exc_basic.l3
+$ funlang exc_basic.l3
 42
 ```
 
 OCaml이나 F#의 예외 구문과 거의 동일합니다. `try-with` 블록 안에서 예외가 발생하면 `with` 아래의 패턴들과 순서대로 매칭합니다. 매칭된 핸들러의 결과가 전체 `try-with` 식의 결과가 됩니다.
 
-한 가지 중요한 점: LangThree에서 `try-with`는 식(expression)입니다. 값을 반환하므로 `let result =` 등에 바인딩할 수 있습니다. Java처럼 "제어 흐름을 위한 문장"이 아니라 F#처럼 "값을 생산하는 식"입니다.
+한 가지 중요한 점: FunLang에서 `try-with`는 식(expression)입니다. 값을 반환하므로 `let result =` 등에 바인딩할 수 있습니다. Java처럼 "제어 흐름을 위한 문장"이 아니라 F#처럼 "값을 생산하는 식"입니다.
 
 ## 데이터를 가진 예외
 
@@ -38,7 +38,7 @@ with
 | InvalidArg msg -> "error: " + msg
 | _ -> "unknown"
 
-$ langthree exc_data.l3
+$ funlang exc_data.l3
 "error: bad input"
 ```
 
@@ -61,7 +61,7 @@ with
 | Timeout secs -> "timeout after " + to_string secs + "s"
 | _ -> "unknown"
 
-$ langthree exc_multi.l3
+$ funlang exc_multi.l3
 "timeout after 30s"
 ```
 
@@ -81,7 +81,7 @@ with
 | Error x -> "error: " + to_string x
 | _ -> "unknown"
 
-$ langthree exc_guard.l3
+$ funlang exc_guard.l3
 "error: 42"
 ```
 
@@ -107,7 +107,7 @@ with
 | Inner -> "outer caught"
 | _ -> "fallback"
 
-$ langthree exc_nested.l3
+$ funlang exc_nested.l3
 "inner caught"
 ```
 
@@ -135,7 +135,7 @@ with
 | First -> "outer caught first"
 | _ -> "outer fallback"
 
-$ langthree exc_reraise.l3
+$ funlang exc_reraise.l3
 "inner fallback"
 ```
 
@@ -155,7 +155,7 @@ let result = try
 with
 | NotFound -> 42
 
-$ langthree exc_warn.l3
+$ funlang exc_warn.l3
 Warning: warning[W0003]: Non-exhaustive exception handler: not all exceptions are handled; consider adding a catch-all handler
  --> :0:0-1:0
    = hint: Add a catch-all handler or handle all possible exceptions
@@ -175,7 +175,7 @@ with
 | NotFound -> 42
 | _ -> 0
 
-$ langthree exc_nowarn.l3
+$ funlang exc_nowarn.l3
 42
 ```
 
@@ -197,7 +197,7 @@ with
 | DivByZero -> -1
 | _ -> -2
 
-$ langthree safe_div.l3
+$ funlang safe_div.l3
 -1
 ```
 
@@ -220,7 +220,7 @@ let result =
     with
     | e -> 0
 
-$ langthree failwith_demo.l3
+$ funlang failwith_demo.l3
 0
 ```
 
@@ -234,7 +234,7 @@ $ langthree failwith_demo.l3
 $ cat inline_try.l3
 let result = try failwith "boom" with e -> "caught"
 
-$ langthree inline_try.l3
+$ funlang inline_try.l3
 "caught"
 ```
 

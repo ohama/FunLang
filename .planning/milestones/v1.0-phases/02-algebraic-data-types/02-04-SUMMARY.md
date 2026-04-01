@@ -15,11 +15,11 @@ tech-stack:
 
 key-files:
   created:
-    - src/LangThree/Exhaustive.fs
-    - tests/LangThree.Tests/ExhaustiveTests.fs
+    - src/FunLang/Exhaustive.fs
+    - tests/FunLang.Tests/ExhaustiveTests.fs
   modified:
-    - src/LangThree/LangThree.fsproj
-    - tests/LangThree.Tests/LangThree.Tests.fsproj
+    - src/FunLang/FunLang.fsproj
+    - tests/FunLang.Tests/FunLang.Tests.fsproj
 
 decisions:
   - id: "02-04-01"
@@ -91,7 +91,7 @@ Constructor sets (`ConstructorSet = ConstructorInfo list`) are passed explicitly
 - **Found during:** Initial context analysis
 - **Issue:** Plan assumed ConstructorPat/TData/ConstructorEnv from 02-01/02-02/02-03 would exist, but those plans haven't been executed yet
 - **Fix:** Designed self-contained CasePat type with explicit constructor sets; deferred integration
-- **Files created:** src/LangThree/Exhaustive.fs
+- **Files created:** src/FunLang/Exhaustive.fs
 - **Impact:** Module is fully testable and functional; integration deferred to when TData types are added
 
 ## Next Phase Readiness

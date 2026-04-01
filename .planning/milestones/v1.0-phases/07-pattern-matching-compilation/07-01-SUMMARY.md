@@ -25,9 +25,9 @@ tech-stack:
 
 key-files:
   created:
-    - "src/LangThree/MatchCompile.fs"
+    - "src/FunLang/MatchCompile.fs"
   modified:
-    - "src/LangThree/LangThree.fsproj"
+    - "src/FunLang/FunLang.fsproj"
 
 key-decisions:
   - "MatchCompile.fs only opens Ast -- no dependency on Eval.fs to avoid circular deps"
@@ -71,8 +71,8 @@ Each task was committed atomically:
 2. **Task 2: Add compilation, evaluation, and entry point functions** - `2bcd9e7` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/MatchCompile.fs` - Decision tree types, compilation algorithm, tree evaluator (233 lines)
-- `src/LangThree/LangThree.fsproj` - Added MatchCompile.fs before Eval.fs in build order
+- `src/FunLang/MatchCompile.fs` - Decision tree types, compilation algorithm, tree evaluator (233 lines)
+- `src/FunLang/FunLang.fsproj` - Added MatchCompile.fs before Eval.fs in build order
 
 ## Decisions Made
 - evalDecisionTree takes `evalFn: Env -> Expr -> Value` parameter rather than importing eval from Eval.fs, avoiding circular module dependency

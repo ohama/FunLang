@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 11 adds six string built-in functions (`string_length`, `string_concat`, `string_sub`, `string_contains`, `to_string`, `string_to_int`) to the LangThree interpreter. The codebase already has `TString` / `StringValue` / `String` AST node and basic `+` concatenation in `Eval.fs`. The type system has `initialTypeEnv` in `TypeCheck.fs` where prelude function type schemes live.
+Phase 11 adds six string built-in functions (`string_length`, `string_concat`, `string_sub`, `string_contains`, `to_string`, `string_to_int`) to the FunLang interpreter. The codebase already has `TString` / `StringValue` / `String` AST node and basic `+` concatenation in `Eval.fs`. The type system has `initialTypeEnv` in `TypeCheck.fs` where prelude function type schemes live.
 
 The central architectural challenge is that ALL prelude functions currently in `initialTypeEnv` (map, filter, fold, etc.) exist only as type schemes — they are NOT available in the eval environment. `Prelude.loadPrelude()` returns `emptyEnv` because there is no `Prelude.fun` file. String functions need to be called at runtime, so they must be present in the eval environment as values. This requires adding a new `BuiltinValue` variant to the `Value` DU and wiring it into the `App` eval case, OR encoding each built-in as a chain of nested `FunctionValue` closures with F# lambda bodies via a new mechanism.
 
@@ -22,9 +22,9 @@ Phase 11 operates entirely within the existing project stack. No new external li
 
 | Tool | Version | Purpose | Notes |
 |------|---------|---------|-------|
-| F# / .NET 10 | 10 | Implementation language | All source in `src/LangThree/` |
+| F# / .NET 10 | 10 | Implementation language | All source in `src/FunLang/` |
 | FsLexYacc | embedded | Lexer/Parser | No changes needed for Phase 11 |
-| Expecto | embedded | Unit test framework | Tests in `tests/LangThree.Tests/` |
+| Expecto | embedded | Unit test framework | Tests in `tests/FunLang.Tests/` |
 | .flt test framework | embedded | Integration tests | Tests in `tests/flt/` |
 
 ### Files to Modify
@@ -198,7 +198,7 @@ let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initi
 - **Writing string builtins as Expr trees:** Implementing `string_length` as `Lambda("s", App(Var("String.length"), Var("s")))` is wrong — the interpreter has no `String.length` variable. Write native F# lambdas via `BuiltinValue`.
 - **Adding a `BuiltinExpr` AST node:** Unnecessary complexity. `BuiltinValue` in the Value DU is sufficient. AST is for user-written code, not native operations.
 - **Registering builtins only in `initialTypeEnv` without eval registration:** Type checking passes but runtime fails with "Undefined variable: string_length". Both registrations are required.
-- **Using `FunctionValue` with synthetic AST bodies for builtins:** Would require encoding F# operations as LangThree expressions. `BuiltinValue` is the right abstraction.
+- **Using `FunctionValue` with synthetic AST bodies for builtins:** Would require encoding F# operations as FunLang expressions. `BuiltinValue` is the right abstraction.
 - **Making `string_sub` use 0-based exclusive end:** Success criterion says `string_sub "hello" 1 3` returns `"ell"` — this is start=1, length=3. NOT start=1, end=3 (which would give `"el"`).
 
 ## Don't Hand-Roll
@@ -376,7 +376,7 @@ let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initi
 
 ```
 // Test: string_length returns length of string
-// --- Command: /path/to/LangThree --expr "string_length \"hello\""
+// --- Command: /path/to/FunLang --expr "string_length \"hello\""
 // --- Output:
 5
 ```
@@ -385,7 +385,7 @@ let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initi
 
 ```
 // Test: string_sub extracts substring
-// --- Command: /path/to/LangThree --expr "string_sub \"hello\" 1 3"
+// --- Command: /path/to/FunLang --expr "string_sub \"hello\" 1 3"
 // --- Output:
 "ell"
 ```
@@ -394,7 +394,7 @@ let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initi
 
 ```
 // Test: to_string converts int to string
-// --- Command: /path/to/LangThree --expr "to_string 42"
+// --- Command: /path/to/FunLang --expr "to_string 42"
 // --- Output:
 "42"
 ```
@@ -403,7 +403,7 @@ let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) preludeEnv Eval.initi
 
 ```
 // Test: --emit-type shows string function applied correctly
-// --- Command: /path/to/LangThree --emit-type --file %input
+// --- Command: /path/to/FunLang --emit-type --file %input
 // --- Input:
 let result = string_length "hello"
 // --- Output:

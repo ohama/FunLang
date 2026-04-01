@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 67 adds five CLI features to LangThree: `--check` (type-check only), `--deps` (dependency tree), `--prelude <path>` (explicit Prelude path), `LANGTHREE_PRELUDE` env var, and file import caching. All features build on well-understood existing patterns in the codebase.
+Phase 67 adds five CLI features to FunLang: `--check` (type-check only), `--deps` (dependency tree), `--prelude <path>` (explicit Prelude path), `LANGTHREE_PRELUDE` env var, and file import caching. All features build on well-understood existing patterns in the codebase.
 
 The current CLI (`Cli.fs`) uses Argu 6.2.5 with `CliPrefix.DoubleDash`. Adding new flags is straightforward -- just add DU cases. The existing `Program.fs` uses an `if/elif` chain for mode dispatch, which is the natural insertion point. The design survey (`survey/project-build-system-design.md` sections 4.1-4.4) already provides implementation sketches that align well with the codebase.
 
@@ -27,7 +27,7 @@ No additional libraries needed. All features use existing .NET BCL and Argu.
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| Dictionary cache | ConcurrentDictionary | Overkill -- LangThree is single-threaded |
+| Dictionary cache | ConcurrentDictionary | Overkill -- FunLang is single-threaded |
 | Argu | System.CommandLine | Would require massive rewrite for minimal gain |
 
 ## Architecture Patterns
@@ -112,7 +112,7 @@ let rec collectDeps (filePath: string) (visited: Set<string>) (depth: int) =
 
 ### Anti-Patterns to Avoid
 - **Modifying `typeCheckModuleWithPrelude` signature:** Don't add cache parameters deep into the type checker. Keep caching at the `loadAndTypeCheckFileImpl` / `loadAndEvalFileImpl` boundary in `Prelude.fs`.
-- **Subcommand-style CLI:** Argu supports subcommands, but LangThree's existing pattern is flat flags. Keep it flat.
+- **Subcommand-style CLI:** Argu supports subcommands, but FunLang's existing pattern is flat flags. Keep it flat.
 - **Lazy prelude loading for `--deps`:** Even `--deps` should load prelude, because imported files may exist relative to Prelude-defined paths. However, `--deps` only needs parsing, not type-checking, so prelude loading could be skipped if we only want the import graph. Decide based on whether `--deps` should report type errors.
 
 ## Don't Hand-Roll
@@ -265,12 +265,12 @@ let rec loadAndTypeCheckFileImpl resolvedPath cEnv rEnv typeEnv mods =
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/Cli.fs` -- Current Argu DU definition, 21 lines
-- `src/LangThree/Program.fs` -- Full entry point, 243 lines, all mode dispatch
-- `src/LangThree/Prelude.fs` -- Prelude loading, file import delegates, findPreludeDir, 262 lines
-- `src/LangThree/TypeCheck.fs` -- resolveImportPath, fileImportTypeChecker delegate, FileImportDecl handling
-- `src/LangThree/Eval.fs` -- fileImportEvaluator delegate, FileImportDecl eval
-- `src/LangThree/Ast.fs` -- FileImportDecl AST node definition
+- `src/FunLang/Cli.fs` -- Current Argu DU definition, 21 lines
+- `src/FunLang/Program.fs` -- Full entry point, 243 lines, all mode dispatch
+- `src/FunLang/Prelude.fs` -- Prelude loading, file import delegates, findPreludeDir, 262 lines
+- `src/FunLang/TypeCheck.fs` -- resolveImportPath, fileImportTypeChecker delegate, FileImportDecl handling
+- `src/FunLang/Eval.fs` -- fileImportEvaluator delegate, FileImportDecl eval
+- `src/FunLang/Ast.fs` -- FileImportDecl AST node definition
 - `survey/project-build-system-design.md` sections 4.1-4.4 -- Implementation sketches
 
 ### Secondary (MEDIUM confidence)

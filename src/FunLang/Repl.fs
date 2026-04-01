@@ -6,7 +6,7 @@ open Ast
 open Eval
 open Type
 open Format
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 
 /// Parse a string input as expression and return the AST
 let private parseExpr (input: string) : Expr =
@@ -208,7 +208,7 @@ let rec private replLoop (state: ReplState) : unit =
 
 /// Start the REPL with welcome message
 let startRepl () : int =
-    printfn "LangThree REPL v14.0"
+    printfn "FunLang REPL v14.0"
     printfn "Type :help for commands, #quit or Ctrl+D to exit."
     printfn ""
     let prelude = Prelude.loadPrelude None None

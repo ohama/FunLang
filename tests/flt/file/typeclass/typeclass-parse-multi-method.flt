@@ -1,5 +1,5 @@
 // Test: typeclass declaration with multiple methods parses both to TypeClassDecl methods list
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --emit-ast %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
 // --- Input:
 typeclass Eq 'a =
     | eq : 'a -> 'a -> bool

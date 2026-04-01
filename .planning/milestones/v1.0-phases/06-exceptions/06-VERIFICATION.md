@@ -20,8 +20,8 @@ gaps: []
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
 | 1 | User can declare custom exceptions with data | VERIFIED | Parser rules for `exception Name` and `exception Name of Type` in Parser.fsy:355-362; ExceptionDecl AST node; elaborateExceptionDecl in Elaborate.fs:204; 4 passing tests (EXC-01 group) |
-| 2 | User can raise exceptions with `raise` | VERIFIED | Raise AST node; Bidir.fs synth checks arg unifies with TExn (line 313); Eval.fs throws LangThreeException (line 420-422); 5 passing tests (EXC-02 group) including type error for non-exn |
-| 3 | User can catch exceptions with `try...with` | VERIFIED | TryWith AST node; Bidir.fs synth checks body/handler types unify (line 321); Eval.fs wraps body in F# try-with catching LangThreeException (line 423-433); InTry indent context in IndentFilter.fs; 4 passing tests (EXC-03 group) |
+| 2 | User can raise exceptions with `raise` | VERIFIED | Raise AST node; Bidir.fs synth checks arg unifies with TExn (line 313); Eval.fs throws FunLangException (line 420-422); 5 passing tests (EXC-02 group) including type error for non-exn |
+| 3 | User can catch exceptions with `try...with` | VERIFIED | TryWith AST node; Bidir.fs synth checks body/handler types unify (line 321); Eval.fs wraps body in F# try-with catching FunLangException (line 423-433); InTry indent context in IndentFilter.fs; 4 passing tests (EXC-03 group) |
 | 4 | User can pattern match on exception types in handlers | VERIFIED | TryWith handlers are MatchClause list; evalMatchClauses dispatches on pattern match (line 112-127); supports multiple handlers with first-match-wins, wildcard catch-all, nested try-with with re-raise; 5 passing tests (EXC-04 group) |
 | 5 | User can use `when` guards in exception handlers | VERIFIED | MatchClause is 3-tuple (Pattern * Expr option * Expr); Parser.fsy:234-236 parses `| pat WHEN guard ARROW body`; evalMatchClauses evaluates guard in extended env and skips clause if not true (line 119-125); Bidir.fs checks guard type is TBool; 3 passing tests (EXC-05 group) |
 
@@ -31,19 +31,19 @@ gaps: []
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | Raise, TryWith, ExceptionDecl, MatchClause 3-tuple | VERIFIED | Lines 100-101 (Raise, TryWith), 229 (ExceptionDecl), MatchClause is Pattern * Expr option * Expr |
-| `src/LangThree/Type.fs` | TExn type variant | VERIFIED | Line 14; integrated in formatType, apply, freeVars |
-| `src/LangThree/Diagnostic.fs` | E0601-E0604, W0003 | VERIFIED | Lines 42-49 (error kinds), 282-302 (error codes) |
-| `src/LangThree/Lexer.fsl` | exception/raise/try/when keywords | VERIFIED | Lines 67-70 |
-| `src/LangThree/Parser.fsy` | Grammar rules for exceptions | VERIFIED | Token declarations (line 54), TryWith rules (118-119), Raise (137), when guard clauses (234-236), ExceptionDecl (355-362) |
-| `src/LangThree/Elaborate.fs` | elaborateExceptionDecl | VERIFIED | Line 204, creates ConstructorInfo with ResultType=TExn |
-| `src/LangThree/Bidir.fs` | Raise/TryWith synth, when guard checking | VERIFIED | Raise synth (311-317), TryWith synth (320-338), when guard TBool check in multiple contexts |
-| `src/LangThree/TypeCheck.fs` | ExceptionDecl processing | VERIFIED | First pass elaboration (522-527), ctorEnv/recEnv threaded through fold state |
-| `src/LangThree/Exhaustive.fs` | TExn open type handling | VERIFIED | No TExn match needed (open type returns empty constructor set via getConstructorsFromEnv) |
-| `src/LangThree/Eval.fs` | LangThreeException, raise/try-with eval, when guards | VERIFIED | LangThreeException (7), Raise eval (420-422), TryWith eval with re-raise (423-433), when guard eval in evalMatchClauses (119-125), ExceptionDecl module eval (527+) |
-| `src/LangThree/IndentFilter.fs` | InTry context | VERIFIED | InTry union case (18), JustSawTry state (27), context entry (104-105), pipe alignment (167), DEDENT popping with strict < (150) |
-| `src/LangThree/Unify.fs` | TExn unification | VERIFIED | Line 20: `TExn, TExn -> empty` |
-| `tests/LangThree.Tests/ExceptionTests.fs` | Integration tests | VERIFIED | 194 lines, 29 tests covering all 5 requirements plus when guards in match and edge cases |
+| `src/FunLang/Ast.fs` | Raise, TryWith, ExceptionDecl, MatchClause 3-tuple | VERIFIED | Lines 100-101 (Raise, TryWith), 229 (ExceptionDecl), MatchClause is Pattern * Expr option * Expr |
+| `src/FunLang/Type.fs` | TExn type variant | VERIFIED | Line 14; integrated in formatType, apply, freeVars |
+| `src/FunLang/Diagnostic.fs` | E0601-E0604, W0003 | VERIFIED | Lines 42-49 (error kinds), 282-302 (error codes) |
+| `src/FunLang/Lexer.fsl` | exception/raise/try/when keywords | VERIFIED | Lines 67-70 |
+| `src/FunLang/Parser.fsy` | Grammar rules for exceptions | VERIFIED | Token declarations (line 54), TryWith rules (118-119), Raise (137), when guard clauses (234-236), ExceptionDecl (355-362) |
+| `src/FunLang/Elaborate.fs` | elaborateExceptionDecl | VERIFIED | Line 204, creates ConstructorInfo with ResultType=TExn |
+| `src/FunLang/Bidir.fs` | Raise/TryWith synth, when guard checking | VERIFIED | Raise synth (311-317), TryWith synth (320-338), when guard TBool check in multiple contexts |
+| `src/FunLang/TypeCheck.fs` | ExceptionDecl processing | VERIFIED | First pass elaboration (522-527), ctorEnv/recEnv threaded through fold state |
+| `src/FunLang/Exhaustive.fs` | TExn open type handling | VERIFIED | No TExn match needed (open type returns empty constructor set via getConstructorsFromEnv) |
+| `src/FunLang/Eval.fs` | FunLangException, raise/try-with eval, when guards | VERIFIED | FunLangException (7), Raise eval (420-422), TryWith eval with re-raise (423-433), when guard eval in evalMatchClauses (119-125), ExceptionDecl module eval (527+) |
+| `src/FunLang/IndentFilter.fs` | InTry context | VERIFIED | InTry union case (18), JustSawTry state (27), context entry (104-105), pipe alignment (167), DEDENT popping with strict < (150) |
+| `src/FunLang/Unify.fs` | TExn unification | VERIFIED | Line 20: `TExn, TExn -> empty` |
+| `tests/FunLang.Tests/ExceptionTests.fs` | Integration tests | VERIFIED | 194 lines, 29 tests covering all 5 requirements plus when guards in match and edge cases |
 
 ### Key Link Verification
 
@@ -52,10 +52,10 @@ gaps: []
 | Parser.fsy | Ast.fs | ExceptionDecl/Raise/TryWith constructors | WIRED | Parser rules produce AST nodes directly |
 | TypeCheck.fs | Elaborate.fs | elaborateExceptionDecl call | WIRED | Line 523 calls Elaborate.elaborateExceptionDecl |
 | Bidir.fs | Unify.fs | TExn unification in Raise/TryWith | WIRED | Raise synth unifies arg with TExn; TryWith unifies handler patterns with TExn |
-| Eval.fs | .NET exceptions | LangThreeException type | WIRED | raise throws LangThreeException; TryWith catches it; re-raises when no handler matches |
+| Eval.fs | .NET exceptions | FunLangException type | WIRED | raise throws FunLangException; TryWith catches it; re-raises when no handler matches |
 | evalMatchClauses | when guards | Guard evaluation in extended env | WIRED | Pattern bindings extend env, guard evaluated, clause skipped if not BoolValue true |
 | IndentFilter.fs | Parser tokens | InTry context for pipe alignment | WIRED | JustSawTry set on TRY token, InTry context entered, pipes aligned at base column |
-| ExceptionTests.fs | Test project | fsproj Compile Include | WIRED | LangThree.Tests.fsproj line 13 includes ExceptionTests.fs |
+| ExceptionTests.fs | Test project | fsproj Compile Include | WIRED | FunLang.Tests.fsproj line 13 includes ExceptionTests.fs |
 
 ### Requirements Coverage
 

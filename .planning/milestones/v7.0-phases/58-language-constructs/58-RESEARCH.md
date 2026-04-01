@@ -46,7 +46,7 @@ No new tokens are needed for any of the three constructs.
 
 No structural changes. All edits are to existing source files:
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs          # Add StringSliceExpr, ListCompExpr
 ├── Parser.fsy      # Add grammar rules
 ├── Eval.fs         # Eval for new nodes + ForInExpr extension
@@ -137,10 +137,10 @@ For `[for i in 0..4 -> expr]`, the range `0..4` is desugared by the parser into 
                 | _ -> failwith "String slice: end index must be int"
             | None -> len - 1
         if start < 0 || start > len then
-            raise (LangThreeException (StringValue (sprintf "String slice: start index %d out of bounds (length %d)" start len)))
+            raise (FunLangException (StringValue (sprintf "String slice: start index %d out of bounds (length %d)" start len)))
         if stop < start - 1 || stop >= len then
             // allow stop = start - 1 for empty slice
-            raise (LangThreeException (StringValue (sprintf "String slice: end index %d out of bounds (length %d)" stop len)))
+            raise (FunLangException (StringValue (sprintf "String slice: end index %d out of bounds (length %d)" stop len)))
         StringValue (s.[start .. stop])
     | _ -> failwith "String slice: expected string and int index"
 ```
@@ -565,7 +565,7 @@ Then in FieldAccess arm (Bidir.fs), add after the `THashtable` arm:
 
 ```
 // Test: String slicing s.[start..stop] and s.[start..] (LANG-01)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let s = "hello"
 let _ = println s.[1..3]
@@ -582,7 +582,7 @@ h
 
 ```
 // Test: List comprehension [for x in coll -> expr] (LANG-02)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result1 = [for x in [1;2;3] -> x * 2]
 let result2 = [for i in 0..4 -> i * i]
@@ -598,7 +598,7 @@ let _ = println (to_string result2)
 
 ```
 // Test: for-in over native collections (LANG-03, PROP-05)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let hs = HashSet ()
 let _ = hs.Add(10)
@@ -649,7 +649,7 @@ b=2
 3. **Empty slice bounds checking**
    - What we know: F# `"hello".[5..4]` returns `""` (empty string, no exception)
    - What's unclear: Should `s.[6..]` (out of bounds) raise or return `""`?
-   - Recommendation: Let F# native string slicing handle it — `s.[6..(s.Length-1)]` in F# raises `IndexOutOfRangeException` when start > string length. Add a guard: if `start > s.Length`, raise `LangThreeException`. If `start = s.Length`, return `""`.
+   - Recommendation: Let F# native string slicing handle it — `s.[6..(s.Length-1)]` in F# raises `IndexOutOfRangeException` when start > string length. Add a guard: if `start > s.Length`, raise `FunLangException`. If `start = s.Length`, return `""`.
 
 4. **ForInExpr Bidir — try/catch vs explicit match refactoring**
    - What we know: Current code uses try/catch to unify with TList then TArray

@@ -19,7 +19,7 @@ No new libraries. This is a pure change to `IndentFilter.fs` — the existing fi
 ### Core Files
 | File | Role | What Changes |
 |------|------|--------------|
-| `src/LangThree/IndentFilter.fs` | Token stream filter | Add SEMICOLON injection in `isAtSameLevel` branch |
+| `src/FunLang/IndentFilter.fs` | Token stream filter | Add SEMICOLON injection in `isAtSameLevel` branch |
 | `tests/flt/expr/seq/` | Existing seq tests | Add 5 new nlseq-*.flt tests |
 | `tests/flt/file/...` | Regression suite | Must remain 573/573 pass |
 
@@ -27,7 +27,7 @@ No new libraries. This is a pure change to `IndentFilter.fs` — the existing fi
 
 ```bash
 # No installation needed — pure logic change
-dotnet build src/LangThree/LangThree.fsproj -c Release
+dotnet build src/FunLang/FunLang.fsproj -c Release
 ../fslit/dist/FsLit tests/flt/
 ```
 
@@ -128,7 +128,7 @@ The `checkOffside` logic (IN injection for `InLetDecl`) runs BEFORE the SEMICOLO
 ### Recommended Project Structure (Unchanged)
 
 ```
-src/LangThree/
+src/FunLang/
 ├── IndentFilter.fs     # THE ONLY FILE THAT CHANGES
 └── (all others unchanged)
 
@@ -373,9 +373,9 @@ At NEWLINE(4) before `|>`:
 
 **How F#/OCaml handle this:**
 - F# uses `OBLOCKSEP` token for same-indent lines in `do`/`begin`/`end` blocks
-- OCaml requires explicit `;` (no implicit sequencing) — LangThree is F#-style
+- OCaml requires explicit `;` (no implicit sequencing) — FunLang is F#-style
 - The F# rule: "lines at same column as block start emit OBLOCKSEP" with operator-continuation suppression
-- LangThree's equivalent: "same-indent lines in InExprBlock emit SEMICOLON"
+- FunLang's equivalent: "same-indent lines in InExprBlock emit SEMICOLON"
 
 ## Open Questions
 
@@ -402,13 +402,13 @@ At NEWLINE(4) before `|>`:
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/IndentFilter.fs` — Full source read, all functions analyzed
-- `src/LangThree/Parser.fsy` — SeqExpr, SEMICOLON rules, all token declarations confirmed
+- `src/FunLang/IndentFilter.fs` — Full source read, all functions analyzed
+- `src/FunLang/Parser.fsy` — SeqExpr, SEMICOLON rules, all token declarations confirmed
 - `tests/flt/` — 573 existing tests analyzed for regression risk
 
 ### Secondary (MEDIUM confidence)
 - F# language spec on OBLOCKSEP/ODECLEND pattern — conceptual alignment confirmed
-- OCaml explicit-semicolon approach — contrasted with LangThree's implicit model
+- OCaml explicit-semicolon approach — contrasted with FunLang's implicit model
 
 ## Metadata
 

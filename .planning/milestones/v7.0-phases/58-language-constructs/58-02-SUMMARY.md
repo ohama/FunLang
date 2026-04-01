@@ -16,11 +16,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Format.fs
 
 decisions:
   - id: forin-explicit-match-refactor
@@ -65,7 +65,7 @@ s.[2..]   => "llo"
 - **Found during:** Task 2 verification — smoke test returned "The match cases were incomplete"
 - **Issue:** Plan only mentioned Eval.fs and Bidir.fs, but Infer.fs/TypeCheck.fs/Format.fs had FS0025 warnings from Plan 01 indicating incomplete pattern matches for StringSliceExpr/ListCompExpr. At runtime these caused a MatchFailureException.
 - **Fix:** Added stub arms to Infer.fs; traversal arms (collectMatches, collectTryWiths, collectModuleRefs, rewriteModuleAccess) to TypeCheck.fs; format arms to Format.fs
-- **Files modified:** src/LangThree/Infer.fs, src/LangThree/TypeCheck.fs, src/LangThree/Format.fs
+- **Files modified:** src/FunLang/Infer.fs, src/FunLang/TypeCheck.fs, src/FunLang/Format.fs
 - **Commits:** 4d030be
 
 ## Commits

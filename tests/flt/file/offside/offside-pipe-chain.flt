@@ -1,5 +1,5 @@
 // Test: let chain with pipe operations
-// --- Command: src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result =
     let xs = [1..10]

@@ -44,7 +44,7 @@ This phase uses the existing toolchain — no new libraries required.
 Changes are isolated to two files:
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Lexer.fsl       # Add LANGLE/RANGLE token rules (if separate tokens chosen)
 ├── Parser.fsy      # Add AngleBracketType rule to AtomicType and AliasAtomicType
 └── Ast.fs          # NO CHANGES — TEData already supports multi-arg generics
@@ -193,7 +193,7 @@ No additional rules needed once the angle bracket `AtomicType` rule is in place.
 ### Current AtomicType (Parser.fsy lines 492-504)
 
 ```fsharp
-// Source: src/LangThree/Parser.fsy
+// Source: src/FunLang/Parser.fsy
 AtomicType:
     | TYPE_UNIT                     { TETuple [] }
     | TYPE_INT                      { TEInt }
@@ -223,7 +223,7 @@ TypeArgList:
 ### Current TypeParams rule (Parser.fsy lines 524-526)
 
 ```fsharp
-// Source: src/LangThree/Parser.fsy
+// Source: src/FunLang/Parser.fsy
 TypeParams:
     |                          { [] }
     | TYPE_VAR TypeParams      { $1 :: $2 }
@@ -234,7 +234,7 @@ This is reused as-is inside angle brackets for `type Result<'a> = ...` — only 
 ### Existing TEData handling in Elaborate.fs (lines 62-69)
 
 ```fsharp
-// Source: src/LangThree/Elaborate.fs
+// Source: src/FunLang/Elaborate.fs
 | TEData (name, args) ->
     let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
     let folder (acc, env) t =
@@ -249,7 +249,7 @@ No changes needed — `TEData` with a list of args is already elaborated correct
 ### Existing TEData with multiple args in substTypeExprWithMap (Elaborate.fs lines 95-97)
 
 ```fsharp
-// Source: src/LangThree/Elaborate.fs
+// Source: src/FunLang/Elaborate.fs
 | Ast.TEData(name, args) ->
     let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
     TData(canonical, List.map (substTypeExprWithMap paramMap) args)
@@ -288,11 +288,11 @@ Multi-arg generics like `Map<string, int>` would produce `TEData("Map", [TEStrin
 
 ### Primary (HIGH confidence)
 
-- Direct source code inspection of `src/LangThree/Parser.fsy` — grammar rules for `AtomicType`, `TypeExpr`, `TypeDeclaration`, `TypeAliasDeclaration`, `AliasAtomicType`
-- Direct source code inspection of `src/LangThree/Ast.fs` — `TEData` AST node definition
-- Direct source code inspection of `src/LangThree/Elaborate.fs` — `TEData` elaboration
-- Direct source code inspection of `src/LangThree/Lexer.fsl` — `LT`/`GT` token rules
-- Direct source code inspection of `src/LangThree/IndentFilter.fs` — `BracketDepth` tracking
+- Direct source code inspection of `src/FunLang/Parser.fsy` — grammar rules for `AtomicType`, `TypeExpr`, `TypeDeclaration`, `TypeAliasDeclaration`, `AliasAtomicType`
+- Direct source code inspection of `src/FunLang/Ast.fs` — `TEData` AST node definition
+- Direct source code inspection of `src/FunLang/Elaborate.fs` — `TEData` elaboration
+- Direct source code inspection of `src/FunLang/Lexer.fsl` — `LT`/`GT` token rules
+- Direct source code inspection of `src/FunLang/IndentFilter.fs` — `BracketDepth` tracking
 - `.planning/REQUIREMENTS.md` — GEN-01, GEN-02, GEN-03 requirements
 - `.planning/ROADMAP.md` — Phase 63 success criteria and planned tasks
 - `survey/funlexyacc-type-annotation-incompatibility.md` — context on why this feature is needed

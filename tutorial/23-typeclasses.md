@@ -1,6 +1,6 @@
 # 23장: 타입 클래스 (Type Classes)
 
-지금까지 LangThree에서 타입을 정의하고, 패턴 매칭하고, 함수를 조합하는 방법을 배웠습니다. 하지만 한 가지 빠진 조각이 있습니다 — "이 타입에 대해 이런 동작을 할 수 있다"는 사실을 타입 시스템 수준에서 표현하는 방법입니다.
+지금까지 FunLang에서 타입을 정의하고, 패턴 매칭하고, 함수를 조합하는 방법을 배웠습니다. 하지만 한 가지 빠진 조각이 있습니다 — "이 타입에 대해 이런 동작을 할 수 있다"는 사실을 타입 시스템 수준에서 표현하는 방법입니다.
 
 예를 들어 `to_string`은 모든 타입을 문자열로 바꿀 수 있는 내장 함수입니다. 하지만 "문자열로 변환 가능하다"는 속성을 사용자가 직접 정의하고 확장할 수 있으면 어떨까요? 타입 클래스는 바로 이 질문에 대한 답입니다.
 
@@ -20,7 +20,7 @@ instance Show int =
 
 let result = show 42
 
-$ langthree show_class.l3
+$ funlang show_class.l3
 "42"
 ```
 
@@ -44,7 +44,7 @@ instance Describable int =
 
 let result = describe 42 + ":" + tag 42
 
-$ langthree describable.l3
+$ funlang describable.l3
 "42:int"
 ```
 
@@ -52,7 +52,7 @@ $ langthree describable.l3
 
 ## 내장 인스턴스: Show와 Eq
 
-LangThree는 Prelude에서 두 가지 타입 클래스와 기본 타입에 대한 인스턴스를 제공합니다. 별도의 선언 없이 바로 사용할 수 있습니다.
+FunLang는 Prelude에서 두 가지 타입 클래스와 기본 타입에 대한 인스턴스를 제공합니다. 별도의 선언 없이 바로 사용할 수 있습니다.
 
 ### Show 클래스
 
@@ -65,7 +65,7 @@ let _ = println (show true)
 let _ = println (show 'x')
 let _ = println (show "hello")
 
-$ langthree show_builtin.l3
+$ funlang show_builtin.l3
 42
 true
 x
@@ -85,7 +85,7 @@ let _ = println (to_string (eq 1 2))
 let _ = println (to_string (eq "hello" "hello"))
 let _ = println (to_string (eq 'a' 'b'))
 
-$ langthree eq_builtin.l3
+$ funlang eq_builtin.l3
 true
 false
 true
@@ -101,7 +101,7 @@ $ cat show_twice.l3
 let show_twice x = show x + show x
 let result = show_twice 42
 
-$ langthree show_twice.l3
+$ funlang show_twice.l3
 "4242"
 ```
 
@@ -115,7 +115,7 @@ let show_twice x = show x + show x
 let _ = println (show_twice 42)
 let _ = println (show_twice true)
 
-$ langthree show_poly.l3
+$ funlang show_poly.l3
 4242
 truetrue
 ```
@@ -132,7 +132,7 @@ let f : Show 'a => 'a -> string = fun x -> show x
 
 let result = f 42
 
-$ langthree constrained_annot.l3
+$ funlang constrained_annot.l3
 "42"
 ```
 
@@ -147,7 +147,7 @@ $ cat show_map.l3
 let map_show lst = List.map show lst
 let result = map_show [1; 2; 3]
 
-$ langthree show_map.l3
+$ funlang show_map.l3
 ["1"; "2"; "3"]
 ```
 
@@ -163,7 +163,7 @@ $ langthree show_map.l3
 $ cat no_instance.l3
 let bad = show (fun x -> x)
 
-$ langthree no_instance.l3
+$ funlang no_instance.l3
 error[E0701]: No instance of Show for 'x -> 'x
  --> no_instance.l3:1:8-14
     |
@@ -186,7 +186,7 @@ instance Show int =
 instance Show int =
     let show x = to_string x
 
-$ langthree dup_instance.l3
+$ funlang dup_instance.l3
 error[E0702]: Duplicate instance declaration: Show int
  --> dup_instance.l3:3:0-4:28
     |
@@ -202,7 +202,7 @@ error[E0702]: Duplicate instance declaration: Show int
 $ cat eq_error.l3
 let result = eq (fun x -> x) (fun x -> x)
 
-$ langthree eq_error.l3
+$ funlang eq_error.l3
 error[E0701]: No instance of Eq for 'z -> 'z
  --> eq_error.l3:1:11-15
     |
@@ -210,7 +210,7 @@ error[E0701]: No instance of Eq for 'z -> 'z
     |            ^^^^
 ```
 
-함수 타입은 동등성 비교가 불가능합니다. 수학적으로 두 함수가 같은지 판정하는 것은 일반적으로 불가능한 문제이며, LangThree의 타입 시스템은 이를 컴파일 타임에 방지합니다.
+함수 타입은 동등성 비교가 불가능합니다. 수학적으로 두 함수가 같은지 판정하는 것은 일반적으로 불가능한 문제이며, FunLang의 타입 시스템은 이를 컴파일 타임에 방지합니다.
 
 ## 사용자 정의 타입에 인스턴스 추가하기
 
@@ -232,7 +232,7 @@ instance Show Color =
 
 let result = show Green
 
-$ langthree custom_show.l3
+$ funlang custom_show.l3
 "Green"
 ```
 
@@ -256,7 +256,7 @@ instance Eq Direction =
 let _ = println (to_string (eq North North))
 let result = eq North South
 
-$ langthree custom_eq.l3
+$ funlang custom_eq.l3
 true
 false
 ```
@@ -282,7 +282,7 @@ let _ = println (show Circle)
 let _ = println (show Square)
 let result = show Triangle
 
-$ langthree mod_typeclass.l3
+$ funlang mod_typeclass.l3
 circle
 square
 "triangle"
@@ -304,7 +304,7 @@ instance Renderable int =
 
 let result = render 42
 
-$ langthree mod_class.l3
+$ funlang mod_class.l3
 "[42]"
 ```
 

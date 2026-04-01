@@ -109,7 +109,7 @@ Each task was committed atomically:
 
 ## Decisions Made
 - Combined exploration (Task 1) and file creation (Task 2) into single commit since Task 1 produces no artifacts
-- Used pipe-based input for AST capture (`echo "source" | LangThree --emit-ast /dev/stdin`)
+- Used pipe-based input for AST capture (`echo "source" | FunLang --emit-ast /dev/stdin`)
 
 ## Deviations from Plan
 

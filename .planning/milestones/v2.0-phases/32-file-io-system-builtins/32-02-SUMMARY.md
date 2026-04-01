@@ -9,10 +9,10 @@ requires:
   - phase: 32-01
     provides: 8 file I/O builtins (STD-02 through STD-09); BuiltinValue/Scheme patterns established
   - phase: 29-char-comparison
-    provides: LangThreeException error convention
+    provides: FunLangException error convention
 provides:
   - get_args : unit -> string list (CLI args after script filename; [] in -e/REPL mode)
-  - get_env : string -> string (raises LangThreeException if var not set)
+  - get_env : string -> string (raises FunLangException if var not set)
   - get_cwd : unit -> string (current working directory)
   - path_combine : string -> string -> string (cross-platform path join)
   - dir_files : string -> string list (full file paths in directory)
@@ -29,19 +29,19 @@ tech-stack:
     - "scriptArgs mutable declared before initialBuiltinEnv to avoid forward-reference issue"
     - "get_args reads mutable scriptArgs inside BuiltinValue closure (captured at call time)"
     - "path_combine is curried: outer BuiltinValue -> inner BuiltinValue"
-    - "get_env null-checks return value and raises LangThreeException on missing var"
+    - "get_env null-checks return value and raises FunLangException on missing var"
     - "eprint/eprintln flush stderr after write"
 
 key-files:
   created: []
   modified:
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "scriptArgs mutable placed before initialBuiltinEnv (forward-reference would fail if after)"
-  - "get_env raises LangThreeException (not empty string) — consistent with read_file behavior for missing resources"
+  - "get_env raises FunLangException (not empty string) — consistent with read_file behavior for missing resources"
   - "Program.fs searches rawArgv for absFilename OR filename (handles both absolute and relative matches)"
   - "get_args returns [] in -e/REPL modes (scriptArgs defaults to []); no special casing needed"
 
@@ -77,11 +77,11 @@ completed: 2026-03-25
 
 | Builtin | Input | Expected | Result |
 |---------|-------|----------|--------|
-| get_cwd () | unit | directory string | "/Users/ohama/vibe-coding/LangThree" |
+| get_cwd () | unit | directory string | "/Users/ohama/vibe-coding/FunLang" |
 | path_combine "/tmp" "test.txt" | two strings | "/tmp/test.txt" | "/tmp/test.txt" |
 | dir_files "/tmp/lt32dir" | dir path | file list | ["/tmp/lt32dir/b.txt"; "/tmp/lt32dir/a.txt"] |
 | get_env "HOME" | env var name | home path | "/Users/ohama" |
-| get_env "NONEXISTENT_LT32_VAR" | missing var | LangThreeException caught | "caught" |
+| get_env "NONEXISTENT_LT32_VAR" | missing var | FunLangException caught | "caught" |
 | eprint "to stderr" | string | stdout empty | stdout: '()' |
 | eprintln "error line" | string | on stderr | "error line" found in stderr |
 | get_args () | unit in -e mode | [] | [] |
@@ -96,14 +96,14 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/TypeCheck.fs` - 6 new Scheme entries in initialTypeEnv
-- `src/LangThree/Eval.fs` - mutable scriptArgs + 6 new BuiltinValue entries in initialBuiltinEnv
-- `src/LangThree/Program.fs` - scriptArgs population in file-run branch after Eval.currentEvalFile
+- `src/FunLang/TypeCheck.fs` - 6 new Scheme entries in initialTypeEnv
+- `src/FunLang/Eval.fs` - mutable scriptArgs + 6 new BuiltinValue entries in initialBuiltinEnv
+- `src/FunLang/Program.fs` - scriptArgs population in file-run branch after Eval.currentEvalFile
 
 ## Decisions Made
 
 - `scriptArgs` mutable declared before `initialBuiltinEnv` (not after) — F# forward-reference constraint: a `let` value's initialization body cannot reference a `let mutable` declared below it
-- `get_env` raises `LangThreeException` on missing variable (not returning empty string) — consistent with `read_file`/`read_lines` convention for missing resources
+- `get_env` raises `FunLangException` on missing variable (not returning empty string) — consistent with `read_file`/`read_lines` convention for missing resources
 - Program.fs searches `rawArgv` for both `absFilename` and `filename` — handles cases where the OS may present path differently in argv
 - `get_args` returns `[]` in `-e` and REPL modes naturally (scriptArgs defaults to `[]`); no special casing required
 

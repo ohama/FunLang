@@ -23,8 +23,8 @@ tech-stack:
     - "Absolute path resolution at parse time (projDir-relative)"
 
 key-files:
-  created: [src/LangThree/ProjectFile.fs]
-  modified: [src/LangThree/LangThree.fsproj]
+  created: [src/FunLang/ProjectFile.fs]
+  modified: [src/FunLang/FunLang.fsproj]
 
 key-decisions:
   - "Use [<CLIMutable>] F# records (not C# classes) as Tomlyn POCO types"
@@ -59,7 +59,7 @@ completed: 2026-03-31
 - Created FunProjConfig and TargetConfig F# records for idiomatic downstream consumption
 - Implemented parseFunProj with null-safe handling of optional [project] section and prelude field
 - Implemented findFunProj (CWD-only discovery) and loadFunProj (file read + error wrapping)
-- Registered ProjectFile.fs in LangThree.fsproj before Cli.fs; project builds with 0 errors
+- Registered ProjectFile.fs in FunLang.fsproj before Cli.fs; project builds with 0 errors
 
 ## Task Commits
 
@@ -71,8 +71,8 @@ Each task was committed atomically:
 **Plan metadata:** (see below)
 
 ## Files Created/Modified
-- `src/LangThree/ProjectFile.fs` - TOML POCO types, FunProjConfig record, parseFunProj/findFunProj/loadFunProj
-- `src/LangThree/LangThree.fsproj` - Added Tomlyn 2.3.0 PackageReference and ProjectFile.fs compile entry
+- `src/FunLang/ProjectFile.fs` - TOML POCO types, FunProjConfig record, parseFunProj/findFunProj/loadFunProj
+- `src/FunLang/FunLang.fsproj` - Added Tomlyn 2.3.0 PackageReference and ProjectFile.fs compile entry
 
 ## Decisions Made
 - Used [<CLIMutable>] F# records as POCO types rather than mutable C# classes -- idiomatic and sufficient for Tomlyn reflection

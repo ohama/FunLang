@@ -21,8 +21,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "Use 3-stage search (CWD -> assembly-relative -> walk-up) to support both dev and installed binary scenarios"
@@ -65,11 +65,11 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Prelude.fs` - Added `findPreludeDir` private helper; updated `loadPrelude` to use it
-- `src/LangThree/Program.fs` - Added `IsNullOrWhiteSpace` pre-parse guard and `List.isEmpty moduleDecls` post-typecheck guard
+- `src/FunLang/Prelude.fs` - Added `findPreludeDir` private helper; updated `loadPrelude` to use it
+- `src/FunLang/Program.fs` - Added `IsNullOrWhiteSpace` pre-parse guard and `List.isEmpty moduleDecls` post-typecheck guard
 
 ## Decisions Made
-- Stage 3 walks up 6 levels from assembly dir: the binary lives at `src/LangThree/bin/Debug/net10.0/LangThree`, so 6 levels reaches repo root where `Prelude/` lives
+- Stage 3 walks up 6 levels from assembly dir: the binary lives at `src/FunLang/bin/Debug/net10.0/FunLang`, so 6 levels reaches repo root where `Prelude/` lives
 - The `parent <> dir` guard prevents infinite loop at filesystem root
 - Whitespace guard placed before `parseModuleFromString` call because the parser emits a parse error on whitespace-only input (not a graceful empty module)
 - `List.isEmpty moduleDecls` guard added after typecheck as defensive layer for future empty-module variants

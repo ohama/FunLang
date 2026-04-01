@@ -13,13 +13,13 @@ tech_stack:
 key_files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Lexer.fsl
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Lexer.fsl
 decisions:
   - id: D42-01-01
     decision: "Added 'mut' as keyword alias for 'mutable' in lexer so both `let mut x = 5` and `let mutable x = 5` work"
@@ -58,14 +58,14 @@ AST nodes (LetMut, Assign, LetMutDecl, RefValue), parser grammar for `let mut`/`
 - **Found during:** Task 2 verification
 - **Issue:** Plan examples use `let mut x = ...` but lexer only mapped `"mutable"` to MUTABLE token. `mut` was lexed as IDENT, causing `let mut x = 5 in x` to parse as `let mut x = (5 in x)` (treating `mut` as binding name).
 - **Fix:** Added `"mut" { MUTABLE }` rule in Lexer.fsl
-- **Files modified:** src/LangThree/Lexer.fsl
+- **Files modified:** src/FunLang/Lexer.fsl
 - **Commit:** 90f0db8
 
 **2. [Rule 2 - Missing functionality] Added RefValue formatValue case in Eval.fs**
 - **Found during:** Task 2
 - **Issue:** Plan specified adding formatValue for RefValue in Format.fs, but formatValue is defined in Eval.fs, not Format.fs
 - **Fix:** Added the case in Eval.fs where formatValue actually lives
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Commit:** 90f0db8
 
 ## Decisions Made

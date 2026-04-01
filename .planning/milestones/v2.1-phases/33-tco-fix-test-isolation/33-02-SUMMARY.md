@@ -25,7 +25,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/MatchCompile.fs
+    - src/FunLang/MatchCompile.fs
 
 key-decisions:
   - "Thread freshTestVar as first parameter to compile rather than capturing from module scope — keeps the recursive algorithm pure with respect to external state"
@@ -66,7 +66,7 @@ completed: 2026-03-25
 
 ## Files Created/Modified
 
-- `/Users/ohama/vibe-coding/LangThree/src/LangThree/MatchCompile.fs` — Removed 3 module-level declarations, updated `compile` to accept `freshTestVar` parameter, rewrote `compileMatch` with local counter
+- `/Users/ohama/vibe-coding/FunLang/src/FunLang/MatchCompile.fs` — Removed 3 module-level declarations, updated `compile` to accept `freshTestVar` parameter, rewrote `compileMatch` with local counter
 
 ## Decisions Made
 

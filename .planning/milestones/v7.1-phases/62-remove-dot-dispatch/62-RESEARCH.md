@@ -22,8 +22,8 @@ This phase has no external library dependencies. It is pure deletion + flt test 
 
 | File | Location | What Changes |
 |------|----------|--------------|
-| `src/LangThree/Eval.fs` | Lines 1437–1537 | Delete value-type FieldAccess arms (StringValue, ArrayValue, StringBuilderValue, HashSetValue, QueueValue, MutableListValue, HashtableValue) |
-| `src/LangThree/Bidir.fs` | Lines 574–649 | Delete value-type FieldAccess type-synthesis arms (TString, TArray, TData("StringBuilder",[]), TData("HashSet",[]), TData("Queue",[]), TData("MutableList",[]), THashtable, TData("KeyValuePair",...)) |
+| `src/FunLang/Eval.fs` | Lines 1437–1537 | Delete value-type FieldAccess arms (StringValue, ArrayValue, StringBuilderValue, HashSetValue, QueueValue, MutableListValue, HashtableValue) |
+| `src/FunLang/Bidir.fs` | Lines 574–649 | Delete value-type FieldAccess type-synthesis arms (TString, TArray, TData("StringBuilder",[]), TData("HashSet",[]), TData("Queue",[]), TData("MutableList",[]), THashtable, TData("KeyValuePair",...)) |
 | `tests/flt/file/**/*.flt` | 25 test files | Rewrite dot-notation usage to module API |
 
 ### Module API Reference (what replaces dot notation)
@@ -411,13 +411,13 @@ let n = Array.length arr
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct code reading: `src/LangThree/Eval.fs` lines 1379–1537 — complete FieldAccess dispatch code
-- Direct code reading: `src/LangThree/Bidir.fs` lines 571–663 — complete FieldAccess type synthesis code
+- Direct code reading: `src/FunLang/Eval.fs` lines 1379–1537 — complete FieldAccess dispatch code
+- Direct code reading: `src/FunLang/Bidir.fs` lines 571–663 — complete FieldAccess type synthesis code
 - Direct code reading: `Prelude/*.fun` — all module API definitions
 - Direct code reading: All 25 flt test files listed above
 
 ### Secondary (MEDIUM confidence)
-- `src/LangThree/TypeCheck.fs` lines 610–673: `rewriteModuleAccess` confirms module qualified access is rewritten BEFORE reaching Bidir.fs — so `Module.member` FieldAccess never hits the value-type branches
+- `src/FunLang/TypeCheck.fs` lines 610–673: `rewriteModuleAccess` confirms module qualified access is rewritten BEFORE reaching Bidir.fs — so `Module.member` FieldAccess never hits the value-type branches
 - flt test run: 637/637 tests pass on current codebase (baseline confirmed)
 
 ## Metadata

@@ -196,7 +196,7 @@ The minimal set that delivers real value and validates the architecture:
 
 ---
 
-## Expected Syntax (LangThree Style)
+## Expected Syntax (FunLang Style)
 
 Based on the existing F#-influenced syntax:
 

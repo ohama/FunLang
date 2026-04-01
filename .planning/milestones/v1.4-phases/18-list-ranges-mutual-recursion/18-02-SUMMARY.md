@@ -18,11 +18,11 @@ key-files:
     - tests/flt/file/mutrec-three.flt
     - tests/flt/emit/type-decl/type-decl-mutrec.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
 decisions:
   - id: "18-02-01"
     description: "BuiltinValue with shared mutable ref for mutual recursion evaluation"
@@ -81,7 +81,7 @@ and odd n = if n = 0 then false else even (n - 1)
 - **Found during:** Task 3-4
 - **Issue:** Initial approach using multi-pass immutable env updates only supported limited recursion depth (N passes = N levels). Three-function mutual recursion failed beyond a few calls.
 - **Fix:** Replaced with BuiltinValue wrappers that close over a shared mutable `ref Env`. This gives true circular references.
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Commit:** bb0998a
 
 ## Test Results

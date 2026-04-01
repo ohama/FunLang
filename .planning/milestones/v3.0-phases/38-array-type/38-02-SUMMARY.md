@@ -22,7 +22,7 @@ affects: ["39-hashtable-type", "40-record-mutation", "41-for-loops", "future-std
 tech-stack:
   added: []
   patterns:
-    - "OOB errors use LangThreeException not .NET exceptions (catchable by language try-with)"
+    - "OOB errors use FunLangException not .NET exceptions (catchable by language try-with)"
     - "Prelude module wrappers do NOT use open to avoid flat namespace conflicts with same-named functions across modules"
     - "Module SubModules should only include newly-defined inner modules, not inherited outer mods"
 
@@ -34,12 +34,12 @@ key-files:
     - tests/flt/file/array/array-oob.flt
     - tests/flt/file/array/array-convert.flt
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "Array.fun does NOT include 'open Array' - avoids shadowing List.length and other same-named functions"
-  - "OOB access raises LangThreeException (catchable) not .NET System.Exception (uncatchable)"
+  - "OOB access raises FunLangException (catchable) not .NET System.Exception (uncatchable)"
   - "TypeCheck.fs SubModules bug fixed: innerMods filtered to exclude outer mods before assigning to SubModules"
 
 patterns-established:
@@ -64,7 +64,7 @@ completed: 2026-03-25
 - **Files modified:** 7
 
 ## Accomplishments
-- Registered `array_create`, `array_get`, `array_set`, `array_length`, `array_of_list`, `array_to_list` in `Eval.fs initialBuiltinEnv` with `LangThreeException` for OOB errors
+- Registered `array_create`, `array_get`, `array_set`, `array_length`, `array_of_list`, `array_to_list` in `Eval.fs initialBuiltinEnv` with `FunLangException` for OOB errors
 - Added correct polymorphic `Scheme` entries in `TypeCheck.fs initialTypeEnv` for all six builtins
 - Created `Prelude/Array.fun` module wrapper providing `Array.create/get/set/length/ofList/toList` qualified access
 - Added 4 passing flt integration tests (478/478 total flt tests pass, 224/224 unit tests pass)
@@ -78,8 +78,8 @@ Each task was committed atomically:
 2. **Task 2: Create Prelude/Array.fun and add flt integration tests** - `fae4ff0` (feat, includes SubModules bug fix)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - Added six array_* BuiltinValue entries to initialBuiltinEnv (ARR-01 through ARR-06)
-- `src/LangThree/TypeCheck.fs` - Added six Scheme entries to initialTypeEnv; fixed SubModules scoping bug
+- `src/FunLang/Eval.fs` - Added six array_* BuiltinValue entries to initialBuiltinEnv (ARR-01 through ARR-06)
+- `src/FunLang/TypeCheck.fs` - Added six Scheme entries to initialTypeEnv; fixed SubModules scoping bug
 - `Prelude/Array.fun` - Module Array wrapper (no open to preserve flat namespace)
 - `tests/flt/file/array/array-basic.flt` - Tests Array.create, Array.get, Array.length
 - `tests/flt/file/array/array-mutation.flt` - Tests Array.set in-place mutation
@@ -88,7 +88,7 @@ Each task was committed atomically:
 
 ## Decisions Made
 - **No `open Array` in Prelude/Array.fun**: Adding `open Array` would bring `Array.length` into the flat namespace, shadowing `List.length` for any code that used qualified `List.length` (due to the SubModules bug pattern in mergeModuleExportsForTypeCheck). Even after fixing that bug, it's better practice not to open a module that has conflicting names. Users use `Array.create` etc. directly.
-- **OOB raises `LangThreeException`**: The plan showed `failwithf` but that raises a .NET exception not catchable by the language's `try-with`. Changed to `raise (LangThreeException ...)` so `try Array.get arr 5 with e -> -1` works correctly.
+- **OOB raises `FunLangException`**: The plan showed `failwithf` but that raises a .NET exception not catchable by the language's `try-with`. Changed to `raise (FunLangException ...)` so `try Array.get arr 5 with e -> -1` works correctly.
 
 ## Deviations from Plan
 
@@ -98,15 +98,15 @@ Each task was committed atomically:
 - **Found during:** Task 2 (flt integration tests failing on List.length qualified access)
 - **Issue:** `ModuleDecl` arm in `typeCheckDecls` set `SubModules = innerMods` where `innerMods` was the full accumulated modules map passed through the type checker. This meant every module's `SubModules` contained all previously-defined sibling modules. Then `mergeModuleExportsForTypeCheck` merges ALL submodule exports when resolving a qualified access, flattening sibling module exports and overwriting types. `List.length` was overwritten by `Array.length` (TArray -> TInt) in the merged env.
 - **Fix:** Changed `SubModules = innerMods` to filter out modules already in the outer `mods`: `let newSubMods = Map.fold (fun acc k v -> if Map.containsKey k mods then acc else Map.add k v acc) Map.empty innerMods`
-- **Files modified:** `src/LangThree/TypeCheck.fs`
+- **Files modified:** `src/FunLang/TypeCheck.fs`
 - **Verification:** `List.length [1;2;3]` type-checks and evaluates to `3`; 224/224 unit tests pass; 478/478 flt tests pass
 - **Committed in:** `fae4ff0` (Task 2 commit)
 
-**2. [Rule 1 - Bug] Changed OOB error from failwithf to LangThreeException**
+**2. [Rule 1 - Bug] Changed OOB error from failwithf to FunLangException**
 - **Found during:** Task 1 (analyzing array-oob.flt requirement)
-- **Issue:** Plan specified `failwithf "Array.get: index %d..."` which raises .NET `System.Exception`, not catchable by LangThree's `try-with` (which only catches `LangThreeException`)
-- **Fix:** Changed to `raise (LangThreeException (StringValue (sprintf "...")))` matching the pattern used by `read_file` and other builtins
-- **Files modified:** `src/LangThree/Eval.fs`
+- **Issue:** Plan specified `failwithf "Array.get: index %d..."` which raises .NET `System.Exception`, not catchable by FunLang's `try-with` (which only catches `FunLangException`)
+- **Fix:** Changed to `raise (FunLangException (StringValue (sprintf "...")))` matching the pattern used by `read_file` and other builtins
+- **Files modified:** `src/FunLang/Eval.fs`
 - **Verification:** `array-oob.flt` passes; `try Array.get arr 5 with e -> -1` returns `-1`
 - **Committed in:** `e093f4d` (Task 1 commit)
 

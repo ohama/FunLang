@@ -53,7 +53,7 @@ completed: 2026-03-25
 ## Accomplishments
 - Wrote tutorial/19-mutable-data.md in Korean, following the style of 18-file-io.md (plain title, `$ cat`/`$ langthree` format, prose explanations)
 - Verified all 9 code examples against the Release binary before finalizing
-- Documented key LangThree-specific gotchas: curried fold callbacks, `let _ =` for unit, `[|...|]` print format, array reference equality, no `open Array/Hashtable`
+- Documented key FunLang-specific gotchas: curried fold callbacks, `let _ =` for unit, `[|...|]` print format, array reference equality, no `open Array/Hashtable`
 - Discovered and documented the inline lambda + qualified module name limitation
 - Updated SUMMARY.md to link 19-mutable-data.md under 실용 프로그래밍, after 파일 I/O
 

@@ -26,8 +26,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/IndentFilter.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/IndentFilter.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "Capture StartPos BEFORE Lexer.tokenize and EndPos AFTER - this is how fslex advances the buffer"
@@ -69,8 +69,8 @@ completed: 2026-03-31
 
 ## Files Created/Modified
 
-- `src/LangThree/IndentFilter.fs` - Added `PositionedToken` type, `withPosOf` helper, `filterPositioned` function (~195 lines added)
-- `src/LangThree/Program.fs` - Updated `lexAndFilter` return type and position capture; updated `parseModuleFromString` tokenizer to set lexbuf positions
+- `src/FunLang/IndentFilter.fs` - Added `PositionedToken` type, `withPosOf` helper, `filterPositioned` function (~195 lines added)
+- `src/FunLang/Program.fs` - Updated `lexAndFilter` return type and position capture; updated `parseModuleFromString` tokenizer to set lexbuf positions
 
 ## Decisions Made
 

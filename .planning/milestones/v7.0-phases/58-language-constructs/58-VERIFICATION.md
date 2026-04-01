@@ -30,13 +30,13 @@ score: 5/5 must-haves verified
 
 | Artifact                                    | Expected                                    | Status     | Details                                                          |
 | ------------------------------------------- | ------------------------------------------- | ---------- | ---------------------------------------------------------------- |
-| `src/LangThree/Ast.fs`                      | StringSliceExpr, ListCompExpr DU cases      | VERIFIED   | Lines 124, 126 (DU cases); lines 332–333 (spanOf arms)          |
-| `src/LangThree/Parser.fsy`                  | Grammar rules for slicing and comprehension | VERIFIED   | Lines 354–372: 4 new Atom productions                           |
-| `src/LangThree/Eval.fs`                     | Eval arms for new nodes + ForInExpr native  | VERIFIED   | StringSliceExpr:1023, ListCompExpr:1039, ForInExpr native:963   |
-| `src/LangThree/Bidir.fs`                    | Type-check arms for new nodes + ForInExpr  | VERIFIED   | StringSliceExpr:764, ListCompExpr:781, ForInExpr:232, KVP:637   |
-| `src/LangThree/Infer.fs`                    | Pattern match arms (completeness)           | VERIFIED   | Lines 377, 379                                                   |
-| `src/LangThree/TypeCheck.fs`                | Traversal arms (collectMatches, rewrite)    | VERIFIED   | Lines 368, 370, 485, 487, 586, 588, 668–671                     |
-| `src/LangThree/Format.fs`                   | Format arms for new AST nodes               | VERIFIED   | Lines 224–228                                                    |
+| `src/FunLang/Ast.fs`                      | StringSliceExpr, ListCompExpr DU cases      | VERIFIED   | Lines 124, 126 (DU cases); lines 332–333 (spanOf arms)          |
+| `src/FunLang/Parser.fsy`                  | Grammar rules for slicing and comprehension | VERIFIED   | Lines 354–372: 4 new Atom productions                           |
+| `src/FunLang/Eval.fs`                     | Eval arms for new nodes + ForInExpr native  | VERIFIED   | StringSliceExpr:1023, ListCompExpr:1039, ForInExpr native:963   |
+| `src/FunLang/Bidir.fs`                    | Type-check arms for new nodes + ForInExpr  | VERIFIED   | StringSliceExpr:764, ListCompExpr:781, ForInExpr:232, KVP:637   |
+| `src/FunLang/Infer.fs`                    | Pattern match arms (completeness)           | VERIFIED   | Lines 377, 379                                                   |
+| `src/FunLang/TypeCheck.fs`                | Traversal arms (collectMatches, rewrite)    | VERIFIED   | Lines 368, 370, 485, 487, 586, 588, 668–671                     |
+| `src/FunLang/Format.fs`                   | Format arms for new AST nodes               | VERIFIED   | Lines 224–228                                                    |
 | `tests/flt/file/string/str-slice.flt`       | LANG-01 tests with edge cases               | VERIFIED   | 6 slice expressions including boundary cases; PASS               |
 | `tests/flt/file/list/list-comprehension.flt`| LANG-02 tests (list, range, string)         | VERIFIED   | 3 comprehension expressions; PASS                                |
 | `tests/flt/file/hashset/hashset-forin.flt`  | LANG-03 HashSet iteration                   | VERIFIED   | Single-element (deterministic); PASS                             |

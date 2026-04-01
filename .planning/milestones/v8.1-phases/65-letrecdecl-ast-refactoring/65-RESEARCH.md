@@ -1,7 +1,7 @@
 # Phase 65: LetRecDecl AST Refactoring - Research
 
 **Researched:** 2026-03-31
-**Domain:** F# AST refactoring (LangThree interpreter internals)
+**Domain:** F# AST refactoring (FunLang interpreter internals)
 **Confidence:** HIGH
 
 ## Summary

@@ -36,7 +36,7 @@ Progress: [████████████████████] v1.0-v6
 Key cross-milestone context:
 - flt runner strips trailing newline from extracted input — last input line must be a complete parseable top-level declaration
 - while loops require `let _ = ...` wrapper at module level — not a top-level declaration
-- String concatenation in LangThree is `^^` (not `^`)
+- String concatenation in FunLang is `^^` (not `^`)
 - [|...|] array literals not supported (use Array.ofList)
 
 ### Pending Todos

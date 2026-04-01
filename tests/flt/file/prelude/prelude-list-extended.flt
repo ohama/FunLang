@@ -1,5 +1,5 @@
 // Test: v13.0 List module extensions
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = println (to_string (List.init 5 (fun i -> i * i)))
 let _ = println (to_string (List.findIndex (fun x -> x > 3) [1; 2; 3; 4; 5]))

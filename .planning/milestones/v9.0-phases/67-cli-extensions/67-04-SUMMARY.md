@@ -36,7 +36,7 @@ key-decisions:
   - "Redirect --check stderr to stdout with 2>&1 in bash -c command; use Output section not Stderr section"
 
 patterns-established:
-  - "CLI flt test pattern: bash -c creates temp .fun files, runs LangThree, verifies output"
+  - "CLI flt test pattern: bash -c creates temp .fun files, runs FunLang, verifies output"
   - "Multi-scenario flt: single bash -c command runs two checks, CONTAINS matches both outcomes"
 
 # Metrics
@@ -85,7 +85,7 @@ None - plan executed exactly as written.
 
 ## Issues Encountered
 
-The flt command parser strips backslashes before double quotes in the command string. A command like `printf "let x : int = \"hello\"\n"` becomes `printf "let x : int = \hello\n"`, producing a LangThree parse error instead of a type error. Resolved by using `\x22` printf hex escape for double quotes in all flt CLI test commands.
+The flt command parser strips backslashes before double quotes in the command string. A command like `printf "let x : int = \"hello\"\n"` becomes `printf "let x : int = \hello\n"`, producing a FunLang parse error instead of a type error. Resolved by using `\x22` printf hex escape for double quotes in all flt CLI test commands.
 
 ## User Setup Required
 None - no external service configuration required.

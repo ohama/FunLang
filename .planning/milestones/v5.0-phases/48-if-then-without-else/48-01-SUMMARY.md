@@ -31,7 +31,7 @@ key-files:
     - tests/flt/expr/control/if-then-seq.flt
     - tests/flt/expr/control/if-then-nonunit-error.flt
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "Desugar in parser only — zero changes to Ast, Eval, Bidir, Infer, TypeCheck, or Format"
@@ -72,7 +72,7 @@ completed: 2026-03-28
 
 ## Files Created/Modified
 
-- `src/LangThree/Parser.fsy` - Added `IF Expr THEN SeqExpr` rule with Tuple([], ...) desugar
+- `src/FunLang/Parser.fsy` - Added `IF Expr THEN SeqExpr` rule with Tuple([], ...) desugar
 - `tests/flt/expr/control/if-then-unit.flt` - IFTHEN-01: basic unit-returning then-branch
 - `tests/flt/expr/control/if-then-seq.flt` - IFTHEN-01+SEQ: semicolon-sequenced then-branch
 - `tests/flt/expr/control/if-then-nonunit-error.flt` - IFTHEN-02: non-unit then-branch produces E0301

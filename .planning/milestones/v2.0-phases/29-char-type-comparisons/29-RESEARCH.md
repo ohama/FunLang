@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 29 adds the `char` type to LangThree. Currently, `char` does not exist: no `TChar` in `Type.fs`, no `CharValue` in `Ast.fs`, no char literal lexing, and comparisons only work on `int`. The workaround in user code is 26-equality-chain comparisons (e.g., `c = "A" || c = "B" || ...`) using single-character strings. This phase eliminates that pattern.
+Phase 29 adds the `char` type to FunLang. Currently, `char` does not exist: no `TChar` in `Type.fs`, no `CharValue` in `Ast.fs`, no char literal lexing, and comparisons only work on `int`. The workaround in user code is 26-equality-chain comparisons (e.g., `c = "A" || c = "B" || ...`) using single-character strings. This phase eliminates that pattern.
 
 Three independent requirements map to distinct implementation areas:
 
@@ -34,13 +34,13 @@ No new libraries needed. All implementation uses existing infrastructure:
 ### No New Dependencies
 All changes are within existing source files. No new packages.
 
-**Build:** `dotnet build src/LangThree/LangThree.fsproj` (unchanged)
+**Build:** `dotnet build src/FunLang/FunLang.fsproj` (unchanged)
 
 ---
 
 ## Architecture Patterns
 
-### LangThree Extension Pattern
+### FunLang Extension Pattern
 Every new type follows the same multi-file pattern. For example, `string` was added across:
 1. `Lexer.fsl` — lex the literal
 2. `Parser.fsy` — token declaration + grammar rule
@@ -58,7 +58,7 @@ Every new type follows the same multi-file pattern. For example, `string` was ad
 ### Recommended File Modification Order
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs          # 1. Add TChar? No — Type.fs. Add CharValue, Char expr, CharConst
 ├── Type.fs         # 2. Add TChar
 ├── Lexer.fsl       # 3. Add char literal lexing
@@ -528,17 +528,17 @@ With longest-match: `'A'` (3 chars) beats `'a` (2 chars for type_var). This is t
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct read: `src/LangThree/Ast.fs` — full file (Value DU, Expr DU, Pattern/Constant DU, TypeExpr DU)
-- Direct read: `src/LangThree/Type.fs` — full file (Type DU, apply, freeVars, formatType)
-- Direct read: `src/LangThree/Lexer.fsl` — full file (tokenize rule, type_var, read_string sub-rule)
-- Direct read: `src/LangThree/Parser.fsy` — lines 1–100 (token declarations, precedence)
-- Direct read: `src/LangThree/Elaborate.fs` — full file (elaborateWithVars, substTypeExprWithMap)
-- Direct read: `src/LangThree/Bidir.fs` — lines 1–100, 185–236 (synth, comparison rules)
-- Direct read: `src/LangThree/Eval.fs` — lines 145–260, 400–540 (initialBuiltinEnv, eval cases, comparison eval, valuesEqual)
-- Direct read: `src/LangThree/TypeCheck.fs` — lines 1–57 (initialTypeEnv)
-- Direct read: `src/LangThree/Infer.fs` — lines 1–100 (inferPattern, ConstPat cases)
-- Direct read: `src/LangThree/Exhaustive.fs` — ConstPat handling
-- Direct read: `src/LangThree/Format.fs` — lines 200–230 (formatPattern)
+- Direct read: `src/FunLang/Ast.fs` — full file (Value DU, Expr DU, Pattern/Constant DU, TypeExpr DU)
+- Direct read: `src/FunLang/Type.fs` — full file (Type DU, apply, freeVars, formatType)
+- Direct read: `src/FunLang/Lexer.fsl` — full file (tokenize rule, type_var, read_string sub-rule)
+- Direct read: `src/FunLang/Parser.fsy` — lines 1–100 (token declarations, precedence)
+- Direct read: `src/FunLang/Elaborate.fs` — full file (elaborateWithVars, substTypeExprWithMap)
+- Direct read: `src/FunLang/Bidir.fs` — lines 1–100, 185–236 (synth, comparison rules)
+- Direct read: `src/FunLang/Eval.fs` — lines 145–260, 400–540 (initialBuiltinEnv, eval cases, comparison eval, valuesEqual)
+- Direct read: `src/FunLang/TypeCheck.fs` — lines 1–57 (initialTypeEnv)
+- Direct read: `src/FunLang/Infer.fs` — lines 1–100 (inferPattern, ConstPat cases)
+- Direct read: `src/FunLang/Exhaustive.fs` — ConstPat handling
+- Direct read: `src/FunLang/Format.fs` — lines 200–230 (formatPattern)
 - Direct read: `langthree-constraints.md` — constraints 4.3 (no char type) and 4.4 (no string comparison operators)
 - Direct read: `.planning/phases/26-quick-fixes/26-RESEARCH.md` — builtin addition pattern
 

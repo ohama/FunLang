@@ -35,10 +35,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "TEConstrained in elaborateWithVars/substTypeExprWithMap just recurses into inner type — constraints are handled at Scheme construction, not Type elaboration level"
@@ -86,10 +86,10 @@ Each task was committed atomically:
 **Plan metadata:** (to be committed with STATE.md update)
 
 ## Files Created/Modified
-- `src/LangThree/Diagnostic.fs` - Added NoInstance/DuplicateInstance/UnknownTypeClass/MethodTypeMismatch/MissingMethod/ExtraMethod to TypeErrorKind and typeErrorToDiagnostic
-- `src/LangThree/Elaborate.fs` - TEConstrained in elaborateWithVars and substTypeExprWithMap: recurse into inner type
-- `src/LangThree/Eval.fs` - TypeClassDecl/InstanceDecl: no-ops returning (env, modEnv)
-- `src/LangThree/TypeCheck.fs` - Added currentClassEnv/currentInstEnv mutable refs; changed typeCheckDecls to 7-tuple fold threading classEnv/instEnv; implemented TypeClassDecl and InstanceDecl arms; updated typeCheckModuleWithPrelude
+- `src/FunLang/Diagnostic.fs` - Added NoInstance/DuplicateInstance/UnknownTypeClass/MethodTypeMismatch/MissingMethod/ExtraMethod to TypeErrorKind and typeErrorToDiagnostic
+- `src/FunLang/Elaborate.fs` - TEConstrained in elaborateWithVars and substTypeExprWithMap: recurse into inner type
+- `src/FunLang/Eval.fs` - TypeClassDecl/InstanceDecl: no-ops returning (env, modEnv)
+- `src/FunLang/TypeCheck.fs` - Added currentClassEnv/currentInstEnv mutable refs; changed typeCheckDecls to 7-tuple fold threading classEnv/instEnv; implemented TypeClassDecl and InstanceDecl arms; updated typeCheckModuleWithPrelude
 
 ## Decisions Made
 - TEConstrained in elaborateWithVars/substTypeExprWithMap just recurses into inner type — constraints are handled at Scheme construction level, not Type level. This matches the plan's guidance and avoids complexity in the elaboration pass.

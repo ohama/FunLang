@@ -11,7 +11,7 @@ requires:
 
 provides:
   - tutorial/14-gadt.md accurate: no stale "not supported" disclaimers for polymorphic return
-  - Haskell comparison section updated to reflect LangThree's parity for eval : 'a Expr -> 'a
+  - Haskell comparison section updated to reflect FunLang's parity for eval : 'a Expr -> 'a
   - docs/14-gadt.html rebuilt to match corrected markdown
 
 affects:
@@ -31,7 +31,7 @@ key-files:
 
 key-decisions:
   - "Only one sentence required correction (line 342 Haskell comparison): the two primary polymorphic sections (주석 없음, 다형적 반환 타입) were already accurate from plan 25-03"
-  - "Replaced stale disclaimer with accurate description of LangThree's annotation-free polymorphic GADT support"
+  - "Replaced stale disclaimer with accurate description of FunLang's annotation-free polymorphic GADT support"
 
 patterns-established: []
 
@@ -42,7 +42,7 @@ completed: 2026-03-23
 
 # Phase 25 Plan 05: Tutorial Ch14 Accuracy Verification Summary
 
-**Removed sole stale disclaimer in 14-gadt.md Haskell comparison — LangThree now accurately documented as supporting `eval : 'a Expr -> 'a` polymorphic return without annotation**
+**Removed sole stale disclaimer in 14-gadt.md Haskell comparison — FunLang now accurately documented as supporting `eval : 'a Expr -> 'a` polymorphic return without annotation**
 
 ## Performance
 
@@ -55,8 +55,8 @@ completed: 2026-03-23
 ## Accomplishments
 
 - Verified that both primary polymorphic sections ("주석 없음" lines 151-182 and "다형적 반환 타입" lines 208-228) were already accurate — plan 25-03 had written them anticipating the plan 25-04 fix
-- Found and removed the sole remaining stale disclaimer: line 342 in the Haskell comparison paragraph which said "LangThree에서는 `(match ... : int)`로 결과 타입을 하나로 고정해야 하므로, 이 수준의 다형적 반환은 지원하지 않습니다"
-- Replaced with accurate statement: LangThree supports Haskell-equivalent `eval : 'a Expr -> 'a` via annotation-free GADT match inference
+- Found and removed the sole remaining stale disclaimer: line 342 in the Haskell comparison paragraph which said "FunLang에서는 `(match ... : int)`로 결과 타입을 하나로 고정해야 하므로, 이 수준의 다형적 반환은 지원하지 않습니다"
+- Replaced with accurate statement: FunLang supports Haskell-equivalent `eval : 'a Expr -> 'a` via annotation-free GADT match inference
 - Verified poly-eval.l3 example compiles and runs (output: `true` for r2, last binding)
 - Rebuilt mdBook HTML — all 24 HTML files updated, `다형적 반환을 지원합니다` confirmed present in docs/14-gadt.html
 
@@ -93,7 +93,7 @@ None - no external service configuration required.
 - COV-04 gap closed: tutorial 14-gadt.md now accurately documents the cross-type polymorphic GADT return capability delivered by phase 25
 - Phase 25 (v1.8 Polymorphic GADT) is fully complete: all 5 plans (01-05) done
 - 199 F# unit tests passing, 442 fslit tests passing
-- Tutorial accurately reflects LangThree's GADT feature parity with Haskell/OCaml
+- Tutorial accurately reflects FunLang's GADT feature parity with Haskell/OCaml
 - Ready for v1.9 milestone
 
 ---

@@ -19,9 +19,9 @@ key-files:
     - tests/flt/file/op-existing-compat.flt
     - tests/flt/file/op-let-rec.flt
   modified:
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
 decisions:
   - id: D19-01
     title: "OCaml INFIXOP0-4 approach for operator precedence"

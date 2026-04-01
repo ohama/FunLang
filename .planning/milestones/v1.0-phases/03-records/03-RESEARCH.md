@@ -6,7 +6,7 @@
 
 ## Summary
 
-This research investigates how to implement record types in LangThree, a functional language with F#-style indentation syntax, Hindley-Milner type inference, and existing ADT support. Records add named fields to the type system, enabling structured data beyond tuples and ADTs.
+This research investigates how to implement record types in FunLang, a functional language with F#-style indentation syntax, Hindley-Milner type inference, and existing ADT support. Records add named fields to the type system, enabling structured data beyond tuples and ADTs.
 
 The implementation requires changes across all compiler layers: new AST nodes for record declarations/expressions/patterns, new tokens (LBRACE, RBRACE, SEMICOLON, DOT, WITH, MUTABLE), parser grammar extensions, a record type environment parallel to the existing ConstructorEnv, type system extensions for field access and copy-and-update, evaluator support for record values, and structural equality.
 
@@ -35,7 +35,7 @@ No new dependencies. Extend existing F# compiler infrastructure.
 
 ### Recommended Project Structure Changes
 ```
-src/LangThree/
+src/FunLang/
   Ast.fs           # Add RecordDecl, RecordExpr, RecordUpdate, FieldAccess, RecordPat
   Type.fs          # Add RecordFieldInfo, RecordEnv type definitions
   Elaborate.fs     # Add elaborateRecordDecl (parallel to elaborateTypeDecl)
@@ -233,7 +233,7 @@ type Value =
 
 ### Anti-Patterns to Avoid
 
-- **Structural record typing:** Do NOT implement structural/anonymous records. LangThree follows F#'s nominal typing. Each record must be declared with a `type` keyword and resolved by name.
+- **Structural record typing:** Do NOT implement structural/anonymous records. FunLang follows F#'s nominal typing. Each record must be declared with a `type` keyword and resolved by name.
 - **Overloading field names across types:** In F#, field names can be ambiguous when multiple record types share field names. For Phase 3, require that field names are globally unique (simpler) or use type annotations to disambiguate. Start with global uniqueness.
 - **Mixing record and ADT in one type:** Do NOT allow `type T = { x: int } | A | B`. Records and ADTs are separate type forms.
 
@@ -253,7 +253,7 @@ type Value =
 ### Pitfall 1: Parser Ambiguity with Braces and Semicolons
 **What goes wrong:** `{ x = 1; y = 2 }` can conflict with block expressions or other brace uses.
 **Why it happens:** LR parsers struggle with ambiguous lookahead when braces serve multiple purposes.
-**How to avoid:** LangThree does NOT currently use braces for any purpose. LBRACE/RBRACE are new tokens exclusively for records. No ambiguity. However, semicolons need care -- use SEMICOLON as a field separator (new token, not reusing anything).
+**How to avoid:** FunLang does NOT currently use braces for any purpose. LBRACE/RBRACE are new tokens exclusively for records. No ambiguity. However, semicolons need care -- use SEMICOLON as a field separator (new token, not reusing anything).
 **Warning signs:** Shift/reduce conflicts in generated parser.
 
 ### Pitfall 2: Copy-and-Update vs. Record Creation Parsing
@@ -265,7 +265,7 @@ RecordExprInner:
     | Expr WITH RecordFieldBindings    // Copy-and-update (Expr resolves first)
     | RecordFieldBindings              // Record creation
 ```
-The key insight: in record creation, field bindings are `IDENT EQUALS Expr`, which could initially look like an expression `IDENT EQUALS Expr` (variable assignment). But since `IDENT EQUALS Expr` inside braces is not a valid expression in LangThree (it would be a let without in), this is unambiguous.
+The key insight: in record creation, field bindings are `IDENT EQUALS Expr`, which could initially look like an expression `IDENT EQUALS Expr` (variable assignment). But since `IDENT EQUALS Expr` inside braces is not a valid expression in FunLang (it would be a let without in), this is unambiguous.
 
 **Alternative safe approach:** Require explicit type name for record creation: `{ Point x = 1.0; y = 2.0 }` or `Point { x = 1.0; y = 2.0 }`. This eliminates ambiguity entirely. However, F# does not require this when the type can be inferred from context. For Phase 3, start with type-name-optional and see if the grammar is clean. If not, fall back to requiring it.
 
@@ -483,7 +483,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: ...) (env: ...
 
 1. **Field name uniqueness scope**
    - What we know: F# allows overlapping field names between record types and uses type inference to disambiguate.
-   - What's unclear: Whether LangThree should support this in Phase 3 or enforce global uniqueness.
+   - What's unclear: Whether FunLang should support this in Phase 3 or enforce global uniqueness.
    - Recommendation: Start with global uniqueness (simpler). Add type-directed disambiguation in a future phase if needed.
 
 2. **Record type inference for creation expressions**
@@ -524,7 +524,7 @@ Recommended task ordering based on dependencies:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Existing LangThree codebase (Ast.fs, Type.fs, Elaborate.fs, Bidir.fs, TypeCheck.fs, Eval.fs, Parser.fsy, Lexer.fsl) -- all patterns directly observed
+- Existing FunLang codebase (Ast.fs, Type.fs, Elaborate.fs, Bidir.fs, TypeCheck.fs, Eval.fs, Parser.fsy, Lexer.fsl) -- all patterns directly observed
 - Phase 2 ADT implementation -- proven pattern for type declaration -> elaboration -> environment flow
 - F# language specification for record syntax and semantics
 

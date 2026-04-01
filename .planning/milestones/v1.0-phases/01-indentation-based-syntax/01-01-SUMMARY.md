@@ -25,8 +25,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/IndentFilter.fs
-    - tests/LangThree.Tests/IndentFilterTests.fs
+    - src/FunLang/IndentFilter.fs
+    - tests/FunLang.Tests/IndentFilterTests.fs
 
 key-decisions:
   - "Enter match context before processing newline to enable pipe alignment validation"
@@ -79,8 +79,8 @@ Each task was committed atomically:
    - Fixed context entry timing and DEDENT-based context popping
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Added SyntaxContext, processNewlineWithContext, match context tracking
-- `tests/LangThree.Tests/IndentFilterTests.fs` - Added 4 match expression test cases
+- `src/FunLang/IndentFilter.fs` - Added SyntaxContext, processNewlineWithContext, match context tracking
+- `tests/FunLang.Tests/IndentFilterTests.fs` - Added 4 match expression test cases
 
 ## Decisions Made
 - **Enter match context before processing newline:** Ensures pipe alignment validation happens after context is established, allowing first pipe after 'match' to be validated

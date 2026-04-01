@@ -26,11 +26,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Cli.fs
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - tests/LangThree.Tests/ModuleTests.fs
+    - src/FunLang/Cli.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - tests/FunLang.Tests/ModuleTests.fs
 
 key-decisions:
   - "Build/test dispatch placed BEFORE eager prelude loading so project prelude (config.PreludePath) can be passed"
@@ -74,11 +74,11 @@ completed: 2026-03-31
 
 ## Files Created/Modified
 
-- `src/LangThree/Cli.fs` - Added `BuildArgs`, `TestArgs` sub-DU types and `Build`/`Test` cases to `CliArgs`
-- `src/LangThree/Prelude.fs` - Extended `resolvePreludeDir` and `loadPrelude` with `projPrelude` parameter
-- `src/LangThree/Program.fs` - Added build/test dispatch branches before prelude loading; fixed loadPrelude call site
-- `src/LangThree/Repl.fs` - Updated `loadPrelude None` -> `loadPrelude None None`
-- `tests/LangThree.Tests/ModuleTests.fs` - Updated `loadPrelude(None)` -> `loadPrelude None None`
+- `src/FunLang/Cli.fs` - Added `BuildArgs`, `TestArgs` sub-DU types and `Build`/`Test` cases to `CliArgs`
+- `src/FunLang/Prelude.fs` - Extended `resolvePreludeDir` and `loadPrelude` with `projPrelude` parameter
+- `src/FunLang/Program.fs` - Added build/test dispatch branches before prelude loading; fixed loadPrelude call site
+- `src/FunLang/Repl.fs` - Updated `loadPrelude None` -> `loadPrelude None None`
+- `tests/FunLang.Tests/ModuleTests.fs` - Updated `loadPrelude(None)` -> `loadPrelude None None`
 
 ## Decisions Made
 

@@ -26,8 +26,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 decisions:
   - id: printf-type-permissive

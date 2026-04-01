@@ -30,7 +30,7 @@ score: 5/5 must-haves verified
 
 | Artifact                                             | Expected                              | Status     | Details                                                    |
 | ---------------------------------------------------- | ------------------------------------- | ---------- | ---------------------------------------------------------- |
-| `src/LangThree/Eval.fs` (lines 759-795)              | 4 new BuiltinValue entries            | ✓ VERIFIED | list_sort_by, list_of_seq, array_sort, array_of_seq present |
+| `src/FunLang/Eval.fs` (lines 759-795)              | 4 new BuiltinValue entries            | ✓ VERIFIED | list_sort_by, list_of_seq, array_sort, array_of_seq present |
 | `Prelude/List.fun`                                   | sort, sortBy, exists, tryFind, choose, distinctBy, mapi, item, isEmpty, head, tail, ofSeq | ✓ VERIFIED | All 12 functions present; 59 lines total |
 | `Prelude/Array.fun`                                  | sort and ofSeq wrappers               | ✓ VERIFIED | Lines 12-13: sort and ofSeq present                        |
 | `tests/flt/file/prelude/prelude-list-sort.flt`       | PRE-01 test coverage                  | ✓ VERIFIED | PASS; tests List.sort and List.sortBy                       |
@@ -43,10 +43,10 @@ score: 5/5 must-haves verified
 
 | From                  | To                         | Via                       | Status     | Details                                              |
 | --------------------- | -------------------------- | ------------------------- | ---------- | ---------------------------------------------------- |
-| `Prelude/List.fun`    | `src/LangThree/Eval.fs`    | `list_sort_by` builtin    | ✓ WIRED    | Line 31: `let sortBy f xs = list_sort_by f xs`       |
-| `Prelude/List.fun`    | `src/LangThree/Eval.fs`    | `list_of_seq` builtin     | ✓ WIRED    | Line 57: `let ofSeq coll = list_of_seq coll`         |
-| `Prelude/Array.fun`   | `src/LangThree/Eval.fs`    | `array_sort` builtin      | ✓ WIRED    | Line 12: `let sort arr = array_sort arr`             |
-| `Prelude/Array.fun`   | `src/LangThree/Eval.fs`    | `array_of_seq` builtin    | ✓ WIRED    | Line 13: `let ofSeq coll = array_of_seq coll`        |
+| `Prelude/List.fun`    | `src/FunLang/Eval.fs`    | `list_sort_by` builtin    | ✓ WIRED    | Line 31: `let sortBy f xs = list_sort_by f xs`       |
+| `Prelude/List.fun`    | `src/FunLang/Eval.fs`    | `list_of_seq` builtin     | ✓ WIRED    | Line 57: `let ofSeq coll = list_of_seq coll`         |
+| `Prelude/Array.fun`   | `src/FunLang/Eval.fs`    | `array_sort` builtin      | ✓ WIRED    | Line 12: `let sort arr = array_sort arr`             |
+| `Prelude/Array.fun`   | `src/FunLang/Eval.fs`    | `array_of_seq` builtin    | ✓ WIRED    | Line 13: `let ofSeq coll = array_of_seq coll`        |
 | `list_sort_by` builtin| `Value.valueCompare`       | F# List.sortWith          | ✓ WIRED    | Eval.fs line 765: sortWith uses Value.valueCompare   |
 | `list_sort_by` builtin| user closure               | callValue                 | ✓ WIRED    | Eval.fs line 764: callValue fVal x for key extraction |
 | `array_sort` builtin  | `System.Array.Sort`        | Value.valueCompare lambda | ✓ WIRED    | Eval.fs line 783: Sort with valueCompare comparer    |
@@ -74,7 +74,7 @@ No blockers or warnings found. No TODO/FIXME/placeholder patterns in modified fi
 
 ### Build Health
 
-- `dotnet build src/LangThree/LangThree.fsproj -c Release` — 0 errors, 0 warnings
+- `dotnet build src/FunLang/FunLang.fsproj -c Release` — 0 errors, 0 warnings
 
 ### Infrastructure Fix (noted in SUMMARY)
 

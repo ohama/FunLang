@@ -29,10 +29,10 @@ score: 4/4 must-haves verified
 
 | Artifact                                                        | Expected                                   | Status      | Details                                              |
 |-----------------------------------------------------------------|--------------------------------------------|-------------|------------------------------------------------------|
-| `src/LangThree/Ast.fs`                                         | MutableListValue DU case                   | VERIFIED    | Line 212: `MutableListValue of System.Collections.Generic.List<Value>` |
-| `src/LangThree/Eval.fs`                                        | Constructor, FieldAccess, IndexGet/Set, raw builtins, HashtableValue FieldAccess | VERIFIED | Lines 717-755 (raw builtins), 988-1013 (IndexGet/Set), 1191-1197 (constructor), 1391-1409 (FieldAccess) |
-| `src/LangThree/Bidir.fs`                                       | MutableList type rules + THashtable type rules | VERIFIED | Lines 91-98 (constructor), 604+ (MutableList FieldAccess), 613-618 (THashtable FieldAccess) |
-| `src/LangThree/TypeCheck.fs`                                   | Raw builtin type schemes                   | VERIFIED    | Lines 192-201: all 5 mutablelist_* schemes           |
+| `src/FunLang/Ast.fs`                                         | MutableListValue DU case                   | VERIFIED    | Line 212: `MutableListValue of System.Collections.Generic.List<Value>` |
+| `src/FunLang/Eval.fs`                                        | Constructor, FieldAccess, IndexGet/Set, raw builtins, HashtableValue FieldAccess | VERIFIED | Lines 717-755 (raw builtins), 988-1013 (IndexGet/Set), 1191-1197 (constructor), 1391-1409 (FieldAccess) |
+| `src/FunLang/Bidir.fs`                                       | MutableList type rules + THashtable type rules | VERIFIED | Lines 91-98 (constructor), 604+ (MutableList FieldAccess), 613-618 (THashtable FieldAccess) |
+| `src/FunLang/TypeCheck.fs`                                   | Raw builtin type schemes                   | VERIFIED    | Lines 192-201: all 5 mutablelist_* schemes           |
 | `Prelude/MutableList.fun`                                      | create, add, get, set, count               | VERIFIED    | 6 lines, all 5 functions delegating to raw builtins  |
 | `tests/flt/file/mutablelist/mutablelist-basic.flt`            | Tests Add, Count, indexing                 | VERIFIED    | Tests ml.Add, ml.Count, ml.[0..2]; PASS              |
 | `tests/flt/file/mutablelist/mutablelist-indexing.flt`         | Tests index read and write                 | VERIFIED    | Tests ml.[i] read and ml.[i] <- v write; PASS        |
@@ -46,7 +46,7 @@ score: 4/4 must-haves verified
 | Eval.fs FieldAccess dispatch    | HashtableValue.Count        | match fieldName "Count"       | WIRED   | Returns IntValue ht.Count                                  |
 | Eval.fs FieldAccess dispatch    | HashtableValue.Keys         | match fieldName "Keys"        | WIRED   | Returns ListValue (ht.Keys as list)                        |
 | Eval.fs constructor interception | MutableListValue creation  | match "MutableList", arg      | WIRED   | Both `MutableList()` and `MutableList ()` handled          |
-| Eval.fs IndexGet/Set            | MutableListValue            | MutableListValue ml, IntValue i | WIRED | Bounds-checked; raises LangThreeException on out-of-bounds |
+| Eval.fs IndexGet/Set            | MutableListValue            | MutableListValue ml, IntValue i | WIRED | Bounds-checked; raises FunLangException on out-of-bounds |
 | Bidir.fs THashtable arm         | THashtable(keyTy, valTy)    | inserted BEFORE TData arm     | WIRED   | Prevents TData catch-all from shadowing Hashtable types    |
 | Prelude/MutableList.fun         | mutablelist_* raw builtins  | direct delegation             | WIRED   | All 5 Prelude functions call corresponding raw builtins    |
 

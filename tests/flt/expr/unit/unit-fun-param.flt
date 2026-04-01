@@ -1,5 +1,5 @@
 // Test: fun () -> body accepts unit argument and returns body value
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let f = fun () -> 42 in f ()
 // --- Output:

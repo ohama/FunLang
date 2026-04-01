@@ -1,0 +1,18 @@
+// Test: HashSet Prelude module functions (COLL-02)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let hs = HashSet.create ()
+let _ = println (to_string (HashSet.add hs 10))
+let _ = println (to_string (HashSet.add hs 20))
+let _ = println (to_string (HashSet.add hs 10))
+let _ = println (to_string (HashSet.contains hs 10))
+let _ = println (to_string (HashSet.contains hs 99))
+let _ = println (to_string (HashSet.count hs))
+// --- Output:
+true
+true
+false
+true
+false
+2
+()

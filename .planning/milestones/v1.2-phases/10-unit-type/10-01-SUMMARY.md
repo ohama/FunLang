@@ -31,10 +31,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Type.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Type.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "Reuse TTuple [] / TupleValue [] as unit representation — no new TUnit case needed anywhere"
@@ -81,10 +81,10 @@ Each task was committed atomically:
 2. **Task 2: Fix formatType, add `let _ =` grammar at Decl and Expr level** - `0f04e2a` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Lexer.fsl` - Added `"unit" → TYPE_UNIT` keyword token rule
-- `src/LangThree/Parser.fsy` - Added TYPE_UNIT declaration, AtomicType rule, LPAREN RPAREN Atom rule, fun () -> Expr rule, let _ = at Decl/Expr level; fixed Var("()") sentinel
-- `src/LangThree/Type.fs` - Fixed `formatType`/`formatTypeNormalized` to render `TTuple [] → "unit"`
-- `src/LangThree/Format.fs` - Added `Parser.TYPE_UNIT -> "TYPE_UNIT"` to formatToken
+- `src/FunLang/Lexer.fsl` - Added `"unit" → TYPE_UNIT` keyword token rule
+- `src/FunLang/Parser.fsy` - Added TYPE_UNIT declaration, AtomicType rule, LPAREN RPAREN Atom rule, fun () -> Expr rule, let _ = at Decl/Expr level; fixed Var("()") sentinel
+- `src/FunLang/Type.fs` - Fixed `formatType`/`formatTypeNormalized` to render `TTuple [] → "unit"`
+- `src/FunLang/Format.fs` - Added `Parser.TYPE_UNIT -> "TYPE_UNIT"` to formatToken
 
 ## Decisions Made
 - **TTuple [] reuse:** The runtime (`TupleValue []`) and type (`TTuple []`) infrastructure for unit already existed. All changes were surface wiring only — no new AST/Value/Type variant needed.
@@ -97,7 +97,7 @@ Each task was committed atomically:
 None — plan executed exactly as written.
 
 ## Issues Encountered
-- **`let _ = x.v <- 99` with anonymous record:** The plan's verification step 4 used `{ mutable v = 1 }` without a type declaration, which is not valid LangThree syntax. Mutable records require explicit type declarations. The feature itself works correctly — tested with `type Counter = { mutable count: int }` which produced the expected result. This is a verification test wording issue only, not a code issue.
+- **`let _ = x.v <- 99` with anonymous record:** The plan's verification step 4 used `{ mutable v = 1 }` without a type declaration, which is not valid FunLang syntax. Mutable records require explicit type declarations. The feature itself works correctly — tested with `type Counter = { mutable count: int }` which produced the expected result. This is a verification test wording issue only, not a code issue.
 
 ## User Setup Required
 None — no external service configuration required.

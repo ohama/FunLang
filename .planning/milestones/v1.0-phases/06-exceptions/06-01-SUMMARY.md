@@ -13,16 +13,16 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Format.fs
 decisions: []
 metrics:
   duration: 5min

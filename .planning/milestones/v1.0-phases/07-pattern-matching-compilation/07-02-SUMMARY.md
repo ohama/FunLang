@@ -20,8 +20,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/MatchCompile.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/MatchCompile.fs
 
 key-decisions:
   - "Encode record field names in constructor name (#record:a,b) instead of count (#record_N) for partial record pattern support"
@@ -59,8 +59,8 @@ Each task was committed atomically:
 1. **Task 1: Wire decision tree compilation into Match expression evaluation** - `afb9dbc` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Eval.fs` - Match case replaced with decision tree compilation (3 lines -> 5 lines)
-- `src/LangThree/MatchCompile.fs` - Fixed record pattern encoding for partial record support
+- `src/FunLang/Eval.fs` - Match case replaced with decision tree compilation (3 lines -> 5 lines)
+- `src/FunLang/MatchCompile.fs` - Fixed record pattern encoding for partial record support
 
 ## Decisions Made
 - Record constructor names encode field names (#record:fieldA,fieldB) instead of count (#record_N) to correctly handle partial record patterns where only some fields are matched
@@ -73,7 +73,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (wiring decision tree)
 - **Issue:** Record constructor was encoded as #record_N (count-based), but destructureValue returned ALL record fields while extractSubPatterns only returned pattern-referenced fields, causing List.zip length mismatch on partial record patterns
 - **Fix:** Changed encoding to #record:fieldA,fieldB (name-based) so destructureValue extracts only the pattern-referenced fields in sorted order
-- **Files modified:** src/LangThree/MatchCompile.fs (patternToConstructor, matchesConstructor, destructureValue)
+- **Files modified:** src/FunLang/MatchCompile.fs (patternToConstructor, matchesConstructor, destructureValue)
 - **Verification:** All 178 tests pass including REC-05 partial record pattern test
 - **Committed in:** afb9dbc (Task 1 commit)
 

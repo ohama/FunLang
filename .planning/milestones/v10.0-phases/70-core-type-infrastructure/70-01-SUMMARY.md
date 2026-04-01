@@ -32,10 +32,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Type.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
 
 key-decisions:
   - "Scheme shape change done atomically in a single plan — F# exhaustive matching flags all incomplete sites immediately"
@@ -80,10 +80,10 @@ Each task was committed atomically (Tasks 1+2 combined since T1 alone doesn't co
 **Plan metadata:** (in next commit)
 
 ## Files Created/Modified
-- `src/LangThree/Type.fs` - Constraint, Scheme(3-field), mkScheme, schemeType, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv; updated applyScheme/freeVarsScheme/formatSchemeNormalized
-- `src/LangThree/TypeCheck.fs` - 84 Scheme occurrences updated (83 construction + 1 deconstruction)
-- `src/LangThree/Bidir.fs` - 11 Scheme occurrences updated
-- `src/LangThree/Infer.fs` - 9 Scheme occurrences updated (instantiate, generalize, inferPattern, etc.)
+- `src/FunLang/Type.fs` - Constraint, Scheme(3-field), mkScheme, schemeType, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv; updated applyScheme/freeVarsScheme/formatSchemeNormalized
+- `src/FunLang/TypeCheck.fs` - 84 Scheme occurrences updated (83 construction + 1 deconstruction)
+- `src/FunLang/Bidir.fs` - 11 Scheme occurrences updated
+- `src/FunLang/Infer.fs` - 9 Scheme occurrences updated (instantiate, generalize, inferPattern, etc.)
 
 ## Decisions Made
 - Tasks 1 and 2 committed together because Task 1 alone (Type.fs change) would not compile — F# exhaustive pattern matching makes partial Scheme changes non-compilable

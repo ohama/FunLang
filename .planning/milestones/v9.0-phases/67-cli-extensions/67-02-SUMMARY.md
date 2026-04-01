@@ -26,7 +26,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Program.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "--check uses typeCheckModuleWithPrelude without evalModuleDecls (no side effects)"
@@ -70,7 +70,7 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit to follow)
 
 ## Files Created/Modified
-- `src/LangThree/Program.fs` - Added collectDeps helper + --check and --deps elif branches
+- `src/FunLang/Program.fs` - Added collectDeps helper + --check and --deps elif branches
 
 ## Decisions Made
 - --check uses typeCheckModuleWithPrelude without evalModuleDecls to ensure no side effects during checking

@@ -56,7 +56,7 @@ score: 5/5 must-haves verified
 
 | From                            | To                     | Via                             | Status   | Details                                                        |
 |---------------------------------|------------------------|---------------------------------|----------|----------------------------------------------------------------|
-| char-literal.flt                | LangThree binary       | flt Command line                | WIRED    | Binary path in Command, %input substitution                    |
+| char-literal.flt                | FunLang binary       | flt Command line                | WIRED    | Binary path in Command, %input substitution                    |
 | import tests                    | /tmp lib file          | bash -c wrapper in Command line | WIRED    | `bash -c 'printf ... > /tmp/flt-import-lib.fun && /binary %input'` |
 | fileio tests                    | /tmp file system       | write_file before read_file     | WIRED    | All write-then-read sequences in order within flt Input block  |
 | all 21 new tests                | fslit runner           | tests/flt/ directory tree       | WIRED    | fslit tests/flt/ discovers and runs all 468 tests              |

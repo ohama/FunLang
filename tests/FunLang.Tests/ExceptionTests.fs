@@ -1,7 +1,7 @@
-module LangThree.Tests.ExceptionTests
+module FunLang.Tests.ExceptionTests
 
 open Expecto
-open LangThree.Tests.ModuleTests  // reuse parseModule, evalModule, expectTypeError
+open FunLang.Tests.ModuleTests  // reuse parseModule, evalModule, expectTypeError
 
 [<Tests>]
 let exceptionTests = testList "Exceptions" [

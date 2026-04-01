@@ -1,8 +1,8 @@
 # 가변 데이터 구조 (Mutable Data Structures)
 
-파일 I/O와 시스템 함수를 통해 외부 세계와 상호작용하는 방법을 배웠습니다. 이번 장에서는 LangThree가 제공하는 두 가지 가변 데이터 구조인 **배열(Array)**과 **해시테이블(Hashtable)**을 살펴봅니다.
+파일 I/O와 시스템 함수를 통해 외부 세계와 상호작용하는 방법을 배웠습니다. 이번 장에서는 FunLang가 제공하는 두 가지 가변 데이터 구조인 **배열(Array)**과 **해시테이블(Hashtable)**을 살펴봅니다.
 
-LangThree는 기본적으로 불변(immutable) 함수형 언어입니다. 리스트, 튜플, 레코드는 한 번 생성되면 값이 바뀌지 않습니다. 하지만 특정 상황에서는 가변 상태가 훨씬 자연스럽고 효율적입니다. 배열은 인덱스로 O(1) 접근이 필요할 때, 해시테이블은 동적인 키-값 저장소가 필요할 때 유용합니다. 이 두 타입은 명시적으로 변이(mutation)를 수행한다는 점에서 다른 LangThree 값들과 구별됩니다.
+FunLang는 기본적으로 불변(immutable) 함수형 언어입니다. 리스트, 튜플, 레코드는 한 번 생성되면 값이 바뀌지 않습니다. 하지만 특정 상황에서는 가변 상태가 훨씬 자연스럽고 효율적입니다. 배열은 인덱스로 O(1) 접근이 필요할 때, 해시테이블은 동적인 키-값 저장소가 필요할 때 유용합니다. 이 두 타입은 명시적으로 변이(mutation)를 수행한다는 점에서 다른 FunLang 값들과 구별됩니다.
 
 ## 배열 (Array)
 
@@ -22,7 +22,7 @@ let v = Array.get arr 2
 let n = Array.length arr
 let result = (arr, v, n)
 
-$ langthree arr_basic.l3
+$ funlang arr_basic.l3
 ([|10; 20; 30; 0; 0|], 30, 5)
 ```
 
@@ -40,7 +40,7 @@ let _ = Array.set arr 2 99
 let back = Array.toList arr
 let result = back
 
-$ langthree arr_conv.l3
+$ funlang arr_conv.l3
 [1; 2; 99; 4; 5]
 ```
 
@@ -58,7 +58,7 @@ let arr = Array.ofList [10; 20; 30]
 let _ = Array.iter (fun x -> println (to_string x)) arr
 let result = "완료"
 
-$ langthree arr_iter.l3
+$ funlang arr_iter.l3
 10
 20
 30
@@ -73,7 +73,7 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let squared = Array.map (fun x -> x * x) arr
 let result = squared
 
-$ langthree arr_map.l3
+$ funlang arr_map.l3
 [|1; 4; 9; 16; 25|]
 ```
 
@@ -85,11 +85,11 @@ let arr = Array.ofList [1; 2; 3; 4; 5]
 let total = Array.fold (fun acc -> fun x -> acc + x) 0 arr
 let result = total
 
-$ langthree arr_fold.l3
+$ funlang arr_fold.l3
 15
 ```
 
-`(fun acc -> fun x -> acc + x)`는 LangThree에서 두 인자를 받는 콜백을 작성하는 방식입니다. `fun acc x -> ...`는 파싱 에러이므로 반드시 커링 형태를 사용해야 합니다.
+`(fun acc -> fun x -> acc + x)`는 FunLang에서 두 인자를 받는 콜백을 작성하는 방식입니다. `fun acc x -> ...`는 파싱 에러이므로 반드시 커링 형태를 사용해야 합니다.
 
 **Array.init** — 인덱스 `i`에 함수 `f i`를 적용한 값으로 배열을 초기화합니다:
 
@@ -98,7 +98,7 @@ $ cat arr_init.l3
 let arr = Array.init 6 (fun i -> i * i)
 let result = arr
 
-$ langthree arr_init.l3
+$ funlang arr_init.l3
 [|0; 1; 4; 9; 16; 25|]
 ```
 
@@ -117,7 +117,7 @@ let result =
     with
     | e -> -1
 
-$ langthree arr_oob.l3
+$ funlang arr_oob.l3
 -1
 ```
 
@@ -129,7 +129,7 @@ $ langthree arr_oob.l3
 
 ## 해시테이블 (Hashtable)
 
-해시테이블은 동적인 키-값 저장소입니다. 크기가 고정되지 않고, 어떤 LangThree 값이든 키나 값으로 쓸 수 있습니다. 빠른 키 조회(O(1) 평균), 동적 추가/삭제가 필요할 때 유용합니다.
+해시테이블은 동적인 키-값 저장소입니다. 크기가 고정되지 않고, 어떤 FunLang 값이든 키나 값으로 쓸 수 있습니다. 빠른 키 조회(O(1) 평균), 동적 추가/삭제가 필요할 때 유용합니다.
 
 ### 생성과 기본 연산
 
@@ -144,7 +144,7 @@ let v = Hashtable.get ht "name"
 let has = Hashtable.containsKey ht "score"
 let result = (v, has)
 
-$ langthree ht_basic.l3
+$ funlang ht_basic.l3
 ("Alice", true)
 ```
 
@@ -159,7 +159,7 @@ let _ = Hashtable.set ht "score" 10
 let _ = Hashtable.set ht "score" 99
 let result = Hashtable.get ht "score"
 
-$ langthree ht_overwrite.l3
+$ funlang ht_overwrite.l3
 99
 ```
 
@@ -178,7 +178,7 @@ let _ = Hashtable.remove ht "b"
 let count_after = length (Hashtable.keys ht)
 let result = (count_before, count_after)
 
-$ langthree ht_keys.l3
+$ funlang ht_keys.l3
 (3, 2)
 ```
 
@@ -204,7 +204,7 @@ let _ = for (k, v) in ht do
   let _ = println k
   println v
 
-$ langthree ht_forin.l3
+$ funlang ht_forin.l3
 name
 Alice
 ()
@@ -226,7 +226,7 @@ let _ = println (to_string (HashSet.contains hs 1))
 let _ = println (to_string (HashSet.contains hs 9))
 let _ = println (to_string (HashSet.count hs))
 
-$ langthree hashset_basic.l3
+$ funlang hashset_basic.l3
 true
 true
 false
@@ -244,7 +244,7 @@ let hs = HashSet.create ()
 let _ = HashSet.add hs 42
 let _ = for x in hs do println (to_string x)
 
-$ langthree hashset_forin.l3
+$ funlang hashset_forin.l3
 42
 ()
 ```
@@ -275,7 +275,7 @@ let v2 = Queue.dequeue q ()
 let _ = println (to_string v2)
 let _ = println (to_string (Queue.count q))
 
-$ langthree queue_basic.l3
+$ funlang queue_basic.l3
 3
 10
 20
@@ -295,7 +295,7 @@ let _ = Queue.enqueue q 2
 let _ = Queue.enqueue q 3
 let _ = for x in q do println (to_string x)
 
-$ langthree queue_forin.l3
+$ funlang queue_forin.l3
 1
 2
 3
@@ -326,7 +326,7 @@ let _ = println (to_string ml.[0])
 let _ = println (to_string ml.[1])
 let _ = println (to_string ml.[2])
 
-$ langthree ml_basic.l3
+$ funlang ml_basic.l3
 3
 10
 20
@@ -345,7 +345,7 @@ let _ = println (to_string ml.[0])
 let _ = ml.[0] <- 999
 let _ = println (to_string ml.[0])
 
-$ langthree ml_index.l3
+$ funlang ml_index.l3
 100
 999
 ()
@@ -361,7 +361,7 @@ let _ = MutableList.add ml 10
 let _ = MutableList.add ml 15
 let _ = for x in ml do println (to_string x)
 
-$ langthree ml_forin.l3
+$ funlang ml_forin.l3
 5
 10
 15
@@ -380,7 +380,7 @@ $ langthree ml_forin.l3
 
 ## 언제 사용할까?
 
-대부분의 LangThree 코드는 불변 리스트와 재귀 함수만으로 충분합니다. 가변 데이터 구조는 특정 상황에서 진가를 발휘합니다:
+대부분의 FunLang 코드는 불변 리스트와 재귀 함수만으로 충분합니다. 가변 데이터 구조는 특정 상황에서 진가를 발휘합니다:
 
 | 상황 | 권장 |
 |------|------|

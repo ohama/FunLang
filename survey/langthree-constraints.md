@@ -1,6 +1,6 @@
-# LangThree Language Constraints
+# FunLang Language Constraints
 
-FunLexYacc 프로젝트 (Phase 1-7) 개발 과정에서 발견된 LangThree v1.8 언어의 제약사항을 정리한 문서.
+FunLexYacc 프로젝트 (Phase 1-7) 개발 과정에서 발견된 FunLang v1.8 언어의 제약사항을 정리한 문서.
 각 항목에 대해 **현재 workaround**와 **개선 제안**을 포함.
 
 발견 출처: `.planning/phases/` 디렉토리의 SUMMARY.md, RESEARCH.md 파일들
@@ -29,7 +29,7 @@ FunLexYacc 프로젝트 (Phase 1-7) 개발 과정에서 발견된 LangThree v1.8
 - **발견**: Phase 1 (01-01)
 - **개선 제안**: 빈 모듈을 정상적으로 처리 (빈 프로그램 = unit)
 
-### 1.4 Prelude Not Available Outside LangThree Directory
+### 1.4 Prelude Not Available Outside FunLang Directory
 - **증상**: FunLexYacc 디렉토리에서 .fun 파일 실행 시 Prelude의 `my_append`, `my_reverse`, `Option` 등 사용 불가
 - **Workaround**: 각 .fun 파일에 필요한 유틸리티 함수를 인라인으로 재정의
 - **발견**: Phase 2 (02-01)
@@ -62,7 +62,7 @@ FunLexYacc 프로젝트 (Phase 1-7) 개발 과정에서 발견된 LangThree v1.8
 - **개선 제안**: `option`을 `Option`의 별칭으로 추가하거나 대소문자 무관하게 처리
 
 ### 2.4 Record Field Name Collision Across Types
-- **증상**: 서로 다른 레코드 타입이 같은 필드명(예: `id`, `prod`)을 가지면 충돌 에러. LangThree는 필드명으로 레코드 타입을 추론.
+- **증상**: 서로 다른 레코드 타입이 같은 필드명(예: `id`, `prod`)을 가지면 충돌 에러. FunLang는 필드명으로 레코드 타입을 추론.
 - **Workaround**: 타입별 접두사 규칙 — `fp_` (FlatProd), `gi_` (GrammarInfo), `sm_` (SymbolMap), `li_` (LrItem), `d_` (DfaState) 등
 - **발견**: Phase 3 (03-03), Phase 5 (05-01)
 - **영향**: 모든 레코드 타입에 접두사 필요, 코드 가독성 저하
@@ -155,7 +155,7 @@ FunLexYacc 프로젝트 (Phase 1-7) 개발 과정에서 발견된 LangThree v1.8
 
 #### 현재 상태: 출력만 가능, 입력 불가
 
-LangThree v1.8의 I/O 관련 builtin 함수는 **출력 전용**:
+FunLang v1.8의 I/O 관련 builtin 함수는 **출력 전용**:
 
 | 함수 | 타입 | 설명 |
 |------|------|------|
@@ -174,17 +174,17 @@ LangThree v1.8의 I/O 관련 builtin 함수는 **출력 전용**:
 
 #### 현재 Workaround: 쉘 스크립트 문자열 임베딩
 
-파일 내용을 LangThree 프로그램에 전달하려면 쉘에서 escape 후 문자열 리터럴로 임베딩:
+파일 내용을 FunLang 프로그램에 전달하려면 쉘에서 escape 후 문자열 리터럴로 임베딩:
 
 ```bash
-# Step 1: 파일 내용을 LangThree 문자열 리터럴로 escape
+# Step 1: 파일 내용을 FunLang 문자열 리터럴로 escape
 escaped=$(cat input.txt | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' | tr -d '\n')
 
 # Step 2: .fun 파일에 문자열 변수로 삽입
 echo "let file_content = \"${escaped}\"" >> program.fun
 
-# Step 3: LangThree로 실행
-LangThree program.fun
+# Step 3: FunLang로 실행
+FunLang program.fun
 ```
 
 **이 패턴이 사용되는 곳 (FunLexYacc 프로젝트):**
@@ -208,7 +208,7 @@ LangThree program.fun
 | 함수 | 타입 | 설명 | 용도 |
 |------|------|------|------|
 | `read_file` | `string -> string` | 파일 경로를 받아 전체 내용을 문자열로 반환 | .funl/.funy 파일 읽기, 테스트 픽스처 로딩 |
-| `stdin_read_all` | `unit -> string` | stdin 전체를 문자열로 읽기 (EOF까지) | 파이프 입력 처리 (`cat file \| LangThree prog.fun`) |
+| `stdin_read_all` | `unit -> string` | stdin 전체를 문자열로 읽기 (EOF까지) | 파이프 입력 처리 (`cat file \| FunLang prog.fun`) |
 | `stdin_read_line` | `unit -> string` | stdin에서 한 줄 읽기 | 대화형 입력, 줄 단위 처리 |
 
 **구현 예시 (Eval.fs에 추가):**
@@ -343,7 +343,7 @@ LangThree program.fun
 escaped=$(cat src/Lexer/Lexer.funl | perl -pe 's/\\/\\\\/g; s/"/\\"/g; s/\n/\\n/g')
 echo "let funl_input = \"${escaped}\"" >> gen.fun
 echo "let _ = println (run_funlex funl_input)" >> gen.fun
-LangThree gen.fun > generated/Lexer.fun
+FunLang gen.fun > generated/Lexer.fun
 ```
 
 **After (File I/O 추가 후 — .fun 프로그램이 독립 실행):**
@@ -387,7 +387,7 @@ let _ = eprintln (string_concat "Generated: " output_file)
 ## 5. Performance
 
 ### 5.1 Interpreter Too Slow for Large Computations
-- **증상**: LangThree 인터프리터에서 전체 Parser.fsy (482 states) LALR 계산에 10분 이상 소요
+- **증상**: FunLang 인터프리터에서 전체 Parser.fsy (482 states) LALR 계산에 10분 이상 소요
 - **Workaround**: 쉘 스크립트(`extract-tables.sh`)로 F# 바이너리에서 테이블을 사전 추출
 - **발견**: Phase 5 (05-03)
 - **영향**: funlex/funyacc가 큰 문법을 처리하려면 외부 도구에 의존

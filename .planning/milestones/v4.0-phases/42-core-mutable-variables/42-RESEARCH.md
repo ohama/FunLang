@@ -6,7 +6,7 @@
 
 ## Summary
 
-This phase adds `let mut x = expr` declarations and `x <- expr` reassignment to LangThree at both expression level and module level. The existing codebase already has all lexer tokens needed (MUTABLE, LARROW), mutable record field infrastructure (SetField AST node, `<-` parsing for `atom.field <- expr`), and ref-cell patterns in Eval (RecordValue uses `Value ref`). The work is purely additive: new AST nodes, new parser rules, new type checker logic, and new eval cases.
+This phase adds `let mut x = expr` declarations and `x <- expr` reassignment to FunLang at both expression level and module level. The existing codebase already has all lexer tokens needed (MUTABLE, LARROW), mutable record field infrastructure (SetField AST node, `<-` parsing for `atom.field <- expr`), and ref-cell patterns in Eval (RecordValue uses `Value ref`). The work is purely additive: new AST nodes, new parser rules, new type checker logic, and new eval cases.
 
 The main design decisions are:
 1. **AST representation**: Add `LetMut` (expression-level), `LetMutDecl` (module-level), and `Assign` (reassignment) nodes rather than overloading existing Let/SetField

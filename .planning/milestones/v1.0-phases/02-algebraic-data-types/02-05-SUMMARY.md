@@ -29,14 +29,14 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Parser.fs
-    - src/LangThree/Lexer.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/Infer.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Parser.fs
+    - src/FunLang/Lexer.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/Infer.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Uppercase IDENT parsed as Constructor, lowercase as Var - simple lexer-level disambiguation"
@@ -101,14 +101,14 @@ Each task was committed atomically:
    - All 42 tests pass (8 new + 34 existing)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Constructor in Expr, ConstructorPat in Pattern, DataValue in Value
-- `src/LangThree/Eval.fs` - Constructor evaluation, ConstructorPat matching, DataValue formatting
-- `src/LangThree/Parser.fsy` - Uppercase IDENT disambiguation, constructor application in AppExpr
-- `src/LangThree/Parser.fs` - Regenerated from Parser.fsy
-- `src/LangThree/Lexer.fs` - Regenerated
-- `src/LangThree/Format.fs` - formatAst/formatPattern for Constructor/ConstructorPat
-- `src/LangThree/Infer.fs` - Stub inferPattern/inferWithContext for ConstructorPat/Constructor
-- `tests/LangThree.Tests/IntegrationTests.fs` - 8 ADT evaluation integration tests
+- `src/FunLang/Ast.fs` - Constructor in Expr, ConstructorPat in Pattern, DataValue in Value
+- `src/FunLang/Eval.fs` - Constructor evaluation, ConstructorPat matching, DataValue formatting
+- `src/FunLang/Parser.fsy` - Uppercase IDENT disambiguation, constructor application in AppExpr
+- `src/FunLang/Parser.fs` - Regenerated from Parser.fsy
+- `src/FunLang/Lexer.fs` - Regenerated
+- `src/FunLang/Format.fs` - formatAst/formatPattern for Constructor/ConstructorPat
+- `src/FunLang/Infer.fs` - Stub inferPattern/inferWithContext for ConstructorPat/Constructor
+- `tests/FunLang.Tests/IntegrationTests.fs` - 8 ADT evaluation integration tests
 
 ## Decisions Made
 - **Uppercase IDENT disambiguation:** Simple approach where any IDENT starting with uppercase is parsed as a Constructor. This mirrors F#/OCaml conventions and avoids needing a separate token type or constructor environment at parse time.
@@ -124,19 +124,19 @@ Each task was committed atomically:
 - **Found during:** Task 1
 - **Issue:** Adding Constructor to Expr and ConstructorPat to Pattern caused incomplete pattern match warnings in Infer.fs (which was not listed in the plan's files)
 - **Fix:** Added minimal stub handling returning fresh type variables
-- **Files modified:** src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Infer.fs
 
 **2. [Rule 2 - Adaptation] Tests skip type checking**
 - **Found during:** Task 3
 - **Issue:** Plan's test code references TypeCheck.typeCheckModule which doesn't exist; type checker doesn't support ADTs yet
 - **Fix:** Tests use direct parse + eval pipeline (parseAndEvalModule helper) without type checking
-- **Files modified:** tests/LangThree.Tests/IntegrationTests.fs
+- **Files modified:** tests/FunLang.Tests/IntegrationTests.fs
 
 **3. [Rule 1 - Bug] Test input formatting for indentation-sensitive parsing**
 - **Found during:** Task 3
 - **Issue:** Multi-line test inputs with nested match expressions triggered IndentationError due to pipe alignment requirements
 - **Fix:** Used single-line match expressions in tests or let rec..in expressions to avoid indentation complexity
-- **Files modified:** tests/LangThree.Tests/IntegrationTests.fs
+- **Files modified:** tests/FunLang.Tests/IntegrationTests.fs
 
 ## Issues Encountered
 

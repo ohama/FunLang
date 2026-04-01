@@ -1,6 +1,6 @@
 # 문자 타입 (Char Type)
 
-앞 장에서 문자열을 다뤘으니, 이번에는 단일 문자를 살펴봅니다. LangThree는 문자열(`string`)과는 별도로 단일 문자를 표현하는 `char` 타입을 제공합니다. 작은따옴표로 문자 리터럴을 작성하며, 문자와 정수 사이의 변환 함수를 제공합니다.
+앞 장에서 문자열을 다뤘으니, 이번에는 단일 문자를 살펴봅니다. FunLang는 문자열(`string`)과는 별도로 단일 문자를 표현하는 `char` 타입을 제공합니다. 작은따옴표로 문자 리터럴을 작성하며, 문자와 정수 사이의 변환 함수를 제공합니다.
 
 ## 문자 리터럴
 
@@ -37,7 +37,7 @@ let code = char_to_int 'A'
 let back = int_to_char 65
 let result = code
 
-$ langthree char_conv.l3
+$ funlang char_conv.l3
 65
 ```
 
@@ -55,7 +55,7 @@ let toLower c =
     else c
 let result = toLower 'H'
 
-$ langthree to_lower.l3
+$ funlang to_lower.l3
 'h'
 ```
 
@@ -89,7 +89,7 @@ let classify c =
     | _ -> "other"
 let result = classify 'A'
 
-$ langthree char_match.l3
+$ funlang char_match.l3
 "uppercase A"
 ```
 
@@ -104,7 +104,7 @@ let _ = println (to_string (Char.IsDigit 'a'))
 let _ = println (to_string (Char.IsLetter 'z'))
 let _ = println (to_string (Char.ToUpper 'a'))
 
-$ langthree char_module.l3
+$ funlang char_module.l3
 true
 false
 true
@@ -120,7 +120,7 @@ let _ = println (to_string (Char.IsUpper 'A'))
 let _ = println (to_string (Char.IsLower 'a'))
 let _ = println (to_string (Char.ToLower 'Z'))
 
-$ langthree char_case.l3
+$ funlang char_case.l3
 true
 true
 'z'

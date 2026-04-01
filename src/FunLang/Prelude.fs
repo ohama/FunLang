@@ -7,7 +7,7 @@ open Eval
 open TypeCheck
 open Type
 open Diagnostic
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 
 /// Result of loading prelude files — provides environments for both type checking and evaluation
 type PreludeResult = {
@@ -64,7 +64,7 @@ let private findPreludeDir () : string =
             if Directory.Exists candidate then candidate
             else
                 // Stage 3: Walk up from assembly dir (handles dotnet run from other dirs)
-                // Binary is at src/LangThree/bin/Debug/net10.0/LangThree
+                // Binary is at src/FunLang/bin/Debug/net10.0/FunLang
                 // Walking up 6 levels reaches repo root where Prelude/ lives
                 let mutable dir = assemblyDir
                 let mutable result = ""

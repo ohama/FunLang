@@ -1,7 +1,7 @@
-module LangThree.Tests.IndentFilterTests
+module FunLang.Tests.IndentFilterTests
 
 open Expecto
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 open Parser
 
 [<Tests>]

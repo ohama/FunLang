@@ -24,11 +24,11 @@ key-files:
   created:
     - tests/phase28.fun
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "LetPatDecl placed as second variant in Decl DU (after LetDecl) for logical grouping"
@@ -72,11 +72,11 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit to follow)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added `LetPatDecl` variant to Decl DU and `declSpanOf`
-- `src/LangThree/TypeCheck.fs` - Added `LetPatDecl` handler in typeCheckDecls fold
-- `src/LangThree/Eval.fs` - Added `LetPatDecl` handler in evalModuleDecls fold
-- `src/LangThree/Parser.fsy` - Added `LET TuplePattern EQUALS` Decl grammar rules
-- `src/LangThree/Format.fs` - Fixed FS0025 exhaustiveness warning (auto-fix)
+- `src/FunLang/Ast.fs` - Added `LetPatDecl` variant to Decl DU and `declSpanOf`
+- `src/FunLang/TypeCheck.fs` - Added `LetPatDecl` handler in typeCheckDecls fold
+- `src/FunLang/Eval.fs` - Added `LetPatDecl` handler in evalModuleDecls fold
+- `src/FunLang/Parser.fsy` - Added `LET TuplePattern EQUALS` Decl grammar rules
+- `src/FunLang/Format.fs` - Fixed FS0025 exhaustiveness warning (auto-fix)
 - `tests/phase28.fun` - Regression test exercising all 4 success criteria
 
 ## Decisions Made
@@ -91,7 +91,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (build verification)
 - **Issue:** Format.fs `formatDecl` match had no arm for `LetPatDecl`, causing FS0025 warning
 - **Fix:** Added `Ast.LetPatDecl(pat, body, _)` match arm using existing `formatPattern` helper
-- **Files modified:** `src/LangThree/Format.fs`
+- **Files modified:** `src/FunLang/Format.fs`
 - **Verification:** Build exits 0 with 0 warnings
 - **Committed in:** `4c4e06a` (part of Task 1 commit)
 

@@ -1,5 +1,5 @@
 // Test: basic tuple parameter lambda
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let add = fun (x, y) -> x + y
 let r1 = add (1, 2)

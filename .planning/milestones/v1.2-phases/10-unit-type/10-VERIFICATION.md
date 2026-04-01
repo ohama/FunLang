@@ -34,17 +34,17 @@ gaps: []
 
 | Artifact                                          | Expected                                     | Status     | Details                                                                |
 |---------------------------------------------------|----------------------------------------------|------------|------------------------------------------------------------------------|
-| `src/LangThree/Lexer.fsl`                         | `TYPE_UNIT` token for `unit` keyword         | ✓ VERIFIED | Line 67: `"unit" { TYPE_UNIT }` — in keyword block before identifiers  |
-| `src/LangThree/Parser.fsy`                        | TYPE_UNIT token, grammar rules               | ✓ VERIFIED | Line 45: `%token TYPE_UNIT`                                            |
-| `src/LangThree/Parser.fsy` AtomicType             | `TYPE_UNIT → TETuple []`                     | ✓ VERIFIED | Line 288: `TYPE_UNIT { TETuple [] }` — first rule in AtomicType        |
-| `src/LangThree/Parser.fsy` Atom                   | `LPAREN RPAREN → Tuple([], span)`            | ✓ VERIFIED | Line 182: FIRST Atom rule (before LPAREN Expr RPAREN)                  |
-| `src/LangThree/Parser.fsy` Expr                   | `FUN LPAREN RPAREN ARROW Expr` desugar       | ✓ VERIFIED | Line 111-112: desugars to `LambdaAnnot("__unit", TETuple [], ...)`     |
-| `src/LangThree/Parser.fsy` Expr                   | `let _ = e1 in e2` wildcard sequencing       | ✓ VERIFIED | Line 100: `LET UNDERSCORE EQUALS Expr IN Expr → LetPat(WildcardPat…)` |
-| `src/LangThree/Parser.fsy` Decl                   | `let _ = expr` at module level               | ✓ VERIFIED | Lines 394-397: flat and indented forms both present                    |
-| `src/LangThree/Parser.fsy` indented-let sentinel  | `Tuple([], ...)` replaces old `Var("()")`    | ✓ VERIFIED | Line 96: `Let($2, $5, Tuple([], symSpan parseState 6), ...)`           |
-| `src/LangThree/Type.fs` `formatType`              | `TTuple [] -> "unit"`                        | ✓ VERIFIED | Line 68: `TTuple [] -> "unit"` — before generic TTuple case            |
-| `src/LangThree/Type.fs` `formatTypeNormalized`    | `TTuple [] -> "unit"` in inner format fn     | ✓ VERIFIED | Line 103: `TTuple [] -> "unit"` — before generic TTuple case           |
-| `src/LangThree/Format.fs`                         | `Parser.TYPE_UNIT -> "TYPE_UNIT"` in tokens  | ✓ VERIFIED | Line 59: `Parser.TYPE_UNIT -> "TYPE_UNIT"`                             |
+| `src/FunLang/Lexer.fsl`                         | `TYPE_UNIT` token for `unit` keyword         | ✓ VERIFIED | Line 67: `"unit" { TYPE_UNIT }` — in keyword block before identifiers  |
+| `src/FunLang/Parser.fsy`                        | TYPE_UNIT token, grammar rules               | ✓ VERIFIED | Line 45: `%token TYPE_UNIT`                                            |
+| `src/FunLang/Parser.fsy` AtomicType             | `TYPE_UNIT → TETuple []`                     | ✓ VERIFIED | Line 288: `TYPE_UNIT { TETuple [] }` — first rule in AtomicType        |
+| `src/FunLang/Parser.fsy` Atom                   | `LPAREN RPAREN → Tuple([], span)`            | ✓ VERIFIED | Line 182: FIRST Atom rule (before LPAREN Expr RPAREN)                  |
+| `src/FunLang/Parser.fsy` Expr                   | `FUN LPAREN RPAREN ARROW Expr` desugar       | ✓ VERIFIED | Line 111-112: desugars to `LambdaAnnot("__unit", TETuple [], ...)`     |
+| `src/FunLang/Parser.fsy` Expr                   | `let _ = e1 in e2` wildcard sequencing       | ✓ VERIFIED | Line 100: `LET UNDERSCORE EQUALS Expr IN Expr → LetPat(WildcardPat…)` |
+| `src/FunLang/Parser.fsy` Decl                   | `let _ = expr` at module level               | ✓ VERIFIED | Lines 394-397: flat and indented forms both present                    |
+| `src/FunLang/Parser.fsy` indented-let sentinel  | `Tuple([], ...)` replaces old `Var("()")`    | ✓ VERIFIED | Line 96: `Let($2, $5, Tuple([], symSpan parseState 6), ...)`           |
+| `src/FunLang/Type.fs` `formatType`              | `TTuple [] -> "unit"`                        | ✓ VERIFIED | Line 68: `TTuple [] -> "unit"` — before generic TTuple case            |
+| `src/FunLang/Type.fs` `formatTypeNormalized`    | `TTuple [] -> "unit"` in inner format fn     | ✓ VERIFIED | Line 103: `TTuple [] -> "unit"` — before generic TTuple case           |
+| `src/FunLang/Format.fs`                         | `Parser.TYPE_UNIT -> "TYPE_UNIT"` in tokens  | ✓ VERIFIED | Line 59: `Parser.TYPE_UNIT -> "TYPE_UNIT"`                             |
 | `tests/flt/expr/unit-literal.flt`                 | `()` evaluates to `()`                       | ✓ VERIFIED | Exists, 4 lines, proper flt format, correct expected output            |
 | `tests/flt/expr/unit-fun-param.flt`               | `fun () -> body` applies and returns value   | ✓ VERIFIED | Exists, 4 lines, `let f = fun () -> 42 in f ()` → `42`                |
 | `tests/flt/expr/unit-let-wildcard-expr.flt`       | `let _ = e1 in e2` returns e2                | ✓ VERIFIED | Exists, 4 lines, `let _ = 42 in 99` → `99`                            |

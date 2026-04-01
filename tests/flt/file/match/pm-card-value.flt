@@ -1,5 +1,5 @@
 // Test: mixed nullary and data constructors (Card value)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 type Card =
     | Ace

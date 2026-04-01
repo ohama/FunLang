@@ -1,0 +1,20 @@
+// Test: String slicing edge cases — full string, single char, variable indices (LANG-01)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let s = "abcde"
+let _ = println (s.[0..])
+let _ = println (s.[0..4])
+let _ = println (s.[2..2])
+let start = 1
+let stop = 3
+let _ = println (s.[start..stop])
+let _ = println ("x".[0..0])
+let _ = println ("hello world".[6..])
+// --- Output:
+abcde
+abcde
+c
+bcd
+x
+world
+()

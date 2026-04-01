@@ -1,13 +1,13 @@
-# LangThree
+# FunLang
 
 ## Build & Test
 
 ```bash
 # Build
-dotnet build src/LangThree/LangThree.fsproj -c Release
+dotnet build src/FunLang/FunLang.fsproj -c Release
 
 # F# unit tests
-dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj -c Release
+dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj -c Release
 
 # flt integration tests (uses external FsLit runner)
 ../fslit/dist/FsLit tests/flt/              # run all

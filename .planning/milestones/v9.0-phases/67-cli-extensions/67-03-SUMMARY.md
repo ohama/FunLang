@@ -26,7 +26,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Prelude.fs
+    - src/FunLang/Prelude.fs
 
 key-decisions:
   - "Cache file's own exports only, not merged result -- avoids diamond dep env leakage"
@@ -69,7 +69,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/Prelude.fs` - Added tcCache/evalCache Dictionaries and cache hit/miss logic in loadAndTypeCheckFileImpl and loadAndEvalFileImpl
+- `src/FunLang/Prelude.fs` - Added tcCache/evalCache Dictionaries and cache hit/miss logic in loadAndTypeCheckFileImpl and loadAndEvalFileImpl
 
 ## Decisions Made
 

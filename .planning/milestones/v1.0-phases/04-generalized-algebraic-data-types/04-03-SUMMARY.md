@@ -26,7 +26,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/Bidir.fs"
+    - "src/FunLang/Bidir.fs"
 
 key-decisions:
   - "Local constraints from unifying scrutinee with constructor return type stay branch-local"
@@ -67,7 +67,7 @@ Each task was committed atomically:
 2. **Task 2: GADT type refinement in check mode with existential escape detection** - `0d086c7` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Bidir.fs` - isGadtMatch helper, synth mode GADT error, check mode GADT refinement with existential escape detection
+- `src/FunLang/Bidir.fs` - isGadtMatch helper, synth mode GADT error, check mode GADT refinement with existential escape detection
 
 ## Decisions Made
 - Local constraints from unifying scrutinee with constructor return type are NOT composed into the global substitution -- they only affect branch environment and expected type

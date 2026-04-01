@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 28 adds N-tuple support (3-tuples and larger) to LangThree. The critical finding from direct codebase analysis is that **most of this work is already done**. The AST (`Tuple of Expr list`, `TuplePat of Pattern list`, `TTuple of Type list`, `TupleValue of Value list`) already handles arbitrary arity. N-tuple expressions, match patterns, local let-destructuring, and function parameters all work today.
+Phase 28 adds N-tuple support (3-tuples and larger) to FunLang. The critical finding from direct codebase analysis is that **most of this work is already done**. The AST (`Tuple of Expr list`, `TuplePat of Pattern list`, `TTuple of Type list`, `TupleValue of Value list`) already handles arbitrary arity. N-tuple expressions, match patterns, local let-destructuring, and function parameters all work today.
 
 The **only missing piece** is top-level module-level tuple destructuring: `let (a, b, c) = expr` at declaration scope (outside any expression context). The `Decl` grammar nonterminal in `Parser.fsy` only handles `LET IDENT EQUALS ...` patterns, not `LET TuplePattern EQUALS ...`. This requires adding a new `LetPatDecl` variant to `Ast.Decl`, a new parser rule, and handling in `TypeCheck.fs` and `Eval.fs`.
 
@@ -47,7 +47,7 @@ The cleanest approach is a new `LetPatDecl` variant that mirrors how `LetPat` wo
 No structural changes needed. All modifications are in existing files:
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs              # Add LetPatDecl to Decl
 ├── Parser.fsy          # Add grammar rules in Decl nonterminal
 ├── TypeCheck.fs        # Handle LetPatDecl in typeCheckDecls

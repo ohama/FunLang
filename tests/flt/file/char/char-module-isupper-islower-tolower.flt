@@ -1,0 +1,17 @@
+// Test: Char.IsUpper, Char.IsLower, Char.ToLower completeness (STR-02)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let _ = println (to_string (Char.IsUpper 'A'))
+let _ = println (to_string (Char.IsUpper 'a'))
+let _ = println (to_string (Char.IsLower 'a'))
+let _ = println (to_string (Char.IsLower 'A'))
+let _ = println (to_string (Char.ToLower 'Z'))
+let _ = println (to_string (Char.ToLower 'z'))
+// --- Output:
+true
+false
+true
+false
+'z'
+'z'
+()

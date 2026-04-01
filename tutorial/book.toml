@@ -1,8 +1,8 @@
 [book]
-title = "LangThree Tutorial"
+title = "FunLang Tutorial"
 authors = ["ohama"]
 language = "ko"
-description = "함수형 프로그래밍 경험자를 위한 LangThree 언어 튜토리얼"
+description = "함수형 프로그래밍 경험자를 위한 FunLang 언어 튜토리얼"
 src = "."
 
 [build]

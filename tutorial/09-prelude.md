@@ -1,12 +1,12 @@
 # 9장: Prelude 표준 라이브러리 (Prelude and Standard Library)
 
-어떤 언어를 쓰든, 매번 처음부터 리스트 처리 함수를 직접 만들거나 "없음"을 표현하는 타입을 직접 정의하는 건 번거로운 일입니다. LangThree는 이런 공통적인 필요를 Prelude라는 표준 라이브러리로 해결합니다.
+어떤 언어를 쓰든, 매번 처음부터 리스트 처리 함수를 직접 만들거나 "없음"을 표현하는 타입을 직접 정의하는 건 번거로운 일입니다. FunLang는 이런 공통적인 필요를 Prelude라는 표준 라이브러리로 해결합니다.
 
-LangThree는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은 명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다. Python의 builtins이나 Haskell의 Prelude와 비슷한 개념이지만, LangThree에서는 Prelude 자체도 `.fun` 파일로 작성되어 있어 언어의 일반 코드와 다를 바가 없습니다. 원하면 직접 읽어보고 확장할 수도 있습니다.
+FunLang는 시작 시 Prelude라는 표준 라이브러리를 로드합니다. Prelude 파일은 명시적인 import 없이 모든 사용자 코드에서 사용 가능한 타입, 생성자, 함수를 제공합니다. Python의 builtins이나 Haskell의 Prelude와 비슷한 개념이지만, FunLang에서는 Prelude 자체도 `.fun` 파일로 작성되어 있어 언어의 일반 코드와 다를 바가 없습니다. 원하면 직접 읽어보고 확장할 수도 있습니다.
 
 ## Prelude의 동작 방식
 
-Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에 있는 `.fun` 파일로 구성됩니다. 시작 시 이 파일들은 의존성 분석을 거쳐 올바른 순서로 로드된 후, 각각 모듈로 파싱되고 타입 검사를 거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.
+Prelude는 FunLang 바이너리와 같은 위치의 `Prelude/` 디렉토리에 있는 `.fun` 파일로 구성됩니다. 시작 시 이 파일들은 의존성 분석을 거쳐 올바른 순서로 로드된 후, 각각 모듈로 파싱되고 타입 검사를 거쳐 평가됩니다. 이 파일들이 정의하는 타입, 생성자, 함수는 이후 모든 코드에서 사용 가능합니다.
 
 로드 순서는 자동으로 결정됩니다. 각 파일이 선언하는 타입 생성자와 다른 파일에서 참조하는 생성자를 분석하여 의존성 그래프를 구축하고, 토폴로지 정렬로 순서를 정합니다. 예를 들어 `List.fun`이 `Some`과 `None`을 사용하면, 이를 선언한 `Option.fun`이 자동으로 먼저 로드됩니다. 의존성이 없는 파일 간에는 알파벳순으로 정렬됩니다.
 
@@ -62,7 +62,7 @@ None
 $ cat check_option.l3
 let x = Some 42
 
-$ langthree --emit-type check_option.l3
+$ funlang --emit-type check_option.l3
 x : Option<int>
 ```
 
@@ -80,11 +80,11 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ langthree option_match.l3
+$ funlang option_match.l3
 42
 ```
 
-Java나 Python에서 `null` 체크를 빠뜨리면 런타임에야 NPE나 AttributeError가 발생합니다. LangThree에서는 패턴 매칭이 불완전하면 컴파일러가 경고하므로, 실수가 훨씬 일찍 잡힙니다.
+Java나 Python에서 `null` 체크를 빠뜨리면 런타임에야 NPE나 AttributeError가 발생합니다. FunLang에서는 패턴 매칭이 불완전하면 컴파일러가 경고하므로, 실수가 훨씬 일찍 잡힙니다.
 
 기본값으로 추출하기:
 
@@ -96,7 +96,7 @@ let getOrDefault default opt =
     | None -> default
 let result = getOrDefault 0 None
 
-$ langthree option_default.l3
+$ funlang option_default.l3
 0
 ```
 
@@ -120,7 +120,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ langthree option_map.l3
+$ funlang option_map.l3
 10
 ```
 
@@ -141,7 +141,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ langthree option_bind.l3
+$ funlang option_bind.l3
 20
 ```
 
@@ -163,7 +163,7 @@ let result =
     | Some v -> v
     | None -> 0
 
-$ langthree option_pipe.l3
+$ funlang option_pipe.l3
 10
 ```
 
@@ -193,7 +193,7 @@ let result =
     | Ok v -> v
     | Error _ -> 0
 
-$ langthree result_demo.l3
+$ funlang result_demo.l3
 3
 ```
 
@@ -217,7 +217,7 @@ let n = List.length [1; 2; 3]
 let doubled = List.map (fun x -> x * 2) [1; 2; 3]
 let result = doubled
 
-$ langthree qualified_prelude.l3
+$ funlang qualified_prelude.l3
 [2; 4; 6]
 ```
 
@@ -302,7 +302,7 @@ let r2 = List.sortBy (fun x -> 0 - x) [1; 2; 3]
 let _ = println (to_string r1)
 let _ = println (to_string r2)
 
-$ langthree list_sort.l3
+$ funlang list_sort.l3
 [1; 2; 3]
 [3; 2; 1]
 ()
@@ -322,7 +322,7 @@ let _ = println (to_string r)
 let d = List.distinctBy (fun x -> x % 2) [1; 2; 3; 4; 5]
 let _ = println (to_string d)
 
-$ langthree list_search.l3
+$ funlang list_search.l3
 true
 Some 3
 None
@@ -348,7 +348,7 @@ let _ = println (to_string (List.item 1 [10; 20; 30]))
 let _ = println (to_string (List.isEmpty []))
 let _ = println (to_string (List.isEmpty [1]))
 
-$ langthree list_transform.l3
+$ funlang list_transform.l3
 [10; 21; 32]
 20
 true
@@ -377,7 +377,7 @@ let _ = HashSet.add hs 2
 let sorted = List.sort (List.ofSeq hs)
 let _ = println (to_string sorted)
 
-$ langthree list_ofseq.l3
+$ funlang list_ofseq.l3
 [1; 2; 3]
 ()
 ```
@@ -446,7 +446,7 @@ funlang> ignore 42
 
 ## 파이프라인과 함께 사용하기
 
-Prelude 함수들은 파이프 연산자 `|>`와 결합하면 강력한 데이터 처리 파이프라인을 구성할 수 있습니다. 이것이 LangThree에서 리스트 처리 코드를 가장 읽기 쉽게 쓰는 방법입니다:
+Prelude 함수들은 파이프 연산자 `|>`와 결합하면 강력한 데이터 처리 파이프라인을 구성할 수 있습니다. 이것이 FunLang에서 리스트 처리 코드를 가장 읽기 쉽게 쓰는 방법입니다:
 
 ```
 $ cat pipeline.l3
@@ -455,7 +455,7 @@ let result =
     |> filter (fun x -> x % 2 = 0)
     |> map (fun x -> x * x)
 
-$ langthree pipeline.l3
+$ funlang pipeline.l3
 [4; 16; 36; 64; 100]
 ```
 
@@ -507,7 +507,7 @@ $ cat fallback.l3
 let tryParse s = match s with | "42" -> Some 42 | "0" -> Some 0 | _ -> None
 let result = tryParse "abc" <|> tryParse "xyz" <|> tryParse "42" <|> Some 0
 
-$ langthree fallback.l3
+$ funlang fallback.l3
 Some 42
 ```
 
@@ -522,14 +522,14 @@ funlang> "hello" ^^ " " ^^ "world"
 "hello world"
 ```
 
-`+` 연산자는 정수 덧셈이므로, 문자열 연결에는 `^^`를 사용합니다. 이 점이 Python이나 JavaScript와 다른 부분인데, LangThree는 타입에 따라 다른 동작을 하는 오버로딩을 지원하지 않아서 연산자를 구분합니다. 처음엔 어색하지만 코드를 읽을 때 "지금 더하는 게 숫자인지 문자열인지" 즉시 알 수 있다는 장점이 있습니다:
+`+` 연산자는 정수 덧셈이므로, 문자열 연결에는 `^^`를 사용합니다. 이 점이 Python이나 JavaScript와 다른 부분인데, FunLang는 타입에 따라 다른 동작을 하는 오버로딩을 지원하지 않아서 연산자를 구분합니다. 처음엔 어색하지만 코드를 읽을 때 "지금 더하는 게 숫자인지 문자열인지" 즉시 알 수 있다는 장점이 있습니다:
 
 ```
 $ cat string_build.l3
 let formatPair key = fun value -> key ^^ "=" ^^ value
 let result = formatPair "name" "Alice"
 
-$ langthree string_build.l3
+$ funlang string_build.l3
 "name=Alice"
 ```
 
@@ -537,7 +537,7 @@ $ langthree string_build.l3
 
 ## 런타임 내장 함수
 
-Prelude 함수와는 별도로, LangThree에는 내장 환경(`initialBuiltinEnv`)에서 제공되는 런타임 내장 함수가 있습니다. 이것들은 `.fun` 파일이 아니라 인터프리터 자체에 내장되어 있으며, 특히 I/O나 타입 변환처럼 언어 런타임과 밀접한 기능들입니다:
+Prelude 함수와는 별도로, FunLang에는 내장 환경(`initialBuiltinEnv`)에서 제공되는 런타임 내장 함수가 있습니다. 이것들은 `.fun` 파일이 아니라 인터프리터 자체에 내장되어 있으며, 특히 I/O나 타입 변환처럼 언어 런타임과 밀접한 기능들입니다:
 
 | 함수 | 타입 | 설명 |
 |----------|------|-------------|
@@ -575,7 +575,7 @@ funlang> to_string (Some [1; 2; 3])
 
 ## Prelude vs 내장 함수 요약
 
-두 분류를 헷갈리지 않으려면 간단한 기준이 있습니다. Prelude는 LangThree 코드로 작성된 라이브러리이고, 내장 함수는 인터프리터 자체에 박혀있는 기능입니다. 사용자 입장에서는 둘 다 import 없이 쓸 수 있어 차이가 없지만, Prelude는 직접 수정하거나 확장할 수 있다는 점이 다릅니다.
+두 분류를 헷갈리지 않으려면 간단한 기준이 있습니다. Prelude는 FunLang 코드로 작성된 라이브러리이고, 내장 함수는 인터프리터 자체에 박혀있는 기능입니다. 사용자 입장에서는 둘 다 import 없이 쓸 수 있어 차이가 없지만, Prelude는 직접 수정하거나 확장할 수 있다는 점이 다릅니다.
 
 | 분류 | 출처 | 예제 |
 |----------|--------|---------|

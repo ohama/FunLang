@@ -25,8 +25,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "Method names bound directly (not mangled): works for single-instance scenarios; last-wins shadowing acceptable for Phase 73 MVP"
@@ -70,8 +70,8 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Elaborate.fs` - Added `elaborateTypeclasses` rec function at end of module
-- `src/LangThree/Program.fs` - Applied elaboration at both Eval.evalModuleDecls call sites; last-binding lookup updated to use elaboratedDecls
+- `src/FunLang/Elaborate.fs` - Added `elaborateTypeclasses` rec function at end of module
+- `src/FunLang/Program.fs` - Applied elaboration at both Eval.evalModuleDecls call sites; last-binding lookup updated to use elaboratedDecls
 
 ## Decisions Made
 - Method names bound directly without mangling (e.g., `show` not `Show$int$show`). Works for single-instance scenarios where Phase 73 success criteria are defined. Multiple instances for same class would shadow each other (last-wins) -- acceptable MVP.
@@ -86,7 +86,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (Program.fs wiring)
 - **Issue:** After elaboration, TypeClassDecl and InstanceDecl are removed from the decl list. If the original file ends with a TypeClassDecl, the last-binding lookup over `moduleDecls` could find the wrong last decl.
 - **Fix:** Changed `moduleDecls |> List.rev |> List.tryPick` to `elaboratedDecls |> List.rev |> List.tryPick` in the file execution path.
-- **Files modified:** src/LangThree/Program.fs
+- **Files modified:** src/FunLang/Program.fs
 - **Verification:** Smoke test `show 42` prints `"42"` correctly.
 - **Committed in:** `81b79d6` (Task 2 commit)
 

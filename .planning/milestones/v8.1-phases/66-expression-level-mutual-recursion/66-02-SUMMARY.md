@@ -28,9 +28,9 @@ key-files:
     - tests/flt/file/let/letrec-mutual-expr.flt
     - tests/flt/file/let/letrec-mutual-expr-error.flt
   modified:
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Eval.fs
 
 key-decisions:
   - "Multi-line `and` in indented contexts triggers indent filter issues -- tests use single-line format"
@@ -69,9 +69,9 @@ Each task was committed atomically:
 2. **Task 2: Add comprehensive flt tests for expression-level mutual recursion** - `cdab93b` (test)
 
 ## Files Created/Modified
-- `src/LangThree/Bidir.fs` - Multi-binding LetRec synth with simultaneous env and generalization
-- `src/LangThree/Infer.fs` - Multi-binding LetRec infer with simultaneous env and generalization
-- `src/LangThree/Eval.fs` - sharedEnvRef pattern for mutual closure linking
+- `src/FunLang/Bidir.fs` - Multi-binding LetRec synth with simultaneous env and generalization
+- `src/FunLang/Infer.fs` - Multi-binding LetRec infer with simultaneous env and generalization
+- `src/FunLang/Eval.fs` - sharedEnvRef pattern for mutual closure linking
 - `tests/flt/file/let/letrec-mutual-expr.flt` - 8 positive tests (even/odd, 3-binding, annotations, nesting)
 - `tests/flt/file/let/letrec-mutual-expr-error.flt` - Type mismatch error rejection
 

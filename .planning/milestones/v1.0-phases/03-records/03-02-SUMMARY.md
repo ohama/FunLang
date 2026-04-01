@@ -23,8 +23,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/Parser.fsy"
-    - "src/LangThree/Format.fs"
+    - "src/FunLang/Parser.fsy"
+    - "src/FunLang/Format.fs"
 
 key-decisions:
   - "Used RecordExprInner approach (not two separate Atom productions) for LBRACE ambiguity resolution"
@@ -67,8 +67,8 @@ Each task was committed atomically:
 2. **Task 2: Format.fs and IndentFilter updates** - `fc8c85f` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added 45 lines: RecordDeclaration, RecordFields, RecordField, RecordExprInner, RecordFieldBindings, RecordPatFields rules, FieldAccess and record Atom productions, Decls extensions
-- `src/LangThree/Format.fs` - Added 20 lines: formatToken cases for LBRACE/RBRACE/SEMICOLON/DOT, formatAst cases for RecordExpr/FieldAccess/RecordUpdate, formatPattern case for RecordPat
+- `src/FunLang/Parser.fsy` - Added 45 lines: RecordDeclaration, RecordFields, RecordField, RecordExprInner, RecordFieldBindings, RecordPatFields rules, FieldAccess and record Atom productions, Decls extensions
+- `src/FunLang/Format.fs` - Added 20 lines: formatToken cases for LBRACE/RBRACE/SEMICOLON/DOT, formatAst cases for RecordExpr/FieldAccess/RecordUpdate, formatPattern case for RecordPat
 
 ## Decisions Made
 - **RecordExprInner approach chosen:** Used the function-return pattern (`fun span -> ...`) instead of two separate Atom productions. This cleanly resolves the LBRACE IDENT LALR(1) ambiguity because RecordFieldBindings requires `IDENT EQUALS` while Expr reduction sees `WITH` as next token.

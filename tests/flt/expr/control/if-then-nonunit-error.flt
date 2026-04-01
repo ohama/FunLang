@@ -1,5 +1,5 @@
 // Test IFTHEN-02: if-then without else with non-unit then-branch produces type error
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = if true then 42
 // --- ExitCode: 1

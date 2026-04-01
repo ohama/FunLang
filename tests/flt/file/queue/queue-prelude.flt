@@ -1,0 +1,19 @@
+// Test: Queue Prelude module functions (COLL-03)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let q = Queue.create ()
+let _ = Queue.enqueue q 1
+let _ = Queue.enqueue q 2
+let _ = Queue.enqueue q 3
+let _ = println (to_string (Queue.count q))
+let v1 = Queue.dequeue q ()
+let v2 = Queue.dequeue q ()
+let _ = println (to_string v1)
+let _ = println (to_string v2)
+let _ = println (to_string (Queue.count q))
+// --- Output:
+3
+1
+2
+1
+()

@@ -31,11 +31,11 @@ score: 6/6 must-haves verified
 
 | Artifact                             | Expected                                              | Status     | Details                                                                  |
 | ------------------------------------ | ----------------------------------------------------- | ---------- | ------------------------------------------------------------------------ |
-| `src/LangThree/Lexer.fsl`            | DOTLBRACKET token rule before DOTDOT and DOT          | VERIFIED   | Line 153: `| ".["  { DOTLBRACKET }` before `..` (154) and `.` (156)     |
-| `src/LangThree/Ast.fs`               | IndexGet and IndexSet Expr union cases with spans     | VERIFIED   | Lines 119-120: both cases; line 308: spanOf arms                        |
-| `src/LangThree/Diagnostic.fs`        | IndexOnNonCollection error kind                       | VERIFIED   | Line 53: `| IndexOnNonCollection of ty: Type // E0471`; line 315: format |
-| `src/LangThree/Bidir.fs`             | Type checking for IndexGet/IndexSet (TArray/THash dispatch) | VERIFIED | Lines 559-603: full TArray/THashtable/error dispatch for both nodes     |
-| `src/LangThree/Eval.fs`              | Runtime evaluation of IndexGet (bounds check) and IndexSet | VERIFIED | Lines 779-807: bounds-checked array; key-not-found hashtable            |
+| `src/FunLang/Lexer.fsl`            | DOTLBRACKET token rule before DOTDOT and DOT          | VERIFIED   | Line 153: `| ".["  { DOTLBRACKET }` before `..` (154) and `.` (156)     |
+| `src/FunLang/Ast.fs`               | IndexGet and IndexSet Expr union cases with spans     | VERIFIED   | Lines 119-120: both cases; line 308: spanOf arms                        |
+| `src/FunLang/Diagnostic.fs`        | IndexOnNonCollection error kind                       | VERIFIED   | Line 53: `| IndexOnNonCollection of ty: Type // E0471`; line 315: format |
+| `src/FunLang/Bidir.fs`             | Type checking for IndexGet/IndexSet (TArray/THash dispatch) | VERIFIED | Lines 559-603: full TArray/THashtable/error dispatch for both nodes     |
+| `src/FunLang/Eval.fs`              | Runtime evaluation of IndexGet (bounds check) and IndexSet | VERIFIED | Lines 779-807: bounds-checked array; key-not-found hashtable            |
 
 ### Key Link Verification
 

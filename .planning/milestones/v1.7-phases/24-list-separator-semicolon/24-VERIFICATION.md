@@ -28,7 +28,7 @@ re_verification: false
 | 7  | All 439 fslit tests pass                                      | VERIFIED   | `FsLit tests/flt/` → `Results: 439/439 passed, 0 failed`                             |
 | 8  | All 196 F# unit tests pass                                    | VERIFIED   | `dotnet test` → `Passed! Failed: 0, Passed: 196, Skipped: 0, Total: 196`             |
 | 9  | Tutorial files show semicolon list syntax                     | VERIFIED   | 24 occurrences of semicolon list syntax in tutorial/*.md; no comma list literals     |
-| 10 | No test files contain comma-separated list literals           | VERIFIED   | Grep found zero matches for comma list literals in tests/flt/ and LangThree.Tests/   |
+| 10 | No test files contain comma-separated list literals           | VERIFIED   | Grep found zero matches for comma list literals in tests/flt/ and FunLang.Tests/   |
 
 **Score:** 10/10 truths verified
 
@@ -36,12 +36,12 @@ re_verification: false
 
 | Artifact                                       | Expected                                         | Status    | Details                                                               |
 |------------------------------------------------|--------------------------------------------------|-----------|-----------------------------------------------------------------------|
-| `src/LangThree/Parser.fsy`                     | SemiExprList rule; list literal uses SEMICOLON   | VERIFIED  | Line 261: `LBRACKET Expr SEMICOLON SemiExprList RBRACKET`; lines 284-286: SemiExprList rule |
-| `src/LangThree/Format.fs`                      | Ast.List case uses `"; "` separator              | VERIFIED  | Line 152: `String.concat "; "`                                        |
-| `src/LangThree/Eval.fs`                        | ListValue case uses `"; "` separator             | VERIFIED  | Line 126: `String.concat "; "`                                        |
+| `src/FunLang/Parser.fsy`                     | SemiExprList rule; list literal uses SEMICOLON   | VERIFIED  | Line 261: `LBRACKET Expr SEMICOLON SemiExprList RBRACKET`; lines 284-286: SemiExprList rule |
+| `src/FunLang/Format.fs`                      | Ast.List case uses `"; "` separator              | VERIFIED  | Line 152: `String.concat "; "`                                        |
+| `src/FunLang/Eval.fs`                        | ListValue case uses `"; "` separator             | VERIFIED  | Line 126: `String.concat "; "`                                        |
 | `tests/flt/` (78 files)                        | All .flt files use `[1; 2; 3]` syntax            | VERIFIED  | 439/439 tests pass; no comma list literals found                      |
-| `tests/LangThree.Tests/MatchCompileTests.fs`   | Semicolon list syntax in evalModule strings      | VERIFIED  | No comma list literals found by grep                                  |
-| `tests/LangThree.Tests/ExceptionTests.fs`      | Semicolon list syntax in evalModule strings      | VERIFIED  | No comma list literals found by grep                                  |
+| `tests/FunLang.Tests/MatchCompileTests.fs`   | Semicolon list syntax in evalModule strings      | VERIFIED  | No comma list literals found by grep                                  |
+| `tests/FunLang.Tests/ExceptionTests.fs`      | Semicolon list syntax in evalModule strings      | VERIFIED  | No comma list literals found by grep                                  |
 | `tutorial/*.md` (16 files)                     | All code examples use `[1; 2; 3]` syntax         | VERIFIED  | 24 occurrences of semicolon syntax; no comma list literals outside intentional `formatList` string examples |
 
 ### Key Link Verification

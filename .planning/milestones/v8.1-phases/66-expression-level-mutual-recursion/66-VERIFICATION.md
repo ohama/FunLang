@@ -30,13 +30,13 @@ score: 5/5 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | LetRec node with bindings list | VERIFIED | `LetRec of bindings: (string * string * TypeExpr option * Expr * Span) list * inExpr: Expr * span: Span` at line 79 |
-| `src/LangThree/Parser.fsy` | Grammar rules for `let rec ... and ... in expr` | VERIFIED | 4 expression-level rules using `LetRecContinuation` nonterminal (lines 176-200) |
-| `src/LangThree/Bidir.fs` | Multi-binding simultaneous env type synthesis | VERIFIED | 36 lines of real implementation (lines 301-336): fresh type vars, simultaneous env, unification, generalization |
-| `src/LangThree/Infer.fs` | Multi-binding simultaneous env type inference | VERIFIED | 35 lines of real implementation (lines 266-301): same pattern as Bidir using `inferWithContext` |
-| `src/LangThree/Eval.fs` | sharedEnvRef mutual closure linking | VERIFIED | 12 lines (lines 1358-1370): `sharedEnvRef` pattern with `BuiltinValue` wrappers |
-| `src/LangThree/Format.fs` | Pretty-printer for multi-binding LetRec | VERIFIED | Handles bindings list with `and` separator (lines 149-157) |
-| `src/LangThree/TypeCheck.fs` | Collector functions iterate bindings list | VERIFIED | `collectMatches`, `collectTryWiths`, `collectModuleRefs`, `rewriteModuleAccess` all handle LetRec bindings list |
+| `src/FunLang/Ast.fs` | LetRec node with bindings list | VERIFIED | `LetRec of bindings: (string * string * TypeExpr option * Expr * Span) list * inExpr: Expr * span: Span` at line 79 |
+| `src/FunLang/Parser.fsy` | Grammar rules for `let rec ... and ... in expr` | VERIFIED | 4 expression-level rules using `LetRecContinuation` nonterminal (lines 176-200) |
+| `src/FunLang/Bidir.fs` | Multi-binding simultaneous env type synthesis | VERIFIED | 36 lines of real implementation (lines 301-336): fresh type vars, simultaneous env, unification, generalization |
+| `src/FunLang/Infer.fs` | Multi-binding simultaneous env type inference | VERIFIED | 35 lines of real implementation (lines 266-301): same pattern as Bidir using `inferWithContext` |
+| `src/FunLang/Eval.fs` | sharedEnvRef mutual closure linking | VERIFIED | 12 lines (lines 1358-1370): `sharedEnvRef` pattern with `BuiltinValue` wrappers |
+| `src/FunLang/Format.fs` | Pretty-printer for multi-binding LetRec | VERIFIED | Handles bindings list with `and` separator (lines 149-157) |
+| `src/FunLang/TypeCheck.fs` | Collector functions iterate bindings list | VERIFIED | `collectMatches`, `collectTryWiths`, `collectModuleRefs`, `rewriteModuleAccess` all handle LetRec bindings list |
 | `tests/flt/file/let/letrec-mutual-expr.flt` | Positive test cases | VERIFIED | 8 test cases: even/odd, 3-binding, param annotations, return annotations, nested in function, nested in match, single-binding regression |
 | `tests/flt/file/let/letrec-mutual-expr-error.flt` | Error rejection test | VERIFIED | Type mismatch correctly rejected |
 

@@ -1,0 +1,18 @@
+// Test: MutableList Prelude module functions (COLL-04)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let ml = MutableList.create ()
+let _ = MutableList.add ml "a"
+let _ = MutableList.add ml "b"
+let _ = MutableList.add ml "c"
+let _ = println (to_string (MutableList.count ml))
+let _ = println (MutableList.get ml 0)
+let _ = println (MutableList.get ml 2)
+let _ = MutableList.set ml 1 "B"
+let _ = println (MutableList.get ml 1)
+// --- Output:
+3
+a
+c
+B
+()

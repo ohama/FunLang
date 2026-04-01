@@ -2,7 +2,7 @@
 
 ## 발견 경위
 
-LangBackend `.planning/` Phase 40 (Multi-file Import)과 LangThree의 기존 import 구현을 비교한 결과,
+LangBackend `.planning/` Phase 40 (Multi-file Import)과 FunLang의 기존 import 구현을 비교한 결과,
 **경로 해석 전략이 불일치**하는 것을 확인했다.
 
 ## 현재 문제
@@ -97,7 +97,7 @@ FunLexYacc는 임의 파일을 open할 수 있으므로 순환 감지 로직이 
 
 ### 변경 대상
 
-**파일**: `src/LangThree/TypeCheck.fs` (727-731행)
+**파일**: `src/FunLang/TypeCheck.fs` (727-731행)
 
 ### Before
 
@@ -154,7 +154,7 @@ tests/flt/file/import/
 
 이 수정 후 두 프로젝트의 경로 해석 동작이 일치한다:
 
-| | LangThree (수정 후) | LangBackend COMP-04 |
+| | FunLang (수정 후) | LangBackend COMP-04 |
 |---|---|---|
 | 절대 경로 | 그대로 사용 | 그대로 사용 |
 | 상대 경로 | importing 파일 디렉토리 기준 | importing 파일 디렉토리 기준 |

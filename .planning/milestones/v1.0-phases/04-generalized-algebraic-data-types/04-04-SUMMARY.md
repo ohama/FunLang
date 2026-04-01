@@ -24,8 +24,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - "src/LangThree/Exhaustive.fs"
-    - "src/LangThree/TypeCheck.fs"
+    - "src/FunLang/Exhaustive.fs"
+    - "src/FunLang/TypeCheck.fs"
 
 key-decisions:
   - "Two-phase type inference: generic type for constructor lookup, specific type for GADT filtering"
@@ -65,8 +65,8 @@ Each task was committed atomically:
 1. **Task 1: GADT-aware constructor filtering for exhaustiveness** - `6306170` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Exhaustive.fs` - Added filterPossibleConstructors function for GADT branch filtering
-- `src/LangThree/TypeCheck.fs` - Added inferSpecificScrutineeType, wired filtering into exhaustiveness/redundancy checks
+- `src/FunLang/Exhaustive.fs` - Added filterPossibleConstructors function for GADT branch filtering
+- `src/FunLang/TypeCheck.fs` - Added inferSpecificScrutineeType, wired filtering into exhaustiveness/redundancy checks
 
 ## Decisions Made
 - **Two-phase type inference:** inferTypeFromPatterns returns generic type (for getConstructorsFromEnv to find all constructors), while inferSpecificScrutineeType returns the raw ResultType for GADT filtering. This avoids modifying the existing working code path.

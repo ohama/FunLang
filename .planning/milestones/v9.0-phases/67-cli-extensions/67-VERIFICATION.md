@@ -30,9 +30,9 @@ score: 5/5 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Cli.fs` | Check, Deps, Prelude DU cases with Usage strings | VERIFIED | L11-13: `\| Check`, `\| Deps`, `\| Prelude of path: string`. L23-25: Usage strings for all three. |
-| `src/LangThree/Prelude.fs` | resolvePreludeDir with priority chain; tcCache/evalCache Dictionaries | VERIFIED | L247-257: resolvePreludeDir; L83-87: tcCache and evalCache; L260-261: loadPrelude(explicitPath: string option). |
-| `src/LangThree/Program.fs` | --check branch, --deps branch, preludePath extraction before loadPrelude | VERIFIED | L79-85: preludePath extraction before loadPrelude. L128-153: --check branch. L155-174: --deps branch. collectDeps L46-66. |
+| `src/FunLang/Cli.fs` | Check, Deps, Prelude DU cases with Usage strings | VERIFIED | L11-13: `\| Check`, `\| Deps`, `\| Prelude of path: string`. L23-25: Usage strings for all three. |
+| `src/FunLang/Prelude.fs` | resolvePreludeDir with priority chain; tcCache/evalCache Dictionaries | VERIFIED | L247-257: resolvePreludeDir; L83-87: tcCache and evalCache; L260-261: loadPrelude(explicitPath: string option). |
+| `src/FunLang/Program.fs` | --check branch, --deps branch, preludePath extraction before loadPrelude | VERIFIED | L79-85: preludePath extraction before loadPrelude. L128-153: --check branch. L155-174: --deps branch. collectDeps L46-66. |
 | `tests/flt/file/cli/cli-check.flt` | --check flt tests (valid + error) | VERIFIED | Tests --check exits 0 with "OK (0 warnings)" for valid code, exits 1 with "Type mismatch" for type error. |
 | `tests/flt/file/cli/cli-deps.flt` | --deps flt tests (single file + import tree) | VERIFIED | Tests single-file output and 2-level indented dependency tree. |
 | `tests/flt/file/cli/cli-prelude.flt` | --prelude flt test | VERIFIED | Tests explicit Prelude path with abs(-5)=5. |

@@ -23,10 +23,10 @@ tech-stack:
 
 key-files:
   modified:
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Infer.fs
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Infer.fs
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Add recEnv as separate parameter rather than TypeContext record to minimize disruption"
@@ -67,10 +67,10 @@ Each task was committed atomically:
 2. **Task 2: TypeCheck.fs builds RecordEnv, validates uniqueness, returns RecordEnv** - `9bc1634` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Bidir.fs` - Added recEnv parameter to synth/check/inferBinaryOp, added RecordExpr/FieldAccess/RecordUpdate synth cases
-- `src/LangThree/Infer.fs` - Added RecordPat case to inferPattern
-- `src/LangThree/TypeCheck.fs` - RecordEnv construction, field uniqueness validation, collectMatches for records, return type change
-- `tests/LangThree.Tests/IntegrationTests.fs` - Updated pattern matches for new typeCheckModule return type
+- `src/FunLang/Bidir.fs` - Added recEnv parameter to synth/check/inferBinaryOp, added RecordExpr/FieldAccess/RecordUpdate synth cases
+- `src/FunLang/Infer.fs` - Added RecordPat case to inferPattern
+- `src/FunLang/TypeCheck.fs` - RecordEnv construction, field uniqueness validation, collectMatches for records, return type change
+- `tests/FunLang.Tests/IntegrationTests.fs` - Updated pattern matches for new typeCheckModule return type
 
 ## Decisions Made
 - Added recEnv as a separate parameter to synth/check/inferBinaryOp rather than introducing a TypeContext record, keeping changes mechanical and minimizing disruption
@@ -85,14 +85,14 @@ Each task was committed atomically:
 - **Found during:** Task 1 (Bidir.fs refactor)
 - **Issue:** LetRec case had local variable named `recEnv` that would shadow the new parameter
 - **Fix:** Renamed local variable to `recTypeEnv`
-- **Files modified:** src/LangThree/Bidir.fs
+- **Files modified:** src/FunLang/Bidir.fs
 - **Verification:** Build succeeds, all tests pass
 
 **2. [Rule 3 - Blocking] Fixed TypeCheck.fs synth call early**
 - **Found during:** Task 1 (build verification)
 - **Issue:** TypeCheck.fs calls Bidir.synth without recEnv, preventing compilation
 - **Fix:** Added Map.empty as placeholder, replaced with actual recEnv in Task 2
-- **Files modified:** src/LangThree/TypeCheck.fs
+- **Files modified:** src/FunLang/TypeCheck.fs
 - **Verification:** Build succeeds
 
 ---

@@ -379,8 +379,8 @@ let compileMatch (clauses: MatchClause list) : DecisionTree * TestVar =
 - MatchCompile.fs read directly (2026-03-25) — lines 1-16, 108-165, 198-253
 - TypeCheck.fs read directly (2026-03-25) — lines 590-600, 869-872
 - Infer.fs read directly (2026-03-25) — lines 21-28
-- tests/LangThree.Tests/ModuleTests.fs read directly (2026-03-25) — evalModule, evalFileModule, testSequenced usage
-- tests/LangThree.Tests/MatchCompileTests.fs read directly (2026-03-25)
+- tests/FunLang.Tests/ModuleTests.fs read directly (2026-03-25) — evalModule, evalFileModule, testSequenced usage
+- tests/FunLang.Tests/MatchCompileTests.fs read directly (2026-03-25)
 - Git log + diff commit 3933b30 (2026-03-25) — Phase 30-02 change that introduced the TCO regression
 - TestResults/results.trx read directly (2026-03-25) — confirmed failure message and stack trace
 

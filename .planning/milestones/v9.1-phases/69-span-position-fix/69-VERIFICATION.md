@@ -30,8 +30,8 @@ re_verification: false
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/IndentFilter.fs` | PositionedToken type, withPosOf helper, filterPositioned function | VERIFIED | 627 lines; `type PositionedToken` at line 6; `withPosOf` at line 13; `filterPositioned` at line 447 — all substantive, no stubs |
-| `src/LangThree/Program.fs` | Updated lexAndFilter returning PositionedToken list, updated parseModuleFromString with lb.StartPos/EndPos assignment | VERIFIED | 431 lines; `lexAndFilter` returns `PositionedToken list` at line 20; `lb.StartPos <- pt.StartPos` at line 44; no stub patterns found |
+| `src/FunLang/IndentFilter.fs` | PositionedToken type, withPosOf helper, filterPositioned function | VERIFIED | 627 lines; `type PositionedToken` at line 6; `withPosOf` at line 13; `filterPositioned` at line 447 — all substantive, no stubs |
+| `src/FunLang/Program.fs` | Updated lexAndFilter returning PositionedToken list, updated parseModuleFromString with lb.StartPos/EndPos assignment | VERIFIED | 431 lines; `lexAndFilter` returns `PositionedToken list` at line 20; `lb.StartPos <- pt.StartPos` at line 44; no stub patterns found |
 
 ### Key Link Verification
 

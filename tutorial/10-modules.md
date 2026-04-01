@@ -2,7 +2,7 @@
 
 코드가 조금만 커져도 이름 충돌이 발생합니다. `parse`라는 함수가 파일마다 있다면 어느 파일의 `parse`인지 명확하지 않습니다. `width`가 설정 값인지 캔버스 크기인지 알 수 없을 때도 있습니다. 모듈은 이 문제를 해결하기 위한 도구입니다.
 
-LangThree의 모듈 시스템은 F#과 OCaml의 영향을 받았습니다. 중괄호나 `end` 키워드 없이 들여쓰기만으로 범위를 정의하며, 관련 있는 값과 함수를 하나의 이름 아래 묶어 논리적인 단위를 만들 수 있습니다.
+FunLang의 모듈 시스템은 F#과 OCaml의 영향을 받았습니다. 중괄호나 `end` 키워드 없이 들여쓰기만으로 범위를 정의하며, 관련 있는 값과 함수를 하나의 이름 아래 묶어 논리적인 단위를 만들 수 있습니다.
 
 ## 모듈 선언
 
@@ -16,7 +16,7 @@ module Config =
     let title = "My App"
 let result = Config.title + " (" + to_string Config.width + "x" + to_string Config.height + ")"
 
-$ langthree config.l3
+$ funlang config.l3
 "My App (800x600)"
 ```
 
@@ -35,7 +35,7 @@ module Math =
     let triple x = x * 3
 let result = Math.double 5 + Math.triple 3
 
-$ langthree qualified.l3
+$ funlang qualified.l3
 19
 ```
 
@@ -53,7 +53,7 @@ module M =
 open M
 let result = x + y
 
-$ langthree open_mod.l3
+$ funlang open_mod.l3
 30
 ```
 
@@ -72,7 +72,7 @@ module Outer =
         let value = 42
 let result = Outer.Inner.value
 
-$ langthree nested.l3
+$ funlang nested.l3
 42
 ```
 
@@ -92,7 +92,7 @@ module B =
     let y = 20
 let result = A.x + B.y
 
-$ langthree multi_mod.l3
+$ funlang multi_mod.l3
 30
 ```
 
@@ -116,7 +116,7 @@ let result =
     | Green -> "green"
     | Blue -> "blue"
 
-$ langthree mod_type.l3
+$ funlang mod_type.l3
 "green"
 ```
 
@@ -130,7 +130,7 @@ module M =
         | MSome of int
 let result = M.MSome 42
 
-$ langthree mod_ctor.l3
+$ funlang mod_ctor.l3
 MSome 42
 ```
 
@@ -152,7 +152,7 @@ module M =
         | MNone -> 0
 let result = M.unwrap (M.MSome 42)
 
-$ langthree mod_fn.l3
+$ funlang mod_fn.l3
 42
 ```
 
@@ -168,7 +168,7 @@ namespace App
 let x = 42
 let result = x + 1
 
-$ langthree ns.l3
+$ funlang ns.l3
 43
 ```
 
@@ -190,7 +190,7 @@ module App =
     let version = 1
 let result = App.name + " v" + to_string App.version + " -> " + DB.host + ":" + to_string DB.port
 
-$ langthree layers.l3
+$ funlang layers.l3
 "MyService v1 -> localhost:5432"
 ```
 
@@ -209,7 +209,7 @@ $ cat main.l3
 open "lib.fun"
 let result = add 3 (double 4)
 
-$ langthree main.l3
+$ funlang main.l3
 11
 ```
 
@@ -246,7 +246,7 @@ $ cat main.l3
 open "utils/format.fun"
 let result = formatSquare 7
 
-$ langthree main.l3
+$ funlang main.l3
 "49"
 ```
 
@@ -266,7 +266,7 @@ $ cat main.l3
 open "mathlib.fun"
 let result = Math.square 5 + Math.cube 2
 
-$ langthree main.l3
+$ funlang main.l3
 33
 ```
 
@@ -274,7 +274,7 @@ $ langthree main.l3
 
 ### 순환 임포트 감지
 
-LangThree는 순환 임포트를 자동으로 감지합니다. `a.fun`이 `b.fun`을 임포트하고 `b.fun`이 다시 `a.fun`을 임포트하면 오류가 발생합니다:
+FunLang는 순환 임포트를 자동으로 감지합니다. `a.fun`이 `b.fun`을 임포트하고 `b.fun`이 다시 `a.fun`을 임포트하면 오류가 발생합니다:
 
 ```
 Error: Circular module dependency: a.fun → b.fun → a.fun
@@ -297,7 +297,7 @@ module Config =
 
 let result = Config.host + ":" + to_string Config.port
 
-$ langthree readable.l3
+$ funlang readable.l3
 "localhost:5432"
 ```
 
@@ -322,7 +322,7 @@ module Colors =
 open Colors
 let result = show Green
 
-$ langthree mod_tc.l3
+$ funlang mod_tc.l3
 "green"
 ```
 

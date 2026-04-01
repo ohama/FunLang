@@ -74,7 +74,7 @@ SemiExprList:
 
 ## Example
 
-LangThree에서 실제로 수행한 변경:
+FunLang에서 실제로 수행한 변경:
 
 ```
 파일 3개, 변경 ~15줄:

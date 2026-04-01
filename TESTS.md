@@ -1,4 +1,4 @@
-# LangThree Test Cases Reference
+# FunLang Test Cases Reference
 
 Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 
@@ -8,31 +8,31 @@ Lexer/parser generator 검증을 위한 테스트 케이스 모음.
 
 ```bash
 # F# unit tests (224 tests)
-dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
+dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 
 # fslit integration tests (698 tests)
 /path/to/FsLit tests/flt/
 
 # Expression mode (단일 표현식)
-langthree --expr '1 + 2 * 3'
+funlang --expr '1 + 2 * 3'
 
 # File mode (파일 실행)
-langthree myfile.l3
+funlang myfile.l3
 
 # AST 출력
-langthree --emit-ast --expr '1 + 2'
-langthree --emit-ast myfile.l3
+funlang --emit-ast --expr '1 + 2'
+funlang --emit-ast myfile.l3
 
 # 타입 출력
-langthree --emit-type --expr 'fun x -> x + 1'
-langthree --emit-type myfile.l3
+funlang --emit-type --expr 'fun x -> x + 1'
+funlang --emit-type myfile.l3
 ```
 
 ### 1.2 fslit 파일 형식
 
 ```
 --- Command:
-langthree %input
+funlang %input
 --- Input:
 let result = 1 + 2
 --- Output:

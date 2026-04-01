@@ -31,14 +31,14 @@ gaps: []
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | ModuleDecl, OpenDecl, NamespaceDecl in Decl; NamedModule, NamespacedModule in Module | VERIFIED | Lines 221-223 (Decl), Lines 229-230 (Module); 249 lines total, substantive |
-| `src/LangThree/Diagnostic.fs` | E0501-E0504 error codes | VERIFIED | Lines 37-40 (TypeErrorKind variants), Lines 254-273 (formatting); all 4 codes present |
-| `src/LangThree/Lexer.fsl` | module/namespace/open keywords | VERIFIED | Lines 58-60: MODULE, NAMESPACE, OPEN tokens |
-| `src/LangThree/Parser.fsy` | Grammar rules for module system | VERIFIED | Lines 52 (tokens), 321-325 (top-level module/namespace), 340-348 (nested module/open in Decls), 411-413 (QualifiedIdent) |
-| `src/LangThree/TypeCheck.fs` | ModuleExports, typeCheckDecls, circular dependency detection | VERIFIED | 592 lines; ModuleExports type (51-56), resolveModule (73-91), detectCircularDeps (95-123), buildDependencyGraph (126-141), typeCheckDecls (430-567), typeCheckModule (572-591) |
-| `src/LangThree/Eval.fs` | ModuleValueEnv, eval with moduleEnv, FieldAccess dispatch | VERIFIED | 502 lines; ModuleValueEnv type (11-16), eval takes moduleEnv (123), FieldAccess module dispatch (332-396), evalModuleDecls (426-502) |
-| `src/LangThree/Program.fs` | Module pipeline wiring | VERIFIED | Lines 143-176: file mode uses parseModule -> typeCheckModule -> evalModuleDecls pipeline with moduleEnv threading |
-| `tests/LangThree.Tests/ModuleTests.fs` | 17 integration tests | VERIFIED | 188 lines, 17 tests covering all 5 SCs + ADT-in-module + record regression + error cases; all 17 pass |
+| `src/FunLang/Ast.fs` | ModuleDecl, OpenDecl, NamespaceDecl in Decl; NamedModule, NamespacedModule in Module | VERIFIED | Lines 221-223 (Decl), Lines 229-230 (Module); 249 lines total, substantive |
+| `src/FunLang/Diagnostic.fs` | E0501-E0504 error codes | VERIFIED | Lines 37-40 (TypeErrorKind variants), Lines 254-273 (formatting); all 4 codes present |
+| `src/FunLang/Lexer.fsl` | module/namespace/open keywords | VERIFIED | Lines 58-60: MODULE, NAMESPACE, OPEN tokens |
+| `src/FunLang/Parser.fsy` | Grammar rules for module system | VERIFIED | Lines 52 (tokens), 321-325 (top-level module/namespace), 340-348 (nested module/open in Decls), 411-413 (QualifiedIdent) |
+| `src/FunLang/TypeCheck.fs` | ModuleExports, typeCheckDecls, circular dependency detection | VERIFIED | 592 lines; ModuleExports type (51-56), resolveModule (73-91), detectCircularDeps (95-123), buildDependencyGraph (126-141), typeCheckDecls (430-567), typeCheckModule (572-591) |
+| `src/FunLang/Eval.fs` | ModuleValueEnv, eval with moduleEnv, FieldAccess dispatch | VERIFIED | 502 lines; ModuleValueEnv type (11-16), eval takes moduleEnv (123), FieldAccess module dispatch (332-396), evalModuleDecls (426-502) |
+| `src/FunLang/Program.fs` | Module pipeline wiring | VERIFIED | Lines 143-176: file mode uses parseModule -> typeCheckModule -> evalModuleDecls pipeline with moduleEnv threading |
+| `tests/FunLang.Tests/ModuleTests.fs` | 17 integration tests | VERIFIED | 188 lines, 17 tests covering all 5 SCs + ADT-in-module + record regression + error cases; all 17 pass |
 
 ### Key Link Verification
 

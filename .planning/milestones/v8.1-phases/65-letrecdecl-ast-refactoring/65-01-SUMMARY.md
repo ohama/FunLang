@@ -23,13 +23,13 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
 
 key-decisions:
   - "Added TypeExpr option as 3rd field in both LetRec DU case and LetRecDecl binding tuple, minimal change consistent with existing codebase style"
@@ -68,13 +68,13 @@ Each task was committed atomically:
 1. **Task 1: Change AST definitions and update all 28 pattern-match sites** - `c144f78` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - LetRec and LetRecDecl type definitions expanded, spanOf updated
-- `src/LangThree/Parser.fsy` - All 14 LetRec + 14 LetRecDecl parser rules updated to capture/pass type
-- `src/LangThree/TypeCheck.fs` - 7 destructuring sites updated (4 LetRec + 3 LetRecDecl)
-- `src/LangThree/Eval.fs` - 2 sites updated (ignore type at runtime)
-- `src/LangThree/Format.fs` - 2 sites updated to print type annotation when present
-- `src/LangThree/Bidir.fs` - 1 LetRec pattern updated (logic change deferred)
-- `src/LangThree/Infer.fs` - 1 LetRec pattern updated (logic change deferred)
+- `src/FunLang/Ast.fs` - LetRec and LetRecDecl type definitions expanded, spanOf updated
+- `src/FunLang/Parser.fsy` - All 14 LetRec + 14 LetRecDecl parser rules updated to capture/pass type
+- `src/FunLang/TypeCheck.fs` - 7 destructuring sites updated (4 LetRec + 3 LetRecDecl)
+- `src/FunLang/Eval.fs` - 2 sites updated (ignore type at runtime)
+- `src/FunLang/Format.fs` - 2 sites updated to print type annotation when present
+- `src/FunLang/Bidir.fs` - 1 LetRec pattern updated (logic change deferred)
+- `src/FunLang/Infer.fs` - 1 LetRec pattern updated (logic change deferred)
 
 ## Decisions Made
 - Added TypeExpr option as the 3rd positional field in both the LetRec DU case and the LetRecDecl binding tuple. This is the minimal change that follows existing codebase conventions (tuples, not records).
@@ -88,7 +88,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (AST changes)
 - **Issue:** Plan listed Bidir.fs and Infer.fs under "key logic changes for Plan 02" but did not include them in Plan 01's task. However, they destructure LetRec and would fail to compile without updating the pattern.
 - **Fix:** Added `_paramTyOpt` wildcard to both files' LetRec patterns
-- **Files modified:** src/LangThree/Bidir.fs, src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Bidir.fs, src/FunLang/Infer.fs
 - **Verification:** Build succeeds, all tests pass
 - **Committed in:** c144f78
 

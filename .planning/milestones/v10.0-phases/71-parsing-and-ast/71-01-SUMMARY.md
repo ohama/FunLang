@@ -31,13 +31,13 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "FATARROW (=>) placed after LARROW (<-) in Lexer.fsl so it's matched before the op_char catch-all — no conflict with >= operator which is handled by GE token"
@@ -81,13 +81,13 @@ completed: 2026-03-31
 **Plan metadata:** (docs commit below)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - TEConstrained variant in TypeExpr; TypeClassDecl, InstanceDecl variants in Decl; declSpanOf updated
-- `src/LangThree/Lexer.fsl` - TYPECLASS, INSTANCE keywords; FATARROW operator (placed after LARROW, before op_char catch-all)
-- `src/LangThree/Parser.fsy` - TYPECLASS/INSTANCE/FATARROW token declarations; TypeExpr extended with ConstraintList; new nonterminals; typeclass/instance Decls rules
-- `src/LangThree/Elaborate.fs` - TEConstrained stubs in all three TypeExpr-matching functions
-- `src/LangThree/TypeCheck.fs` - failwith stubs for TypeClassDecl and InstanceDecl (before NamespaceDecl arm)
-- `src/LangThree/Eval.fs` - failwith stubs for TypeClassDecl and InstanceDecl (after TypeAliasDecl arm)
-- `src/LangThree/Format.fs` - TEConstrained in formatTypeExpr; TypeClassDecl/InstanceDecl in formatDecl; three new tokens in formatToken
+- `src/FunLang/Ast.fs` - TEConstrained variant in TypeExpr; TypeClassDecl, InstanceDecl variants in Decl; declSpanOf updated
+- `src/FunLang/Lexer.fsl` - TYPECLASS, INSTANCE keywords; FATARROW operator (placed after LARROW, before op_char catch-all)
+- `src/FunLang/Parser.fsy` - TYPECLASS/INSTANCE/FATARROW token declarations; TypeExpr extended with ConstraintList; new nonterminals; typeclass/instance Decls rules
+- `src/FunLang/Elaborate.fs` - TEConstrained stubs in all three TypeExpr-matching functions
+- `src/FunLang/TypeCheck.fs` - failwith stubs for TypeClassDecl and InstanceDecl (before NamespaceDecl arm)
+- `src/FunLang/Eval.fs` - failwith stubs for TypeClassDecl and InstanceDecl (after TypeAliasDecl arm)
+- `src/FunLang/Format.fs` - TEConstrained in formatTypeExpr; TypeClassDecl/InstanceDecl in formatDecl; three new tokens in formatToken
 
 ## Decisions Made
 - FATARROW placed after LARROW in lexer (not in keyword section) since `=>` is a two-char operator, not a keyword. This puts it before the `op_char op_char+` catch-all which would otherwise grab it.
@@ -102,7 +102,7 @@ completed: 2026-03-31
 - **Found during:** Task 2 build (1 warning: incomplete match on token type in Format.fs line 8)
 - **Issue:** Plan specified rendering for AST nodes but didn't mention the `formatToken` function which also matches on all Parser.token variants
 - **Fix:** Added three token cases to `formatToken`
-- **Files modified:** src/LangThree/Format.fs
+- **Files modified:** src/FunLang/Format.fs
 - **Verification:** Build shows 0 warnings after fix
 - **Committed in:** bae7352
 

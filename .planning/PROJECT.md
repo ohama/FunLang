@@ -1,4 +1,4 @@
-# LangThree
+# FunLang
 
 ## What This Is
 
@@ -202,7 +202,7 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 | BuiltinValue tailPos=true for TCO | BuiltinValue wrapper must eval body with tailPos=true to propagate TailCall to App trampoline | ✓ Good |
 | Local counter in compileMatch | Eliminated global mutable freshTestVar, each compileMatch call gets independent counter | ✓ Good |
 | ArrayValue uses Value array (no outer ref) | In-place element mutation via arr.[i] <- v; reference equality | ✓ Good |
-| HashtableValue uses Dictionary<Value, Value> | Reference equality; OOB/missing-key errors via LangThreeException | ✓ Good |
+| HashtableValue uses Dictionary<Value, Value> | Reference equality; OOB/missing-key errors via FunLangException | ✓ Good |
 | callValueRef forward reference pattern | Builtins that invoke user closures use mutable ref wired after eval defined | ✓ Good |
 | RefValue for mutable variables | Mutable vars stored as RefValue(Value ref) in env; closures share ref cells | ✓ Good |
 | Module-level mutableVars Set in Bidir.fs | Avoids threading mutableVars through 67+ synth/check call sites | ✓ Good |

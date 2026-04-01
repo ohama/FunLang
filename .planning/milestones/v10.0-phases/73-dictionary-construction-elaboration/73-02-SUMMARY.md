@@ -28,7 +28,7 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Expected output for show 42 is \"42\" (with quotes) because LangThree formatValue wraps StringValue in double quotes"
+  - "Expected output for show 42 is \"42\" (with quotes) because FunLang formatValue wraps StringValue in double quotes"
   - "Higher-order test uses helper let map_show to verify show is a first-class value passable to List.map"
   - "Multi-method test uses + for string concatenation (not ++) and verifies both methods callable independently"
 
@@ -74,7 +74,7 @@ Each task was committed atomically:
 ## Decisions Made
 - Expected output verified by running the binary directly before writing test files — ensures exact formatValue output is captured (StringValue wraps in quotes)
 - `map_show` helper function used in higher-order test to exercise first-class function passing, not just direct call
-- Used `+` for string concatenation in multi-method test (not `++` which is list append in LangThree)
+- Used `+` for string concatenation in multi-method test (not `++` which is list append in FunLang)
 
 ## Deviations from Plan
 

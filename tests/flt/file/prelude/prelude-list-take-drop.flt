@@ -1,0 +1,26 @@
+// Test: List.take, List.drop (PRE-04)
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Input:
+let xs = [1; 2; 3; 4; 5]
+let _ = println (to_string (List.take 3 xs))
+let _ = println (to_string (List.drop 3 xs))
+let _ = println (to_string (List.take 0 xs))
+let _ = println (to_string (List.drop 0 xs))
+let _ = println (to_string (List.take 5 xs))
+let _ = println (to_string (List.drop 5 xs))
+let _ = println (to_string (List.take 10 xs))
+let _ = println (to_string (List.drop 10 xs))
+let _ = println (to_string (List.take 2 []))
+let _ = println (to_string (List.drop 2 []))
+// --- Output:
+[1; 2; 3]
+[4; 5]
+[]
+[1; 2; 3; 4; 5]
+[1; 2; 3; 4; 5]
+[]
+[1; 2; 3; 4; 5]
+[]
+[]
+[]
+()

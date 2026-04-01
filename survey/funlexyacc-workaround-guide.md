@@ -1,12 +1,12 @@
-# FunLexYacc -> LangThree Native API Workaround Guide
+# FunLexYacc -> FunLang Native API Workaround Guide
 
 **Date:** 2026-03-29
-**Purpose:** FunLexYacc 소스코드의 .NET interop 호출을 LangThree v7.1 네이티브 API로 전환하는 가이드
+**Purpose:** FunLexYacc 소스코드의 .NET interop 호출을 FunLang v7.1 네이티브 API로 전환하는 가이드
 
 ## Overview
 
 FunLexYacc는 .NET interop을 통해 `Dictionary`, `HashSet`, `Queue`, `List<T>`, `StringBuilder` 등을 사용한다.
-LangThree v7.1에서 dot notation이 제거되었으므로, 모든 .NET 스타일 호출을 module function API로 전환해야 한다.
+FunLang v7.1에서 dot notation이 제거되었으므로, 모든 .NET 스타일 호출을 module function API로 전환해야 한다.
 
 이 문서는 51개 feature gap 중 **데이터 구조 관련 항목**의 워크어라운드를 정리한다.
 
@@ -14,7 +14,7 @@ LangThree v7.1에서 dot notation이 제거되었으므로, 모든 .NET 스타�
 
 ## 1. Dictionary -> Hashtable
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `Dictionary<K,V>()` | `Hashtable.create ()` | |
 | `dict.[key]` | `Hashtable.get ht key` | 없는 키 -> 런타임 에러 |
@@ -38,7 +38,7 @@ match dict.TryGetValue(key) with
 for kvp in dict do
   println kvp.Key
 
-// After (LangThree native)
+// After (FunLang native)
 let ht = Hashtable.create ()
 Hashtable.set ht key value
 match Hashtable.tryGetValue ht key with
@@ -54,7 +54,7 @@ for (k, v) in ht do
 
 ## 2. HashSet -> HashSet
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `HashSet<T>()` | `HashSet.create ()` | |
 | `hs.Add(v)` | `HashSet.add hs v` | `bool` 반환 (이미 있으면 false) |
@@ -81,7 +81,7 @@ if HashSet.contains visited s then ...
 
 ## 3. Queue -> Queue
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `Queue<T>()` | `Queue.create ()` | |
 | `q.Enqueue(v)` | `Queue.enqueue q v` | `()` 반환 |
@@ -110,7 +110,7 @@ while Queue.count worklist > 0 do
 
 ## 4. List\<T\> (Mutable) -> MutableList
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `List<T>()` | `MutableList.create ()` | |
 | `ml.Add(v)` | `MutableList.add ml v` | |
@@ -140,7 +140,7 @@ let first = items.[0]
 
 ## 5. StringBuilder -> StringBuilder
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `StringBuilder()` | `StringBuilder.create ()` | |
 | `sb.Append(s)` | `StringBuilder.add sb s` | `append` 아님! (`add`로 이름 변경) |
@@ -168,7 +168,7 @@ let result = StringBuilder.toString sb
 
 ## 6. String Properties/Methods -> String Module
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `s.Length` | `String.length s` | `int` 반환 |
 | `s.Contains(needle)` | `String.contains s needle` | `bool` 반환 |
@@ -197,7 +197,7 @@ if String.endsWith input ".fsl" then
 
 ## 7. Array Properties -> Array Module
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `arr.Length` | `Array.length arr` | `int` 반환 |
 | `arr.[i]` | `arr.[i]` | 인덱싱 구문 동일 |
@@ -213,7 +213,7 @@ if String.endsWith input ".fsl" then
 
 ## 8. Char Methods -> Char Module
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `Char.IsDigit(c)` | `Char.IsDigit c` | `bool` 반환 |
 | `Char.ToUpper(c)` | `Char.ToUpper c` | |
@@ -226,7 +226,7 @@ if String.endsWith input ".fsl" then
 
 ## 9. KeyValuePair -> Tuple Destructuring
 
-| .NET (FunLexYacc 현재) | LangThree Native | 비고 |
+| .NET (FunLexYacc 현재) | FunLang Native | 비고 |
 |------------------------|------------------|------|
 | `for kvp in dict do kvp.Key` | `for (k, v) in ht do k` | v7.1 tuple destructuring |
 | `for kvp in dict do kvp.Value` | `for (k, v) in ht do v` | |
@@ -239,15 +239,15 @@ if String.endsWith input ".fsl" then
 
 | Feature | 상태 | 워크어라운드 |
 |---------|------|-------------|
-| `sprintf "%d" 42` | LangThree 인터프리터 지원 | 그대로 사용 가능 |
-| `printfn "%d" x` | LangThree 인터프리터 지원 | 그대로 사용 가능 |
-| `open "file.fun"` | LangThree 인터프리터 지원 | 그대로 사용 가능 |
-| `get_args ()` | LangThree 인터프리터 지원 | 그대로 사용 가능 |
-| `read_file path` | LangThree 인터프리터 지원 | `.NET File.ReadAllText` 대체 |
-| `write_file path content` | LangThree 인터프리터 지원 | `.NET File.WriteAllText` 대체 |
-| `file_exists path` | LangThree 인터프리터 지원 | `.NET File.Exists` 대체 |
-| `eprintfn fmt args` | LangThree 인터프리터 지원 | 그대로 사용 가능 |
-| `[for x in coll -> expr]` | LangThree 인터프리터 지원 | 리스트 컴프리헨션 그대로 |
+| `sprintf "%d" 42` | FunLang 인터프리터 지원 | 그대로 사용 가능 |
+| `printfn "%d" x` | FunLang 인터프리터 지원 | 그대로 사용 가능 |
+| `open "file.fun"` | FunLang 인터프리터 지원 | 그대로 사용 가능 |
+| `get_args ()` | FunLang 인터프리터 지원 | 그대로 사용 가능 |
+| `read_file path` | FunLang 인터프리터 지원 | `.NET File.ReadAllText` 대체 |
+| `write_file path content` | FunLang 인터프리터 지원 | `.NET File.WriteAllText` 대체 |
+| `file_exists path` | FunLang 인터프리터 지원 | `.NET File.Exists` 대체 |
+| `eprintfn fmt args` | FunLang 인터프리터 지원 | 그대로 사용 가능 |
+| `[for x in coll -> expr]` | FunLang 인터프리터 지원 | 리스트 컴프리헨션 그대로 |
 | `List.sort/sortBy/...` | Prelude 지원 | 그대로 사용 가능 |
 
 ---

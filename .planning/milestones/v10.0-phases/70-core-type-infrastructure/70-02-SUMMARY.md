@@ -27,11 +27,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Program.fs
-    - tests/LangThree.Tests/GadtTests.fs
-    - tests/LangThree.Tests/ModuleTests.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Program.fs
+    - tests/FunLang.Tests/GadtTests.fs
+    - tests/FunLang.Tests/ModuleTests.fs
 
 key-decisions:
   - "Test helper call sites (GadtTests.fs, ModuleTests.fs) updated as part of Task 2 deviation fix"
@@ -71,11 +71,11 @@ Each task was committed atomically:
 2. **Task 2: Update all callers in Program.fs and Prelude.fs** - `d274725` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/TypeCheck.fs` - Extended typeCheckModuleWithPrelude signature and return type; updated typeCheckModule wrapper
-- `src/LangThree/Prelude.fs` - Added ClassEnv/InstEnv to PreludeResult; accumulation in loadPrelude; updated loadAndTypeCheckFileImpl
-- `src/LangThree/Program.fs` - All 5 call sites updated with ClassEnv/InstEnv args and expanded result destructuring
-- `tests/LangThree.Tests/GadtTests.fs` - Updated call site in parseAndEval helper
-- `tests/LangThree.Tests/ModuleTests.fs` - Updated call site in evalWithPrelude helper
+- `src/FunLang/TypeCheck.fs` - Extended typeCheckModuleWithPrelude signature and return type; updated typeCheckModule wrapper
+- `src/FunLang/Prelude.fs` - Added ClassEnv/InstEnv to PreludeResult; accumulation in loadPrelude; updated loadAndTypeCheckFileImpl
+- `src/FunLang/Program.fs` - All 5 call sites updated with ClassEnv/InstEnv args and expanded result destructuring
+- `tests/FunLang.Tests/GadtTests.fs` - Updated call site in parseAndEval helper
+- `tests/FunLang.Tests/ModuleTests.fs` - Updated call site in evalWithPrelude helper
 
 ## Decisions Made
 - `loadAndTypeCheckFileImpl` (file import handler) passes `Map.empty Map.empty` for ClassEnv/InstanceEnv because file imports do not declare typeclasses yet; the file cache stores only CtorEnv/RecEnv/Mods/TypeEnv as before
@@ -89,7 +89,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 verification (dotnet test)
 - **Issue:** Two test helpers called `typeCheckModuleWithPrelude` with the old arity; test build failed
 - **Fix:** Updated both call sites to pass two extra `Map.empty` args and destructure two extra `_classEnv/_instEnv` slots in the Ok result
-- **Files modified:** `tests/LangThree.Tests/GadtTests.fs`, `tests/LangThree.Tests/ModuleTests.fs`
+- **Files modified:** `tests/FunLang.Tests/GadtTests.fs`, `tests/FunLang.Tests/ModuleTests.fs`
 - **Verification:** `dotnet test` — 224/224 pass
 - **Committed in:** `d274725` (Task 2 commit)
 

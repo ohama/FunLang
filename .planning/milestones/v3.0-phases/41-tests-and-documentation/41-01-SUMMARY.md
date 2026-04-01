@@ -35,7 +35,7 @@ key-files:
 
 key-decisions:
   - "TST-20 tests use Array.map/fold/init via element-by-element Array.get calls rather than printing the whole array (avoids dependency on array print format)"
-  - "Array.fold test uses curried lambda fun acc -> fun x -> acc + x (multi-arg fun is a parse error in LangThree)"
+  - "Array.fold test uses curried lambda fun acc -> fun x -> acc + x (multi-arg fun is a parse error in FunLang)"
 
 patterns-established:
   - "flt HOF test pattern: create array with Array.ofList, apply HOF, read back with Array.get and println"
@@ -79,7 +79,7 @@ Each task was committed atomically:
 
 ## Decisions Made
 - Used `Array.get` element-by-element for map and init tests rather than printing the whole array — this avoids coupling the test to the array print format (`[|...|]`) which may change.
-- fold test uses `fun acc -> fun x -> acc + x` (required since multi-arg `fun acc x ->` is a parse error in LangThree, per accumulated STATE.md decision).
+- fold test uses `fun acc -> fun x -> acc + x` (required since multi-arg `fun acc x ->` is a parse error in FunLang, per accumulated STATE.md decision).
 
 ## Deviations from Plan
 

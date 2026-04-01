@@ -23,10 +23,10 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Ast.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "Token declarations added in Task 1 alongside lexer (deviation: plan had them in Task 2 but lexer depends on parser-generated tokens)"
@@ -69,10 +69,10 @@ Each task was committed atomically:
 2. **Task 2: Parser grammar for mutable fields and SetField** - `29e6ead` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Lexer.fsl` - Added MUTABLE keyword and LARROW operator tokens
-- `src/LangThree/Parser.fsy` - Token declarations, mutable RecordField rule, SetField production
-- `src/LangThree/Ast.fs` - SetField variant in Expr, spanOf updated
-- `src/LangThree/Format.fs` - Formatting for MUTABLE, LARROW tokens and SetField AST
+- `src/FunLang/Lexer.fsl` - Added MUTABLE keyword and LARROW operator tokens
+- `src/FunLang/Parser.fsy` - Token declarations, mutable RecordField rule, SetField production
+- `src/FunLang/Ast.fs` - SetField variant in Expr, spanOf updated
+- `src/FunLang/Format.fs` - Formatting for MUTABLE, LARROW tokens and SetField AST
 
 ## Decisions Made
 - Token declarations (%token MUTABLE LARROW) moved to Task 1 from Task 2 since lexer depends on parser-generated token types
@@ -86,7 +86,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (build verification)
 - **Issue:** Lexer.fsl imports token types from Parser module; MUTABLE/LARROW tokens must be declared in Parser.fsy before lexer can compile
 - **Fix:** Added %token MUTABLE LARROW declarations in Task 1 alongside lexer changes
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** Build succeeds
 - **Committed in:** 7890965 (Task 1 commit)
 

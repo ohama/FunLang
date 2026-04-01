@@ -31,7 +31,7 @@ key-files:
     - tutorial/SUMMARY.md
 
 key-decisions:
-  - "Used ^^ (not ^) for string concatenation — ^ is not a LangThree operator"
+  - "Used ^^ (not ^) for string concatenation — ^ is not a FunLang operator"
   - "Example 1 adapted from plan: replaced ^ with ^^ after binary verification"
 
 patterns-established:
@@ -44,7 +44,7 @@ completed: 2026-03-29
 
 # Phase 53 Plan 02: Practical Programming Tutorial Summary
 
-**223-line Korean tutorial chapter 22 covering newline sequencing, for-in loops, and Option/Result utilities, with all 8 code examples verified against the LangThree binary**
+**223-line Korean tutorial chapter 22 covering newline sequencing, for-in loops, and Option/Result utilities, with all 8 code examples verified against the FunLang binary**
 
 ## Performance
 
@@ -74,7 +74,7 @@ Each task was committed atomically:
 - `tutorial/SUMMARY.md` - Added chapter 22 entry after chapter 21
 
 ## Decisions Made
-- **`^^` not `^` for string concatenation:** The plan's example 1 used `"Hello, " ^ name` but `^` is not a LangThree operator. Tests and existing tutorial examples use `^^`. Updated example to use `^^` after binary verification returned "Error: unrecognized input".
+- **`^^` not `^` for string concatenation:** The plan's example 1 used `"Hello, " ^ name` but `^` is not a FunLang operator. Tests and existing tutorial examples use `^^`. Updated example to use `^^` after binary verification returned "Error: unrecognized input".
 
 ## Deviations from Plan
 
@@ -82,10 +82,10 @@ Each task was committed atomically:
 
 **1. [Rule 1 - Bug] Fixed string concat operator in example 1**
 - **Found during:** Task 1 (binary verification)
-- **Issue:** Plan specified `"Hello, " ^ name` but `^` is not a LangThree operator; binary returned "Error: unrecognized input"
-- **Fix:** Changed to `"Hello, " ^^ name` (the correct LangThree string concat operator)
+- **Issue:** Plan specified `"Hello, " ^ name` but `^` is not a FunLang operator; binary returned "Error: unrecognized input"
+- **Fix:** Changed to `"Hello, " ^^ name` (the correct FunLang string concat operator)
 - **Files modified:** tutorial/22-practical-programming.md
-- **Verification:** Binary ran successfully and returned `Hello, Alice\nWelcome to LangThree\n()`
+- **Verification:** Binary ran successfully and returned `Hello, Alice\nWelcome to FunLang\n()`
 - **Committed in:** dd86812 (Task 2 commit)
 
 ---
@@ -94,7 +94,7 @@ Each task was committed atomically:
 **Impact on plan:** Auto-fix necessary for correctness. The tutorial example now runs correctly.
 
 ## Issues Encountered
-- Plan example 1 used `^` for string concatenation, which is not a LangThree operator. The actual operator is `^^`. Discovered and corrected during binary verification in Task 1.
+- Plan example 1 used `^` for string concatenation, which is not a FunLang operator. The actual operator is `^^`. Discovered and corrected during binary verification in Task 1.
 
 ## User Setup Required
 None - no external service configuration required.

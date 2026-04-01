@@ -46,5 +46,5 @@ None -- plan executed exactly as written.
 
 - File has 269 lines (>= 100 required)
 - File has 12 `##` sections (10 main + 2 error subsections)
-- All code examples verified against LangThree binary
+- All code examples verified against FunLang binary
 - SUMMARY.md contains `20-mutable-variables.md` entry

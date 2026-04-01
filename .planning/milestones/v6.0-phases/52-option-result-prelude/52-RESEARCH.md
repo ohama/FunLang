@@ -1,12 +1,12 @@
 # Phase 52: Option/Result Prelude Utilities - Research
 
 **Researched:** 2026-03-29
-**Domain:** LangThree Prelude .fun files — additive Option/Result combinators
+**Domain:** FunLang Prelude .fun files — additive Option/Result combinators
 **Confidence:** HIGH
 
 ## Summary
 
-Phase 52 adds missing utility functions to `Prelude/Option.fun` and `Prelude/Result.fun`. Both files already exist with a partial set of combinators. This phase is purely additive: new functions are written in LangThree's own `.fun` syntax and require zero changes to any F# interpreter files (Ast.fs, Eval.fs, TypeCheck.fs, Parser.fsy, Bidir.fs, Infer.fs, IndentFilter.fs).
+Phase 52 adds missing utility functions to `Prelude/Option.fun` and `Prelude/Result.fun`. Both files already exist with a partial set of combinators. This phase is purely additive: new functions are written in FunLang's own `.fun` syntax and require zero changes to any F# interpreter files (Ast.fs, Eval.fs, TypeCheck.fs, Parser.fsy, Bidir.fs, Infer.fs, IndentFilter.fs).
 
 The language already has everything needed to implement all required functions: ADT pattern matching on `Some`/`None`/`Ok`/`Error`, lambdas, higher-order functions, the `()` unit literal, and the module/open system. All new functions follow the existing curried, pipeline-friendly style (`f -> container -> result`). No new syntax or runtime primitives are needed.
 
@@ -16,13 +16,13 @@ The ROADMAP success criteria uses `optionDefaultValue` and `resultDefaultValue` 
 
 ## Standard Stack
 
-This phase has no external library dependencies. The "stack" is the existing LangThree toolchain.
+This phase has no external library dependencies. The "stack" is the existing FunLang toolchain.
 
 ### Core
 
 | Tool | Version | Purpose | Why Standard |
 |------|---------|---------|--------------|
-| LangThree .fun syntax | current | Implement new Prelude functions | The Prelude is written in the language itself |
+| FunLang .fun syntax | current | Implement new Prelude functions | The Prelude is written in the language itself |
 | dotnet build | current | Compile the F# interpreter | Standard build command per CLAUDE.md |
 | FsLit flt runner | current | Integration test runner | Standard test runner per CLAUDE.md |
 
@@ -129,7 +129,7 @@ All new functions follow curried order (function first, container last) for `|>`
 | Result-to-Option conversion | Manual `match r with Ok x -> Some x | Error _ -> None` | `resultToOption` | Prelude function removes boilerplate |
 | Conditional Option | `if pred x then Some x else None` pattern | `optionFilter` | Standard combinator |
 
-**Key insight:** All functions in this phase are one-liners in LangThree's match syntax. The work is not algorithmic complexity — it is writing the correct implementations, naming them consistently, and providing comprehensive flt test coverage.
+**Key insight:** All functions in this phase are one-liners in FunLang's match syntax. The work is not algorithmic complexity — it is writing the correct implementations, naming them consistently, and providing comprehensive flt test coverage.
 
 ## Common Pitfalls
 
@@ -224,7 +224,7 @@ let resultDefaultValue def = fun r -> match r with | Ok x -> x | Error _ -> def
 
 ```
 // Test: Prelude optionIter applies function to Some
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = optionIter (fun x -> println (to_string x)) (Some 42)
 let _ = optionIter (fun x -> println (to_string x)) None
@@ -269,7 +269,7 @@ let _ = optionIter (fun x -> println (to_string x)) None
 - .planning/research/ARCHITECTURE.md — architecture analysis, feature 3
 - .planning/research/FEATURES.md — feature priority table, implementation notes
 - tests/flt/file/prelude/ — all existing prelude flt tests read directly
-- src/LangThree/Eval.fs — confirmed `TupleValue []` = `()` (unit)
+- src/FunLang/Eval.fs — confirmed `TupleValue []` = `()` (unit)
 - tests/flt/file/array/array-hof-iter.flt — `iter` test pattern for side effects
 
 ### Secondary (MEDIUM confidence)

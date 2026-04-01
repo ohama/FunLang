@@ -206,12 +206,12 @@ issue:
   severity: warning
   description: "Plans describe wiring in actions but don't verify it explicitly in <verify> sections"
   plans: ["02-02", "02-03"]
-  fix_hint: "Add verification step to check wiring exists: e.g., 'grep TData src/LangThree/Elaborate.fs' or test that exercises the connection"
+  fix_hint: "Add verification step to check wiring exists: e.g., 'grep TData src/FunLang/Elaborate.fs' or test that exercises the connection"
 ```
 
 **Analysis:** All key links are present in task actions with code snippets. However, verification sections only check that files compile, not that the specific wiring exists. For example:
 - Plan 02-03 Task 2 shows `inferPattern ctorEnv` signature but verify just checks build
-- Could add: "grep 'inferPattern.*ctorEnv' src/LangThree/Infer.fs" to verify signature
+- Could add: "grep 'inferPattern.*ctorEnv' src/FunLang/Infer.fs" to verify signature
 
 This is a quality improvement, not a blocker. The integration tests in Task 3 of each plan will catch missing wiring.
 
@@ -386,8 +386,8 @@ All blockers resolved. Phase 2 plans are **READY FOR EXECUTION**.
 2. **Enhance verification in Plan 02-03 Task 2:**
    ```bash
    # Add to verify section:
-   grep -q "inferPattern.*ConstructorEnv" src/LangThree/Infer.fs || echo "Missing ConstructorEnv parameter"
-   grep -q "synth.*ctorEnv" src/LangThree/Bidir.fs || echo "Missing ctorEnv threading"
+   grep -q "inferPattern.*ConstructorEnv" src/FunLang/Infer.fs || echo "Missing ConstructorEnv parameter"
+   grep -q "synth.*ctorEnv" src/FunLang/Bidir.fs || echo "Missing ctorEnv threading"
    ```
 
 3. **If context budget concerns arise during execution, split Plan 02-03:**

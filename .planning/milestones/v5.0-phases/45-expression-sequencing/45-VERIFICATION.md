@@ -31,7 +31,7 @@ score: 6/6 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Parser.fsy` | SeqExpr nonterminal + statement-position updates | VERIFIED | 741 lines; SeqExpr defined at line 111; 60+ SeqExpr references across start, Expr, MatchClauses, Decl, let-rec rules |
+| `src/FunLang/Parser.fsy` | SeqExpr nonterminal + statement-position updates | VERIFIED | 741 lines; SeqExpr defined at line 111; 60+ SeqExpr references across start, Expr, MatchClauses, Decl, let-rec rules |
 | `tests/flt/expr/seq/seq-basic.flt` | SEQ-01 verification | VERIFIED | 8 lines; PASS |
 | `tests/flt/expr/seq/seq-chained.flt` | SEQ-02 verification | VERIFIED | 6 lines; PASS |
 | `tests/flt/expr/seq/seq-in-block.flt` | SEQ-03 verification | VERIFIED | 11 lines; PASS |
@@ -69,7 +69,7 @@ None. All success criteria are verifiable programmatically via flt tests and bui
 
 ### Build Verification
 
-`dotnet build src/LangThree/LangThree.fsproj -c Release` — 0 errors, 0 warnings
+`dotnet build src/FunLang/FunLang.fsproj -c Release` — 0 errors, 0 warnings
 
 ### Test Results
 

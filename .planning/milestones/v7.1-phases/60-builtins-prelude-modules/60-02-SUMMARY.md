@@ -33,8 +33,8 @@ key-files:
     - "Prelude/String.fun"
     - "Prelude/Hashtable.fun"
     - "Prelude/StringBuilder.fun"
-    - "src/LangThree/TypeCheck.fs"
-    - "src/LangThree/Eval.fs"
+    - "src/FunLang/TypeCheck.fs"
+    - "src/FunLang/Eval.fs"
 
 key-decisions:
   - "StringBuilder.add replaces StringBuilder.append to avoid List.append scope conflict"
@@ -80,8 +80,8 @@ Each task was committed atomically:
 - `Prelude/String.fun` - Added endsWith, startsWith, trim, length, contains
 - `Prelude/Hashtable.fun` - Added tryGetValue, count
 - `Prelude/StringBuilder.fun` - Renamed append to add
-- `src/LangThree/TypeCheck.fs` - Module export builder includes shadow bindings with different type
-- `src/LangThree/Eval.fs` - Module value env uses reference equality to detect new closures
+- `src/FunLang/TypeCheck.fs` - Module export builder includes shadow bindings with different type
+- `src/FunLang/Eval.fs` - Module value env uses reference equality to detect new closures
 - `tests/flt/file/string/string-module-endswith-startswith-trim.flt` - Tests BLT-01/02/03, MOD-01
 - `tests/flt/file/string/string-module-length-contains.flt` - Tests String.length, String.contains
 - `tests/flt/file/hashtable/hashtable-module-trygetvalue-count.flt` - Tests BLT-04/05, MOD-02
@@ -91,7 +91,7 @@ Each task was committed atomically:
 - StringBuilder.add (not append) — avoids conflict with `open List` which brings `List.append` into scope
 - TypeCheck.fs fix: `outerV <> v` comparison uses F# structural equality on Scheme DU (int list * Type) which works correctly
 - Eval.fs fix: `obj.ReferenceEquals(v, parentV)` is `false` for new closures, correctly detects module-defined overrides
-- Pre-existing 5 test failures (old binary path `/Users/ohama/vibe/LangThree/...`) confirmed not regressions from this plan
+- Pre-existing 5 test failures (old binary path `/Users/ohama/vibe/FunLang/...`) confirmed not regressions from this plan
 
 ## Deviations from Plan
 
@@ -101,7 +101,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (flt test for String.length)
 - **Issue:** TypeCheck.fs `moduleTypeEnv` builder filtered out bindings already in outer env (`if Map.containsKey k env then acc`). This prevented `String.length` (string->int) from being exported because `length` (list->int) was already in scope from `open List`.
 - **Fix:** Changed check to include binding if type differs from outer env (`outerV <> v`). Applied same fix to Eval.fs using reference equality.
-- **Files modified:** src/LangThree/TypeCheck.fs, src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/TypeCheck.fs, src/FunLang/Eval.fs
 - **Verification:** `String.length "abc"` returns 3; `List.length [1;2;3]` still returns 3; full flt suite 632/637 (5 pre-existing failures unchanged)
 - **Committed in:** 7ef6628 (separate fix commit between tasks)
 

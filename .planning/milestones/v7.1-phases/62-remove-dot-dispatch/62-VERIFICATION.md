@@ -29,8 +29,8 @@ score: 4/4 must-haves verified
 
 | Artifact                         | Expected                                              | Status      | Details                                                                                           |
 | -------------------------------- | ----------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------- |
-| `src/LangThree/Eval.fs`          | FieldAccess handler with only record + module arms    | ✓ VERIFIED  | Lines 1379-1443: module access + RecordValue arm + error fallthrough. No value-type match arms.  |
-| `src/LangThree/Bidir.fs`         | FieldAccess synth handler with only TData record arm  | ✓ VERIFIED  | Lines 571-588: TData record lookup + FieldAccessOnNonRecord error. No TString/TArray/etc arms.   |
+| `src/FunLang/Eval.fs`          | FieldAccess handler with only record + module arms    | ✓ VERIFIED  | Lines 1379-1443: module access + RecordValue arm + error fallthrough. No value-type match arms.  |
+| `src/FunLang/Bidir.fs`         | FieldAccess synth handler with only TData record arm  | ✓ VERIFIED  | Lines 571-588: TData record lookup + FieldAccessOnNonRecord error. No TString/TArray/etc arms.   |
 | flt tests (String/Array/SB)      | Module API, no dot notation                           | ✓ VERIFIED  | property-string-length.flt, str-methods-*.flt, stringbuilder-*.flt — all use String.length etc. |
 | flt tests (HashSet/Queue/ML)     | Module API, no dot notation                           | ✓ VERIFIED  | hashset-basic.flt, queue-basic.flt, mutablelist-*.flt — all use HashSet.create/add etc.          |
 

@@ -23,11 +23,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Cli.fs
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - tests/LangThree.Tests/ModuleTests.fs
+    - src/FunLang/Cli.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - tests/FunLang.Tests/ModuleTests.fs
 
 key-decisions:
   - "loadPrelude uses standard string option parameter (not F# ?optional syntax) per plan specification"
@@ -69,11 +69,11 @@ Each task was committed atomically:
 2. **Task 2: Fix Program.fs Prelude loading order** - `5e93013` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Cli.fs` - Added Check, Deps, Prelude DU cases with Usage strings
-- `src/LangThree/Prelude.fs` - Added resolvePreludeDir, updated loadPrelude signature to `(explicitPath: string option)`
-- `src/LangThree/Program.fs` - Extract preludePath from Argu results before loadPrelude call
-- `src/LangThree/Repl.fs` - Updated loadPrelude call site to pass None
-- `tests/LangThree.Tests/ModuleTests.fs` - Updated loadPrelude call site to pass None
+- `src/FunLang/Cli.fs` - Added Check, Deps, Prelude DU cases with Usage strings
+- `src/FunLang/Prelude.fs` - Added resolvePreludeDir, updated loadPrelude signature to `(explicitPath: string option)`
+- `src/FunLang/Program.fs` - Extract preludePath from Argu results before loadPrelude call
+- `src/FunLang/Repl.fs` - Updated loadPrelude call site to pass None
+- `tests/FunLang.Tests/ModuleTests.fs` - Updated loadPrelude call site to pass None
 
 ## Decisions Made
 - Used standard `string option` parameter for `loadPrelude` (not F# `?explicitPath` optional syntax) per plan specification
@@ -87,7 +87,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (fix Program.fs Prelude loading order)
 - **Issue:** `loadPrelude()` signature changed to require `string option` parameter; Repl.fs and ModuleTests.fs were not in the plan's files_modified list but would not compile
 - **Fix:** Updated both files to pass `None` at their call sites
-- **Files modified:** src/LangThree/Repl.fs, tests/LangThree.Tests/ModuleTests.fs
+- **Files modified:** src/FunLang/Repl.fs, tests/FunLang.Tests/ModuleTests.fs
 - **Verification:** `dotnet test` passes with all 224 tests
 - **Committed in:** `5e93013` (Task 2 commit)
 

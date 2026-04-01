@@ -30,11 +30,11 @@ score: 5/5 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/IndentFilter.fs` | Context-aware indent processing with SyntaxContext | ✓ VERIFIED | 223 lines. Exports: `SyntaxContext` (line 15), `IndentConfig` (line 6), `filter` (line 179), `processNewline` (line 50), `processNewlineWithContext` (line 92), `formatExpectedIndents` (line 35), `validateIndentWidth` (line 45). All functions substantive (10-80 lines each). No stub patterns found. |
-| `src/LangThree/Parser.fsy` | Grammar rules for match, function app, module-level declarations | ✓ VERIFIED | 255 lines. Contains: Match grammar (line 75), MatchClauses (lines 180-183), AppExpr with INDENT/DEDENT (lines 126-136), Module/Decls/Decl (lines 223-255). No stub patterns. Exports `parseModule` (line 61). |
-| `src/LangThree/Lexer.fsl` | Tab rejection with clear error | ✓ VERIFIED | 121 lines. Line 33: tab rejection in main mode. Line 109: tab rejection in string mode. Error message: "Tab character not allowed, use spaces". |
-| `tests/LangThree.Tests/IndentFilterTests.fs` | Comprehensive test coverage | ✓ VERIFIED | 250 lines. Test suites: configTests (2), processNewlineTests (5), filterTests (3), matchExpressionTests (4), errorMessageTests (2), indentWidthValidationTests (3). Total: 19 tests. All pass. |
-| `tests/LangThree.Tests/IntegrationTests.fs` | End-to-end integration tests | ✓ VERIFIED | 209 lines. Test suites include: module-level tests (4), multi-line function app tests (4), basic integration tests (3). Total: 15 tests. All pass. |
+| `src/FunLang/IndentFilter.fs` | Context-aware indent processing with SyntaxContext | ✓ VERIFIED | 223 lines. Exports: `SyntaxContext` (line 15), `IndentConfig` (line 6), `filter` (line 179), `processNewline` (line 50), `processNewlineWithContext` (line 92), `formatExpectedIndents` (line 35), `validateIndentWidth` (line 45). All functions substantive (10-80 lines each). No stub patterns found. |
+| `src/FunLang/Parser.fsy` | Grammar rules for match, function app, module-level declarations | ✓ VERIFIED | 255 lines. Contains: Match grammar (line 75), MatchClauses (lines 180-183), AppExpr with INDENT/DEDENT (lines 126-136), Module/Decls/Decl (lines 223-255). No stub patterns. Exports `parseModule` (line 61). |
+| `src/FunLang/Lexer.fsl` | Tab rejection with clear error | ✓ VERIFIED | 121 lines. Line 33: tab rejection in main mode. Line 109: tab rejection in string mode. Error message: "Tab character not allowed, use spaces". |
+| `tests/FunLang.Tests/IndentFilterTests.fs` | Comprehensive test coverage | ✓ VERIFIED | 250 lines. Test suites: configTests (2), processNewlineTests (5), filterTests (3), matchExpressionTests (4), errorMessageTests (2), indentWidthValidationTests (3). Total: 19 tests. All pass. |
+| `tests/FunLang.Tests/IntegrationTests.fs` | End-to-end integration tests | ✓ VERIFIED | 209 lines. Test suites include: module-level tests (4), multi-line function app tests (4), basic integration tests (3). Total: 15 tests. All pass. |
 
 ### Key Link Verification
 
@@ -45,7 +45,7 @@ score: 5/5 must-haves verified
 | IndentFilter.fs | filter main loop | processNewlineWithContext called for NEWLINE | ✓ WIRED | Line 189: match on `Parser.NEWLINE col`. Line 196: calls `processNewlineWithContext config state col nextToken`. Line 197: updates state with returned newState. Line 198: yields emitted tokens. |
 | Parser.fsy | AppExpr grammar | INDENT/DEDENT for argument grouping | ✓ WIRED | Lines 128-130: `AppExpr INDENT AppArgs DEDENT` rule. Line 129: `List.fold` creates nested App nodes. Used by Factor (line 121). |
 | Parser.fsy | Module grammar | Top-level entry for multi-declaration files | ✓ WIRED | Line 226: `parseModule` start symbol. Lines 227-228: accepts `Decls EOF` or `EOF`. Line 61: declared as start symbol. Decls rule (lines 231-233), Decl rule (lines 238-250). |
-| IntegrationTests.fs | IndentFilter.filter | Test pipeline uses filter | ✓ WIRED | Line 4: `open LangThree.IndentFilter`. Line 19: `filter defaultConfig rawTokens`. Line 27: `filteredTokens` used to create tokenizer for parser. All integration tests go through this pipeline. |
+| IntegrationTests.fs | IndentFilter.filter | Test pipeline uses filter | ✓ WIRED | Line 4: `open FunLang.IndentFilter`. Line 19: `filter defaultConfig rawTokens`. Line 27: `filteredTokens` used to create tokenizer for parser. All integration tests go through this pipeline. |
 
 ### Requirements Coverage
 
@@ -83,14 +83,14 @@ None required. All success criteria can be verified programmatically through:
 ### Build Verification
 
 ```bash
-$ dotnet build src/LangThree/LangThree.fsproj
+$ dotnet build src/FunLang/FunLang.fsproj
 Build succeeded with 1 warning (Format.fs pattern match - non-blocking)
 ```
 
 ### Test Verification
 
 ```bash
-$ dotnet test tests/LangThree.Tests/LangThree.Tests.fsproj
+$ dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 Passed: 34, Failed: 0, Skipped: 0, Total: 34, Duration: 48ms
 ```
 
@@ -139,14 +139,14 @@ Passed: 34, Failed: 0, Skipped: 0, Total: 34, Duration: 48ms
 
 **SyntaxContext usage:**
 ```bash
-$ grep -n "SyntaxContext\|InMatch\|InFunctionApp" src/LangThree/IndentFilter.fs | wc -l
+$ grep -n "SyntaxContext\|InMatch\|InFunctionApp" src/FunLang/IndentFilter.fs | wc -l
 14 occurrences across the file
 ```
 
 **filter pipeline:**
 ```bash
-$ grep -n "filter.*defaultConfig\|open.*IndentFilter" tests/LangThree.Tests/IntegrationTests.fs
-4:open LangThree.IndentFilter
+$ grep -n "filter.*defaultConfig\|open.*IndentFilter" tests/FunLang.Tests/IntegrationTests.fs
+4:open FunLang.IndentFilter
 19:    filter defaultConfig rawTokens |> Seq.toList
 ```
 

@@ -274,13 +274,13 @@ Each changes from destructuring a single `(name, param, _, rhs, body, _)` to ite
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/LangThree/Ast.fs` -- Current LetRec (line 79) and LetRecDecl (line 360) definitions
-- `src/LangThree/Parser.fsy` -- Expression rules (lines 176-206), module rules (lines 844-919)
-- `src/LangThree/Bidir.fs` -- LetRec synth (line 302)
-- `src/LangThree/Infer.fs` -- LetRec infer (line 267)
-- `src/LangThree/TypeCheck.fs` -- LetRecDecl type checking (lines 852-903), collectors (lines 350, 483, 569, 647)
-- `src/LangThree/Eval.fs` -- LetRec eval (line 1359), LetRecDecl eval (line 1632)
-- `src/LangThree/Format.fs` -- LetRec format (line 149), LetRecDecl format (line 325)
+- `src/FunLang/Ast.fs` -- Current LetRec (line 79) and LetRecDecl (line 360) definitions
+- `src/FunLang/Parser.fsy` -- Expression rules (lines 176-206), module rules (lines 844-919)
+- `src/FunLang/Bidir.fs` -- LetRec synth (line 302)
+- `src/FunLang/Infer.fs` -- LetRec infer (line 267)
+- `src/FunLang/TypeCheck.fs` -- LetRecDecl type checking (lines 852-903), collectors (lines 350, 483, 569, 647)
+- `src/FunLang/Eval.fs` -- LetRec eval (line 1359), LetRecDecl eval (line 1632)
+- `src/FunLang/Format.fs` -- LetRec format (line 149), LetRecDecl format (line 325)
 
 ## Metadata
 

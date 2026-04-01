@@ -28,8 +28,8 @@ key-files:
     - tests/flt/file/property/property-array-length.flt
     - tests/flt/file/property/property-string-contains.flt
   modified:
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
 
 decisions:
   - "Contains returns BuiltinValue (curried function) so App(FieldAccess(...), arg) dispatch works automatically"
@@ -69,7 +69,7 @@ Extended the `FieldAccess` arm in `Bidir.fs` (type checker) and `Eval.fs` (evalu
 
 ## Verification
 
-- `dotnet build src/LangThree/LangThree.fsproj -c Release`: Build succeeded (0 warnings, 0 errors)
+- `dotnet build src/FunLang/FunLang.fsproj -c Release`: Build succeeded (0 warnings, 0 errors)
 - `/Users/ohama/vibe-coding/fslit/dist/FsLit tests/flt/file/property/`: 3/3 passed
 - `/Users/ohama/vibe-coding/fslit/dist/FsLit tests/flt/`: 594/594 passed (no regressions)
 

@@ -18,12 +18,12 @@ tech_stack:
 key_files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Elaborate.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Elaborate.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
 
 decisions:
   - id: "03-01-01"

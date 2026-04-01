@@ -1,5 +1,5 @@
 // Test: head of a list
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let result = let hd = fun xs -> match xs with | x :: _ -> x in hd [10; 20; 30]
 // --- Output:

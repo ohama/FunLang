@@ -34,13 +34,13 @@ This is an internal-to-codebase phase. No external packages required.
 
 ### Project Structure (Relevant Files)
 ```
-src/LangThree/
+src/FunLang/
 ├── IndentFilter.fs    # SYN-05: token stream transforms (JustSawElse fix)
 ├── Parser.fsy         # SYN-01/06/07/08: grammar additions
 ├── Eval.fs            # SYN-01: LetRec evaluator fix
 └── (Ast.fs)           # No changes expected
 
-tests/LangThree.Tests/
+tests/FunLang.Tests/
 ├── IndentFilterTests.fs  # New tests for SYN-05
 ├── IntegrationTests.fs   # New tests for SYN-01/06/07/08 parse behavior
 └── ModuleTests.fs        # New tests for eval correctness
@@ -51,7 +51,7 @@ tests/LangThree.Tests/
 **When to use:** When a token keyword changes how the following NEWLINE should be interpreted.
 **Example:**
 ```fsharp
-// Source: src/LangThree/IndentFilter.fs:333-345
+// Source: src/FunLang/IndentFilter.fs:333-345
 | Parser.MATCH ->
     state <- { state with JustSawMatch = true; PrevToken = Some token }
     yield token
@@ -64,7 +64,7 @@ tests/LangThree.Tests/
 **When to use:** When the next token after a NEWLINE changes what indentation tokens should be emitted.
 **Example:**
 ```fsharp
-// Source: src/LangThree/IndentFilter.fs:179-193
+// Source: src/FunLang/IndentFilter.fs:179-193
 | InMatch baseCol :: _ when nextToken = Some Parser.PIPE ->
     // Suppress indent tokens — pipe aligns with match
     (stateAfterIndent, [])
@@ -76,7 +76,7 @@ The SYN-05 fix follows the same pattern: when `nextToken = Some Parser.ELSE`, su
 **When to use:** When adding syntactic sugar that maps to existing AST nodes.
 **Example:**
 ```fsharp
-// Source: src/LangThree/Parser.fsy:116-118
+// Source: src/FunLang/Parser.fsy:116-118
 | LET IDENT ParamList EQUALS Expr IN Expr
     { let lambda = List.foldBack (fun param body -> Lambda(param, body, ...)) $3 $5
       Let($2, lambda, $7, ...) }
@@ -88,7 +88,7 @@ The SYN-05 fix follows the same pattern: when `nextToken = Some Parser.ELSE`, su
 **When to use:** Whenever a recursive binding needs to call itself from inside a lambda that captures the environment at creation time.
 **Example:**
 ```fsharp
-// Source: src/LangThree/Eval.fs:860-880 (LetRecDecl)
+// Source: src/FunLang/Eval.fs:860-880 (LetRecDecl)
 let sharedEnvRef = ref env
 let wrapper = BuiltinValue (fun argVal ->
     let currentEnv = !sharedEnvRef
@@ -161,7 +161,7 @@ sharedEnvRef := mutualEnv
 
 ### SYN-01: LetRec Evaluator Fix (Mutable Ref Pattern)
 ```fsharp
-// Source: Pattern from src/LangThree/Eval.fs:860-880 (LetRecDecl)
+// Source: Pattern from src/FunLang/Eval.fs:860-880 (LetRecDecl)
 // Fix for expression-level LetRec:
 | LetRec (name, param, funcBody, inExpr, _) ->
     // Create self-referential closure using mutable ref (same as LetRecDecl)
@@ -191,7 +191,7 @@ sharedEnvRef := mutualEnv
 
 ### SYN-05: ELSE-before-INDENT suppression in IndentFilter
 ```fsharp
-// In src/LangThree/IndentFilter.fs processNewlineWithContext,
+// In src/FunLang/IndentFilter.fs processNewlineWithContext,
 // in the "| _ ->" branch of the final match on context:
 | _ ->
     let (newState, tokens) = processNewline config stateWithTryContext col
@@ -232,7 +232,7 @@ sharedEnvRef := mutualEnv
 
 ### Current Eval.fs LetRec (Broken for closures)
 ```fsharp
-// Source: src/LangThree/Eval.fs:611-614
+// Source: src/FunLang/Eval.fs:611-614
 // CURRENT (broken when LetRec is inside a lambda body):
 | LetRec (name, param, funcBody, inExpr, _) ->
     let funcVal = FunctionValue (param, funcBody, env)  // env has NO self-ref!
@@ -298,7 +298,7 @@ The following were tested and work correctly already:
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct source code reading: `src/LangThree/IndentFilter.fs`, `src/LangThree/Parser.fsy`, `src/LangThree/Eval.fs`
+- Direct source code reading: `src/FunLang/IndentFilter.fs`, `src/FunLang/Parser.fsy`, `src/FunLang/Eval.fs`
 - Direct testing: built interpreter and ran test inputs for each SYN requirement
 - Constraints document: `langthree-constraints.md` — root cause analysis for SYN-05
 

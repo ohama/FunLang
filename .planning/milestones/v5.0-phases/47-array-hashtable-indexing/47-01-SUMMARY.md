@@ -40,16 +40,16 @@ key-files:
     - tests/flt/expr/indexing/index-out-of-bounds.flt
     - tests/flt/expr/indexing/index-type-error.flt
   modified:
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Ast.fs
-    - src/LangThree/Diagnostic.fs
-    - src/LangThree/IndentFilter.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Ast.fs
+    - src/FunLang/Diagnostic.fs
+    - src/FunLang/IndentFilter.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "Used DOTLBRACKET single token (same as F# compiler) to avoid LALR shift/reduce conflict between Atom.DOT.IDENT (field access) and array indexing"
@@ -97,16 +97,16 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/Lexer.fsl` - Added `".[" { DOTLBRACKET }` rule before `..` and `.` rules
-- `src/LangThree/Parser.fsy` - `%token DOTLBRACKET`, `IndexGet` in `Atom`, `IndexSet` in `Expr`
-- `src/LangThree/Ast.fs` - `IndexGet`/`IndexSet` Expr variants and `spanOf` arms
-- `src/LangThree/Diagnostic.fs` - `IndexOnNonCollection` error kind E0471 with format
-- `src/LangThree/IndentFilter.fs` - `DOTLBRACKET` added to bracket depth tracking
-- `src/LangThree/Bidir.fs` - Type checking: TArray/THashtable dispatch for IndexGet and IndexSet
-- `src/LangThree/Infer.fs` - Stub `| IndexGet _ | IndexSet _ -> (empty, freshVar())`
-- `src/LangThree/Eval.fs` - Bounds-checked array indexing, key-not-found hashtable indexing
-- `src/LangThree/Format.fs` - `formatAst` and `formatToken` arms for new nodes/token
-- `src/LangThree/TypeCheck.fs` - `IndexGet`/`IndexSet` in collectMatches, collectTryWiths, collectModuleRefs, rewriteModuleAccess
+- `src/FunLang/Lexer.fsl` - Added `".[" { DOTLBRACKET }` rule before `..` and `.` rules
+- `src/FunLang/Parser.fsy` - `%token DOTLBRACKET`, `IndexGet` in `Atom`, `IndexSet` in `Expr`
+- `src/FunLang/Ast.fs` - `IndexGet`/`IndexSet` Expr variants and `spanOf` arms
+- `src/FunLang/Diagnostic.fs` - `IndexOnNonCollection` error kind E0471 with format
+- `src/FunLang/IndentFilter.fs` - `DOTLBRACKET` added to bracket depth tracking
+- `src/FunLang/Bidir.fs` - Type checking: TArray/THashtable dispatch for IndexGet and IndexSet
+- `src/FunLang/Infer.fs` - Stub `| IndexGet _ | IndexSet _ -> (empty, freshVar())`
+- `src/FunLang/Eval.fs` - Bounds-checked array indexing, key-not-found hashtable indexing
+- `src/FunLang/Format.fs` - `formatAst` and `formatToken` arms for new nodes/token
+- `src/FunLang/TypeCheck.fs` - `IndexGet`/`IndexSet` in collectMatches, collectTryWiths, collectModuleRefs, rewriteModuleAccess
 - `tests/flt/expr/indexing/` - 7 new flt tests (IDX-01 through IDX-05 + error tests)
 
 ## Decisions Made

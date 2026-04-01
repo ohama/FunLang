@@ -25,8 +25,8 @@ tech-stack:
   patterns: [check-mode annotation pattern for GADT match testing]
 
 key-files:
-  created: [tests/LangThree.Tests/GadtTests.fs]
-  modified: [tests/LangThree.Tests/LangThree.Tests.fsproj]
+  created: [tests/FunLang.Tests/GadtTests.fs]
+  modified: [tests/FunLang.Tests/FunLang.Tests.fsproj]
 
 key-decisions:
   - "GADT match tests use (match ... : ResultType) annotation to enter check mode"
@@ -65,8 +65,8 @@ Each task was committed atomically:
 2. **Task 2: Fix bugs discovered during testing** - No commit needed (zero bugs found)
 
 ## Files Created/Modified
-- `tests/LangThree.Tests/GadtTests.fs` - 17 GADT integration tests (251 lines)
-- `tests/LangThree.Tests/LangThree.Tests.fsproj` - Added GadtTests.fs to compilation
+- `tests/FunLang.Tests/GadtTests.fs` - 17 GADT integration tests (251 lines)
+- `tests/FunLang.Tests/FunLang.Tests.fsproj` - Added GadtTests.fs to compilation
 
 ## Test Categories
 
@@ -91,7 +91,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (initial test writing)
 - **Issue:** Initial tests annotated the scrutinee `(e : int Expr)` but the match expression itself was still in synth mode, causing E0401 errors
 - **Fix:** Changed to wrapping the entire match in `(match ... : ResultType)` annotation to enter check mode
-- **Files modified:** tests/LangThree.Tests/GadtTests.fs
+- **Files modified:** tests/FunLang.Tests/GadtTests.fs
 - **Verification:** All 17 GADT tests pass
 - **Committed in:** 50d4110 (Task 1 commit)
 

@@ -11,7 +11,7 @@ dependency-graph:
 
 tech-stack:
   added: []
-  patterns: [insertion-sort in LangThree, curried-helper pattern for mapi/distinctBy, A_-prefix for Prelude loading order control]
+  patterns: [insertion-sort in FunLang, curried-helper pattern for mapi/distinctBy, A_-prefix for Prelude loading order control]
 
 key-files:
   created: []
@@ -19,7 +19,7 @@ key-files:
     - Prelude/A_Option.fun (renamed from Option.fun)
     - Prelude/List.fun
     - Prelude/Array.fun
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/TypeCheck.fs
 
 decisions:
   - Renamed Option.fun to A_Option.fun so Some/None constructors are available when List.fun is type-checked (L < O alphabetical loading order)
@@ -34,7 +34,7 @@ metrics:
 
 # Phase 59 Plan 02: Prelude Library Extensions Summary
 
-Twelve new `List.*` functions and two new `Array.*` functions added to the LangThree standard library, with two infrastructure fixes needed to make them work.
+Twelve new `List.*` functions and two new `Array.*` functions added to the FunLang standard library, with two infrastructure fixes needed to make them work.
 
 ## What Was Built
 
@@ -47,7 +47,7 @@ Twelve new `List.*` functions and two new `Array.*` functions added to the LangT
 | `exists` | `('a -> bool) -> 'a list -> bool` | Alias for `any` |
 | `item` | `int -> 'a list -> 'a` | Alias for `nth` |
 | `isEmpty` | `'a list -> bool` | Single-line match |
-| `sort` | `'a list -> 'a list` | Insertion sort (pure LangThree) |
+| `sort` | `'a list -> 'a list` | Insertion sort (pure FunLang) |
 | `sortBy` | `('a -> 'b) -> 'a list -> 'a list` | Wraps `list_sort_by` builtin |
 | `mapi` | `(int -> 'a -> 'b) -> 'a list -> 'b list` | Recursive with index helper |
 | `tryFind` | `('a -> bool) -> 'a list -> 'a option` | Returns `Some`/`None` |
@@ -77,7 +77,7 @@ Twelve new `List.*` functions and two new `Array.*` functions added to the LangT
 **Found during:** Task 1 — "Unbound variable: array_sort" type error in Array.fun
 **Root cause:** Plan 01 added `list_sort_by`, `list_of_seq`, `array_sort`, `array_of_seq` to `Eval.fs` (runtime) but the research stated "No changes required to TypeCheck.fs". This was incorrect — the type checker needs to know about builtins too.
 **Fix:** Added 4 type schemes to `TypeCheck.fs` `initialTypeEnv`.
-**Files modified:** `src/LangThree/TypeCheck.fs`
+**Files modified:** `src/FunLang/TypeCheck.fs`
 **Commits:** 480e07d
 
 ### Fix 3: No Blank Lines Inside .fun Module Bodies

@@ -1,7 +1,7 @@
-module LangThree.Tests.IntegrationTests
+module FunLang.Tests.IntegrationTests
 
 open Expecto
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 
 // Helper to lex a string and get raw tokens
 let lexString (input: string) =

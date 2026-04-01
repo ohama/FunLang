@@ -1,4 +1,4 @@
-module LangThree.Tests.Program
+module FunLang.Tests.Program
 
 open Expecto
 

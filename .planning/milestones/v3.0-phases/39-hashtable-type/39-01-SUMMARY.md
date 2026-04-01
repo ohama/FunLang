@@ -38,12 +38,12 @@ key-files:
     - tests/flt/file/hashtable/hashtable-keys.flt
     - tests/flt/file/hashtable/hashtable-remove.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Type.fs
-    - src/LangThree/Unify.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Type.fs
+    - src/FunLang/Unify.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "HashtableValue uses System.Collections.Generic.Dictionary<Value, Value> as backing store (direct F# dict, no wrapper)"
@@ -89,12 +89,12 @@ Each task was committed atomically:
 2. **Task 2: 6 builtins + Prelude/Hashtable.fun + 4 flt tests** - `a1b2483` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - HashtableValue DU case, GetHashCode, valueEqual, valueCompare arms
-- `src/LangThree/Type.fs` - THashtable, formatType/formatTypeNormalized/apply/freeVars arms
-- `src/LangThree/Unify.fs` - THashtable unification arm
-- `src/LangThree/Bidir.fs` - THashtable in NotAFunction guard
-- `src/LangThree/Eval.fs` - formatValue + valuesEqual arms; 6 hashtable_* builtins
-- `src/LangThree/TypeCheck.fs` - 6 Scheme entries for hashtable_* builtins
+- `src/FunLang/Ast.fs` - HashtableValue DU case, GetHashCode, valueEqual, valueCompare arms
+- `src/FunLang/Type.fs` - THashtable, formatType/formatTypeNormalized/apply/freeVars arms
+- `src/FunLang/Unify.fs` - THashtable unification arm
+- `src/FunLang/Bidir.fs` - THashtable in NotAFunction guard
+- `src/FunLang/Eval.fs` - formatValue + valuesEqual arms; 6 hashtable_* builtins
+- `src/FunLang/TypeCheck.fs` - 6 Scheme entries for hashtable_* builtins
 - `Prelude/Hashtable.fun` - module Hashtable = ... qualified wrapper (created)
 - `tests/flt/file/hashtable/hashtable-basic.flt` - HT-01/02/04 tests (created)
 - `tests/flt/file/hashtable/hashtable-mutation.flt` - HT-03 overwrite test (created)
@@ -133,7 +133,7 @@ Each task was committed atomically:
 **Impact on plan:** Both fixes minor — test logic identical in intent, syntax/stdlib adjusted for reality.
 
 ## Issues Encountered
-- `println x` at module top level without `let _ =` causes parse error in LangThree — array tests already demonstrated correct pattern but plan used F# style `let () =`
+- `println x` at module top level without `let _ =` causes parse error in FunLang — array tests already demonstrated correct pattern but plan used F# style `let () =`
 
 ## Next Phase Readiness
 - HashtableValue and THashtable fully integrated into runtime and type system

@@ -20,14 +20,14 @@ key-files:
     - tests/flt/file/sprintf-string.flt
     - tests/flt/file/sprintf-no-spec.flt
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Lexer.fsl
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Lexer.fsl
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Format.fs
 decisions: []
 metrics:
   duration: "6 min"
@@ -69,7 +69,7 @@ metrics:
 - **Found during:** Task 1 build
 - **Issue:** FS0025 incomplete pattern match warning for Modulo in deprecated Infer.fs
 - **Fix:** Added `| Modulo (e1, e2, _)` to the arithmetic operator pattern in inferWithContext
-- **Files modified:** src/LangThree/Infer.fs
+- **Files modified:** src/FunLang/Infer.fs
 - **Commit:** 6035f97
 
 ## Verification

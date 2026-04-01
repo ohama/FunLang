@@ -6,11 +6,11 @@
 
 ## Summary
 
-User-defined operators can be cleanly integrated into LangThree's existing LALR(1) parser by following the OCaml/F# approach: the **lexer categorizes operator tokens by their first character** into fixed precedence/associativity buckets (e.g., INFIXOP0, INFIXOP1, etc.), and the **parser treats each bucket as a single grammar rule** with declared precedence. This eliminates any need for a Pratt parser or runtime precedence resolution.
+User-defined operators can be cleanly integrated into FunLang's existing LALR(1) parser by following the OCaml/F# approach: the **lexer categorizes operator tokens by their first character** into fixed precedence/associativity buckets (e.g., INFIXOP0, INFIXOP1, etc.), and the **parser treats each bucket as a single grammar rule** with declared precedence. This eliminates any need for a Pratt parser or runtime precedence resolution.
 
 The key insight is that OCaml -- which also uses an LALR(1) parser (ocamlyacc/menhir) -- has supported user-defined operators since its inception using exactly this technique. The lexer classifies any sequence of operator characters into one of ~6 token categories based on the first character, and the parser grammar has rules for each category at the appropriate precedence level.
 
-For LangThree, this means: (1) define allowed operator characters, (2) add a catch-all lexer rule that classifies operator sequences into INFIXOP0-4 and PREFIXOP tokens, (3) add parser rules for each category at the correct precedence level, (4) desugar `Expr INFIXOP2 Expr` into `App(App(Var(op), lhs), rhs)` in the AST. User-defined operators are **just functions** with special calling syntax.
+For FunLang, this means: (1) define allowed operator characters, (2) add a catch-all lexer rule that classifies operator sequences into INFIXOP0-4 and PREFIXOP tokens, (3) add parser rules for each category at the correct precedence level, (4) desugar `Expr INFIXOP2 Expr` into `App(App(Var(op), lhs), rhs)` in the AST. User-defined operators are **just functions** with special calling syntax.
 
 **Primary recommendation:** Follow OCaml's INFIXOP0-4 token categorization approach. Operators are lexed into precedence-bucket tokens based on their first character, parsed by LALR(1) rules for each bucket, and desugared to function application in the AST.
 
@@ -57,7 +57,7 @@ expr: expr INFIXOP0 expr { ... }
 
 Each INFIXOP token carries the actual operator string as its payload (e.g., `INFIXOP2 of string` where the string might be `"++"` or `"+."`).
 
-## Architecture: LangThree Integration Plan
+## Architecture: FunLang Integration Plan
 
 ### Operator Character Set
 
@@ -132,7 +132,7 @@ Add to existing precedence section in Parser.fsy:
 %right INFIXOP4             // ** level (above multiplication)
 ```
 
-**Note:** LangThree currently uses grammar-based precedence (Term/Factor) for arithmetic, not `%left` declarations. The INFIXOP tokens should be integrated at appropriate levels. The cleanest approach: add INFIXOP rules at the Expr level for INFIXOP0-1, at the Term level for INFIXOP2-3, and at the Factor level for INFIXOP4.
+**Note:** FunLang currently uses grammar-based precedence (Term/Factor) for arithmetic, not `%left` declarations. The INFIXOP tokens should be integrated at appropriate levels. The cleanest approach: add INFIXOP rules at the Expr level for INFIXOP0-1, at the Term level for INFIXOP2-3, and at the Factor level for INFIXOP4.
 
 ### Parser Rules
 
@@ -358,7 +358,7 @@ let classifyOperator (op: string) =
 
 ### Operator Definition
 ```
-// In LangThree source:
+// In FunLang source:
 let (++) xs ys = append xs ys
 let (<+>) a b = match a with | Some x -> Some (x + b) | None -> None
 
@@ -389,17 +389,17 @@ App(App(Var("++"), Var("a")), Var("b"))
 
 1. **Should single-char built-in operators be redefinable?**
    - What we know: F# allows shadowing built-in operators. OCaml does too.
-   - What's unclear: Whether LangThree's grammar-based arithmetic precedence (Term/Factor) can coexist with user redefinition of `+`.
+   - What's unclear: Whether FunLang's grammar-based arithmetic precedence (Term/Factor) can coexist with user redefinition of `+`.
    - Recommendation: Defer this. Phase 1 only supports custom multi-char operators. Single-char operators keep built-in behavior. Can revisit later.
 
 2. **Should there be a `<|` (backward pipe) operator?**
    - What we know: F# has `<|` and `<||`. It's at the same precedence as `|>`.
-   - What's unclear: Whether it's needed in LangThree's ecosystem.
+   - What's unclear: Whether it's needed in FunLang's ecosystem.
    - Recommendation: With user-defined operators, users can define it themselves: `let (<|) f x = f x`. No special support needed.
 
 3. **Module-qualified operators?**
    - What we know: F# supports `Array.(+)` style qualified operator references.
-   - What's unclear: Whether LangThree's module system can handle this.
+   - What's unclear: Whether FunLang's module system can handle this.
    - Recommendation: Defer. Start with global operator definitions only.
 
 ## Sources
@@ -409,7 +409,7 @@ App(App(Var("++"), Var("a")), Var("b"))
 - [F# Symbol and Operator Reference - Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/symbol-and-operator-reference/) - Complete precedence table with `*op*` notation
 - [OCaml parser.mly (GitHub)](https://github.com/ocaml/ocaml/blob/trunk/parsing/parser.mly) - INFIXOP0-4 token approach in production LALR parser
 - [OCaml lexer.mll (GitHub)](https://github.com/ocaml/ocaml/blob/trunk/parsing/lexer.mll) - Lexer classification of operator tokens
-- LangThree source code: Lexer.fsl, Parser.fsy, Ast.fs (direct inspection)
+- FunLang source code: Lexer.fsl, Parser.fsy, Ast.fs (direct inspection)
 
 ### Secondary (MEDIUM confidence)
 - [Custom operators in OCaml - Shayne Fletcher](https://blog.shaynefletcher.org/2016/09/custom-operators-in-ocaml.html) - OCaml operator character categories and precedence levels

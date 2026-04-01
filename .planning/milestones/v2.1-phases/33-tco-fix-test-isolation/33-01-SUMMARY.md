@@ -20,7 +20,7 @@ tech-stack:
 
 key-files:
   created: []
-  modified: [src/LangThree/Eval.fs]
+  modified: [src/FunLang/Eval.fs]
 
 key-decisions:
   - "BuiltinValue wrappers must use tailPos=true so eval returns TailCall values that the App trampoline loop can catch"
@@ -63,7 +63,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/Eval.fs` - Line 777: `false` → `true` in LetRec BuiltinValue wrapper; Line 1039: `false` → `true` in LetRecDecl BuiltinValue wrapper
+- `src/FunLang/Eval.fs` - Line 777: `false` → `true` in LetRec BuiltinValue wrapper; Line 1039: `false` → `true` in LetRecDecl BuiltinValue wrapper
 
 ## Decisions Made
 

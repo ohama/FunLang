@@ -16,9 +16,9 @@ tech-stack:
 files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 decisions:
   - decision: Module and Decl types separate from Expr
@@ -165,10 +165,10 @@ This is a known limitation for future enhancement.
 
 | File | Changes | Purpose |
 |------|---------|---------|
-| src/LangThree/Ast.fs | +29 lines | Module and Decl types, span helpers |
-| src/LangThree/Parser.fsy | +26 lines | parseModule start, Decls/Decl/ParamList rules |
-| tests/LangThree.Tests/IntegrationTests.fs | +39 lines | parseModule helper, 4 integration tests |
-| tests/LangThree.Tests/IndentFilterTests.fs | +4 lines | Fix PrevToken field for compatibility |
+| src/FunLang/Ast.fs | +29 lines | Module and Decl types, span helpers |
+| src/FunLang/Parser.fsy | +26 lines | parseModule start, Decls/Decl/ParamList rules |
+| tests/FunLang.Tests/IntegrationTests.fs | +39 lines | parseModule helper, 4 integration tests |
+| tests/FunLang.Tests/IndentFilterTests.fs | +4 lines | Fix PrevToken field for compatibility |
 
 ## Examples
 

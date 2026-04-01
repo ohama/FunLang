@@ -6,7 +6,7 @@
 
 ## Summary
 
-This research covers how to add tail call optimization (TCO) to LangThree's tree-walking interpreter without CPS-transforming the entire evaluator. The standard approach for tree-walking interpreters is the **trampoline pattern**: introduce a special `TailCall` value variant that defers evaluation, then add a loop at the call site (`App`) that repeatedly evaluates until a non-`TailCall` value is produced.
+This research covers how to add tail call optimization (TCO) to FunLang's tree-walking interpreter without CPS-transforming the entire evaluator. The standard approach for tree-walking interpreters is the **trampoline pattern**: introduce a special `TailCall` value variant that defers evaluation, then add a loop at the call site (`App`) that repeatedly evaluates until a non-`TailCall` value is produced.
 
 The key insight is that TCO in a tree-walking interpreter does NOT require modifying the `eval` function signature or introducing continuation-passing style. Instead, it requires two things: (1) detecting when an expression is in tail position and (2) returning a `TailCall` sentinel value instead of recursively calling `eval`, letting the caller's trampoline loop handle the iteration.
 
@@ -55,7 +55,7 @@ This is intentionally minimal. It stores the function value and the already-eval
 and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env) (tailPos: bool) (expr: Expr) : Value =
 ```
 
-Tail position rules for LangThree expressions:
+Tail position rules for FunLang expressions:
 - **`Let(name, binding, body, _)`**: `binding` is NOT tail position; `body` IS tail position (inherits parent's tailPos)
 - **`LetPat(pat, binding, body, _)`**: same as Let
 - **`LetRec(name, param, funcBody, inExpr, _)`**: `inExpr` IS tail position (inherits); `funcBody` is NOT (it's a lambda body, evaluated later)
@@ -278,7 +278,7 @@ let rec countdown n = match n with 0 -> "done" | n -> countdown (n - 1) in count
 |--------------|------------------|--------------|--------|
 | CPS transform entire evaluator | TailCall variant + trampoline loop | Standard since ~2010 | Much less invasive, same stack safety |
 | .NET tail. IL instruction | Manual trampoline for interpreted languages | Always | .NET tail prefix only helps compiled F# code, not interpreted language recursion |
-| No TCO (current LangThree) | TailCall + tailPos parameter | This phase | Enables stack-safe recursion for 1M+ depth |
+| No TCO (current FunLang) | TailCall + tailPos parameter | This phase | Enables stack-safe recursion for 1M+ depth |
 
 ## Open Questions
 
@@ -304,7 +304,7 @@ let rec countdown n = match n with 0 -> "done" | n -> countdown (n - 1) in count
 ## Sources
 
 ### Primary (HIGH confidence)
-- LangThree source code: `Eval.fs`, `Ast.fs`, `MatchCompile.fs` -- direct inspection
+- FunLang source code: `Eval.fs`, `Ast.fs`, `MatchCompile.fs` -- direct inspection
 - [Ink TCE implementation](https://dotink.co/posts/tce/) -- tree-walking interpreter TCO via thunks
 - [Eli Bendersky: On Recursion, Continuations and Trampolines](https://eli.thegreenplace.net/2017/on-recursion-continuations-and-trampolines/) -- trampoline pattern fundamentals
 
@@ -319,9 +319,9 @@ let rec countdown n = match n with 0 -> "done" | n -> countdown (n - 1) in count
 
 **Confidence breakdown:**
 - Standard stack: HIGH - trampoline pattern is well-established for tree-walking interpreters
-- Architecture: HIGH - direct inspection of LangThree codebase confirms approach viability
+- Architecture: HIGH - direct inspection of FunLang codebase confirms approach viability
 - Pitfalls: HIGH - derived from code analysis (CustomEquality, MatchCompile callback, TryWith)
 - Tail position rules: HIGH - standard functional language semantics, verified against codebase AST
 
 **Research date:** 2026-03-19
-**Valid until:** Indefinite (fundamental interpreter technique; LangThree codebase is the moving part)
+**Valid until:** Indefinite (fundamental interpreter technique; FunLang codebase is the moving part)

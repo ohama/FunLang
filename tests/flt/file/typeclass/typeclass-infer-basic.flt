@@ -1,5 +1,5 @@
 // Test: show_twice infers Show 'a => 'a -> string; resolves Show int at use site
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 let show_twice x = show x + show x
 

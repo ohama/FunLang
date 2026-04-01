@@ -90,7 +90,7 @@ None - plan executed exactly as written. The test content suggestions in the pla
 
 ## Issues Encountered
 
-- `++` operator is not string concatenation in LangThree (it is list append). Used `+` instead, which works when string type is known from context.
+- `++` operator is not string concatenation in FunLang (it is list append). Used `+` instead, which works when string type is known from context.
 - `printfn "%d" x` in file mode causes a type error (format string parsing issue). Tests avoid runtime execution entirely by using `--check` mode.
 
 ## User Setup Required

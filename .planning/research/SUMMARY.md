@@ -1,13 +1,13 @@
 # Project Research Summary
 
-**Project:** LangThree v10.0 — Haskell-style Type Classes
+**Project:** FunLang v10.0 — Haskell-style Type Classes
 **Domain:** ML-style interpreter — adding ad-hoc polymorphism to an existing HM type system
 **Researched:** 2026-03-31
 **Confidence:** HIGH
 
 ## Executive Summary
 
-LangThree v10.0 adds Haskell-style type classes to an existing ML interpreter that already has full Hindley-Milner inference, bidirectional type checking, GADTs, a module system, and a tree-walking evaluator. The canonical implementation strategy is **dictionary passing**: each type class constraint `C 'a` is elaborated into an explicit dictionary argument (a record of method implementations) threaded through the program. This is the same approach GHC uses internally, and it is the correct fit for a tree-walking interpreter because dictionaries are just ordinary `RecordValue`s — no new evaluator machinery is required. The total implementation footprint is approximately 400–450 lines across 10 files with no new NuGet packages.
+FunLang v10.0 adds Haskell-style type classes to an existing ML interpreter that already has full Hindley-Milner inference, bidirectional type checking, GADTs, a module system, and a tree-walking evaluator. The canonical implementation strategy is **dictionary passing**: each type class constraint `C 'a` is elaborated into an explicit dictionary argument (a record of method implementations) threaded through the program. This is the same approach GHC uses internally, and it is the correct fit for a tree-walking interpreter because dictionaries are just ordinary `RecordValue`s — no new evaluator machinery is required. The total implementation footprint is approximately 400–450 lines across 10 files with no new NuGet packages.
 
 The recommended approach is to work in five sequential phases corresponding to the natural dependency chain: (1) extend the type infrastructure (`Scheme`, `ClassEnv`, `InstanceEnv`), (2) add parser/AST support, (3) wire constraint inference and resolution through the type checker, (4) construct dictionary values and elaborate call sites, and (5) replace hardcoded builtins with built-in `Show`/`Eq`/`Ord` instances. The payoff features are straightforward once the core machinery is in place. Features requiring Higher-Kinded Types (`Functor`, `Monad`), automatic `deriving`, multi-parameter type classes, and superclass hierarchies are explicitly out of scope for v10.0.
 
@@ -138,7 +138,7 @@ Phases with standard, well-documented patterns:
 | Stack | HIGH | Derived entirely from codebase inspection; no external dependency changes; implementation strategy matches GHC's own approach |
 | Features | HIGH | Feature categorization is well-grounded; MVP scope is conservative and validated against the dependency chain; anti-features are explicitly argued |
 | Architecture | HIGH | Standard HM-with-classes pattern (Jones 1994); component boundaries follow existing `ConstructorEnv`/`RecordEnv` precedent already in the codebase |
-| Pitfalls | HIGH | Most pitfalls are LangThree-specific, derived from direct codebase inspection (67+ call sites, `mutableVars`, `callValueRef`); general pitfalls validated against GHC documentation |
+| Pitfalls | HIGH | Most pitfalls are FunLang-specific, derived from direct codebase inspection (67+ call sites, `mutableVars`, `callValueRef`); general pitfalls validated against GHC documentation |
 
 **Overall confidence:** HIGH
 
@@ -154,7 +154,7 @@ Phases with standard, well-documented patterns:
 ## Sources
 
 ### Primary (HIGH confidence)
-- LangThree codebase (direct inspection, 2026-03-31) — `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs`
+- FunLang codebase (direct inspection, 2026-03-31) — `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs`
 - Jones (1994), "Qualified Types: Theory and Practice" — standard reference for constraint-augmented HM
 - GHC instance resolution documentation — authoritative on dictionary passing, Paterson conditions, linear-search resolution
 

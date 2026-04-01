@@ -37,8 +37,8 @@ key-files:
     - tests/flt/file/queue/queue-basic.flt
     - tests/flt/file/queue/queue-error.flt
   modified:
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
 
 decisions:
   - id: HS-PRELUDE-01-builtins
@@ -65,13 +65,13 @@ Four flt integration tests verify all Phase 56 requirements:
 - `hashset-basic.flt`: Add returns true/false for new/duplicate integers, Contains, Count
 - `hashset-strings.flt`: string elements with Add/Contains/Count
 - `queue-basic.flt`: FIFO semantics with Enqueue/Dequeue/Count
-- `queue-error.flt`: empty Dequeue raises catchable `LangThreeException` via try-with
+- `queue-error.flt`: empty Dequeue raises catchable `FunLangException` via try-with
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | Create Prelude/HashSet.fun and Prelude/Queue.fun | 6ce1cb6 | Prelude/HashSet.fun, Prelude/Queue.fun, src/LangThree/TypeCheck.fs, src/LangThree/Eval.fs |
+| 1 | Create Prelude/HashSet.fun and Prelude/Queue.fun | 6ce1cb6 | Prelude/HashSet.fun, Prelude/Queue.fun, src/FunLang/TypeCheck.fs, src/FunLang/Eval.fs |
 | 2 | Write flt integration tests for HashSet and Queue | bd4d092 | tests/flt/file/hashset/hashset-basic.flt, hashset-strings.flt, tests/flt/file/queue/queue-basic.flt, queue-error.flt |
 
 ## Verification Results
@@ -98,7 +98,7 @@ Four flt integration tests verify all Phase 56 requirements:
 - **Found during:** Task 1 verification (smoke test)
 - **Issue:** `let add hs v = hs.Add v` fails with "Cannot access field on non-record type 'f'" because `hs` is an unresolved TVar at type-check time
 - **Fix:** Added raw builtins `hashset_*` and `queue_*` to TypeCheck.fs/Eval.fs; updated .fun files to use them (same pattern as StringBuilder)
-- **Files modified:** src/LangThree/TypeCheck.fs, src/LangThree/Eval.fs, Prelude/HashSet.fun, Prelude/Queue.fun
+- **Files modified:** src/FunLang/TypeCheck.fs, src/FunLang/Eval.fs, Prelude/HashSet.fun, Prelude/Queue.fun
 - **Commit:** 6ce1cb6
 
 **2. [Rule 1 - Bug] Unit pattern `()` in Queue.dequeue parameter does not parse**

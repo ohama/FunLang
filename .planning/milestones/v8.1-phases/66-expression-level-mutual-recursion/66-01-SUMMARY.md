@@ -24,13 +24,13 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/Format.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/Infer.fs
-    - src/LangThree/Eval.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/Format.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/Infer.fs
+    - src/FunLang/Eval.fs
     - tests/flt/emit/ast-expr/ast-expr-letrec.flt
 
 key-decisions:
@@ -71,13 +71,13 @@ Each task was committed atomically:
 2. **Task 2: Update Parser.fsy expression-level let rec rules with LetRecContinuation** - `8500671` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - LetRec node shape changed to bindings list + inExpr + span
-- `src/LangThree/Parser.fsy` - 4 expression let rec rules now include LetRecContinuation
-- `src/LangThree/Format.fs` - Pretty-printer adapted for bindings list with "and" separator
-- `src/LangThree/TypeCheck.fs` - 4 collector functions updated for bindings list iteration
-- `src/LangThree/Bidir.fs` - Mechanical List.head extraction (Plan 02 rewrites)
-- `src/LangThree/Infer.fs` - Mechanical List.head extraction (Plan 02 rewrites)
-- `src/LangThree/Eval.fs` - Mechanical List.head extraction (Plan 02 rewrites)
+- `src/FunLang/Ast.fs` - LetRec node shape changed to bindings list + inExpr + span
+- `src/FunLang/Parser.fsy` - 4 expression let rec rules now include LetRecContinuation
+- `src/FunLang/Format.fs` - Pretty-printer adapted for bindings list with "and" separator
+- `src/FunLang/TypeCheck.fs` - 4 collector functions updated for bindings list iteration
+- `src/FunLang/Bidir.fs` - Mechanical List.head extraction (Plan 02 rewrites)
+- `src/FunLang/Infer.fs` - Mechanical List.head extraction (Plan 02 rewrites)
+- `src/FunLang/Eval.fs` - Mechanical List.head extraction (Plan 02 rewrites)
 - `tests/flt/emit/ast-expr/ast-expr-letrec.flt` - Updated expected output for new Format shape
 
 ## Decisions Made

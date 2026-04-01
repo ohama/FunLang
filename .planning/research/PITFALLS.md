@@ -1,9 +1,9 @@
-# Domain Pitfalls: Type Classes for LangThree v10.0
+# Domain Pitfalls: Type Classes for FunLang v10.0
 
 **Domain:** Adding Haskell-style type classes to an existing ML interpreter with HM inference
 **Researched:** 2026-03-31
-**Scope:** Pitfalls specific to adding type classes to LangThree's existing HM + bidirectional checker + GADT + module system
-**Context:** LangThree v9.1 baseline — Scheme(vars, ty) generalization, Bidir.fs synth/check, Infer.freshVar/generalize, Unify.unifyWithContext, Eval.fs tree-walker
+**Scope:** Pitfalls specific to adding type classes to FunLang's existing HM + bidirectional checker + GADT + module system
+**Context:** FunLang v9.1 baseline — Scheme(vars, ty) generalization, Bidir.fs synth/check, Infer.freshVar/generalize, Unify.unifyWithContext, Eval.fs tree-walker
 
 ---
 
@@ -26,7 +26,7 @@ Each pitfall has a **Phase** tag indicating which implementation phase is most a
 
 **What goes wrong:** When generalizing a type at a `let` boundary, free type variables are quantified. If constraints are NOT tracked alongside quantified variables, the constraint `Show 'a` for a generalized `'a` disappears from the scheme. The resulting scheme `forall 'a. 'a -> string` looks unconditionally polymorphic but at call sites there is no constraint to discharge — either the wrong instance fires or a runtime crash occurs.
 
-**Why it happens:** LangThree's `generalize` in `Infer.fs` currently produces `Scheme(vars, ty)` with no constraint component. Adding type variables to the quantified set without also capturing their constraints silently produces unsound schemes.
+**Why it happens:** FunLang's `generalize` in `Infer.fs` currently produces `Scheme(vars, ty)` with no constraint component. Adding type variables to the quantified set without also capturing their constraints silently produces unsound schemes.
 
 **Concrete example:**
 ```
@@ -77,7 +77,7 @@ If resolution fires before `?a ~ int` unification, the resolver sees `Show TVar 
 
 **What goes wrong:** In a tree-walking interpreter, the simplest approach is to thread a "dictionary environment" alongside the value environment, adding instance dictionaries at declaration sites and looking them up at call sites. This breaks with higher-order functions because the dictionary is captured at the definition site, not resolved at the use site.
 
-**Why it happens:** LangThree's `Eval.fs` passes `Env` (a `Map<string, Value>`) as a pure value. If dictionaries are stored in `Env` as `DictValue "Show"` etc., they are subject to normal closure capture. A function `fun f -> f 42` closed over a `Show int` dictionary will fail when called with an argument that requires `Show string` — the wrong dictionary is in the closure.
+**Why it happens:** FunLang's `Eval.fs` passes `Env` (a `Map<string, Value>`) as a pure value. If dictionaries are stored in `Env` as `DictValue "Show"` etc., they are subject to normal closure capture. A function `fun f -> f 42` closed over a `Show int` dictionary will fail when called with an argument that requires `Show string` — the wrong dictionary is in the closure.
 
 **Concrete example:**
 ```
@@ -103,7 +103,7 @@ If `show`'s dictionary is captured at `apply_show`'s definition site, both calls
 
 ### Pitfall TC-4: Overlapping `to_string`/Comparison Builtins Break Instance Uniqueness
 
-**What goes wrong:** LangThree has existing built-in functions `to_string`, `=`, `<>`, `<`, `>`, `<=`, `>=` that work on multiple types via ad-hoc runtime dispatch in `Eval.fs`. When type classes are added, these become instances of `Show`, `Eq`, `Ord`. If both the old builtin dispatch AND the new type class dispatch exist simultaneously, there are two competing resolution paths for the same constraint — incoherence.
+**What goes wrong:** FunLang has existing built-in functions `to_string`, `=`, `<>`, `<`, `>`, `<=`, `>=` that work on multiple types via ad-hoc runtime dispatch in `Eval.fs`. When type classes are added, these become instances of `Show`, `Eq`, `Ord`. If both the old builtin dispatch AND the new type class dispatch exist simultaneously, there are two competing resolution paths for the same constraint — incoherence.
 
 **Why it happens:** The natural migration path is to add type class instances for `Show int`, `Show string`, etc. while leaving the old builtins intact "for compatibility". The result is that `to_string 42` resolves via the builtin but `show 42` resolves via the type class, and they may diverge if the builtin is not an exact alias.
 
@@ -161,7 +161,7 @@ Without defaulting rules or explicit annotations, inference correctly reports th
 **Why it happens:** The Paterson Conditions exist in GHC specifically to prevent this. Without a termination check on resolution depth or constraint set size, the resolver loops.
 
 **Prevention:**
-- For LangThree v10.0 (initial type classes), avoid superclass hierarchies entirely in the first phase. Implement `Show`, `Eq`, `Ord`, `Num` as independent classes with no declared superclass relationship.
+- For FunLang v10.0 (initial type classes), avoid superclass hierarchies entirely in the first phase. Implement `Show`, `Eq`, `Ord`, `Num` as independent classes with no declared superclass relationship.
 - If superclasses are added later, implement a depth limit (e.g. 50 resolution steps) with a clear error message "constraint resolution exceeded depth limit — possible cycle".
 - Track the set of constraints currently being resolved as a "stack" and detect when the same constraint re-appears in the stack (the Coin-cell check used in real implementations).
 
@@ -175,9 +175,9 @@ Without defaulting rules or explicit annotations, inference correctly reports th
 
 ### Pitfall TC-7: Constraint Generalization Interacts Badly with Mutable Variables
 
-**What goes wrong:** LangThree already has a deliberate decision: `let mut x = e` is monomorphic (no generalization). This was correct for preventing unsound polymorphism with mutable references. However, if a mutable variable holds a value of a constrained type, the constraint also must not be generalized. If the implementation forgets this and generalizes `let mut x = 0` to `Scheme([a; Show a], a)`, the mutable variable becomes unsoundly polymorphic.
+**What goes wrong:** FunLang already has a deliberate decision: `let mut x = e` is monomorphic (no generalization). This was correct for preventing unsound polymorphism with mutable references. However, if a mutable variable holds a value of a constrained type, the constraint also must not be generalized. If the implementation forgets this and generalizes `let mut x = 0` to `Scheme([a; Show a], a)`, the mutable variable becomes unsoundly polymorphic.
 
-**Why it happens:** The constraint-augmented generalization in P2 must query `mutableVars` (LangThree already has this `Set<string>` in `Bidir.fs`) and skip generalization for mutable variables — including skipping constraint generalization.
+**Why it happens:** The constraint-augmented generalization in P2 must query `mutableVars` (FunLang already has this `Set<string>` in `Bidir.fs`) and skip generalization for mutable variables — including skipping constraint generalization.
 
 **Prevention:**
 - Extend the existing `mutableVars` check in `generalize` to cover constraint generalization.
@@ -194,12 +194,12 @@ Without defaulting rules or explicit annotations, inference correctly reports th
 
 ### Pitfall TC-8: LALR(1) Conflicts from Typeclass Syntax Choices
 
-**What goes wrong:** LangThree uses fsyacc (LALR(1)). Type class syntax introduces tokens and productions that can conflict with existing grammar. Common conflict sites:
+**What goes wrong:** FunLang uses fsyacc (LALR(1)). Type class syntax introduces tokens and productions that can conflict with existing grammar. Common conflict sites:
 
 1. `typeclass Show 'a = ...` — if `typeclass` is a new keyword, it must be added to the lexer. But the parser currently has `let` declarations at top level. A `typeclass` at top level that uses `=` may conflict with `let ... = ...`.
 2. `instance Show int = ...` — the word `instance` may tokenize as `IDENT` unless added as a keyword, causing ambiguity.
 3. Constraint syntax `(Show 'a) =>` in function signatures — the `=>` token does not currently exist. If it is `= >` split across tokens, the lexer produces `ASSIGN GT` which is a sequence the parser cannot distinguish from `=` followed by `>`.
-4. `where` clause — LangThree does not have `where`. Adding it as a keyword may conflict if any existing code uses `where` as an identifier.
+4. `where` clause — FunLang does not have `where`. Adding it as a keyword may conflict if any existing code uses `where` as an identifier.
 
 **Prevention:**
 - Reserve `typeclass`, `instance`, and `where` as keywords in the lexer (Lexer.fsl) from P1 start.
@@ -217,9 +217,9 @@ Without defaulting rules or explicit annotations, inference correctly reports th
 
 ### Pitfall TC-9: Instance Resolution Not Threaded Through File Imports
 
-**What goes wrong:** LangThree has a file import system (`open "path.fun"`) with an import cache. The instance environment must be accumulated across imported files. If instance declarations from imported files are not added to the instance environment before processing the importing file, instance resolution fails for any type defined in the imported file.
+**What goes wrong:** FunLang has a file import system (`open "path.fun"`) with an import cache. The instance environment must be accumulated across imported files. If instance declarations from imported files are not added to the instance environment before processing the importing file, instance resolution fails for any type defined in the imported file.
 
-**Why it happens:** LangThree's existing import system passes `TypeEnv`, `ConstructorEnv`, `RecordEnv` from imported modules to the importer. A new `InstanceEnv` must be threaded through the same pipeline. If it is omitted, instance lookup is limited to the current file only.
+**Why it happens:** FunLang's existing import system passes `TypeEnv`, `ConstructorEnv`, `RecordEnv` from imported modules to the importer. A new `InstanceEnv` must be threaded through the same pipeline. If it is omitted, instance lookup is limited to the current file only.
 
 **Concrete example:**
 ```
@@ -313,7 +313,7 @@ If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42
 
 ### Pitfall TC-13: Parser AST for Typeclass/Instance Declarations Not Unified with Module Decl
 
-**What goes wrong:** LangThree's top-level is a list of `Decl` items. If `TypeclassDecl` and `InstanceDecl` are added as new union cases but are not handled in all visitors — `TypeCheck.fs`, `Bidir.fs`/top-level processing, `Eval.fs`, `Program.fs` pretty-printer, `--emit-ast` output — the F# compiler will silently ignore them via incomplete match warnings (or worse, match-all catch cases will swallow them).
+**What goes wrong:** FunLang's top-level is a list of `Decl` items. If `TypeclassDecl` and `InstanceDecl` are added as new union cases but are not handled in all visitors — `TypeCheck.fs`, `Bidir.fs`/top-level processing, `Eval.fs`, `Program.fs` pretty-printer, `--emit-ast` output — the F# compiler will silently ignore them via incomplete match warnings (or worse, match-all catch cases will swallow them).
 
 **Prevention:**
 - After adding `TypeclassDecl` and `InstanceDecl` to `Ast.fs`, immediately run `dotnet build` and treat ALL new incomplete-match warnings as blocking errors.
@@ -330,7 +330,7 @@ If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42
 
 ### Pitfall TC-14: Orphan Instance Confusion from Prelude Instances
 
-**What goes wrong:** The Prelude loads `Show int`, `Eq int`, etc. as default instances. If user code in a `.fun` file also declares `instance Show int = ...`, there are two instances for the same type-class/type pair. This is incoherence. LangThree must enforce: one instance per (class, type) pair globally.
+**What goes wrong:** The Prelude loads `Show int`, `Eq int`, etc. as default instances. If user code in a `.fun` file also declares `instance Show int = ...`, there are two instances for the same type-class/type pair. This is incoherence. FunLang must enforce: one instance per (class, type) pair globally.
 
 **Prevention:**
 - Maintain the `InstanceEnv` as a `Map<string * string, InstanceInfo>` keyed by `(class_name, type_name)`.
@@ -365,25 +365,25 @@ If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42
 
 ---
 
-## PART E: LangThree-Specific Integration Risks
+## PART E: FunLang-Specific Integration Risks
 
-These pitfalls are not general type-class pitfalls but arise specifically from LangThree's existing design decisions:
+These pitfalls are not general type-class pitfalls but arise specifically from FunLang's existing design decisions:
 
 ### Risk LT-1: `synth`/`check` Signature Explosion
 
-`Bidir.synth` already takes `ctorEnv`, `recEnv`, `ctx`, `env`. Adding a `classEnv: ClassEnv` and `instanceEnv: InstanceEnv` parameter means every call site in Bidir.fs must be updated. LangThree has 67+ call sites for synth/check (per PROJECT.md "mutableVars avoids threading through 67+ synth/check call sites"). The same problem will recur for class/instance environments.
+`Bidir.synth` already takes `ctorEnv`, `recEnv`, `ctx`, `env`. Adding a `classEnv: ClassEnv` and `instanceEnv: InstanceEnv` parameter means every call site in Bidir.fs must be updated. FunLang has 67+ call sites for synth/check (per PROJECT.md "mutableVars avoids threading through 67+ synth/check call sites"). The same problem will recur for class/instance environments.
 
 **Mitigation:** Use the same pattern as `mutableVars`: a module-level mutable ref for environments that do not change within a single inference pass. `let mutable classEnv: ClassEnv = Map.empty` in Bidir.fs, set at the top of each top-level binding check. Avoids threading through all call sites.
 
 ### Risk LT-2: GADT Branch Isolation vs. Constraint Propagation
 
-LangThree's GADT support uses `isPolyExpected` per-branch isolation so each branch gets an independent expected type. If type class constraints are generated within a GADT branch, they must be solved with the GADT refinement in scope (the branch-local substitution). Constraints that escape a GADT branch may reference type variables that are only valid within that branch, causing resolution errors in the outer context.
+FunLang's GADT support uses `isPolyExpected` per-branch isolation so each branch gets an independent expected type. If type class constraints are generated within a GADT branch, they must be solved with the GADT refinement in scope (the branch-local substitution). Constraints that escape a GADT branch may reference type variables that are only valid within that branch, causing resolution errors in the outer context.
 
 **Mitigation:** Solve constraints locally within each GADT branch before merging branches. Do not defer constraints from GADT branches to the outer wanted set without first applying the branch's local substitution.
 
 ### Risk LT-3: `callValueRef` Pattern for Builtin Type Class Methods
 
-LangThree uses a mutable `callValueRef` forward reference to let built-in functions invoke user closures (e.g., `Array.map`). If type class method dispatch at runtime needs to call a user-defined instance method, the same forward-reference pattern is needed — the evaluator must be wired before the instance dictionary is built. Failing to use this pattern causes `NullReferenceException` or stack overflows in F#.
+FunLang uses a mutable `callValueRef` forward reference to let built-in functions invoke user closures (e.g., `Array.map`). If type class method dispatch at runtime needs to call a user-defined instance method, the same forward-reference pattern is needed — the evaluator must be wired before the instance dictionary is built. Failing to use this pattern causes `NullReferenceException` or stack overflows in F#.
 
 **Mitigation:** When constructing the built-in instance dictionaries (e.g., a `DictValue` for `Show int`), the dictionary values must be `BuiltinValue` or `ClosureValue` that reference the evaluator via `callValueRef`, not direct F# functions that bypass the evaluator.
 

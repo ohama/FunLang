@@ -4,11 +4,11 @@
 
 함수형 프로그래밍으로 알고리즘을 구현하면 명령형 스타일과는 사뭇 다른 코드가 나옵니다. for 루프와 인덱스 변수 대신 재귀와 패턴 매칭이, 배열의 in-place 수정 대신 새로운 리스트의 생성이 중심이 됩니다. 처음에는 비효율적으로 보일 수 있지만, 코드의 정확성을 추론하기가 훨씬 쉽다는 장점이 있습니다. 각 함수가 입력을 받아 출력을 반환할 뿐 아무것도 변경하지 않으니까요.
 
-먼저 LangThree에서 알고리즘을 작성할 때 알아두면 좋은 핵심 기능들을 정리합니다.
+먼저 FunLang에서 알고리즘을 작성할 때 알아두면 좋은 핵심 기능들을 정리합니다.
 
 ## 핵심 기능 정리
 
-LangThree에서 알고리즘을 구현할 때 자주 사용하는 기능들입니다:
+FunLang에서 알고리즘을 구현할 때 자주 사용하는 기능들입니다:
 
 - **모듈 레벨 `let rec`**: 재귀 함수를 최상위 선언으로 작성합니다. 표현식 내부의 `let rec ... in` 체인 대신, 각 함수를 독립된 선언으로 분리하면 가독성과 재사용성이 크게 향상됩니다.
 - **리스트 범위**: `[1..100]`으로 연속 정수 리스트를 간편하게 생성합니다.
@@ -45,7 +45,7 @@ let rec map f = fun xs ->
 
 let result = map (fun x -> x * x) [1; 2; 3; 4; 5]
 
-$ langthree map.l3
+$ funlang map.l3
 [1; 4; 9; 16; 25]
 ```
 
@@ -66,7 +66,7 @@ let rec filter pred = fun xs ->
 
 let result = filter (fun x -> x % 2 = 0) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
 
-$ langthree filter.l3
+$ funlang filter.l3
 [2; 4; 6; 8; 10]
 ```
 
@@ -86,7 +86,7 @@ let rec fold f = fun acc -> fun xs ->
 
 let result = fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
 
-$ langthree fold.l3
+$ funlang fold.l3
 55
 ```
 
@@ -104,7 +104,7 @@ let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (f
 
 let result = sieve [2..50]
 
-$ langthree sieve_prelude.l3
+$ funlang sieve_prelude.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -123,7 +123,7 @@ let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
 
 let result = fact 10
 
-$ langthree factorial.l3
+$ funlang factorial.l3
 3628800
 ```
 
@@ -144,7 +144,7 @@ let rec map f = fun xs ->
 
 let result = map fib [0..15]
 
-$ langthree fibonacci.l3
+$ funlang fibonacci.l3
 [0; 1; 1; 2; 3; 5; 8; 13; 21; 34; 55; 89; 144; 233; 377; 610]
 ```
 
@@ -165,7 +165,7 @@ let lcm a = fun b ->
 
 let result = (gcd 48 36, lcm 12 18)
 
-$ langthree gcd_lcm.l3
+$ funlang gcd_lcm.l3
 (12, 36)
 ```
 
@@ -191,7 +191,7 @@ let rec filter pred = fun xs ->
 let coprimes n = filter (fun k -> gcd n k = 1) [1..n]
 let result = coprimes 12
 
-$ langthree coprimes.l3
+$ funlang coprimes.l3
 [1; 5; 7; 11]
 ```
 
@@ -214,7 +214,7 @@ let isPrime n = if n < 2 then false else checkPrime n 2
 
 let result = filter (fun n -> isPrime n) [2..50]
 
-$ langthree is_prime.l3
+$ funlang is_prime.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -233,7 +233,7 @@ let rec power base = fun exp ->
 
 let result = power 2 10
 
-$ langthree power.l3
+$ funlang power.l3
 1024
 ```
 
@@ -259,7 +259,7 @@ let rec sort xs = match xs with | [] -> [] | h :: t -> insert h (sort t)
 
 let result = sort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ langthree insertion_sort.l3
+$ funlang insertion_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -287,7 +287,7 @@ let rec qsort xs = match xs with | [] -> [] | pivot :: rest -> let lo = filter (
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ langthree quicksort.l3
+$ funlang quicksort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -304,7 +304,7 @@ let rec qsort xs = match xs with | [] -> [] | p :: rest -> qsort (filter (fun x 
 
 let result = qsort [5; 3; 8; 1; 9; 2; 7]
 
-$ langthree qsort_prelude.l3
+$ funlang qsort_prelude.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -330,7 +330,7 @@ let rec msort xs = let len = length xs in if len <= 1 then xs else let mid = len
 
 let result = msort [5; 3; 8; 1; 9; 2; 7; 4; 6]
 
-$ langthree merge_sort.l3
+$ funlang merge_sort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 
@@ -366,7 +366,7 @@ let rec inorder t = match t with | Leaf -> [] | Node (l, v, r) -> append (inorde
 
 let result = inorder (buildTree [5; 3; 8; 1; 9; 2; 7])
 
-$ langthree tree_sort.l3
+$ funlang tree_sort.l3
 [1; 2; 3; 5; 7; 8; 9]
 ```
 
@@ -400,7 +400,7 @@ let three = Succ (Succ (Succ Zero))
 let four = Succ (Succ (Succ (Succ Zero)))
 let result = toInt (mul three four)
 
-$ langthree peano.l3
+$ funlang peano.l3
 12
 ```
 
@@ -430,7 +430,7 @@ let rec sieve xs = match xs with | [] -> [] | p :: rest -> p :: sieve (filter (f
 
 let result = sieve [2..50]
 
-$ langthree sieve.l3
+$ funlang sieve.l3
 [2; 3; 5; 7; 11; 13; 17; 19; 23; 29; 31; 37; 41; 43; 47]
 ```
 
@@ -459,7 +459,7 @@ let rec rev acc = fun xs ->
 let seq = rev [] (collatz 27 [])
 let result = length seq
 
-$ langthree collatz.l3
+$ funlang collatz.l3
 112
 ```
 
@@ -489,7 +489,7 @@ let fizzbuzz n =
 
 let result = map fizzbuzz [1..20]
 
-$ langthree fizzbuzz.l3
+$ funlang fizzbuzz.l3
 ["1"; "2"; "Fizz"; "4"; "Buzz"; "Fizz"; "7"; "8"; "Fizz"; "Buzz"; "11"; "Fizz"; "13"; "14"; "FizzBuzz"; "16"; "17"; "Fizz"; "19"; "Buzz"]
 ```
 
@@ -512,7 +512,7 @@ let r1 = stateA [1; 0; 1; 0]
 let r2 = stateA [1; 0; 0]
 let result = (r1, r2)
 
-$ langthree state_machine.l3
+$ funlang state_machine.l3
 (ended in B, ended in B)
 ```
 

@@ -1,6 +1,6 @@
 # 2장: 함수 (Functions)
 
-함수형 언어에서 함수는 단순한 코드 묶음이 아닙니다. 함수는 값입니다 -- 변수에 담을 수 있고, 다른 함수에 인자로 넘길 수 있으며, 함수에서 함수를 반환할 수도 있습니다. 이 장에서는 LangThree가 함수를 어떻게 다루는지 살펴보면서, 함수형 프로그래밍의 핵심 아이디어들을 하나씩 짚어봅니다.
+함수형 언어에서 함수는 단순한 코드 묶음이 아닙니다. 함수는 값입니다 -- 변수에 담을 수 있고, 다른 함수에 인자로 넘길 수 있으며, 함수에서 함수를 반환할 수도 있습니다. 이 장에서는 FunLang가 함수를 어떻게 다루는지 살펴보면서, 함수형 프로그래밍의 핵심 아이디어들을 하나씩 짚어봅니다.
 
 ## 익명 함수 (Anonymous Functions)
 
@@ -22,7 +22,7 @@ funlang> (fun (x: int) -> x + 1) 10
 11
 ```
 
-LangThree는 타입을 자동으로 추론하기 때문에 보통은 타입 어노테이션을 쓸 필요가 없습니다. 하지만 타입 오류를 디버깅할 때나, 코드를 읽는 사람에게 의도를 명확히 전달하고 싶을 때 유용합니다. 타입 어노테이션은 컴파일러에게도, 코드를 읽는 사람에게도 일종의 문서 역할을 합니다.
+FunLang는 타입을 자동으로 추론하기 때문에 보통은 타입 어노테이션을 쓸 필요가 없습니다. 하지만 타입 오류를 디버깅할 때나, 코드를 읽는 사람에게 의도를 명확히 전달하고 싶을 때 유용합니다. 타입 어노테이션은 컴파일러에게도, 코드를 읽는 사람에게도 일종의 문서 역할을 합니다.
 
 튜플 파라미터를 직접 구조 분해할 수 있습니다:
 
@@ -71,7 +71,7 @@ let a = 10
 let b = 20
 let result = a + b
 
-$ langthree add.l3
+$ funlang add.l3
 30
 ```
 
@@ -89,7 +89,7 @@ $ cat multi.l3
 let add x y = x + y
 let result = add 3 4
 
-$ langthree multi.l3
+$ funlang multi.l3
 7
 ```
 
@@ -100,7 +100,7 @@ $ cat multi2.l3
 let add = fun x -> fun y -> x + y
 let result = add 3 4
 
-$ langthree multi2.l3
+$ funlang multi2.l3
 7
 ```
 
@@ -139,7 +139,7 @@ let result =
     let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
     fact 10
 
-$ langthree factorial.l3
+$ funlang factorial.l3
 3628800
 ```
 
@@ -154,7 +154,7 @@ $ cat fact_module.l3
 let rec fact n = if n <= 1 then 1 else n * fact (n - 1)
 let result = fact 10
 
-$ langthree fact_module.l3
+$ funlang fact_module.l3
 3628800
 ```
 
@@ -175,7 +175,7 @@ and odd n = if n = 0 then false else even (n - 1)
 
 let result = (even 10, odd 7)
 
-$ langthree even_odd.l3
+$ funlang even_odd.l3
 (true, true)
 ```
 
@@ -196,15 +196,15 @@ let r1 = isEven 100
 let r2 = isOdd 99
 let result = (r1, r2)
 
-$ langthree mutrec_multi.l3
+$ funlang mutrec_multi.l3
 (true, true)
 ```
 
 ## 꼬리 호출 최적화 (Tail Call Optimization)
 
-재귀를 쓰면 자연스럽게 드는 걱정이 있습니다: "깊이 재귀하면 스택이 넘치지 않을까?" LangThree는 꼬리 호출 최적화(TCO)로 이 문제를 해결합니다.
+재귀를 쓰면 자연스럽게 드는 걱정이 있습니다: "깊이 재귀하면 스택이 넘치지 않을까?" FunLang는 꼬리 호출 최적화(TCO)로 이 문제를 해결합니다.
 
-LangThree는 꼬리 위치(tail position)의 함수 호출을 자동으로 최적화합니다.
+FunLang는 꼬리 위치(tail position)의 함수 호출을 자동으로 최적화합니다.
 이를 통해 깊은 재귀도 스택 오버플로우 없이 실행됩니다.
 
 **꼬리 호출이란?** 함수의 마지막 동작이 다른 함수를 호출하는 것입니다:
@@ -214,7 +214,7 @@ $ cat tco_loop.l3
 let rec loop n = if n = 0 then 0 else loop (n - 1)
 let result = loop 1000000
 
-$ langthree tco_loop.l3
+$ funlang tco_loop.l3
 0
 ```
 
@@ -234,7 +234,7 @@ $ cat tco_fact.l3
 let rec factTail n = fun acc -> if n <= 1 then acc else factTail (n - 1) (acc * n)
 let result = factTail 10 1
 
-$ langthree tco_fact.l3
+$ funlang tco_fact.l3
 3628800
 ```
 
@@ -260,7 +260,7 @@ $ cat hof.l3
 let apply f x = f x
 let result = apply (fun x -> x + 1) 10
 
-$ langthree hof.l3
+$ funlang hof.l3
 11
 ```
 
@@ -274,7 +274,7 @@ let make_adder n = fun x -> x + n
 let add10 = make_adder 10
 let result = add10 5
 
-$ langthree hof2.l3
+$ funlang hof2.l3
 15
 ```
 
@@ -292,7 +292,7 @@ let x = 10
 let add_x y = x + y
 let result = add_x 5
 
-$ langthree closure.l3
+$ funlang closure.l3
 15
 ```
 
@@ -314,7 +314,7 @@ let add x y = x + y
 let add5 = add 5
 let result = add5 3
 
-$ langthree curry.l3
+$ funlang curry.l3
 8
 ```
 
@@ -337,7 +337,7 @@ let g = f 1
 let h = g 2
 let result = h 3
 
-$ langthree curry3.l3
+$ funlang curry3.l3
 6
 ```
 
@@ -354,7 +354,7 @@ let double = mul 2
 let triple = mul 3
 let result = (double 5, triple 5)
 
-$ langthree specialization.l3
+$ funlang specialization.l3
 (10, 15)
 ```
 
@@ -369,7 +369,7 @@ let hello = greet "Hello"
 let hi = greet "Hi"
 let result = (hello "Alice", hi "Bob")
 
-$ langthree config_pattern.l3
+$ funlang config_pattern.l3
 ("Hello Alice", "Hi Bob")
 ```
 
@@ -393,7 +393,7 @@ let r1 = map (add 10) [1; 2; 3]
 let r2 = filter (gt 3) [1; 2; 3; 4; 5; 6]
 let result = (r1, r2)
 
-$ langthree partial_hof.l3
+$ funlang partial_hof.l3
 ([11; 12; 13], [4; 5; 6])
 ```
 
@@ -410,7 +410,7 @@ let r1 = sum [1; 2; 3; 4; 5]
 let r2 = product [1; 2; 3; 4; 5]
 let result = (r1, r2)
 
-$ langthree partial_fold.l3
+$ funlang partial_fold.l3
 (15, 120)
 ```
 
@@ -431,7 +431,7 @@ let result =
     |> map (mul 10)
     |> fold (fun acc -> fun x -> acc + x) 0
 
-$ langthree partial_pipeline.l3
+$ funlang partial_pipeline.l3
 490
 ```
 
@@ -449,7 +449,7 @@ $ langthree partial_pipeline.l3
 
 ### 내장 함수의 부분 적용
 
-LangThree의 내장 함수도 커링되어 있어서 부분 적용이 가능합니다:
+FunLang의 내장 함수도 커링되어 있어서 부분 적용이 가능합니다:
 
 ```
 $ cat partial_builtin.l3
@@ -460,7 +460,7 @@ let r2 = map (string_concat "item: ") ["apple"; "banana"; "cherry"]
 
 let result = (r1, r2)
 
-$ langthree partial_builtin.l3
+$ funlang partial_builtin.l3
 ("Hello World", ["item: apple"; "item: banana"; "item: cherry"])
 ```
 
@@ -483,7 +483,7 @@ let r1 = map pow2 [0; 1; 2; 3; 4; 5]
 let r2 = map pow3 [0; 1; 2; 3]
 let result = (r1, r2)
 
-$ langthree partial_rec.l3
+$ funlang partial_rec.l3
 ([1; 2; 4; 8; 16; 32], [1; 3; 9; 27])
 ```
 
@@ -503,7 +503,7 @@ let transforms = [add 1; add 10; mul 2; mul 100]
 let apply_all fs = fun x -> map (fun f -> f x) fs
 let result = apply_all transforms 5
 
-$ langthree partial_list.l3
+$ funlang partial_list.l3
 [6; 15; 10; 500]
 ```
 

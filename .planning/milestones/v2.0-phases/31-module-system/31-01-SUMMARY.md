@@ -32,13 +32,13 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Parser.fsy
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Format.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Parser.fsy
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Format.fs
+    - src/FunLang/Program.fs
 
 key-decisions:
   - "Mutable delegate pattern: TypeCheck.fs and Eval.fs cannot call Prelude (compile order); use mutable function refs set at init time from Prelude.fs"
@@ -85,13 +85,13 @@ completed: 2026-03-25
 
 ## Files Created/Modified
 
-- `src/LangThree/Ast.fs` - Added `FileImportDecl of path: string * Span` to Decl DU and `declSpanOf` handler
-- `src/LangThree/Parser.fsy` - Added `OPEN STRING` and `OPEN STRING Decls` productions in Decls nonterminal
-- `src/LangThree/TypeCheck.fs` - Added `resolveImportPath`, `fileImportTypeChecker` delegate, `currentTypeCheckingFile` mutable, `FileImportDecl` arm in typeCheckDecls fold
-- `src/LangThree/Eval.fs` - Added `fileImportEvaluator` delegate, `currentEvalFile` mutable, `FileImportDecl` arm in evalModuleDecls fold
-- `src/LangThree/Prelude.fs` - Made `parseModuleFromString` non-private; added `fileLoadingStack`, `loadAndTypeCheckFileImpl`, `loadAndEvalFileImpl`, delegate registration `do` block
-- `src/LangThree/Format.fs` - Added `FileImportDecl` case to `formatDecl`
-- `src/LangThree/Program.fs` - Sets `currentTypeCheckingFile`/`currentEvalFile` before type-checking/evaluating files
+- `src/FunLang/Ast.fs` - Added `FileImportDecl of path: string * Span` to Decl DU and `declSpanOf` handler
+- `src/FunLang/Parser.fsy` - Added `OPEN STRING` and `OPEN STRING Decls` productions in Decls nonterminal
+- `src/FunLang/TypeCheck.fs` - Added `resolveImportPath`, `fileImportTypeChecker` delegate, `currentTypeCheckingFile` mutable, `FileImportDecl` arm in typeCheckDecls fold
+- `src/FunLang/Eval.fs` - Added `fileImportEvaluator` delegate, `currentEvalFile` mutable, `FileImportDecl` arm in evalModuleDecls fold
+- `src/FunLang/Prelude.fs` - Made `parseModuleFromString` non-private; added `fileLoadingStack`, `loadAndTypeCheckFileImpl`, `loadAndEvalFileImpl`, delegate registration `do` block
+- `src/FunLang/Format.fs` - Added `FileImportDecl` case to `formatDecl`
+- `src/FunLang/Program.fs` - Sets `currentTypeCheckingFile`/`currentEvalFile` before type-checking/evaluating files
 
 ## Decisions Made
 
@@ -112,7 +112,7 @@ completed: 2026-03-25
 - **Found during:** Task 2
 - **Issue:** Plan specified calling `Prelude.parseModuleFromString` from TypeCheck.fs and Eval.fs, but `Prelude.fs` is compiled at position 13 while TypeCheck.fs is at position 8, Eval.fs at position 12. Forward reference is not allowed in F#.
 - **Fix:** Used mutable delegate pattern: `TypeCheck.fileImportTypeChecker` and `Eval.fileImportEvaluator` are mutable function refs initialized to error stubs, then set by Prelude.fs at module init time via a `do` block.
-- **Files modified:** src/LangThree/TypeCheck.fs, src/LangThree/Eval.fs, src/LangThree/Prelude.fs
+- **Files modified:** src/FunLang/TypeCheck.fs, src/FunLang/Eval.fs, src/FunLang/Prelude.fs
 - **Verification:** Build succeeds, file imports work, tests pass
 - **Committed in:** `23faac9`
 
@@ -121,7 +121,7 @@ completed: 2026-03-25
 - **Found during:** Task 2 (during smoke testing of relative path resolution)
 - **Issue:** `Lexer.setInitialPos` sets `lexbuf.EndPos` only, not `lexbuf.StartPos`. FSharp.Text.Lexing initializes StartPos with `pos_fname = ""`. The filtered-token tokenizer doesn't update lexbuf positions. So `ruleSpan parseState 1 2` produces spans with `FileName = ""`. Relative path resolution using `span.FileName` always fell back to CWD.
 - **Fix:** Added `currentTypeCheckingFile` mutable to TypeCheck.fs and `currentEvalFile` mutable to Eval.fs. These are set in Program.fs before processing each file, and saved/restored by Prelude.fs's `loadAndTypeCheckFileImpl`/`loadAndEvalFileImpl` for recursive imports.
-- **Files modified:** src/LangThree/TypeCheck.fs, src/LangThree/Eval.fs, src/LangThree/Prelude.fs, src/LangThree/Program.fs
+- **Files modified:** src/FunLang/TypeCheck.fs, src/FunLang/Eval.fs, src/FunLang/Prelude.fs, src/FunLang/Program.fs
 - **Verification:** Relative path `open "utils.fun"` resolves correctly to importing file's directory
 - **Committed in:** `23faac9`
 
@@ -130,7 +130,7 @@ completed: 2026-03-25
 - **Found during:** Task 2 (noticed all Program.fs file paths need the mutable set)
 - **Issue:** The `--emit-type --file` branch didn't set `currentTypeCheckingFile` before calling `typeCheckModuleWithPrelude`, so relative imports in emit-type mode would resolve from CWD.
 - **Fix:** Added `TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename` before type-checking in the emit-type branch.
-- **Files modified:** src/LangThree/Program.fs
+- **Files modified:** src/FunLang/Program.fs
 - **Committed in:** `23faac9`
 
 ---

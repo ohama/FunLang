@@ -28,15 +28,15 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Prelude.fs
-    - src/LangThree/Program.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/Program.fs
     - Prelude/List.fun
     - Prelude/Core.fun
     - Prelude/Option.fun
     - Prelude/Result.fun
-    - tests/LangThree.Tests/ModuleTests.fs
-    - tests/LangThree.Tests/GadtTests.fs
+    - tests/FunLang.Tests/ModuleTests.fs
+    - tests/FunLang.Tests/GadtTests.fs
 
 key-decisions:
   - "Approach A for MOD-02: wrap prelude .fun files in `module Stem = ...` rather than building virtual modules in F# code"
@@ -80,15 +80,15 @@ Each task was committed atomically:
 3. **Task 3: Add regression tests for MOD-01 and MOD-02** - `f4c403e` (test)
 
 ## Files Created/Modified
-- `src/LangThree/TypeCheck.fs` - Updated `fileImportTypeChecker` delegate (5-arg), `FileImportDecl` arm (merges fileMods), `typeCheckModuleWithPrelude` (+initialModules param), `typeCheckModule` wrapper (+Map.empty)
-- `src/LangThree/Prelude.fs` - Updated `loadAndTypeCheckFileImpl` (+mods param, 4-tuple return), `PreludeResult` (+Modules, +ModuleValueEnv), `emptyPrelude` (+new fields), `loadPrelude` (accumulates modules and moduleValueEnv)
-- `src/LangThree/Program.fs` - Both `typeCheckModuleWithPrelude` calls pass `prelude.Modules`; `evalModuleDecls` call passes `prelude.ModuleValueEnv`
+- `src/FunLang/TypeCheck.fs` - Updated `fileImportTypeChecker` delegate (5-arg), `FileImportDecl` arm (merges fileMods), `typeCheckModuleWithPrelude` (+initialModules param), `typeCheckModule` wrapper (+Map.empty)
+- `src/FunLang/Prelude.fs` - Updated `loadAndTypeCheckFileImpl` (+mods param, 4-tuple return), `PreludeResult` (+Modules, +ModuleValueEnv), `emptyPrelude` (+new fields), `loadPrelude` (accumulates modules and moduleValueEnv)
+- `src/FunLang/Program.fs` - Both `typeCheckModuleWithPrelude` calls pass `prelude.Modules`; `evalModuleDecls` call passes `prelude.ModuleValueEnv`
 - `Prelude/List.fun` - Wrapped in `module List = ...`, added `open List` at bottom
 - `Prelude/Core.fun` - Wrapped in `module Core = ...`, added `open Core` at bottom
 - `Prelude/Option.fun` - Wrapped in `module Option = ...`, added `open Option` at bottom
 - `Prelude/Result.fun` - Wrapped in `module Result = ...`, added `open Result` at bottom
-- `tests/LangThree.Tests/ModuleTests.fs` - Added `evalWithPrelude` helper and 6 regression tests
-- `tests/LangThree.Tests/GadtTests.fs` - Updated `typeCheckModuleWithPrelude` call to pass 5th `Map.empty` arg
+- `tests/FunLang.Tests/ModuleTests.fs` - Added `evalWithPrelude` helper and 6 regression tests
+- `tests/FunLang.Tests/GadtTests.fs` - Updated `typeCheckModuleWithPrelude` call to pass 5th `Map.empty` arg
 
 ## Decisions Made
 - Used Approach A (wrap .fun files) over Approach B (virtual modules in F# code) — simpler, self-documenting
@@ -103,7 +103,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (running test suite)
 - **Issue:** `GadtTests.fs` called `typeCheckModuleWithPrelude` with 4 args after the signature change to 5 params
 - **Fix:** Added `Map.empty` as 5th argument at the call site
-- **Files modified:** `tests/LangThree.Tests/GadtTests.fs`
+- **Files modified:** `tests/FunLang.Tests/GadtTests.fs`
 - **Committed in:** `ed8044d` (Task 2 commit)
 
 **2. [Rule 1 - Bug] Blank lines inside module blocks cause IndentFilter parse errors**

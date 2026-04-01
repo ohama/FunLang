@@ -31,7 +31,7 @@ No new external libraries. All changes are within the interpreter source files.
 
 ### .NET Backing Types
 
-| LangThree Type | .NET Type | Why |
+| FunLang Type | .NET Type | Why |
 |----------------|-----------|-----|
 | `HashSetValue` | `System.Collections.Generic.HashSet<Value>` | O(1) add/lookup; uses Value's IEquatable<Value> for equality |
 | `QueueValue` | `System.Collections.Generic.Queue<Value>` | FIFO via Enqueue/Dequeue; throws InvalidOperationException on empty dequeue |
@@ -137,7 +137,7 @@ The FieldAccess arm at ~line 1214 dispatches on the evaluated value type. Add ne
             match arg with
             | TupleValue [] ->
                 if q.Count = 0 then
-                    raise (LangThreeException (StringValue "Queue.Dequeue: queue is empty"))
+                    raise (FunLangException (StringValue "Queue.Dequeue: queue is empty"))
                 else
                     q.Dequeue()
             | _ -> failwith "Queue.Dequeue: takes no arguments (call as .Dequeue())")
@@ -149,7 +149,7 @@ The FieldAccess arm at ~line 1214 dispatches on the evaluated value type. Add ne
 
 **Critical note for `.Count`:** `.Count` is a property access without `()`, so it's a plain `FieldAccess` — NOT an `App`. Return `IntValue hs.Count` directly (no `BuiltinValue` wrapper).
 
-**Critical note for empty dequeue:** Use `raise (LangThreeException (StringValue "..."))` to produce a catchable exception consistent with how `hashtable_get` raises on missing keys.
+**Critical note for empty dequeue:** Use `raise (FunLangException (StringValue "..."))` to produce a catchable exception consistent with how `hashtable_get` raises on missing keys.
 
 ### Pattern 4: Constructor Interception in Bidir.fs
 
@@ -236,12 +236,12 @@ module Queue =
 
 ### Pattern 7: Test File Structure
 
-Test files for flt use `// --- Output:` (not `// --- Stdout:`) per the prior decisions context. Place tests under `tests/flt/file/` in a new `collections/` subdirectory or reuse existing naming. The test binary path is `/Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree`.
+Test files for flt use `// --- Output:` (not `// --- Stdout:`) per the prior decisions context. Place tests under `tests/flt/file/` in a new `collections/` subdirectory or reuse existing naming. The test binary path is `/Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang`.
 
 Example structure for `hashset-basic.flt`:
 ```
 // Test: HashSet basic usage (COLL-02)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let hs = HashSet ()
 let r1 = hs.Add(1)
@@ -266,7 +266,7 @@ false
 Example structure for `queue-basic.flt`:
 ```
 // Test: Queue basic usage (COLL-03)
-// --- Command: /Users/ohama/vibe/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let q = Queue ()
 let _ = q.Enqueue(10)
@@ -298,7 +298,7 @@ let _ = println (to_string q.Count)
 |---------|-------------|-------------|-----|
 | Unique element tracking | Custom list-based dedup | `System.Collections.Generic.HashSet<Value>` | O(1) add/contains; Value has IEquatable already |
 | FIFO queue | Custom list append/reverse | `System.Collections.Generic.Queue<Value>` | O(1) enqueue/dequeue |
-| Empty dequeue error | Custom error code | `raise (LangThreeException ...)` | Consistent with hashtable_get missing key behavior |
+| Empty dequeue error | Custom error code | `raise (FunLangException ...)` | Consistent with hashtable_get missing key behavior |
 
 **Key insight:** .NET's generic collections work directly with `Value` because `Value` implements `IEquatable<Value>` and `IComparable` through the existing `CustomEquality`/`CustomComparison` attributes and `valueEqual`/`valueCompare` statics. No adapter needed.
 
@@ -337,11 +337,11 @@ let _ = println (to_string q.Count)
 
 ### Pitfall 4: Empty Queue Dequeue Error Handling
 
-**What goes wrong:** .NET `Queue<T>.Dequeue()` throws `System.InvalidOperationException` on empty queue. If not caught, this becomes an untyped .NET exception, not a LangThree catchable exception.
+**What goes wrong:** .NET `Queue<T>.Dequeue()` throws `System.InvalidOperationException` on empty queue. If not caught, this becomes an untyped .NET exception, not a FunLang catchable exception.
 
-**Why it happens:** Raw .NET exceptions bypass the LangThree exception system.
+**Why it happens:** Raw .NET exceptions bypass the FunLang exception system.
 
-**How to avoid:** Explicitly check `q.Count = 0` before dequeuing and raise `LangThreeException(StringValue "Queue.Dequeue: queue is empty")` for the empty case. The spec requires "empty dequeue error" to be tested, so this path must exist.
+**How to avoid:** Explicitly check `q.Count = 0` before dequeuing and raise `FunLangException(StringValue "Queue.Dequeue: queue is empty")` for the empty case. The spec requires "empty dequeue error" to be tested, so this path must exist.
 
 ### Pitfall 5: Test File Output Marker
 
@@ -396,7 +396,7 @@ let _ = println (to_string q.Count)
             match arg with
             | TupleValue [] ->
                 if q.Count = 0 then
-                    raise (LangThreeException (StringValue "Queue.Dequeue: queue is empty"))
+                    raise (FunLangException (StringValue "Queue.Dequeue: queue is empty"))
                 else
                     q.Dequeue()
             | _ -> failwith "Queue.Dequeue: takes no arguments")

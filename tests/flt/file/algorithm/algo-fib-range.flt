@@ -1,5 +1,5 @@
 // Test: Fibonacci sequence mapped over range
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2)
 let rec map f = fun xs ->

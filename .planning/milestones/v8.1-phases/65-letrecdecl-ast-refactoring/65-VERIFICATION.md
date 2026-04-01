@@ -29,13 +29,13 @@ score: 4/4 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | LetRec and LetRecDecl carry TypeExpr option | VERIFIED | `LetRec of name * param * paramType: TypeExpr option * body * inExpr * span`; `LetRecDecl of (string * string * TypeExpr option * Expr * Span) list * Span` |
-| `src/LangThree/Parser.fsy` | Captures type from LambdaAnnot | VERIFIED | 18 parser rules updated (10 LetRecDecl + 8 LetRec occurrences) |
-| `src/LangThree/TypeCheck.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | `match paramTyOpt with Some tyExpr -> elaborateTypeExpr tyExpr | None -> Infer.freshVar()` in LetRecDecl handling |
-| `src/LangThree/Bidir.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | Same pattern in LetRec synthesis path |
-| `src/LangThree/Infer.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | Same pattern in LetRec inference path |
-| `src/LangThree/Eval.fs` | Ignores type annotation at runtime | VERIFIED | Destructures with `_` wildcard for TypeExpr option field |
-| `src/LangThree/Format.fs` | Pretty-prints type annotation when present | VERIFIED | Renders `(param : type)` syntax for annotated params |
+| `src/FunLang/Ast.fs` | LetRec and LetRecDecl carry TypeExpr option | VERIFIED | `LetRec of name * param * paramType: TypeExpr option * body * inExpr * span`; `LetRecDecl of (string * string * TypeExpr option * Expr * Span) list * Span` |
+| `src/FunLang/Parser.fsy` | Captures type from LambdaAnnot | VERIFIED | 18 parser rules updated (10 LetRecDecl + 8 LetRec occurrences) |
+| `src/FunLang/TypeCheck.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | `match paramTyOpt with Some tyExpr -> elaborateTypeExpr tyExpr | None -> Infer.freshVar()` in LetRecDecl handling |
+| `src/FunLang/Bidir.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | Same pattern in LetRec synthesis path |
+| `src/FunLang/Infer.fs` | Uses elaborateTypeExpr for annotated params | VERIFIED | Same pattern in LetRec inference path |
+| `src/FunLang/Eval.fs` | Ignores type annotation at runtime | VERIFIED | Destructures with `_` wildcard for TypeExpr option field |
+| `src/FunLang/Format.fs` | Pretty-prints type annotation when present | VERIFIED | Renders `(param : type)` syntax for annotated params |
 | `tests/flt/file/let/letrec-decl-param-annotation.flt` | Positive tests | VERIFIED | 4 test cases: mutual rec with annotations, unannotated regression, expression-level annotated and unannotated |
 | `tests/flt/file/let/letrec-decl-param-annotation-error.flt` | Negative test | VERIFIED | Type mismatch on annotated param produces E0301 error |
 

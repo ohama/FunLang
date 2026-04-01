@@ -33,8 +33,8 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
 
 key-decisions:
   - "instantiate/generalize defined in Bidir.fs shadowing Infer.fs -- avoids circular dep (Infer cannot reference Bidir since Bidir opens Infer)"
@@ -80,9 +80,9 @@ completed: 2026-03-31
 
 ## Files Created/Modified
 
-- `src/LangThree/Bidir.fs` - Added pendingConstraints/currentClassEnv/currentInstEnv mutable refs, applySubstToConstraints helper, constraint-aware instantiate and generalize (shadow Infer versions), applySubstToConstraints calls before Let/LetRec/LetPat generalize
-- `src/LangThree/TypeCheck.fs` - Removed local currentClassEnv/currentInstEnv (now in Bidir), added Bidir.pendingConstraints reset, added Bidir.applySubstToConstraints calls before all generalize call sites
-- `src/LangThree/Infer.fs` - Kept pure (notes added explaining Bidir shadows them)
+- `src/FunLang/Bidir.fs` - Added pendingConstraints/currentClassEnv/currentInstEnv mutable refs, applySubstToConstraints helper, constraint-aware instantiate and generalize (shadow Infer versions), applySubstToConstraints calls before Let/LetRec/LetPat generalize
+- `src/FunLang/TypeCheck.fs` - Removed local currentClassEnv/currentInstEnv (now in Bidir), added Bidir.pendingConstraints reset, added Bidir.applySubstToConstraints calls before all generalize call sites
+- `src/FunLang/Infer.fs` - Kept pure (notes added explaining Bidir shadows them)
 
 ## Decisions Made
 

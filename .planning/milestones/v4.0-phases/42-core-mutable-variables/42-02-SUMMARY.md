@@ -13,9 +13,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
+    - src/FunLang/TypeCheck.fs
 decisions:
   - id: "D42-02-01"
     summary: "Module-level mutable mutableVars set in Bidir.fs for tracking"

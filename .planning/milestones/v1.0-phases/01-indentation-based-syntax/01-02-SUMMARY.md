@@ -26,9 +26,9 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/IndentFilter.fs
-    - src/LangThree/Parser.fsy
-    - tests/LangThree.Tests/IntegrationTests.fs
+    - src/FunLang/IndentFilter.fs
+    - src/FunLang/Parser.fsy
+    - tests/FunLang.Tests/IntegrationTests.fs
 
 key-decisions:
   - "Use canBeFunction (IDENT | RPAREN) to identify function positions, preventing number-to-number app detection"
@@ -70,9 +70,9 @@ Each task was committed atomically:
 2. **Task 2: Add integration tests for multi-line function application** - `c728687` (test)
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Added InFunctionApp context, canBeFunction/isAtom predicates, lookahead-based context detection
-- `src/LangThree/Parser.fsy` - Added AppArgs non-terminal for multi-line argument lists, AppExpr INDENT AppArgs DEDENT rule
-- `tests/LangThree.Tests/IntegrationTests.fs` - Added 4 integration tests covering basic, complex, curried, and mixed function application patterns
+- `src/FunLang/IndentFilter.fs` - Added InFunctionApp context, canBeFunction/isAtom predicates, lookahead-based context detection
+- `src/FunLang/Parser.fsy` - Added AppArgs non-terminal for multi-line argument lists, AppExpr INDENT AppArgs DEDENT rule
+- `tests/FunLang.Tests/IntegrationTests.fs` - Added 4 integration tests covering basic, complex, curried, and mixed function application patterns
 
 ## Decisions Made
 

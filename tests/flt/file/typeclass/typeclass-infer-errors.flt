@@ -1,5 +1,5 @@
 // Test: calling show on a type with no instance produces E0701 no-instance error
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree --check %input
+// --- Command: /Users/ohama/vibe-coding/LangThree/src/FunLang/bin/Release/net10.0/FunLang --check %input
 // --- Input:
 let bad = show (fun x -> x)
 // --- ExitCode: 1

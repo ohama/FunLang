@@ -30,7 +30,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "Remove duplicate ParamList productions after adding MixedParamList to resolve reduce/reduce conflicts"
@@ -73,7 +73,7 @@ Each task was committed atomically:
 2. **Task 2: Add MixedParamList productions to all let-forms** - `98b5e2b` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added desugarMixedParams helper, MixedParam/MixedParamList grammar rules, and MixedParamList productions in all five let-form grammar sections
+- `src/FunLang/Parser.fsy` - Added desugarMixedParams helper, MixedParam/MixedParamList grammar rules, and MixedParamList productions in all five let-form grammar sections
 
 ## Decisions Made
 - **Remove duplicate ParamList productions**: After adding MixedParamList productions, `reduce/reduce` conflict appeared on `EQUALS` token between `ParamList: IDENT` and `MixedParam: IDENT`. Resolution: remove old ParamList productions since MixedParamList (with `Choice1Of2 IDENT`) is a strict superset. All 643 tests continued to pass after removal.
@@ -87,7 +87,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (Add MixedParamList productions)
 - **Issue:** Plan specified four sections but Expr-level `LET REC IDENT ParamList EQUALS Expr IN SeqExpr` also needed updating for consistency
 - **Fix:** Added `LET REC IDENT MixedParamList EQUALS Expr IN SeqExpr` (inline and INDENT variants) and removed old ParamList variant
-- **Files modified:** src/LangThree/Parser.fsy
+- **Files modified:** src/FunLang/Parser.fsy
 - **Verification:** All existing let rec expression tests continue to pass
 - **Committed in:** 98b5e2b (Task 2 commit)
 

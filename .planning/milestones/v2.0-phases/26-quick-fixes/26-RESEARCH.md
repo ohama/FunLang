@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 26 addresses four independent bugs/missing features in the LangThree interpreter. Research was
+Phase 26 addresses four independent bugs/missing features in the FunLang interpreter. Research was
 conducted by reading the actual source files directly. All findings are verified from source.
 
 Three of the four fixes (STD-01, MOD-04, TYPE-03) have clear root causes with identified fix
@@ -90,13 +90,13 @@ else
 This is safe to add regardless of where the crash occurs.
 
 **Files to modify:**
-- `src/LangThree/Program.fs` — add early return for empty `moduleDecls` before calling `evalModuleDecls`
+- `src/FunLang/Program.fs` — add early return for empty `moduleDecls` before calling `evalModuleDecls`
 
 **Risk**: Very low. Purely defensive. Does not change behavior for non-empty files.
 
 ---
 
-## Fix 2: MOD-04 — Prelude not found outside LangThree directory
+## Fix 2: MOD-04 — Prelude not found outside FunLang directory
 
 ### Root cause (confirmed)
 
@@ -108,8 +108,8 @@ let loadPrelude () : PreludeResult =
 ```
 
 `"Prelude"` is a relative path — it resolves against CWD. When `dotnet run` is invoked from
-`LangThree/` (the repo root), CWD is there and `Prelude/` exists. When invoked from
-`LangThree/FunLexYacc/` or any other directory, `Prelude/` is not found and `emptyPrelude` is
+`FunLang/` (the repo root), CWD is there and `Prelude/` exists. When invoked from
+`FunLang/FunLexYacc/` or any other directory, `Prelude/` is not found and `emptyPrelude` is
 returned silently. All Prelude functions (`Option`, `fst`, `snd`, `not`, `map`, `filter`, etc.)
 become undefined.
 
@@ -151,18 +151,18 @@ let loadPrelude () : PreludeResult =
 `System.Reflection` needs to be referenced, which is available in .NET base library.
 
 **Walk-up logic for `dotnet run`**: Binary is at
-`src/LangThree/bin/Debug/net10.0/LangThree`. Walking up:
+`src/FunLang/bin/Debug/net10.0/FunLang`. Walking up:
 - `net10.0/` → no Prelude
 - `Debug/` → no Prelude
 - `bin/` → no Prelude
-- `LangThree/` (project dir) → no Prelude
+- `FunLang/` (project dir) → no Prelude
 - `src/` → no Prelude
-- `LangThree/` (repo root) → **`Prelude/` found!**
+- `FunLang/` (repo root) → **`Prelude/` found!**
 
 6 levels up is sufficient.
 
 **Files to modify:**
-- `src/LangThree/Prelude.fs` — replace `let preludeDir = "Prelude"` with `findPreludeDir()` call
+- `src/FunLang/Prelude.fs` — replace `let preludeDir = "Prelude"` with `findPreludeDir()` call
 
 **Risk**: Low. The CWD fallback first preserves existing dev behavior. Walk-up logic handles the
 `dotnet run` case from other directories.
@@ -181,7 +181,7 @@ Two registration points:
 2. **`TypeCheck.initialTypeEnv`** (`TypeCheck.fs` line 14): map of `string -> Scheme`. Provides
    static type for the builtin.
 
-Exceptions use `exception LangThreeException of Value` declared at `Eval.fs` line 7. This is the
+Exceptions use `exception FunLangException of Value` declared at `Eval.fs` line 7. This is the
 only exception type that `try-with` in the language catches (Eval matches it in the `TryWith` eval case).
 
 ### Implementation
@@ -191,7 +191,7 @@ only exception type that `try-with` in the language catches (Eval matches it in 
 // failwith : string -> 'a  (raises exception with given message)
 "failwith", BuiltinValue (fun v ->
     match v with
-    | StringValue msg -> raise (LangThreeException (StringValue msg))
+    | StringValue msg -> raise (FunLangException (StringValue msg))
     | _ -> failwith "failwith: expected string argument")
 ```
 
@@ -206,8 +206,8 @@ The polymorphic return type `Scheme([0], TArrow(TString, TVar 0))` is critical. 
 non-unit types. Using `TVar 0` matches `raise`'s pattern — it unifies with any expected type.
 
 **Files to modify:**
-- `src/LangThree/Eval.fs` — add entry to `initialBuiltinEnv` list
-- `src/LangThree/TypeCheck.fs` — add entry to `initialTypeEnv` list
+- `src/FunLang/Eval.fs` — add entry to `initialBuiltinEnv` list
+- `src/FunLang/TypeCheck.fs` — add entry to `initialTypeEnv` list
 
 **Risk**: Very low. Exact same pattern as `string_length`, `print`, etc. No parser changes.
 
@@ -296,7 +296,7 @@ case would cover `let x : option = ...` which is not a valid type anyway (Option
 argument). So only fix `TEData` and `substTypeExprWithMap`.
 
 **Files to modify:**
-- `src/LangThree/Elaborate.fs` — normalize `name` in `TEData` case of `elaborateWithVars` (line 61)
+- `src/FunLang/Elaborate.fs` — normalize `name` in `TEData` case of `elaborateWithVars` (line 61)
   and in `substTypeExprWithMap` (line 92)
 
 **Risk**: Low. Change is localized, only affects the `name` lookup, existing tests unaffected.
@@ -308,7 +308,7 @@ argument). So only fix `TEData` and `substTypeExprWithMap`.
 No new libraries needed. All changes use:
 - `System.Reflection.Assembly.GetEntryAssembly().Location` — .NET base library, always available
 - `System.IO.Path` — already imported in Prelude.fs
-- `LangThreeException` — already declared in Eval.fs
+- `FunLangException` — already declared in Eval.fs
 
 ## Architecture Patterns
 
@@ -328,7 +328,7 @@ No new libraries needed. All changes use:
 |---------|-------------|-------------|-----|
 | Binary path detection | Env-var scheme, config file | `Assembly.GetEntryAssembly().Location` | Standard .NET idiom |
 | Type alias table | Parse-time resolution | Hardcode 1-line match in Elaborate.fs | Only one alias needed now |
-| failwith semantics | Custom exception class | Reuse `LangThreeException` with `StringValue` | Consistent with `raise` in the language |
+| failwith semantics | Custom exception class | Reuse `FunLangException` with `StringValue` | Consistent with `raise` in the language |
 
 ## Common Pitfalls
 
@@ -337,10 +337,10 @@ No new libraries needed. All changes use:
 typechecker rejects `if cond then failwith "msg" else value` because branches have different types.
 **Fix:** `Scheme([0], TArrow(TString, TVar 0))` — return type unifies with whatever is expected.
 
-### Pitfall 2: failwith must raise LangThreeException, not System.Exception
+### Pitfall 2: failwith must raise FunLangException, not System.Exception
 **What goes wrong:** `raise (System.Exception(msg))` is not caught by `try-with` in the language.
-The Eval `TryWith` handler only catches `LangThreeException`.
-**Fix:** `raise (LangThreeException (StringValue msg))`
+The Eval `TryWith` handler only catches `FunLangException`.
+**Fix:** `raise (FunLangException (StringValue msg))`
 
 ### Pitfall 3: option alias needs to be in TEData, not TEName
 **What goes wrong:** Only normalizing `TEName` misses the `option int` case which parses as
@@ -365,7 +365,7 @@ with a file containing only comments or whitespace.
 // failwith : string -> 'a
 "failwith", BuiltinValue (fun v ->
     match v with
-    | StringValue msg -> raise (LangThreeException (StringValue msg))
+    | StringValue msg -> raise (FunLangException (StringValue msg))
     | _ -> failwith "failwith: expected string argument")
 ```
 
@@ -434,7 +434,7 @@ else
    - What's unclear: Is the crash triggered by whitespace-only files? Comment-only files? Or is
      the constraint stale/already-fixed?
    - Recommendation: Run `echo "" > /tmp/test.fun && cd /tmp && dotnet run --project
-     /path/to/LangThree -- test.fun` before implementing fix. If no crash, the fix may be to
+     /path/to/FunLang -- test.fun` before implementing fix. If no crash, the fix may be to
      handle whitespace/comment-only files specifically.
 
 2. **`result` alias for `Result`**
@@ -445,14 +445,14 @@ else
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct read: `src/LangThree/Prelude.fs` lines 1–93
-- Direct read: `src/LangThree/Program.fs` lines 1–220
-- Direct read: `src/LangThree/Eval.fs` lines 1–260, 766–810
-- Direct read: `src/LangThree/TypeCheck.fs` lines 1–55, 515–760
-- Direct read: `src/LangThree/Elaborate.fs` lines 1–103
-- Direct read: `src/LangThree/Parser.fsy` lines 437–445, 558–590
-- Direct read: `src/LangThree/Ast.fs` full file
-- Direct read: `src/LangThree/IndentFilter.fs` lines 211–360
+- Direct read: `src/FunLang/Prelude.fs` lines 1–93
+- Direct read: `src/FunLang/Program.fs` lines 1–220
+- Direct read: `src/FunLang/Eval.fs` lines 1–260, 766–810
+- Direct read: `src/FunLang/TypeCheck.fs` lines 1–55, 515–760
+- Direct read: `src/FunLang/Elaborate.fs` lines 1–103
+- Direct read: `src/FunLang/Parser.fsy` lines 437–445, 558–590
+- Direct read: `src/FunLang/Ast.fs` full file
+- Direct read: `src/FunLang/IndentFilter.fs` lines 211–360
 - Direct read: `Prelude/Option.fun` full file
 
 ## Metadata

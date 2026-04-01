@@ -24,11 +24,11 @@ tech-stack:
 
 key-files:
   created:
-    - "tests/LangThree.Tests/ModuleTests.fs"
+    - "tests/FunLang.Tests/ModuleTests.fs"
   modified:
-    - "src/LangThree/TypeCheck.fs"
-    - "src/LangThree/Eval.fs"
-    - "tests/LangThree.Tests/LangThree.Tests.fsproj"
+    - "src/FunLang/TypeCheck.fs"
+    - "src/FunLang/Eval.fs"
+    - "tests/FunLang.Tests/FunLang.Tests.fsproj"
 
 key-decisions:
   - "AST rewriting approach for qualified access instead of threading modules through synth/check (avoids 47 call site changes)"
@@ -66,10 +66,10 @@ completed: 2026-03-09
 1. **Task 1: Create ModuleTests.fs with comprehensive test coverage** - `cb2b9fb` (feat)
 
 ## Files Created/Modified
-- `tests/LangThree.Tests/ModuleTests.fs` - 17 integration tests for module system (188 lines)
-- `tests/LangThree.Tests/LangThree.Tests.fsproj` - Added ModuleTests.fs to compile list
-- `src/LangThree/TypeCheck.fs` - Added collectModuleRefs, rewriteModuleAccess, mergeModuleExportsForTypeCheck functions
-- `src/LangThree/Eval.fs` - Fixed FieldAccess to handle Constructor nodes; added TypeDecl constructor registration in evalModuleDecls
+- `tests/FunLang.Tests/ModuleTests.fs` - 17 integration tests for module system (188 lines)
+- `tests/FunLang.Tests/FunLang.Tests.fsproj` - Added ModuleTests.fs to compile list
+- `src/FunLang/TypeCheck.fs` - Added collectModuleRefs, rewriteModuleAccess, mergeModuleExportsForTypeCheck functions
+- `src/FunLang/Eval.fs` - Fixed FieldAccess to handle Constructor nodes; added TypeDecl constructor registration in evalModuleDecls
 
 ## Decisions Made
 - Used AST rewriting approach for qualified module access instead of threading modules map through all 47 synth/check call sites in Bidir.fs. The rewriting converts `FieldAccess(Constructor("Module", None), "member")` to `Var("member")` or `Constructor("member")` before type checking, while merging module exports into the type environment.
@@ -84,7 +84,7 @@ completed: 2026-03-09
 - **Found during:** Task 1 (writing tests)
 - **Issue:** `Module.member` parsed as `FieldAccess(Constructor("Module", None), "member")` but synth in Bidir.fs only handled record field access, not module access. Root cause: uppercase idents parsed as Constructor nodes, and synth for unknown Constructor returns fresh type var, leading to E0313.
 - **Fix:** Added AST rewriting functions (collectModuleRefs, rewriteModuleAccess, mergeModuleExportsForTypeCheck) in TypeCheck.fs to resolve qualified access before calling synth.
-- **Files modified:** src/LangThree/TypeCheck.fs
+- **Files modified:** src/FunLang/TypeCheck.fs
 - **Verification:** All 17 module tests pass
 - **Committed in:** cb2b9fb
 
@@ -92,7 +92,7 @@ completed: 2026-03-09
 - **Found during:** Task 1 (writing tests)
 - **Issue:** `eval` FieldAccess handler checked `| Var(name, _) when Map.containsKey name moduleEnv ->` but module names are uppercase and parsed as `Constructor(name, None, _)`, so module dispatch was never reached.
 - **Fix:** Added `tryGetModuleName` helper that matches both `Var` and `Constructor(_, None, _)` against moduleEnv.
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Verification:** All qualified access tests pass
 - **Committed in:** cb2b9fb
 
@@ -100,7 +100,7 @@ completed: 2026-03-09
 - **Found during:** Task 1 (writing tests)
 - **Issue:** `evalModuleDecls` TypeDecl case was a no-op (`| _ -> (env, modEnv)`), so constructor values were never added to env, and the CtorEnv collector found nothing for modules with ADTs.
 - **Fix:** Added TypeDecl handling that registers constructors as FunctionValue (for constructors with args) or DataValue (for nullary constructors) in the environment.
-- **Files modified:** src/LangThree/Eval.fs
+- **Files modified:** src/FunLang/Eval.fs
 - **Verification:** `Shapes.Circle 5` qualified constructor test passes
 - **Committed in:** cb2b9fb
 

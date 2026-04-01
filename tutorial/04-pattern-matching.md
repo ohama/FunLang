@@ -2,9 +2,9 @@
 
 C나 Java의 `switch`문을 써본 적이 있다면, 패턴 매칭은 그것의 대폭 강화된 버전이라고 생각할 수 있습니다. 하지만 실제로 써보면 차원이 다릅니다. `switch`는 값을 비교하는 것이 전부지만, 패턴 매칭은 데이터의 구조를 분해하면서 동시에 변수를 바인딩하고, 조건에 따라 분기합니다. 이 세 가지가 하나의 구문에서 일어납니다.
 
-패턴 매칭이 함수형 프로그래밍의 핵심이라고 불리는 데는 이유가 있습니다. ADT(5장)를 정의하면 자연스럽게 패턴 매칭으로 처리하게 되고, 리스트를 순회할 때도, 에러를 처리할 때도, 복잡한 데이터를 파싱할 때도 패턴 매칭이 등장합니다. LangThree에서 가장 많이 쓰게 될 기능이니 이 장을 천천히 읽어보세요.
+패턴 매칭이 함수형 프로그래밍의 핵심이라고 불리는 데는 이유가 있습니다. ADT(5장)를 정의하면 자연스럽게 패턴 매칭으로 처리하게 되고, 리스트를 순회할 때도, 에러를 처리할 때도, 복잡한 데이터를 파싱할 때도 패턴 매칭이 등장합니다. FunLang에서 가장 많이 쓰게 될 기능이니 이 장을 천천히 읽어보세요.
 
-LangThree의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.
+FunLang의 컴파일러는 패턴의 완전성(exhaustiveness)을 검사합니다. 빠뜨린 케이스가 있으면 경고해주고, 중복된 패턴도 알려줍니다. 그리고 내부적으로 패턴을 효율적인 결정 트리(decision tree)로 컴파일하여, 모든 케이스를 순차적으로 비교하는 것이 아니라 최소한의 비교만으로 올바른 분기에 도달합니다.
 
 ## 기본 Match 구문
 
@@ -26,7 +26,7 @@ let classify x =
     | _ -> "other"
 let result = classify 1
 
-$ langthree classify.l3
+$ funlang classify.l3
 "one"
 ```
 
@@ -69,7 +69,7 @@ let dayType d =
     | _ -> "invalid"
 let result = dayType 3
 
-$ langthree daytype.l3
+$ funlang daytype.l3
 "Wednesday"
 ```
 
@@ -86,7 +86,7 @@ let greet name =
     | _ -> "Who are you, " + name + "?"
 let result = greet "Alice"
 
-$ langthree string_match.l3
+$ funlang string_match.l3
 "Hello, Alice!"
 ```
 
@@ -101,7 +101,7 @@ let classify cmd =
     | _ -> "unknown: " + cmd
 let result = classify "quit"
 
-$ langthree cmd_dispatch.l3
+$ funlang cmd_dispatch.l3
 "exit command"
 ```
 
@@ -130,7 +130,7 @@ let sign x =
     | _ -> 0 - 1
 let result = (sign 5, sign 0, sign (0 - 3))
 
-$ langthree sign.l3
+$ funlang sign.l3
 (1, 0, -1)
 ```
 
@@ -170,7 +170,7 @@ let classify pair =
     | (false, _) -> "false"
 let result = classify (true, 42)
 
-$ langthree classify_pair.l3
+$ funlang classify_pair.l3
 "positive-true: 42"
 ```
 
@@ -203,7 +203,7 @@ let r3 = describe [1; 2]
 let r4 = describe [10; 20; 30; 40]
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ langthree list_describe.l3
+$ funlang list_describe.l3
 "empty | singleton: 42 | pair: 1,2 | three+: 10,20,30"
 ```
 
@@ -223,7 +223,7 @@ let area s =
     | Rect (w, h) -> w * h
 let result = area (Circle 5)
 
-$ langthree shape.l3
+$ funlang shape.l3
 75
 ```
 
@@ -248,7 +248,7 @@ let value c =
 
 let result = value Ace + value King + value (Num 5)
 
-$ langthree card.l3
+$ funlang card.l3
 26
 ```
 
@@ -267,7 +267,7 @@ let isLeaf t =
 
 let result = (isLeaf Leaf, isLeaf (Node (Leaf, 1, Leaf)))
 
-$ langthree is_leaf.l3
+$ funlang is_leaf.l3
 (true, false)
 ```
 
@@ -292,7 +292,7 @@ let r3 = deepGet (Some None)
 let r4 = deepGet None
 let result = r1 + " | " + r2 + " | " + r3 + " | " + r4
 
-$ langthree deep_option.l3
+$ funlang deep_option.l3
 "42 | inner none | mid none | outer none"
 ```
 
@@ -316,7 +316,7 @@ let result =
     | Some [] -> 0
     | None -> 0
 
-$ langthree nested_complex.l3
+$ funlang nested_complex.l3
 1
 ```
 
@@ -332,7 +332,7 @@ let result =
     match p with
     | { x = a; y = b } -> a + b
 
-$ langthree record_match.l3
+$ funlang record_match.l3
 3
 ```
 
@@ -348,7 +348,7 @@ let greet p =
 
 let result = greet { name = "Alice"; age = 30; active = true }
 
-$ langthree record_partial.l3
+$ funlang record_partial.l3
 "Alice is 30"
 ```
 
@@ -373,7 +373,7 @@ let classify n =
     | _ -> "large"
 let result = classify 5
 
-$ langthree or_pattern.l3
+$ funlang or_pattern.l3
 "medium"
 ```
 
@@ -395,7 +395,7 @@ let isVertical d =
     | East | West -> false
 let result = (isVertical North, isVertical East)
 
-$ langthree or_ctor.l3
+$ funlang or_ctor.l3
 (true, false)
 ```
 
@@ -412,7 +412,7 @@ let respond input =
     | _ -> false
 let result = (respond "yes", respond "n", respond "maybe")
 
-$ langthree or_string.l3
+$ funlang or_string.l3
 (true, false, false)
 ```
 
@@ -434,7 +434,7 @@ let name c =
     | Green | Blue -> "cool"
 let result = name Red
 
-$ langthree or_exhaust.l3
+$ funlang or_exhaust.l3
 "red"
 ```
 
@@ -460,7 +460,7 @@ let classify n =
     | _ -> "negative"
 let result = classify 5
 
-$ langthree guard.l3
+$ funlang guard.l3
 "positive"
 ```
 
@@ -479,7 +479,7 @@ let grade score =
     | _ -> "F"
 let result = grade 85
 
-$ langthree grade.l3
+$ funlang grade.l3
 "B"
 ```
 
@@ -504,7 +504,7 @@ let r2 = isLarge (Circle 5)
 let r3 = isLarge (Rect (20, 10))
 let result = (r1, r2, r3)
 
-$ langthree shape_guard.l3
+$ funlang shape_guard.l3
 (true, false, true)
 ```
 
@@ -524,7 +524,7 @@ let classify x =
     | _ -> "negative"
 let result = classify 50
 
-$ langthree fallthrough.l3
+$ funlang fallthrough.l3
 "medium"
 ```
 
@@ -543,7 +543,7 @@ let classify x =
     | _ -> "large"
 let result = classify (0 - 42)
 
-$ langthree match_expr.l3
+$ funlang match_expr.l3
 "medium"
 ```
 
@@ -562,7 +562,7 @@ let result =
     | Red -> 1
     | Green -> 2
 
-$ langthree exhaustive.l3
+$ funlang exhaustive.l3
 Warning: warning[W0001]: Incomplete pattern match. Missing cases: Blue
  --> :0:0-1:0
    = hint: Add the missing cases or a wildcard pattern '_' to cover all values
@@ -580,7 +580,7 @@ let result =
     | _ -> "catch all"
     | 1 -> "one"
 
-$ langthree redundant.l3
+$ funlang redundant.l3
 Warning: warning[W0002]: Redundant pattern match clause. This pattern is never reached
  --> :0:0-1:0
    = hint: Remove this clause or reorder the patterns
@@ -612,7 +612,7 @@ let mix a b =
 
 let result = mix Red Blue
 
-$ langthree color_mix.l3
+$ funlang color_mix.l3
 "purple"
 ```
 
@@ -630,7 +630,7 @@ funlang> let (a, b, c) = (1, 2, 3) in a + b + c
 
 ## 결정 트리 컴파일 (Decision Tree Compilation)
 
-LangThree는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
+FunLang는 Jules Jacobs 알고리즘을 사용하여 패턴 매칭을
 이진 결정 트리(binary decision tree)로 컴파일합니다. 이는 다음을 의미합니다:
 
 - **중복 테스트 없음:** 각 생성자는 실행 경로당 최대 한 번만 테스트됩니다
@@ -678,7 +678,7 @@ let result =
         | h :: t -> if pred h then h :: takeWhile pred t else []
     takeWhile (fun x -> x < 5) [1; 2; 3; 4; 5; 6; 7]
 
-$ langthree take_while.l3
+$ funlang take_while.l3
 [1; 2; 3; 4]
 ```
 
@@ -697,7 +697,7 @@ let result =
     let rec eval e = match e with | Num n -> n | Add (a, b) -> eval a + eval b | Mul (a, b) -> eval a * eval b
     eval (Add (Mul (Num 3, Num 4), Num 5))
 
-$ langthree expr_eval.l3
+$ funlang expr_eval.l3
 17
 ```
 
@@ -719,7 +719,7 @@ let result =
     let r2 = lookup 9 env
     (r1, r2)
 
-$ langthree lookup.l3
+$ funlang lookup.l3
 (Some "two", None)
 ```
 
@@ -743,7 +743,7 @@ let result =
     let t = Node (Node (Leaf, 1, Leaf), 2, Node (Leaf, 3, Node (Leaf, 4, Leaf)))
     (depth t, size t, sumTree t)
 
-$ langthree tree_ops.l3
+$ funlang tree_ops.l3
 (3, 4, 10)
 ```
 
@@ -763,7 +763,7 @@ let sorted =
 
 let result = sorted
 
-$ langthree isort.l3
+$ funlang isort.l3
 [1; 2; 3; 4; 5; 6; 7; 8; 9]
 ```
 

@@ -35,9 +35,9 @@ key-files:
     - tests/flt/expr/str-to-int.flt
     - tests/flt/emit/type-decl/type-decl-str-builtins.flt
   modified:
-    - src/LangThree/Program.fs
-    - src/LangThree/Repl.fs
-    - src/LangThree/Ast.fs
+    - src/FunLang/Program.fs
+    - src/FunLang/Repl.fs
+    - src/FunLang/Ast.fs
 
 key-decisions:
   - "Map.fold merge order: preludeEnv is the accumulator base, initialBuiltinEnv values are inserted — string functions override any hypothetical Prelude name conflicts"
@@ -83,9 +83,9 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Program.fs` - Replaced `Prelude.loadPrelude()` with `preludeEnv + Map.fold merge with initialBuiltinEnv`
-- `src/LangThree/Repl.fs` - Same merge in `startRepl`
-- `src/LangThree/Ast.fs` - Added `[<CustomEquality; CustomComparison>]` to `Value` DU with `Equals`, `GetHashCode`, `IEquatable`, `IComparable`, `valueEqual`, `valueCompare` members
+- `src/FunLang/Program.fs` - Replaced `Prelude.loadPrelude()` with `preludeEnv + Map.fold merge with initialBuiltinEnv`
+- `src/FunLang/Repl.fs` - Same merge in `startRepl`
+- `src/FunLang/Ast.fs` - Added `[<CustomEquality; CustomComparison>]` to `Value` DU with `Equals`, `GetHashCode`, `IEquatable`, `IComparable`, `valueEqual`, `valueCompare` members
 - `tests/flt/expr/str-length.flt` - `string_length "hello"` → `5`
 - `tests/flt/expr/str-concat.flt` - `string_concat "foo" "bar"` → `"foobar"`
 - `tests/flt/expr/str-sub.flt` - `string_sub "hello" 1 3` → `"ell"`
@@ -108,7 +108,7 @@ Each task was committed atomically:
 - **Found during:** Task 2 (running `dotnet test`)
 - **Issue:** `BuiltinValue of fn: (Value -> Value)` was added in plan 11-01. F# cannot auto-derive equality for DUs containing function types. The F# test project uses `Expect.equal result (Ast.IntValue 42)` which invokes generic `=` on `Value`, producing FS0001 errors for 20+ test cases in `MatchCompileTests.fs` and `ExceptionTests.fs`. This was an oversight in 11-01 — `valuesEqual` was added to `Eval.fs` but the test project's usage of `Expect.equal` was not updated.
 - **Fix:** Added `[<CustomEquality; CustomComparison>]` to the `Value` DU in `Ast.fs`. Implemented `override Equals`, `override GetHashCode`, `interface IEquatable<Value>`, `interface IComparable`, and static helpers `valueEqual`/`valueCompare`. All existing structural comparisons are preserved; `BuiltinValue` instances always compare as unequal.
-- **Files modified:** `src/LangThree/Ast.fs`
+- **Files modified:** `src/FunLang/Ast.fs`
 - **Commit:** `9e22390` (bundled with Task 2)
 
 ---

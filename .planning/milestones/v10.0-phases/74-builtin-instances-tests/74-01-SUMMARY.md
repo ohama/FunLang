@@ -25,8 +25,8 @@ key-files:
   created:
     - Prelude/Typeclass.fun
   modified:
-    - src/LangThree/Prelude.fs
-    - src/LangThree/TypeCheck.fs
+    - src/FunLang/Prelude.fs
+    - src/FunLang/TypeCheck.fs
     - tests/flt/file/typeclass/typeclass-infer-basic.flt
     - tests/flt/file/typeclass/typeclass-infer-resolve.flt
     - tests/flt/file/typeclass/typeclass-infer-errors.flt
@@ -71,8 +71,8 @@ completed: 2026-03-31
 
 ## Files Created/Modified
 - `Prelude/Typeclass.fun` - Show and Eq typeclass declarations with instances for int, bool, string, char
-- `src/LangThree/Prelude.fs` - Added `Elaborate.elaborateTypeclasses` call in `loadPrelude` and `loadAndEvalFileImpl`
-- `src/LangThree/TypeCheck.fs` - TypeClassDecl arm: skip redeclaration if class already in classEnv
+- `src/FunLang/Prelude.fs` - Added `Elaborate.elaborateTypeclasses` call in `loadPrelude` and `loadAndEvalFileImpl`
+- `src/FunLang/TypeCheck.fs` - TypeClassDecl arm: skip redeclaration if class already in classEnv
 - `tests/flt/file/typeclass/typeclass-infer-basic.flt` - Removed user-declared Show class (now from prelude)
 - `tests/flt/file/typeclass/typeclass-infer-resolve.flt` - Removed user-declared Show class (now from prelude)
 - `tests/flt/file/typeclass/typeclass-infer-errors.flt` - Removed user-declared Show class; updated type var name in expected error
@@ -90,7 +90,7 @@ completed: 2026-03-31
 - **Found during:** Task 2 (running full test suite)
 - **Issue:** When Prelude/Typeclass.fun loads Show/Eq, TypeCheck registers them. Then user test files that also declare `typeclass Show 'a` hit `DuplicateModuleName` error, breaking 3 existing typeclass tests.
 - **Fix:** Changed TypeCheck `TypeClassDecl` arm to return current state unchanged if class already in `clsEnv` (idempotent skip). Downstream `InstanceDecl` duplicate detection still fires for actual duplicate instances.
-- **Files modified:** `src/LangThree/TypeCheck.fs`
+- **Files modified:** `src/FunLang/TypeCheck.fs`
 - **Verification:** All 12 typeclass tests pass, including typeclass-infer-poly which expects E0702 for duplicate instance
 - **Committed in:** `1ad21ed` (Task 2 commit)
 

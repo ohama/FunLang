@@ -332,7 +332,7 @@ This provides an alternative functional-style API (`StringBuilder.append sb "tex
 ### Recommended Project Structure
 
 ```
-src/LangThree/
+src/FunLang/
 ├── Ast.fs        -- Add StringBuilderValue to Value DU
 ├── Eval.fs       -- Add StringBuilderValue dispatch, eprintfn, string method dispatch, string_concat_list, char builtins
 ├── Bidir.fs      -- Extend TString and add TData("StringBuilder",[]) type rules
@@ -512,7 +512,7 @@ module StringBuilder =
 ### flt Test: StringBuilder
 ```
 // Test: StringBuilder basic usage (COLL-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let sb = StringBuilder ()
 let _ = sb.Append("hello")
@@ -527,7 +527,7 @@ hello world
 ### flt Test: String methods
 ```
 // Test: EndsWith, StartsWith, Trim (STR-01)
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let _ = println (to_string ("hello.txt".EndsWith(".txt")))
 let _ = println (to_string ("hello".StartsWith("he")))

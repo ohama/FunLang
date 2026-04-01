@@ -35,7 +35,7 @@ key-files:
     - tests/flt/expr/list/list-pattern-literal.flt
     - tests/flt/file/match/match-list-literal-pattern.flt
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "SYN-03: Added Expr SEMICOLON production to SemiExprList (between single and recursive) for trailing semicolons"
@@ -79,7 +79,7 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Added desugarListPat helper, Expr SEMICOLON production to SemiExprList, SemiPatList nonterminal, list literal pattern rules in Pattern
+- `src/FunLang/Parser.fsy` - Added desugarListPat helper, Expr SEMICOLON production to SemiExprList, SemiPatList nonterminal, list literal pattern rules in Pattern
 - `tests/flt/expr/list/list-trailing-semi.flt` - Verifies [1; 2; 3;] evaluates to [1; 2; 3]
 - `tests/flt/expr/list/list-pattern-literal.flt` - Verifies [x; y] pattern in match returns x + y = 3
 - `tests/flt/file/match/match-list-literal-pattern.flt` - Verifies [x], [x;y], [x;y;z] patterns in describe function

@@ -16,7 +16,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Eval.fs
+    - src/FunLang/Eval.fs
 
 decisions:
   - Used callValue (not callValueRef) for list_sort_by since callValue delegates to callValueRef and is the canonical pattern used by array_map
@@ -66,4 +66,4 @@ None - plan executed exactly as written.
 
 ## Next Phase Readiness
 
-Plans 59-02 (List.fun) and 59-03 (Array.fun) can now call `list_sort_by`, `list_of_seq`, `array_sort`, and `array_of_seq` as raw builtins from their LangThree wrappers.
+Plans 59-02 (List.fun) and 59-03 (Array.fun) can now call `list_sort_by`, `list_of_seq`, `array_sort`, and `array_of_seq` as raw builtins from their FunLang wrappers.

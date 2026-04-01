@@ -42,7 +42,7 @@ key-files:
   modified: []
 
 key-decisions:
-  - "unit-mutable-set.flt uses type Counter = { mutable count: int } per 10-01 pattern (anonymous mutable records not valid in LangThree)"
+  - "unit-mutable-set.flt uses type Counter = { mutable count: int } per 10-01 pattern (anonymous mutable records not valid in FunLang)"
   - "let _ = x in test used x = 10 (simple value) rather than a side-effect expression — documents discarding behavior cleanly"
 
 patterns-established:
@@ -88,7 +88,7 @@ Each task was committed atomically:
 - `tests/flt/file/unit-mutable-set.flt` - mutable field set + let _ = sequencing reads updated value
 
 ## Decisions Made
-- `unit-mutable-set.flt` requires explicit `type Counter = { mutable count: int }` declaration because anonymous mutable record literals are not valid LangThree syntax (established in Phase 3/10 issue note).
+- `unit-mutable-set.flt` requires explicit `type Counter = { mutable count: int }` declaration because anonymous mutable record literals are not valid FunLang syntax (established in Phase 3/10 issue note).
 - Tests are minimal by design — each tests exactly one criterion, keeping failures diagnostic.
 
 ## Deviations from Plan

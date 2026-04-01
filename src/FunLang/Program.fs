@@ -8,7 +8,7 @@ open Eval
 open Format
 open TypeCheck
 open Diagnostic
-open LangThree.IndentFilter
+open FunLang.IndentFilter
 
 /// Parse a string input as expression (no indentation filtering needed for single-line expressions)
 let parse (input: string) (filename: string) : Expr =

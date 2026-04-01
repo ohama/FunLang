@@ -24,7 +24,7 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Parser.fsy
+    - src/FunLang/Parser.fsy
 
 key-decisions:
   - "Top-level module/namespace rules placed before existing Decls EOF rule for priority"
@@ -64,7 +64,7 @@ Each task was committed atomically:
 1. **Task 1: Parser grammar rules for module system** - `0c8d22b` (feat)
 
 ## Files Created/Modified
-- `src/LangThree/Parser.fsy` - Extended parseModule and Decls with module system grammar rules
+- `src/FunLang/Parser.fsy` - Extended parseModule and Decls with module system grammar rules
 
 ## Decisions Made
 - Top-level module/namespace rules placed before existing `Decls EOF` rule so they take priority in LALR parsing

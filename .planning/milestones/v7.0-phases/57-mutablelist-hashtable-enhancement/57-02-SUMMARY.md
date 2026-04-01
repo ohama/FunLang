@@ -19,8 +19,8 @@ key-files:
     - tests/flt/file/mutablelist/mutablelist-indexing.flt
     - tests/flt/file/hashtable/hashtable-dot-api.flt
   modified:
-    - src/LangThree/Eval.fs
-    - src/LangThree/Bidir.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/Bidir.fs
 
 decisions:
   - id: thashtable-not-tdata

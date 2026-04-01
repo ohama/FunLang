@@ -27,8 +27,8 @@ key-files:
     - tests/flt/expr/list/list-multiline.flt
     - tests/flt/file/list/list-multiline-file.flt
   modified:
-    - src/LangThree/IndentFilter.fs
-    - tests/LangThree.Tests/IndentFilterTests.fs
+    - src/FunLang/IndentFilter.fs
+    - tests/FunLang.Tests/IndentFilterTests.fs
 
 key-decisions:
   - "BracketDepth uses max 0 (depth - 1) on close to guard against underflow from malformed input"
@@ -71,8 +71,8 @@ Each task was committed atomically:
 **Plan metadata:** (see final commit below)
 
 ## Files Created/Modified
-- `src/LangThree/IndentFilter.fs` - Added BracketDepth field, bracket open/close arms, guarded NEWLINE arm
-- `tests/LangThree.Tests/IndentFilterTests.fs` - Added BracketDepth = 0 to all 5 FilterState record literals
+- `src/FunLang/IndentFilter.fs` - Added BracketDepth field, bracket open/close arms, guarded NEWLINE arm
+- `tests/FunLang.Tests/IndentFilterTests.fs` - Added BracketDepth = 0 to all 5 FilterState record literals
 - `tests/flt/expr/list/list-multiline.flt` - flt test: multi-line list expression `[1;2;3]` spanning 4 lines
 - `tests/flt/file/list/list-multiline-file.flt` - flt test: multi-line list in file mode with dependent let binding
 

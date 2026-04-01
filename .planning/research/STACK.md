@@ -1,6 +1,6 @@
-# Technology Stack: LangThree v10.0 Type Classes
+# Technology Stack: FunLang v10.0 Type Classes
 
-**Project:** LangThree — ML-style functional language interpreter
+**Project:** FunLang — ML-style functional language interpreter
 **Researched:** 2026-03-31
 **Milestone:** v10.0 — Haskell-style type classes with dictionary-passing implementation
 **Confidence:** HIGH — implementation strategy derived directly from codebase inspection
@@ -31,12 +31,12 @@ Three strategies exist for implementing type classes at runtime:
 
 | Strategy | How It Works | Verdict |
 |----------|-------------|---------|
-| **Dictionary passing** | Each typeclass instance is a record of functions. At call sites with a typeclass constraint, the dictionary is passed as an extra argument. | **Recommended.** Standard approach for interpreted languages, natural fit for LangThree's tree-walking evaluator. |
-| **Monomorphization** | Generate a specialized copy of each function for each type instantiation, eliminating dictionaries at code generation time. | Inappropriate for an interpreter. Requires full type information at code generation time. LangThree's evaluator is tree-walking, not a compiler. |
+| **Dictionary passing** | Each typeclass instance is a record of functions. At call sites with a typeclass constraint, the dictionary is passed as an extra argument. | **Recommended.** Standard approach for interpreted languages, natural fit for FunLang's tree-walking evaluator. |
+| **Monomorphization** | Generate a specialized copy of each function for each type instantiation, eliminating dictionaries at code generation time. | Inappropriate for an interpreter. Requires full type information at code generation time. FunLang's evaluator is tree-walking, not a compiler. |
 | **Vtable / inline dispatch** | Embed method pointers in the value representation (like C++ vtables). | Would require adding method tables to every `Value` variant — invasive refactor of `CustomEquality`/`CustomComparison` machinery that is already complex in Ast.fs. |
 
 Dictionary passing is the correct choice because:
-1. LangThree is a tree-walking interpreter. Dictionaries are just values — `RecordValue` or `BuiltinValue` tuples — that slot cleanly into the existing `Value` type.
+1. FunLang is a tree-walking interpreter. Dictionaries are just values — `RecordValue` or `BuiltinValue` tuples — that slot cleanly into the existing `Value` type.
 2. The type checker already threads `ConstructorEnv` and `RecordEnv` through `synth`/`check`. A new `ClassEnv` + `InstanceEnv` follows the identical pattern.
 3. The evaluator already evaluates to `FunctionValue`/`BuiltinValue`. Dictionary-passing turns `show x` into `(dict.show) x` — a field lookup followed by a function application, both already supported.
 4. Haskell itself uses dictionary passing as its canonical implementation of type classes.

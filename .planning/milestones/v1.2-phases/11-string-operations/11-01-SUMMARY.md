@@ -31,11 +31,11 @@ tech-stack:
 key-files:
   created: []
   modified:
-    - src/LangThree/Ast.fs
-    - src/LangThree/Eval.fs
-    - src/LangThree/TypeCheck.fs
-    - src/LangThree/Exhaustive.fs
-    - src/LangThree/Format.fs
+    - src/FunLang/Ast.fs
+    - src/FunLang/Eval.fs
+    - src/FunLang/TypeCheck.fs
+    - src/FunLang/Exhaustive.fs
+    - src/FunLang/Format.fs
 
 key-decisions:
   - "Added valuesEqual helper rather than [<CustomEquality>] attribute because Value is a mutually recursive DU; explicit helper is simpler and more readable"
@@ -82,11 +82,11 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit follows)
 
 ## Files Created/Modified
-- `src/LangThree/Ast.fs` - Added `BuiltinValue of fn: (Value -> Value)` to `Value` DU after `RecordValue`
-- `src/LangThree/Eval.fs` - Added `valuesEqual`, `initialBuiltinEnv`, `formatValue` BuiltinValue case, `App` BuiltinValue dispatch, fixed FS0067
-- `src/LangThree/TypeCheck.fs` - Added 6 string function type schemes to `initialTypeEnv`
-- `src/LangThree/Exhaustive.fs` - Fixed pre-existing FS0025: added `RecordPat -> WildcardPat` case
-- `src/LangThree/Format.fs` - Fixed pre-existing FS0025: added `MODULE`, `NAMESPACE`, `OPEN` token cases
+- `src/FunLang/Ast.fs` - Added `BuiltinValue of fn: (Value -> Value)` to `Value` DU after `RecordValue`
+- `src/FunLang/Eval.fs` - Added `valuesEqual`, `initialBuiltinEnv`, `formatValue` BuiltinValue case, `App` BuiltinValue dispatch, fixed FS0067
+- `src/FunLang/TypeCheck.fs` - Added 6 string function type schemes to `initialTypeEnv`
+- `src/FunLang/Exhaustive.fs` - Fixed pre-existing FS0025: added `RecordPat -> WildcardPat` case
+- `src/FunLang/Format.fs` - Fixed pre-existing FS0025: added `MODULE`, `NAMESPACE`, `OPEN` token cases
 
 ## Decisions Made
 - Used explicit `valuesEqual` function instead of `[<CustomEquality; NoComparison>]` attribute on `Value`. The `Value` DU is mutually recursive with `Expr` and `Env` in `Ast.fs`, making custom equality attributes complex. The explicit helper is simpler and clearer.
@@ -101,7 +101,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (after adding BuiltinValue to Value DU)
 - **Issue:** `BuiltinValue of fn: (Value -> Value)` carries a function type; F# cannot auto-derive equality for DUs containing functions. The `Equal`/`NotEqual` eval cases used `TupleValue l = TupleValue r` and `ListValue l = ListValue r` which invoked F# generic `=` on `Value list`, causing 6 FS0001 errors.
 - **Fix:** Added `valuesEqual : Value -> Value -> bool` recursive function that matches structurally on each Value case, avoiding the `=` operator. Updated `Equal`/`NotEqual` to call `valuesEqual`.
-- **Files modified:** `src/LangThree/Eval.fs`
+- **Files modified:** `src/FunLang/Eval.fs`
 - **Verification:** Build succeeded with 0 errors after fix
 - **Committed in:** c609acd (Task 1 commit)
 
@@ -109,7 +109,7 @@ Each task was committed atomically:
 - **Found during:** Task 1 (first build attempt)
 - **Issue:** 3 pre-existing warnings already existed before Phase 11: `Exhaustive.fs` FS0025 (missing `RecordPat` case), `Format.fs` FS0025 (missing `MODULE`/`NAMESPACE`/`OPEN` tokens), `Eval.fs` FS0067 (redundant `:? System.Exception` type test)
 - **Fix:** Added missing pattern cases and removed redundant type annotation
-- **Files modified:** `src/LangThree/Exhaustive.fs`, `src/LangThree/Format.fs`, `src/LangThree/Eval.fs`
+- **Files modified:** `src/FunLang/Exhaustive.fs`, `src/FunLang/Format.fs`, `src/FunLang/Eval.fs`
 - **Verification:** Build produces 0 warnings
 - **Committed in:** c609acd (Task 1 commit)
 

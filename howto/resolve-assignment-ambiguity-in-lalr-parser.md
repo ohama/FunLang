@@ -84,7 +84,7 @@ echo 'let p = {x=1} in let _ = p.x <- 10 in p' | langthree --emit-ast --expr
 
 ## Example
 
-LangThree의 실제 Parser.fsy에서:
+FunLang의 실제 Parser.fsy에서:
 
 ```
 // 기존: 레코드 필드 할당 (Atom DOT IDENT LARROW Expr)

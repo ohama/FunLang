@@ -33,9 +33,9 @@ score: 8/8 must-haves verified
 
 | Artifact                                  | Expected                                     | Status   | Details                                                                         |
 | ----------------------------------------- | -------------------------------------------- | -------- | ------------------------------------------------------------------------------- |
-| `src/LangThree/Eval.fs`                   | print/println/printf in initialBuiltinEnv    | VERIFIED | L159-183: 3 BuiltinValue entries; L20-89: 4 helpers before initialBuiltinEnv   |
-| `src/LangThree/TypeCheck.fs`              | 3 type schemes in initialTypeEnv             | VERIFIED | L69-76: print/println/printf registered in Map.ofList                           |
-| `src/LangThree/Program.fs`                | File-mode result lookup via env (no re-eval) | VERIFIED | L204: Map.tryFind lastName finalEnv                                             |
+| `src/FunLang/Eval.fs`                   | print/println/printf in initialBuiltinEnv    | VERIFIED | L159-183: 3 BuiltinValue entries; L20-89: 4 helpers before initialBuiltinEnv   |
+| `src/FunLang/TypeCheck.fs`              | 3 type schemes in initialTypeEnv             | VERIFIED | L69-76: print/println/printf registered in Map.ofList                           |
+| `src/FunLang/Program.fs`                | File-mode result lookup via env (no re-eval) | VERIFIED | L204: Map.tryFind lastName finalEnv                                             |
 | `tests/flt/expr/print-basic.flt`          | print basic integration test                 | VERIFIED | Exists, substantive, passes fslit (63/63 expr tests pass)                       |
 | `tests/flt/expr/print-println.flt`        | println integration test                     | VERIFIED | Exists, substantive, passes fslit                                               |
 | `tests/flt/expr/printf-int.flt`           | printf %d integration test                   | VERIFIED | Exists, substantive, passes fslit                                               |
@@ -73,8 +73,8 @@ None. Code inspection of all modified files found:
 
 ### Build and Test Results
 
-- `dotnet build src/LangThree/LangThree.fsproj`: **0 Error(s), 0 Warning(s)**
-- `dotnet test tests/LangThree.Tests/`: **196/196 passed**
+- `dotnet build src/FunLang/FunLang.fsproj`: **0 Error(s), 0 Warning(s)**
+- `dotnet test tests/FunLang.Tests/`: **196/196 passed**
 - `fslit tests/flt/expr/`: **63/63 passed** (includes all 7 new printf expr tests)
 - `fslit tests/flt/`: **201/201 passed** (includes print-sequence.flt)
 

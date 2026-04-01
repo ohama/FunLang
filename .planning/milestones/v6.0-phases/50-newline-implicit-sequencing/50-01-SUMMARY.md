@@ -31,7 +31,7 @@ key-files:
     - tests/flt/expr/seq/nlseq-no-module.flt
     - tests/flt/expr/seq/nlseq-pipe-continuation.flt
   modified:
-    - src/LangThree/IndentFilter.fs
+    - src/FunLang/IndentFilter.fs
 
 key-decisions:
   - "SEMICOLON injection fires only when InExprBlock is the DIRECT top of context stack — InLetDecl on top means checkOffside fires first emitting IN instead"
@@ -79,7 +79,7 @@ Each task was committed atomically:
 
 ## Files Created/Modified
 
-- `src/LangThree/IndentFilter.fs` - Added isContinuationStart, isStructuralTerminator helpers and shouldInjectSemicolon logic in isAtSameLevel branch
+- `src/FunLang/IndentFilter.fs` - Added isContinuationStart, isStructuralTerminator helpers and shouldInjectSemicolon logic in isAtSameLevel branch
 - `tests/flt/expr/seq/nlseq-basic.flt` - NLSEQ-01: multi-line function body without explicit semicolons
 - `tests/flt/expr/seq/nlseq-in-match.flt` - NLSEQ-02: match arm body with multiple statements
 - `tests/flt/expr/seq/nlseq-in-while.flt` - NLSEQ-03: while body with multiple statements (requires let _ = wrapper)

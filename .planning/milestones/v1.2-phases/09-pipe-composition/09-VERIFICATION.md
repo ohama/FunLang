@@ -34,14 +34,14 @@ score: 9/9 must-haves verified
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/LangThree/Ast.fs` | PipeRight, ComposeRight, ComposeLeft AST nodes | VERIFIED | Lines 103-105: 3 new Expr variants; line 213: spanOf cases |
-| `src/LangThree/Lexer.fsl` | PIPE_RIGHT, COMPOSE_RIGHT, COMPOSE_LEFT tokens | VERIFIED | Lines 91-93: multi-char rules before single-char `<`, `>`, `\|` (lines 104-114) |
-| `src/LangThree/Parser.fsy` | Token declarations, precedence, grammar rules | VERIFIED | Line 56: token decls; lines 65-67: precedence; lines 114-116: grammar rules |
-| `src/LangThree/Bidir.fs` | Type inference for pipe and composition | VERIFIED | Lines 348-378: substantive synth cases with arrow unification |
-| `src/LangThree/Eval.fs` | Evaluation of pipe and composition | VERIFIED | Lines 442-474: eval cases with unique-named closure composition (composeCounter) |
-| `src/LangThree/Format.fs` | AST formatting + token formatting | VERIFIED | Lines 170-172: formatAst; lines 77-79: formatToken |
-| `src/LangThree/TypeCheck.fs` | Traversal cases in 4 functions | VERIFIED | Lines 200, 313, 394, 473-475: all 4 traversal functions updated |
-| `src/LangThree/Infer.fs` | Stub cases for deprecated inferWithContext | VERIFIED | Line 332: intentional stubs in deprecated path, primary inference in Bidir.fs |
+| `src/FunLang/Ast.fs` | PipeRight, ComposeRight, ComposeLeft AST nodes | VERIFIED | Lines 103-105: 3 new Expr variants; line 213: spanOf cases |
+| `src/FunLang/Lexer.fsl` | PIPE_RIGHT, COMPOSE_RIGHT, COMPOSE_LEFT tokens | VERIFIED | Lines 91-93: multi-char rules before single-char `<`, `>`, `\|` (lines 104-114) |
+| `src/FunLang/Parser.fsy` | Token declarations, precedence, grammar rules | VERIFIED | Line 56: token decls; lines 65-67: precedence; lines 114-116: grammar rules |
+| `src/FunLang/Bidir.fs` | Type inference for pipe and composition | VERIFIED | Lines 348-378: substantive synth cases with arrow unification |
+| `src/FunLang/Eval.fs` | Evaluation of pipe and composition | VERIFIED | Lines 442-474: eval cases with unique-named closure composition (composeCounter) |
+| `src/FunLang/Format.fs` | AST formatting + token formatting | VERIFIED | Lines 170-172: formatAst; lines 77-79: formatToken |
+| `src/FunLang/TypeCheck.fs` | Traversal cases in 4 functions | VERIFIED | Lines 200, 313, 394, 473-475: all 4 traversal functions updated |
+| `src/FunLang/Infer.fs` | Stub cases for deprecated inferWithContext | VERIFIED | Line 332: intentional stubs in deprecated path, primary inference in Bidir.fs |
 | 11 fslit test files | All pipe/composition tests | VERIFIED | All 11 .flt files exist and pass (pipe-basic, pipe-chain, compose-right, compose-left, compose-chain, ast-expr-pipe, ast-expr-compose-right, ast-expr-compose-left, type-expr-pipe, type-expr-compose, pipe-with-prelude) |
 
 ### Key Link Verification
@@ -70,7 +70,7 @@ All 5 ROADMAP success criteria for Phase 09 satisfied:
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `src/LangThree/Infer.fs` | 332 | `(empty, freshVar())` stubs | Info | Intentional — `inferWithContext` is deprecated; primary inference uses `Bidir.fs`. Does not affect correctness. |
+| `src/FunLang/Infer.fs` | 332 | `(empty, freshVar())` stubs | Info | Intentional — `inferWithContext` is deprecated; primary inference uses `Bidir.fs`. Does not affect correctness. |
 
 No blockers or warnings found in the new code.
 

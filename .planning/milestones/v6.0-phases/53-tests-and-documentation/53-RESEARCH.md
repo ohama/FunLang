@@ -1,7 +1,7 @@
 # Phase 53: Tests and Documentation - Research
 
 **Researched:** 2026-03-29
-**Domain:** flt integration testing + LangThree tutorial authoring
+**Domain:** flt integration testing + FunLang tutorial authoring
 **Confidence:** HIGH
 
 ## Summary
@@ -19,16 +19,16 @@ Phase 53 uses only tools and conventions already established in the codebase.
 ### Core
 | Tool | Version | Purpose | Why Standard |
 |------|---------|---------|--------------|
-| FsLit (flt runner) | current | Execute integration tests against LangThree binary | All integration testing uses this runner |
-| LangThree binary | Release build | Execute .l3 programs for tutorial examples | Tests run against compiled binary |
+| FsLit (flt runner) | current | Execute integration tests against FunLang binary | All integration testing uses this runner |
+| FunLang binary | Release build | Execute .l3 programs for tutorial examples | Tests run against compiled binary |
 
 ### flt File Format
 Every flt test follows this exact format (no library needed — it's a plain text convention):
 ```
 // [description comment]
-// --- Command: /absolute/path/to/LangThree %input
+// --- Command: /absolute/path/to/FunLang %input
 // --- Input:
-[LangThree source code]
+[FunLang source code]
 // --- Output:
 [expected stdout]
 ```
@@ -39,7 +39,7 @@ For error tests:
 E0XXX
 ```
 
-The binary path is always: `/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree`
+The binary path is always: `/Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang`
 
 ### Tutorial Format
 Tutorial chapters are Markdown files in `tutorial/`. Conventions from existing chapters:
@@ -73,7 +73,7 @@ tests/flt/
 **Example:**
 ```
 // Test NLSEQ-06: else-branch at same indent is not preceded by spurious SEMICOLON
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let x = 3
 let result =
@@ -98,7 +98,7 @@ All tutorial chapters follow this outline pattern:
 
 ### Anti-Patterns to Avoid
 - **Inventing new syntax for tests:** Tests must use exactly what the language produces. Check existing working tests to verify output format (e.g., `()` for unit, `Some 42` not `Some(42)`).
-- **Using relative binary paths:** flt Command header must use the absolute path `/Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree`.
+- **Using relative binary paths:** flt Command header must use the absolute path `/Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang`.
 - **Over-counting TST-35:** The 8 new functions from Phase 52 are already fully covered. Do not add redundant tests.
 
 ## Don't Hand-Roll
@@ -106,7 +106,7 @@ All tutorial chapters follow this outline pattern:
 | Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
 | Checking test coverage | Custom script | Manual audit of flt files vs requirement list | The mapping is simple: 1 requirement = ≥1 flt test file |
-| Tutorial code examples | Invent from memory | Run actual LangThree binary to verify output | Tutorial examples must produce exactly the shown output |
+| Tutorial code examples | Invent from memory | Run actual FunLang binary to verify output | Tutorial examples must produce exactly the shown output |
 
 **Key insight:** The main risk in Phase 53 is incorrect expected output in tutorial examples. All code snippets in the tutorial chapter must be run through the actual binary to verify output before the chapter is written. Fabricating expected output leads to documentation that contradicts the language.
 
@@ -141,7 +141,7 @@ Verified patterns from inspecting actual test files:
 ### NLSEQ Regression Test: Structural Terminators
 ```
 // Test: else at same indent does not get spurious SEMICOLON before it
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let x = 5
 let result =
@@ -159,7 +159,7 @@ big
 Multi-line function application (argument at deeper indent) is handled by INDENT/DEDENT, not by same-level SEMICOLON injection. A regression test verifies:
 ```
 // Test: multi-line function application is not broken by newline sequencing
-// --- Command: /Users/ohama/vibe-coding/LangThree/src/LangThree/bin/Release/net10.0/LangThree %input
+// --- Command: /Users/ohama/vibe-coding/FunLang/src/FunLang/bin/Release/net10.0/FunLang %input
 // --- Input:
 let add3 a b c = a + b + c
 let result =

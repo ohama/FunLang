@@ -8,11 +8,11 @@
 
 Phase 32 adds 14 new builtins (STD-02 through STD-15) covering file I/O, stdin, environment, paths, directory listing, and stderr output. This is purely additive work: no grammar changes, no parser changes, no new AST nodes. Every builtin follows the exact same two-step pattern already established by `char_to_int` / `failwith` in Phases 29 and 26: add a `Scheme(...)` entry to `initialTypeEnv` in `TypeCheck.fs`, and add a `BuiltinValue(...)` entry to `initialBuiltinEnv` in `Eval.fs`.
 
-The main structural decisions are: (1) unit-argument builtins (`stdin_read_all`, `stdin_read_line`, `get_args`, `get_cwd`) must accept `TupleValue []` because `()` evaluates to that at runtime; (2) `get_args` requires a mutable `scriptArgs` field in `Eval.fs` populated from `Program.fs` after Argu parsing, mirroring the `currentEvalFile` pattern; (3) file errors (nonexistent path, permission denied) should raise `LangThreeException(StringValue msg)` so user code can catch them with `try-with`; (4) `read_lines` / `write_lines` use `ListValue` for `string list`.
+The main structural decisions are: (1) unit-argument builtins (`stdin_read_all`, `stdin_read_line`, `get_args`, `get_cwd`) must accept `TupleValue []` because `()` evaluates to that at runtime; (2) `get_args` requires a mutable `scriptArgs` field in `Eval.fs` populated from `Program.fs` after Argu parsing, mirroring the `currentEvalFile` pattern; (3) file errors (nonexistent path, permission denied) should raise `FunLangException(StringValue msg)` so user code can catch them with `try-with`; (4) `read_lines` / `write_lines` use `ListValue` for `string list`.
 
 All .NET 10 APIs needed (`System.IO.File`, `System.IO.Path`, `System.IO.Directory`, `System.Environment`, `Console.In`, `System.Console`) are already available — no new NuGet packages required.
 
-**Primary recommendation:** Add all 14 builtins in two files only (TypeCheck.fs + Eval.fs), using the exact `BuiltinValue` / `Scheme` pattern from Phase 29, with `LangThreeException` for errors.
+**Primary recommendation:** Add all 14 builtins in two files only (TypeCheck.fs + Eval.fs), using the exact `BuiltinValue` / `Scheme` pattern from Phase 29, with `FunLangException` for errors.
 
 ## Standard Stack
 
@@ -30,13 +30,13 @@ This phase has no external dependencies beyond what already exists.
 ### Supporting
 | Component | Version | Purpose | When to Use |
 |-----------|---------|---------|-------------|
-| `LangThreeException` | existing | Raise catchable errors from builtins | File not found, bad args; lets user `try-with` |
+| `FunLangException` | existing | Raise catchable errors from builtins | File not found, bad args; lets user `try-with` |
 | `mutable scriptArgs` | new field in Eval.fs | Pass CLI args to `get_args` builtin | Populated from `Program.fs` after Argu parse |
 
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| `LangThreeException` for file errors | F# native exceptions (`exn`) | Native exceptions can't be caught by user `try-with`; LangThreeException is the only catchable type |
+| `FunLangException` for file errors | F# native exceptions (`exn`) | Native exceptions can't be caught by user `try-with`; FunLangException is the only catchable type |
 | `mutable scriptArgs` | Pass args through `Env` | Mutable mirrors existing `currentEvalFile` pattern; cleaner than threading extra arg through all call sites |
 
 **Installation:** No new packages needed.
@@ -51,7 +51,7 @@ This phase has no external dependencies beyond what already exists.
 
 ### Files Modified
 ```
-src/LangThree/
+src/FunLang/
 ├── TypeCheck.fs    # Add 14 Scheme entries to initialTypeEnv
 ├── Eval.fs         # Add 14 BuiltinValue entries to initialBuiltinEnv
 │                   # Add mutable scriptArgs : string list
@@ -77,7 +77,7 @@ src/LangThree/
     match v with
     | StringValue path ->
         if not (System.IO.File.Exists path) then
-            raise (LangThreeException (StringValue (sprintf "read_file: file not found: %s" path)))
+            raise (FunLangException (StringValue (sprintf "read_file: file not found: %s" path)))
         StringValue (System.IO.File.ReadAllText path)
     | _ -> failwith "read_file: expected string argument")
 ```
@@ -165,7 +165,7 @@ src/LangThree/
     match v with
     | StringValue path ->
         if not (System.IO.File.Exists path) then
-            raise (LangThreeException (StringValue (sprintf "read_lines: file not found: %s" path)))
+            raise (FunLangException (StringValue (sprintf "read_lines: file not found: %s" path)))
         let lines = System.IO.File.ReadAllLines path
         ListValue (lines |> Array.toList |> List.map StringValue)
     | _ -> failwith "read_lines: expected string argument")
@@ -210,7 +210,7 @@ let mutable scriptArgs : string list = []
 
 ### Anti-Patterns to Avoid
 
-- **Using F# native `failwith` for file errors:** This raises `System.Exception`, which user `try-with` cannot catch. Always use `raise (LangThreeException (StringValue msg))` for user-visible errors.
+- **Using F# native `failwith` for file errors:** This raises `System.Exception`, which user `try-with` cannot catch. Always use `raise (FunLangException (StringValue msg))` for user-visible errors.
 - **Using `TupleValue []` as success indicator for read operations:** Return the actual value (`StringValue`, `ListValue`), not unit.
 - **Using `System.Console.ReadLine()` for stdin_read_line:** Use `System.Console.In.ReadLine()` to be consistent with `stdin_read_all` using `Console.In`. Handle `null` return (EOF) by returning empty string or raising an exception.
 - **Forgetting to flush stderr:** Always call `stderr.Flush()` after `stderr.Write()` in `eprint`, mirroring how `print` flushes `stdout`.
@@ -240,11 +240,11 @@ let mutable scriptArgs : string list = []
 ```
 **Warning signs:** Builtin appears to work but `get_args "oops"` doesn't raise a type error at runtime.
 
-### Pitfall 2: File Errors Must Use LangThreeException
+### Pitfall 2: File Errors Must Use FunLangException
 
 **What goes wrong:** Using `failwithf` or `failwith` for file-not-found errors produces F# exceptions that bypass user `try-with` handlers.
-**Why it happens:** `try-with` in LangThree only catches `LangThreeException`. F# native exceptions propagate up and crash the runtime.
-**How to avoid:** Use `raise (LangThreeException (StringValue msg))` for all user-visible errors from builtins.
+**Why it happens:** `try-with` in FunLang only catches `FunLangException`. F# native exceptions propagate up and crash the runtime.
+**How to avoid:** Use `raise (FunLangException (StringValue msg))` for all user-visible errors from builtins.
 **Warning signs:** `try-with (read_file "missing.txt") (fun e -> "default")` crashes instead of returning "default".
 
 ### Pitfall 3: get_env Returns Empty String vs Raises on Missing Var
@@ -256,7 +256,7 @@ let mutable scriptArgs : string list = []
 | StringValue varName ->
     let v = System.Environment.GetEnvironmentVariable(varName)
     if v = null then
-        raise (LangThreeException (StringValue (sprintf "get_env: variable '%s' not set" varName)))
+        raise (FunLangException (StringValue (sprintf "get_env: variable '%s' not set" varName)))
     else StringValue v
 ```
 **Warning signs:** `get_env "MISSING_VAR"` returns `""` or throws a NullReferenceException.
@@ -273,7 +273,7 @@ let mutable scriptArgs : string list = []
 **How to avoid:**
 ```fsharp
 let line = System.Console.In.ReadLine()
-if line = null then StringValue ""   // or raise LangThreeException
+if line = null then StringValue ""   // or raise FunLangException
 else StringValue line
 ```
 Convention: return `""` at EOF (matches Unix `read` behavior).
@@ -288,7 +288,7 @@ Convention: return `""` at EOF (matches Unix `read` behavior).
 ### Complete TypeCheck.fs Block (all 14 entries)
 
 ```fsharp
-// Source: LangThree codebase — TypeCheck.fs initialTypeEnv pattern
+// Source: FunLang codebase — TypeCheck.fs initialTypeEnv pattern
 // Phase 32: File I/O & System Builtins
 
 // STD-02: read_file : string -> string
@@ -339,7 +339,7 @@ Convention: return `""` at EOF (matches Unix `read` behavior).
 ### mutable scriptArgs in Eval.fs
 
 ```fsharp
-// Source: LangThree codebase — mirrors currentEvalFile pattern
+// Source: FunLang codebase — mirrors currentEvalFile pattern
 /// Command-line arguments passed to the user script.
 /// Set by Program.fs after Argu parsing. Used by get_args builtin.
 let mutable scriptArgs : string list = []
@@ -348,7 +348,7 @@ let mutable scriptArgs : string list = []
 ### Program.fs — populate scriptArgs
 
 ```fsharp
-// Source: LangThree codebase — in the File evaluation branch
+// Source: FunLang codebase — in the File evaluation branch
 // After: let results = parser.Parse(argv, raiseOnUsage = false)
 // The File argument occupies position [N] in argv. Everything after it are script args.
 // Argu's GetRemainingArguments captures unrecognized positional args.
@@ -384,7 +384,7 @@ Eval.scriptArgs <-
 2. **get_env on missing variable: raise or return empty string?**
    - What we know: Python raises `KeyError`; Bash returns `""`; success criteria says "returns environment variable value" without specifying missing case
    - What's unclear: Whether user code should be able to distinguish "set to empty" from "not set"
-   - Recommendation: Raise `LangThreeException` with a descriptive message, so user can do `try-with (get_env "X") (fun _ -> "default")`. This is more useful than silently returning `""`.
+   - Recommendation: Raise `FunLangException` with a descriptive message, so user can do `try-with (get_env "X") (fun _ -> "default")`. This is more useful than silently returning `""`.
 
 3. **dir_files: filenames only or full paths?**
    - What we know: `Directory.GetFiles` returns full paths; `Path.GetFileName` strips to name
@@ -398,10 +398,10 @@ Eval.scriptArgs <-
 ## Sources
 
 ### Primary (HIGH confidence)
-- LangThree codebase — `Eval.fs` initialBuiltinEnv (direct code inspection)
-- LangThree codebase — `TypeCheck.fs` initialTypeEnv (direct code inspection)
-- LangThree codebase — `Ast.fs` Value DU, `Type.fs` Type DU (direct code inspection)
-- LangThree codebase — `Program.fs` main entrypoint, argv handling (direct code inspection)
+- FunLang codebase — `Eval.fs` initialBuiltinEnv (direct code inspection)
+- FunLang codebase — `TypeCheck.fs` initialTypeEnv (direct code inspection)
+- FunLang codebase — `Ast.fs` Value DU, `Type.fs` Type DU (direct code inspection)
+- FunLang codebase — `Program.fs` main entrypoint, argv handling (direct code inspection)
 
 ### Secondary (MEDIUM confidence)
 - .NET 10 BCL: `System.IO.File`, `System.IO.Path`, `System.IO.Directory`, `System.Environment`, `System.Console` — all stable APIs in .NET 10, unchanged from .NET 6+
@@ -414,7 +414,7 @@ Eval.scriptArgs <-
 **Confidence breakdown:**
 - Standard stack: HIGH — all APIs already used in the codebase; no new dependencies
 - Architecture: HIGH — identical to Phase 29 (char_to_int/int_to_char) pattern; confirmed by code inspection
-- Pitfalls: HIGH — unit-param and LangThreeException patterns directly observed in existing code
+- Pitfalls: HIGH — unit-param and FunLangException patterns directly observed in existing code
 
 **Research date:** 2026-03-25
 **Valid until:** Stable indefinitely — this is codebase-internal research, no external dependencies

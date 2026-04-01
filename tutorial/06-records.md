@@ -2,7 +2,7 @@
 
 앞 장에서 ADT를 배웠습니다. ADT가 "이 값은 A이거나, B이거나, C다"라는 선택(합 타입)을 표현한다면, 레코드는 "이 값은 A이고, B이고, C다"라는 묶음(곱 타입)을 표현합니다. 함께 속하는 데이터를 하나의 단위로 묶고, 각 부분에 이름을 붙이는 것이 레코드의 역할입니다.
 
-Python의 `dataclass`, Rust의 `struct`, F#의 record와 본질적으로 같은 개념입니다. 다만 LangThree의 레코드는 기본적으로 불변(immutable)이라는 점이 다릅니다 — 명시적으로 `mutable`을 선언하지 않으면 값을 변경할 수 없습니다.
+Python의 `dataclass`, Rust의 `struct`, F#의 record와 본질적으로 같은 개념입니다. 다만 FunLang의 레코드는 기본적으로 불변(immutable)이라는 점이 다릅니다 — 명시적으로 `mutable`을 선언하지 않으면 값을 변경할 수 없습니다.
 
 ## 레코드 타입 선언
 
@@ -14,7 +14,7 @@ type Point = { px: int; py: int }
 let p = { px = 3; py = 4 }
 let result = p.px + p.py
 
-$ langthree point.l3
+$ funlang point.l3
 7
 ```
 
@@ -33,7 +33,7 @@ type Person = { name: string; age: int }
 let alice = { name = "Alice"; age = 30 }
 let result = alice.name + " is " + to_string alice.age
 
-$ langthree access.l3
+$ funlang access.l3
 "Alice is 30"
 ```
 
@@ -50,7 +50,7 @@ type Outer = { inner: Inner }
 let o = { inner = { val = 42 } }
 let result = o.inner.val
 
-$ langthree nested.l3
+$ funlang nested.l3
 42
 ```
 
@@ -67,7 +67,7 @@ let p = { px = 1; py = 2 }
 let moved = { p with px = 10 }
 let result = moved
 
-$ langthree update.l3
+$ funlang update.l3
 { px = 10; py = 2 }
 ```
 
@@ -81,7 +81,7 @@ type Vec3 = { vx: int; vy: int; vz: int }
 let v = { vx = 1; vy = 2; vz = 3 }
 let result = { v with vx = 10; vy = 20 }
 
-$ langthree multi_update.l3
+$ funlang multi_update.l3
 { vx = 10; vy = 20; vz = 3 }
 ```
 
@@ -101,7 +101,7 @@ let result =
     match p with
     | { px = a; py = b } -> a + b
 
-$ langthree record_match.l3
+$ funlang record_match.l3
 7
 ```
 
@@ -120,7 +120,7 @@ let _ = c.count <- c.count + 1
 let _ = c.count <- c.count + 1
 let result = c.count
 
-$ langthree counter.l3
+$ funlang counter.l3
 3
 ```
 
@@ -139,7 +139,7 @@ type Pair 'a = { fst: 'a; snd: 'a }
 let p = { fst = 1; snd = 2 }
 let result = p.fst + p.snd
 
-$ langthree pair.l3
+$ funlang pair.l3
 3
 ```
 
@@ -158,11 +158,11 @@ let p3 = { px = 1; py = 3 }
 let r1 = if p1 = p2 then "equal" else "not equal"
 let result = if p1 = p3 then "equal" else "not equal"
 
-$ langthree equality.l3
+$ funlang equality.l3
 "not equal"
 ```
 
-`p1`과 `p2`는 별개의 값이지만 모든 필드가 같으므로 동등합니다. `p1`과 `p3`는 `py`가 다르므로 동등하지 않습니다. 이 구조적 동치(structural equality)는 참조 동등성(reference equality)을 사용하는 Java의 `==`와 다릅니다 — Java에서는 두 `new Point(1, 2)`가 서로 다르다고 판단합니다. LangThree에서는 내용이 같으면 같습니다.
+`p1`과 `p2`는 별개의 값이지만 모든 필드가 같으므로 동등합니다. `p1`과 `p3`는 `py`가 다르므로 동등하지 않습니다. 이 구조적 동치(structural equality)는 참조 동등성(reference equality)을 사용하는 Java의 `==`와 다릅니다 — Java에서는 두 `new Point(1, 2)`가 서로 다르다고 판단합니다. FunLang에서는 내용이 같으면 같습니다.
 
 ## 실용 예제: 가변 상태
 
@@ -176,7 +176,7 @@ let _ = acct.balance <- acct.balance + 50
 let _ = acct.balance <- acct.balance - 30
 let result = acct.balance
 
-$ langthree account.l3
+$ funlang account.l3
 120
 ```
 
@@ -184,7 +184,7 @@ $ langthree account.l3
 
 ## 제한 사항
 
-LangThree 레코드에는 현재 두 가지 제약이 있습니다. 이를 미리 알아두면 당황하지 않을 수 있습니다:
+FunLang 레코드에는 현재 두 가지 제약이 있습니다. 이를 미리 알아두면 당황하지 않을 수 있습니다:
 
 - **필드 단축 표기 불가:** `{ px = px; py = py }`의 축약형으로 `{ px; py }`를 사용할 수 없습니다.
   JavaScript의 `{ px, py }` 단축 표기에 익숙하다면 아쉬울 수 있지만, 현재는 항상 명시적으로 `{ px = px; py = py }`라고 써야 합니다.

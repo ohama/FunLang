@@ -32,13 +32,13 @@ score: 7/7 must-haves verified
 
 | Artifact                                            | Expected                                            | Status      | Details                                                                  |
 |-----------------------------------------------------|-----------------------------------------------------|-------------|--------------------------------------------------------------------------|
-| `src/LangThree/Ast.fs`                              | WhileExpr and ForExpr DU cases with spanOf          | VERIFIED    | Lines 116-117 (DU cases), lines 303-304 (spanOf); substantive            |
-| `src/LangThree/Lexer.fsl`                           | WHILE FOR TO DOWNTO DO keyword token rules          | VERIFIED    | Lines 93-97; all 5 keywords present before IDENT catch-all               |
-| `src/LangThree/Parser.fsy`                          | 5 token declarations + 6 grammar productions        | VERIFIED    | Line 67 (%token); lines 234-247 (6 productions); WhileExpr/ForExpr wired |
-| `src/LangThree/Bidir.fs`                            | Synth cases for WhileExpr/ForExpr; LOOP-04 via mutableVars exclusion | VERIFIED | Lines 172-194; loopEnv bound without mutableVars entry; Assign check at line 198 |
-| `src/LangThree/Eval.fs`                             | Eval cases for WhileExpr and ForExpr                | VERIFIED    | Lines 756-776; while uses F# mutable loop; for uses [s..e] range         |
-| `src/LangThree/IndentFilter.fs`                     | Parser.DO in PrevToken InExprBlock push             | VERIFIED    | Line 317: `Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO` |
-| `src/LangThree/Infer.fs`                            | Stub match arms for WhileExpr/ForExpr               | VERIFIED    | Lines 353, 357; stubs return TTuple []                                   |
+| `src/FunLang/Ast.fs`                              | WhileExpr and ForExpr DU cases with spanOf          | VERIFIED    | Lines 116-117 (DU cases), lines 303-304 (spanOf); substantive            |
+| `src/FunLang/Lexer.fsl`                           | WHILE FOR TO DOWNTO DO keyword token rules          | VERIFIED    | Lines 93-97; all 5 keywords present before IDENT catch-all               |
+| `src/FunLang/Parser.fsy`                          | 5 token declarations + 6 grammar productions        | VERIFIED    | Line 67 (%token); lines 234-247 (6 productions); WhileExpr/ForExpr wired |
+| `src/FunLang/Bidir.fs`                            | Synth cases for WhileExpr/ForExpr; LOOP-04 via mutableVars exclusion | VERIFIED | Lines 172-194; loopEnv bound without mutableVars entry; Assign check at line 198 |
+| `src/FunLang/Eval.fs`                             | Eval cases for WhileExpr and ForExpr                | VERIFIED    | Lines 756-776; while uses F# mutable loop; for uses [s..e] range         |
+| `src/FunLang/IndentFilter.fs`                     | Parser.DO in PrevToken InExprBlock push             | VERIFIED    | Line 317: `Some Parser.EQUALS | Some Parser.ARROW | Some Parser.IN | Some Parser.DO` |
+| `src/FunLang/Infer.fs`                            | Stub match arms for WhileExpr/ForExpr               | VERIFIED    | Lines 353, 357; stubs return TTuple []                                   |
 | `tests/flt/expr/loop/loop-while-basic.flt`          | LOOP-01 while inline body test                      | VERIFIED    | PASS (loop test run 7/7)                                                 |
 | `tests/flt/expr/loop/loop-while-mutable.flt`        | LOOP-01 while indented body with sequencing         | VERIFIED    | PASS                                                                     |
 | `tests/flt/expr/loop/loop-for-ascending.flt`        | LOOP-02 for-to ascending test                       | VERIFIED    | PASS                                                                     |
@@ -76,7 +76,7 @@ None. All four requirements have automated flt test coverage with deterministic 
 
 ## Build Verification
 
-- `dotnet build src/LangThree/LangThree.fsproj -c Release`: exits 0, 0 warnings, 0 errors
+- `dotnet build src/FunLang/FunLang.fsproj -c Release`: exits 0, 0 warnings, 0 errors
 - `../fslit/dist/FsLit tests/flt/expr/loop/`: 7/7 passed
 - `../fslit/dist/FsLit tests/flt/`: 563/563 passed (no regressions)
 
