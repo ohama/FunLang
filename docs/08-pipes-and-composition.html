@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1b152664.js";
+            window.path_to_searchindex_js = "searchindex-7ba49565.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -195,14 +195,14 @@ $ funlang pipe_chain.l3
 <p>만약 파이프 없이 썼다면 <code>inc (double 5)</code>가 됩니다. 두 함수뿐이라 아직은 비슷해 보이지만, 변환 단계가 5개, 10개로 늘어나면 차이가 확연해집니다. 중첩 호출은 오른쪽에서 왼쪽으로 읽어야 하지만, 파이프 체인은 우리가 글을 읽는 방향, 즉 왼쪽에서 오른쪽으로 읽을 수 있습니다.</p>
 <h2 id="내장-함수와-파이프"><a class="header" href="#내장-함수와-파이프">내장 함수와 파이프</a></h2>
 <p>파이프는 사용자 정의 함수뿐만 아니라 내장 함수와도 함께 동작합니다:</p>
-<pre><code>funlang&gt; "hello" |&gt; string_length
+<pre><code>funlang&gt; "hello" |&gt; String.length
 5
 </code></pre>
-<p>커링된 내장 함수는 파이프와 자연스럽게 결합됩니다. FunLang의 내장 함수들은 모두 커링을 지원하므로, 인자를 부분적으로 적용한 뒤 파이프로 연결할 수 있습니다:</p>
-<pre><code>funlang&gt; "world" |&gt; string_concat "hello "
+<p>Prelude 연산자도 파이프와 자연스럽게 결합됩니다. 예를 들어 <code>^^</code> 연산자로 문자열을 연결할 수 있습니다:</p>
+<pre><code>funlang&gt; "hello " ^^ "world"
 "hello world"
 </code></pre>
-<p><code>string_concat "hello "</code>는 하나의 인자만 받은 부분 적용 함수입니다. 이 함수가 파이프를 통해 <code>"world"</code>를 두 번째 인자로 받아 최종 결과를 만들어냅니다. 이 패턴이 익숙해지면, 데이터 변환 파이프라인을 마치 레고 블록 쌓듯 구성할 수 있게 됩니다.</p>
+<p>이 패턴이 익숙해지면, 데이터 변환 파이프라인을 마치 레고 블록 쌓듯 구성할 수 있게 됩니다.</p>
 <h2 id="람다와-파이프"><a class="header" href="#람다와-파이프">람다와 파이프</a></h2>
 <p>파이프 안에서 즉석으로 람다를 정의할 수도 있습니다:</p>
 <pre><code>funlang&gt; 10 |&gt; (fun x -&gt; x * x)
@@ -276,14 +276,14 @@ $ funlang comp_example.l3
 <h2 id="실용-예제-데이터-파이프라인"><a class="header" href="#실용-예제-데이터-파이프라인">실용 예제: 데이터 파이프라인</a></h2>
 <p>실제 코드에서는 파이프와 합성을 같이 활용하는 경우가 많습니다. 파이프와 문자열 연산의 조합:</p>
 <pre><code>$ cat pipeline.l3
-let result = 42 |&gt; to_string |&gt; string_concat "answer: "
+let result = "answer: " ^^ to_string 42
 
 $ funlang pipeline.l3
 "answer: 42"
 </code></pre>
 <p>재사용 가능한 포매터를 위한 합성:</p>
 <pre><code>$ cat formatter.l3
-let format_num = to_string &gt;&gt; string_concat "value="
+let format_num x = "value=" ^^ to_string x
 let result = format_num 99
 
 $ funlang formatter.l3

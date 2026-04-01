@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1b152664.js";
+            window.path_to_searchindex_js = "searchindex-7ba49565.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -365,7 +365,7 @@ Some 5
 <p>에러 메시지나 에러 코드를 보존해야 할 때 <code>Result</code>를 사용합니다:</p>
 <pre><code>$ cat result_use.l3
 let validateAge age = if age &lt; 0 then Error "age cannot be negative" else if age &gt; 150 then Error "age too large" else Ok age
-let validateName name = if string_length name = 0 then Error "name cannot be empty" else Ok name
+let validateName name = if String.length name = 0 then Error "name cannot be empty" else Ok name
 
 let validate name = fun age -&gt; validateName name |&gt; resultBind (fun _ -&gt; validateAge age |&gt; resultMap (fun a -&gt; name + " (" + to_string a + ")"))
 

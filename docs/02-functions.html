@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1b152664.js";
+            window.path_to_searchindex_js = "searchindex-7ba49565.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -493,17 +493,17 @@ $ funlang partial_pipeline.l3
 <h3 id="내장-함수의-부분-적용"><a class="header" href="#내장-함수의-부분-적용">내장 함수의 부분 적용</a></h3>
 <p>FunLang의 내장 함수도 커링되어 있어서 부분 적용이 가능합니다:</p>
 <pre><code>$ cat partial_builtin.l3
-let greet = string_concat "Hello "
+let greet = fun s -&gt; "Hello " ^^ s
 let r1 = greet "World"
 
-let r2 = map (string_concat "item: ") ["apple"; "banana"; "cherry"]
+let r2 = map (fun s -&gt; "item: " ^^ s) ["apple"; "banana"; "cherry"]
 
 let result = (r1, r2)
 
 $ funlang partial_builtin.l3
 ("Hello World", ["item: apple"; "item: banana"; "item: cherry"])
 </code></pre>
-<p><code>string_concat "Hello "</code>는 “Hello “를 앞에 붙이는 함수가 됩니다. 이것을 <code>map</code>에 넘기면 리스트의 모든 문자열에 접두사를 붙일 수 있습니다.</p>
+<p><code>^^</code> 연산자로 문자열을 연결합니다. 람다와 함께 사용하면 접두사를 붙이는 함수를 간결하게 만들 수 있고, 이것을 <code>map</code>에 넘기면 리스트의 모든 문자열에 접두사를 붙일 수 있습니다.</p>
 <h3 id="let-rec과-부분-적용"><a class="header" href="#let-rec과-부분-적용">let rec과 부분 적용</a></h3>
 <p>재귀 함수도 부분 적용이 가능합니다. 이것은 재귀적 연산의 “설정“을 분리하는 데 유용합니다:</p>
 <pre><code>$ cat partial_rec.l3

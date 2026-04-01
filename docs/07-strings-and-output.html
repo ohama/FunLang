@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1b152664.js";
+            window.path_to_searchindex_js = "searchindex-7ba49565.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -191,45 +191,48 @@ funlang&gt; "tab\there"
 "hello world"
 </code></pre>
 <p>FunLang에서 <code>+</code>는 정수 덧셈과 문자열 연결 모두에 사용됩니다. 타입 추론 덕분에 컴파일러가 문맥에서 어떤 <code>+</code>인지 판단합니다. 단, 정수와 문자열을 섞어 쓰면 타입 오류가 발생합니다 — <code>"age: " + 30</code>은 안 되고, <code>"age: " + to_string 30</code>이 필요합니다.</p>
-<h2 id="내장-문자열-함수"><a class="header" href="#내장-문자열-함수">내장 문자열 함수</a></h2>
-<p>FunLang는 자주 쓰이는 문자열 연산을 내장 함수로 제공합니다. 각 함수의 동작 방식과 언제 사용하면 좋은지 함께 살펴봅니다.</p>
-<h3 id="string_length"><a class="header" href="#string_length">string_length</a></h3>
+<h2 id="문자열-함수"><a class="header" href="#문자열-함수">문자열 함수</a></h2>
+<p>FunLang는 자주 쓰이는 문자열 연산을 Prelude의 <code>String</code> 모듈과 <code>^^</code> 연산자로 제공합니다. 각 함수의 동작 방식과 언제 사용하면 좋은지 함께 살펴봅니다.</p>
+<blockquote>
+<p><strong>참고:</strong> 이 함수들은 내부적으로 <code>string_length</code>, <code>string_sub</code>, <code>string_concat</code>, <code>string_contains</code> 등의 raw builtin 함수를 기반으로 합니다. raw builtin을 직접 호출할 수도 있지만, 일반적으로는 <code>String</code> 모듈 함수와 <code>^^</code> 연산자를 사용하는 것을 권장합니다.</p>
+</blockquote>
+<h3 id="stringlength"><a class="header" href="#stringlength">String.length</a></h3>
 <p>문자 수를 반환합니다:</p>
-<pre><code>funlang&gt; string_length "hello"
+<pre><code>funlang&gt; String.length "hello"
 5
 
-funlang&gt; string_length ""
+funlang&gt; String.length ""
 0
 </code></pre>
 <p>빈 문자열의 길이는 0입니다. 인덱스 범위 검사나 반복 횟수 계산에 자주 쓰입니다.</p>
-<h3 id="string_concat"><a class="header" href="#string_concat">string_concat</a></h3>
-<p>커링된 연결 함수 – 두 개의 문자열을 받습니다:</p>
-<pre><code>funlang&gt; string_concat "hello" " world"
+<h3 id="-연산자-문자열-연결"><a class="header" href="#-연산자-문자열-연결"><code>^^</code> 연산자 (문자열 연결)</a></h3>
+<p><code>^^</code> 연산자로 두 문자열을 연결합니다 (Core 모듈에서 제공):</p>
+<pre><code>funlang&gt; "hello" ^^ " world"
 "hello world"
 </code></pre>
-<p><code>+</code> 연산자와 결과는 같지만, <code>string_concat</code>이 커링 함수라는 점이 다릅니다. 커링되어 있으므로 부분 적용이 가능합니다:</p>
+<p><code>+</code> 연산자와 결과는 같지만, <code>^^</code>는 문자열 전용 연결 연산자라는 점이 다릅니다. 람다와 함께 사용하면 접두사를 붙이는 함수를 만들 수 있습니다:</p>
 <pre><code>$ cat prefix.l3
-let add_prefix = string_concat "prefix:"
+let add_prefix = fun s -&gt; "prefix:" ^^ s
 let result = add_prefix "value"
 
 $ funlang prefix.l3
 "prefix:value"
 </code></pre>
-<p><code>string_concat "prefix:"</code>는 “앞에 ’prefix:’를 붙이는 함수“를 반환합니다. 이렇게 만든 <code>add_prefix</code>를 파이프라인에서 재사용할 수 있습니다. 예를 들어 리스트의 모든 항목에 접두사를 붙이거나, 고차 함수에 인자로 전달할 때 편리합니다.</p>
-<h3 id="string_sub"><a class="header" href="#string_sub">string_sub</a></h3>
+<p><code>fun s -&gt; "prefix:" ^^ s</code>는 “앞에 ’prefix:’를 붙이는 함수“입니다. 이렇게 만든 <code>add_prefix</code>를 파이프라인에서 재사용할 수 있습니다. 예를 들어 리스트의 모든 항목에 접두사를 붙이거나, 고차 함수에 인자로 전달할 때 편리합니다.</p>
+<h3 id="stringsubstring"><a class="header" href="#stringsubstring">String.substring</a></h3>
 <p>시작 인덱스와 길이로 부분 문자열을 추출합니다:</p>
-<pre><code>funlang&gt; string_sub "hello" 1 3
+<pre><code>funlang&gt; String.substring "hello" 1 3
 "ell"
 </code></pre>
-<p><code>string_sub s start len</code>은 인덱스 <code>start</code>부터 <code>len</code>개의 문자를 반환합니다.
+<p><code>String.substring s start len</code>은 인덱스 <code>start</code>부터 <code>len</code>개의 문자를 반환합니다.
 인덱스는 0부터 시작합니다.</p>
-<p>Python의 슬라이싱 <code>s[1:4]</code>와 비슷하지만, 끝 인덱스가 아니라 길이를 지정한다는 점에 주의하세요. Python에서 <code>s[1:4]</code>는 인덱스 1부터 3까지 3개의 문자를 가져오지만, FunLang에서는 <code>string_sub s 1 3</code>으로 동일한 결과를 얻습니다. <code>start + len</code>이 문자열 길이를 초과하지 않도록 주의하세요.</p>
-<h3 id="string_contains"><a class="header" href="#string_contains">string_contains</a></h3>
+<p>Python의 슬라이싱 <code>s[1:4]</code>와 비슷하지만, 끝 인덱스가 아니라 길이를 지정한다는 점에 주의하세요. Python에서 <code>s[1:4]</code>는 인덱스 1부터 3까지 3개의 문자를 가져오지만, FunLang에서는 <code>String.substring s 1 3</code>으로 동일한 결과를 얻습니다. <code>start + len</code>이 문자열 길이를 초과하지 않도록 주의하세요.</p>
+<h3 id="stringcontains"><a class="header" href="#stringcontains">String.contains</a></h3>
 <p>문자열이 부분 문자열을 포함하는지 확인합니다:</p>
-<pre><code>funlang&gt; string_contains "hello world" "world"
+<pre><code>funlang&gt; String.contains "hello world" "world"
 true
 
-funlang&gt; string_contains "hello" "xyz"
+funlang&gt; String.contains "hello" "xyz"
 false
 </code></pre>
 <p>검색 결과를 <code>bool</code>로 반환하므로 <code>if</code> 표현식이나 조건 분기에 바로 사용할 수 있습니다. 파일 경로 검증, 키워드 필터링 같은 간단한 텍스트 검색에 유용합니다.</p>
@@ -348,7 +351,7 @@ $ funlang sprintf_vs.l3
 </code></pre>
 <p>두 방법의 결과는 같지만, <code>sprintf</code>가 형식을 한눈에 파악하기 좋습니다. 특히 여러 값을 조합할 때 차이가 뚜렷합니다 — <code>"name=" + to_string name + ", age=" + to_string age</code>보다 <code>sprintf "name=%s, age=%d" name age</code>가 훨씬 읽기 좋습니다.</p>
 <h2 id="문자열-슬라이싱-string-slicing"><a class="header" href="#문자열-슬라이싱-string-slicing">문자열 슬라이싱 (String Slicing)</a></h2>
-<p><code>string_sub</code>보다 간결한 슬라이싱 구문을 제공합니다. <code>s.[start..stop]</code>은 인덱스 <code>start</code>부터 <code>stop</code>까지(양쪽 포함)의 부분 문자열을 반환합니다:</p>
+<p><code>String.substring</code>보다 간결한 슬라이싱 구문을 제공합니다. <code>s.[start..stop]</code>은 인덱스 <code>start</code>부터 <code>stop</code>까지(양쪽 포함)의 부분 문자열을 반환합니다:</p>
 <pre><code>$ cat str_slice.l3
 let s = "hello"
 let _ = println (s.[1..3])
@@ -375,7 +378,7 @@ llo
 world
 ()
 </code></pre>
-<p><code>string_sub</code>가 시작+길이를 사용하는 반면, 슬라이싱은 시작+끝 인덱스를 사용합니다. Python의 <code>s[1:4]</code>와 비슷하지만 끝 인덱스가 포함(inclusive)된다는 차이가 있습니다.</p>
+<p><code>String.substring</code>이 시작+길이를 사용하는 반면, 슬라이싱은 시작+끝 인덱스를 사용합니다. Python의 <code>s[1:4]</code>와 비슷하지만 끝 인덱스가 포함(inclusive)된다는 차이가 있습니다.</p>
 <h2 id="string-모듈-함수"><a class="header" href="#string-모듈-함수">String 모듈 함수</a></h2>
 <p>Prelude의 <code>String</code> 모듈은 문자열 검사 및 변환 함수를 제공합니다:</p>
 <pre><code>$ cat str_module.l3
@@ -402,8 +405,9 @@ spaces
 <tr><td><code>String.endsWith s suffix</code></td><td>문자열이 suffix로 끝나는지 확인</td></tr>
 <tr><td><code>String.startsWith s prefix</code></td><td>문자열이 prefix로 시작하는지 확인</td></tr>
 <tr><td><code>String.trim s</code></td><td>양쪽 공백 제거</td></tr>
-<tr><td><code>String.length s</code></td><td>문자열 길이 (<code>string_length</code>와 동일)</td></tr>
-<tr><td><code>String.contains s needle</code></td><td>부분 문자열 포함 여부 (<code>string_contains</code>와 동일)</td></tr>
+<tr><td><code>String.length s</code></td><td>문자열 길이</td></tr>
+<tr><td><code>String.substring s start len</code></td><td>부분 문자열 추출</td></tr>
+<tr><td><code>String.contains s needle</code></td><td>부분 문자열 포함 여부</td></tr>
 <tr><td><code>String.concat sep lst</code></td><td>구분자로 문자열 리스트를 연결</td></tr>
 </tbody>
 </table>
@@ -465,17 +469,17 @@ third
 <p>왜 <code>let _ =</code>가 필요한가요? FunLang는 기본적으로 표현식 기반 언어입니다. <code>println "first"</code>는 unit 값 <code>()</code>을 반환하는 표현식입니다. 이 결과를 이름 없이 버리면서 다음 표현식으로 넘어가는 방법이 <code>let _ =</code>입니다. <code>_</code>는 “이 이름에는 관심이 없다“는 관례적인 표기입니다. 시퀀싱이 자연스러운 명령형 언어와 달리, 순수 함수형 언어에서는 부수 효과의 순서를 명시적으로 표현해야 합니다.</p>
 <h2 id="문자열-함수와-파이프"><a class="header" href="#문자열-함수와-파이프">문자열 함수와 파이프</a></h2>
 <p>문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:</p>
-<pre><code>funlang&gt; "hello" |&gt; string_length
+<pre><code>funlang&gt; "hello" |&gt; String.length
 5
 </code></pre>
 <p>문자열 변환으로 파이프라인을 구성합니다:</p>
 <pre><code>$ cat string_pipe.l3
-let result = 42 |&gt; to_string |&gt; string_concat "answer: "
+let result = 42 |&gt; to_string |&gt; fun s -&gt; "answer: " ^^ s
 
 $ funlang string_pipe.l3
 "answer: 42"
 </code></pre>
-<p><code>42 |&gt; to_string</code>은 <code>"42"</code>를 만들고, <code>|&gt; string_concat "answer: "</code>는 앞서 부분 적용된 <code>string_concat "answer: "</code>에 <code>"42"</code>를 전달하여 <code>"answer: 42"</code>를 만듭니다. 파이프와 커링이 함께 쓰이는 전형적인 패턴입니다. 변환 단계가 많을수록 파이프라인 방식이 중첩 함수 호출보다 훨씬 읽기 좋습니다.</p>
+<p><code>42 |&gt; to_string</code>은 <code>"42"</code>를 만들고, <code>|&gt; fun s -&gt; "answer: " ^^ s</code>는 <code>"answer: "</code>와 <code>"42"</code>를 <code>^^</code>로 연결하여 <code>"answer: 42"</code>를 만듭니다. 파이프와 람다가 함께 쓰이는 전형적인 패턴입니다. 변환 단계가 많을수록 파이프라인 방식이 중첩 함수 호출보다 훨씬 읽기 좋습니다.</p>
 <h2 id="실용-예제-형식화된-보고서"><a class="header" href="#실용-예제-형식화된-보고서">실용 예제: 형식화된 보고서</a></h2>
 <p>지금까지 배운 것을 조합해 구조화된 출력을 만드는 예입니다:</p>
 <pre><code>$ cat report.l3
@@ -494,8 +498,8 @@ height: 600
 <h2 id="참고-사항"><a class="header" href="#참고-사항">참고 사항</a></h2>
 <p>이 장에서 다룬 함수들의 핵심 특징을 정리합니다:</p>
 <ul>
-<li><strong><code>string_sub</code>는 시작+길이를 사용합니다</strong> (시작+끝이 아님): <code>string_sub "hello" 1 3</code> = <code>"ell"</code></li>
-<li><strong><code>string_concat</code>는 커링되어 있습니다:</strong> <code>string_concat "prefix"</code>는 함수를 반환합니다</li>
+<li><strong><code>String.substring</code>은 시작+길이를 사용합니다</strong> (시작+끝이 아님): <code>String.substring "hello" 1 3</code> = <code>"ell"</code></li>
+<li><strong><code>^^</code>는 문자열 연결 연산자입니다:</strong> <code>"hello" ^^ " world"</code> = <code>"hello world"</code></li>
 <li>**<code>to_string</code>**은 모든 타입을 받습니다 — 문자열은 그대로, 복합 타입은 구조적 표현</li>
 <li>**<code>printf</code>**는 커링되어 있습니다: 각 <code>%</code> 지정자가 하나의 추가 인자를 소비합니다</li>
 <li><strong>순서 지정:</strong> 모듈 수준에서 부수 효과를 체이닝하려면 <code>let _ =</code>를 사용하세요</li>
