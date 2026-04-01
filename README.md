@@ -33,7 +33,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Tail Call Optimization** | Trampoline-based TCO | v1.4 |
 | **Or-Patterns** | `\| 1 \| 2 \| 3 ->` in match | v1.4 |
 | **List Ranges** | `[1..10]`, `[0..2..20]` | v1.4 |
-| **Mutual Recursion** | `let rec f = ... and g = ...` | v1.4 |
+| **Mutual Recursion** | `let rec f = ... and g = ...` (module + expression level, multiline) | v1.4+v10.1 |
 | **User-Defined Operators** | `let (op)`, INFIXOP0-4, `(op)` function form | v1.5 |
 | **Implicit `in`** | F#-style offside rule — `let x = 1 / let y = 2 / x + y` | v1.7 |
 | **Semicolon Lists** | F# convention: `[1; 2; 3]` (tuples keep commas) | v1.7 |
@@ -296,8 +296,8 @@ and stateB xs =
 FunLang/
 ├── src/FunLang/       # Interpreter source (~16,200 LOC F#)
 ├── tests/
-│   ├── FunLang.Tests/ # F# unit tests (229 tests)
-│   └── flt/             # fslit integration tests (698 tests)
+│   ├── FunLang.Tests/ # F# unit tests (224 tests)
+│   └── flt/             # fslit integration tests (699 tests)
 │       ├── expr/        # Expression-mode tests (119 tests)
 │       ├── file/        # File-mode tests (475 tests, 34 subdirs)
 │       ├── emit/        # AST/type emission tests (100 tests)
@@ -322,13 +322,13 @@ FunLang/
 ## Tests
 
 ```bash
-# F# unit tests (229)
+# F# unit tests (224)
 dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 
-# fslit integration tests (698) — auto-builds on first run
+# fslit integration tests (699) — auto-builds on first run
 scripts/fslit tests/flt/
 
-# Total: ~927 tests
+# Total: 923 tests
 ```
 
 ## Milestones

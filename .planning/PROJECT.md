@@ -97,6 +97,10 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - AST Span 위치 정보 수정 (PositionedToken + IndentFilter 위치 보존 + lexbuf 업데이트) — v9.1
 - 타입 클래스 (typeclass/instance 선언, 제약 추론, 딕셔너리 elaboration) — v10.0
 - Show/Eq 내장 인스턴스 (int/bool/string/char) — v10.0
+- 타입 클래스 에러 리포팅 (Constraint SourceSpan, E0701-E0706 위치 정보) — v10.1
+- 모듈 시스템 타입 클래스 통합 (ClassEnv/InstanceEnv export, instance method 승격) — v10.1
+- TEConstrained 어노테이션 ClassEnv 검증 (Bidir.synth) — v10.1
+- Multiline expression-level `let rec ... and ... in` (IndentFilter AND_KW offside 처리) — v10.1
 
 ### Active
 
@@ -122,6 +126,13 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - IDE 통합 / LSP — 언어 기능 완성 후
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
+
+## Previous Milestone: v10.1 Type Class Error Reporting & Module Integration (2026-04-01)
+
+**Delivered:** 타입 클래스 에러 리포팅 + 모듈 통합 + multiline let rec ... and ... in
+- 22 files changed, +674 LOC in v10.1
+- 699 flt tests, 224 unit tests
+- 78 phases, 161+ plans executed across v1.0-v10.1
 
 ## Previous Milestone: v10.0 Type Classes (2026-03-31)
 
@@ -236,4 +247,4 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 | funproj.toml paths relative to project dir | Cargo 관례 준수, CWD 독립적 | ✓ Good |
 
 ---
-*Last updated: 2026-04-01 after v10.0 milestone completed*
+*Last updated: 2026-04-01 after v10.1 milestone archived*

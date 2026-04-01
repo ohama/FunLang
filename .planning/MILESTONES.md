@@ -1,5 +1,29 @@
 # Project Milestones: FunLang
 
+## v10.1 Type Class Error Reporting & Module Integration (Shipped: 2026-04-01)
+
+**Delivered:** 타입 클래스 에러 리포팅 개선 (E0701-E0706 Span 정보), 모듈 시스템과 타입 클래스 통합 (ClassEnv/InstanceEnv export), multiline expression-level `let rec ... and ...` IndentFilter 지원
+
+**Phases completed:** 75-78 (direct execution, no formal plans)
+
+**Key accomplishments:**
+- Constraint에 SourceSpan 추가 — 에러 메시지에 정확한 위치 표시
+- ModuleExports에 ClassEnv/InstanceEnv 포함 — 모듈 간 타입 클래스 공유
+- Instance 메서드를 outer scope로 승격 (ModuleDecl elaboration)
+- TEConstrained 어노테이션을 ClassEnv 기준 검증 (Bidir.synth)
+- IndentFilter offside 규칙에서 AND_KW 처리 — multiline `let rec ... and ... in` 지원
+- 7 bugs fixed, 6 new flt tests + 1 multiline mutual recursion test
+
+**Stats:**
+- 22 files changed, +674 LOC (core), +1 IndentFilter fix
+- 4 phases (direct execution) + 1 post-phase fix
+- 1 day (2026-04-01)
+- 224 F# unit tests + 699 flt tests, all passing
+
+**Git range:** `feat(v10.1)` → `1411522`
+
+---
+
 ## v10.0 Type Classes (Shipped: 2026-03-31)
 
 **Delivered:** Haskell 스타일 타입 클래스 — typeclass/instance 선언, 제약 추론, 딕셔너리 전달 elaboration, 내장 Show/Eq 인스턴스

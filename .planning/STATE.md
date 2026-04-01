@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** v10.1 — Type Class Error Reporting & Module Integration
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v10.1
-Phase: 78 — Integration Tests (complete)
-Plan: N/A (direct execution)
-Status: All phases complete (75-78 shipped in single commit)
-Last activity: 2026-04-01 -- v10.1 phases 75-78 executed
+Milestone: (none — planning next)
+Phase: N/A
+Plan: N/A
+Status: v10.1 complete, ready for next milestone
+Last activity: 2026-04-01 — v10.1 milestone archived
 
 Progress: [████████████████████] v1.0-v10.1 done (78 phases, 161+ plans)
 
@@ -21,7 +21,7 @@ Progress: [████████████████████] v1.0-v1
 
 **Velocity:**
 - Total plans completed: 161+
-- v10.1: 4 phases (75-78) direct execution, 7 bugs fixed, 6 new tests, 1 session
+- v10.1: 4 phases (75-78) direct execution + 1 IndentFilter fix, 1 session
 - v10.0: 11 plans across 5 phases in 1 day
 - v9.1: 1 plan (phase 69) in 1 day
 
@@ -38,6 +38,7 @@ Key cross-milestone context carried forward:
 - Instance methods promoted to outer scope from ModuleDecl during elaboration (v10.1)
 - TEName for user-defined ADTs resolves to TData in instance processing (v10.1)
 - TEConstrained annotations validated against ClassEnv in Bidir.synth (v10.1)
+- AND_KW added to IndentFilter isContinuationStart + offside suppression (v10.1)
 - Polymorphic instances need unification-based resolution (deferred to future)
 
 ### Pending Todos
@@ -56,8 +57,8 @@ None.
 Last session: 2026-04-01
 Stopped at: v10.1 milestone complete
 Resume file: None
-Next action: /gsd:complete-milestone or /gsd:new-milestone
+Next action: /gsd:new-milestone
 
 ---
 *State initialized: 2026-02-25*
-*Last updated: 2026-04-01 (v10.1 complete)*
+*Last updated: 2026-04-01 (v10.1 milestone archived)*
