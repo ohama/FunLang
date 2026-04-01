@@ -1,4 +1,4 @@
-# LangThree Tests
+# FunLang Tests
 
 **Total: 364 tests** (196 F# unit tests + 168 fslit file-based tests)
 
@@ -6,7 +6,7 @@
 
 ```
 tests/
-├── LangThree.Tests/          # F# unit tests (dotnet test)
+├── FunLang.Tests/          # F# unit tests (dotnet test)
 │   ├── IndentFilterTests.fs   # Offside rule, INDENT/DEDENT token generation
 │   ├── ExhaustiveTests.fs     # Pattern match exhaustiveness/redundancy checking
 │   ├── IntegrationTests.fs    # End-to-end expression evaluation
@@ -30,7 +30,7 @@ tests/
 
 ## F# Unit Tests (196 tests)
 
-Run: `dotnet test tests/LangThree.Tests/`
+Run: `dotnet test tests/FunLang.Tests/`
 
 | File | Tests | What it covers |
 |------|-------|----------------|
@@ -201,7 +201,7 @@ Tests `--emit-type %input`. Verifies type inference for module-level bindings.
 
 ```bash
 # All F# unit tests
-dotnet test tests/LangThree.Tests/
+dotnet test tests/FunLang.Tests/
 
 # All fslit tests
 fslit tests/flt/
