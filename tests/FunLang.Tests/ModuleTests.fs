@@ -42,7 +42,7 @@ let evalModule (input: string) : Ast.Value =
     | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         let decls =
             match m with
-            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls
+            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) -> decls
             | Ast.EmptyModule _ -> []
         let finalEnv, moduleEnv =
             Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
@@ -66,18 +66,13 @@ let expectTypeError (input: string) (expectedCode: string) =
 let moduleTests = testList "Modules" [
 
     // =====================================================
-    // SC1: Top-level module and namespace declarations (MOD-01, MOD-02)
+    // SC1: Top-level module declarations (MOD-01)
     // =====================================================
 
-    testList "SC1: Top-level module/namespace" [
+    testList "SC1: Top-level module" [
         test "top-level module declaration" {
             let result = evalModule "module MyModule\nlet x = 42\nlet result = x\n"
             Expect.equal result (Ast.IntValue 42) "top-level module binding"
-        }
-
-        test "top-level namespace declaration" {
-            let result = evalModule "namespace MyApp.Utils\nlet x = 10\nlet result = x\n"
-            Expect.equal result (Ast.IntValue 10) "namespace declaration"
         }
 
         test "top-level module with function" {
@@ -227,7 +222,7 @@ let evalFileModule (filePath: string) : Ast.Value =
         | Ok (_warnings, recEnv, _modules, _typeEnv) ->
             let decls =
                 match m with
-                | Ast.Module(d, _) | Ast.NamedModule(_, d, _) | Ast.NamespacedModule(_, d, _) -> d
+                | Ast.Module(d, _) | Ast.NamedModule(_, d, _) -> d
                 | Ast.EmptyModule _ -> []
             Eval.currentEvalFile <- absPath
             let finalEnv, moduleEnv = Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls
@@ -301,7 +296,7 @@ let evalWithPrelude (input: string) : Ast.Value =
     | Ok (_warnings, _ctorEnv, recEnv, _classEnv, _instEnv, _modules, _typeEnv) ->
         let decls =
             match m with
-            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls
+            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) -> decls
             | Ast.EmptyModule _ -> []
         let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.RecEnv recEnv
         let initialEnv = Map.fold (fun acc k v -> Map.add k v acc) prelude.Env Eval.initialBuiltinEnv

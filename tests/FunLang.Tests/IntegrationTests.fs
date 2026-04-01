@@ -543,7 +543,7 @@ let evalModule (input: string) : Ast.Value =
     | Ok (_warnings, recEnv, _modules, _typeEnv) ->
         let decls =
             match m with
-            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) | Ast.NamespacedModule(_, decls, _) -> decls
+            | Ast.Module(decls, _) | Ast.NamedModule(_, decls, _) -> decls
             | Ast.EmptyModule _ -> []
         let finalEnv, moduleEnv =
             Eval.evalModuleDecls recEnv Map.empty Eval.emptyEnv decls

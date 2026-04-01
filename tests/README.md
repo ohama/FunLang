@@ -82,7 +82,6 @@ Tests file-mode evaluation (`%input`). Verifies module-level declarations and ou
 | Let | 1 | sequence of let bindings |
 | Function | 2 | multi-line, multi-param |
 | Multiline | 1 | multi-line match |
-| Namespace | 1 | namespace declaration |
 | When guard | 1 | guard expressions |
 
 ### `flt/error/` -- Error Detection (4 tests)
