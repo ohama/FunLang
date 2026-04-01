@@ -22,7 +22,7 @@ Prelude는 LangThree 바이너리와 같은 위치의 `Prelude/` 디렉토리에
 - `Prelude/MutableList.fun` -- MutableList 모듈
 - `Prelude/Queue.fun` -- Queue 모듈
 - `Prelude/Result.fun` -- Result 타입과 함수 (`resultMap`, `resultBind`, `resultDefault` 등)
-- `Prelude/String.fun` -- String 모듈 (`String.endsWith`, `String.startsWith`, `String.trim` 등)
+- `Prelude/String.fun` -- String 모듈 (`String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.trim`, `String.endsWith`, `String.startsWith` 등)
 - `Prelude/StringBuilder.fun` -- StringBuilder 모듈
 - `Prelude/Typeclass.fun` -- 타입 클래스 (`Show`, `Eq`)와 기본 타입 인스턴스 (`int`, `bool`, `string`, `char`)
 
