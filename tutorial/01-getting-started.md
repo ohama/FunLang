@@ -145,17 +145,17 @@ line2"
 내장 문자열 함수:
 
 ```
-funlang> string_length "hello"
+funlang> String.length "hello"
 5
 
-funlang> string_sub "hello" 1 3
+funlang> String.substring "hello" 1 3
 "ell"
 
 funlang> to_string 42
 "42"
 ```
 
-`string_sub "hello" 1 3`은 인덱스 1부터 3개의 문자를 추출합니다. `to_string`은 숫자를 문자열로 바꿀 때 유용합니다 -- 특히 숫자와 문자열을 연결하고 싶을 때 `"값: " + to_string 42`처럼 자주 씁니다. 문자열 함수의 전체 목록과 `printf` 포맷 출력은 [7장: 문자열과 출력](07-strings-and-output.md)에서 다룹니다.
+`String.substring "hello" 1 3`은 인덱스 1부터 3개의 문자를 추출합니다. `to_string`은 숫자를 문자열로 바꿀 때 유용합니다 -- 특히 숫자와 문자열을 연결하고 싶을 때 `"값: " + to_string 42`처럼 자주 씁니다. 문자열 함수의 전체 목록과 `printf` 포맷 출력은 [7장: 문자열과 출력](07-strings-and-output.md)에서 다룹니다.
 
 ## 비교 연산자
 

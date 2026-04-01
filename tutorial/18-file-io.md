@@ -86,7 +86,7 @@ $ funlang file_error.l3
 ```
 $ cat get_cwd.l3
 let cwd = get_cwd ()
-let result = string_length cwd > 0
+let result = String.length cwd > 0
 
 $ funlang get_cwd.l3
 true

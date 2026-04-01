@@ -27,7 +27,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Pattern Compilation** | Decision tree compilation (Jules Jacobs algorithm) | v1.0 |
 | **Pipe & Composition** | `\|>`, `>>`, `<<` operators | v1.2 |
 | **Unit Type** | `()` literal, `unit` type, side-effect sequencing | v1.2 |
-| **String Operations** | string_length, string_concat, string_sub, to_string 등 | v1.2 |
+| **String Operations** | `String.length`, `String.substring`, `^^`, `to_string` 등 | v1.2 |
 | **Printf Output** | print, println, printf, printfn, sprintf | v1.2+v1.5 |
 | **Prelude** | Option, Result, List, Core, Operators (Prelude/*.fun) | v1.2 |
 | **Tail Call Optimization** | Trampoline-based TCO | v1.4 |

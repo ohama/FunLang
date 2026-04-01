@@ -462,10 +462,10 @@ FunLang의 내장 함수도 커링되어 있어서 부분 적용이 가능합니
 
 ```
 $ cat partial_builtin.l3
-let greet = string_concat "Hello "
+let greet = fun s -> "Hello " ^^ s
 let r1 = greet "World"
 
-let r2 = map (string_concat "item: ") ["apple"; "banana"; "cherry"]
+let r2 = map (fun s -> "item: " ^^ s) ["apple"; "banana"; "cherry"]
 
 let result = (r1, r2)
 
@@ -473,7 +473,7 @@ $ funlang partial_builtin.l3
 ("Hello World", ["item: apple"; "item: banana"; "item: cherry"])
 ```
 
-`string_concat "Hello "`는 "Hello "를 앞에 붙이는 함수가 됩니다. 이것을 `map`에 넘기면 리스트의 모든 문자열에 접두사를 붙일 수 있습니다.
+`^^` 연산자로 문자열을 연결합니다. 람다와 함께 사용하면 접두사를 붙이는 함수를 간결하게 만들 수 있고, 이것을 `map`에 넘기면 리스트의 모든 문자열에 접두사를 붙일 수 있습니다.
 
 ### let rec과 부분 적용
 

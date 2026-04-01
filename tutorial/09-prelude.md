@@ -548,10 +548,10 @@ Prelude 함수와는 별도로, FunLang에는 내장 환경(`initialBuiltinEnv`)
 | `char_to_int` | `char -> int` | 문자를 ASCII 코드로 변환 |
 | `int_to_char` | `int -> char` | ASCII 코드를 문자로 변환 |
 | `failwith` | `string -> 'a` | 메시지와 함께 예외 발생 |
-| `string_length` | `string -> int` | 문자열의 길이 |
-| `string_concat` | `string -> string -> string` | 두 문자열을 연결 |
-| `string_sub` | `string -> int -> int -> string` | 부분 문자열 (시작, 길이) |
-| `string_contains` | `string -> string -> bool` | 부분 문자열 포함 여부 |
+| `string_length` | `string -> int` | 문자열의 길이 (`String.length`) |
+| `string_concat` | `string -> string -> string` | 두 문자열을 연결 (`^^` 연산자) |
+| `string_sub` | `string -> int -> int -> string` | 부분 문자열 (`String.substring`) |
+| `string_contains` | `string -> string -> bool` | 부분 문자열 포함 여부 (`String.contains`) |
 | `to_string` | `'a -> string` | 모든 타입을 문자열로 변환 (문자열은 그대로) |
 | `string_to_int` | `string -> int` | 문자열을 정수로 파싱 |
 | `print` | `string -> unit` | 줄바꿈 없이 출력 |
@@ -563,7 +563,7 @@ Prelude 함수와는 별도로, FunLang에는 내장 환경(`initialBuiltinEnv`)
 이들은 REPL과 파일 모드 모두에서 동작합니다:
 
 ```
-funlang> string_length "hello"
+funlang> String.length "hello"
 5
 
 funlang> to_string 42
@@ -587,7 +587,7 @@ funlang> to_string (Some [1; 2; 3])
 | Prelude 타입 클래스 | `Prelude/Typeclass.fun` | `show`, `eq` — 타입 클래스와 기본 타입 인스턴스 ([23장](23-typeclasses.md) 참조) |
 | Prelude 모듈 | `Prelude/*.fun` 파일 | `String.trim`, `Char.IsDigit`, `Array.sort`, `HashSet.create`, `Queue.create`, `MutableList.create`, `StringBuilder.create` 등 |
 | Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
-| 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
+| 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `string_concat`, `string_sub`, `string_contains`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
 | 산술 연산자 | 내장 | `+`, `-`, `*`, `/`, `%` (모듈로) |
 
 두 분류 모두 런타임에 실제로 동작하며, REPL과 파일 모드에서 import 없이 사용 가능합니다.
@@ -597,5 +597,5 @@ funlang> to_string (Some [1; 2; 3])
 - **Prelude 파일**은 `Prelude/` 디렉토리에서 의존성 순서로 자동 로드되는 `.fun` 파일입니다
 - **Prelude 생성자** (`None`, `Some`)와 **Prelude 함수** (`map`, `filter` 등)는 `open` 없이 사용 가능합니다
 - **Prelude 함수**는 모두 실제 런타임 함수로, 호출하면 정상적으로 결과를 반환합니다
-- **런타임 내장 함수** (`print`, `string_length` 등)는 어디서든 동작합니다
+- **런타임 내장 함수** (`print`, `string_length` 등)와 Prelude 래퍼 (`String.length`, `String.contains` 등)는 어디서든 동작합니다
 - **패턴 매칭**은 파일 모드에서 Prelude 타입에 대해 동작합니다

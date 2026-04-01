@@ -237,7 +237,7 @@ Some 5
 ```
 $ cat result_use.l3
 let validateAge age = if age < 0 then Error "age cannot be negative" else if age > 150 then Error "age too large" else Ok age
-let validateName name = if string_length name = 0 then Error "name cannot be empty" else Ok name
+let validateName name = if String.length name = 0 then Error "name cannot be empty" else Ok name
 
 let validate name = fun age -> validateName name |> resultBind (fun _ -> validateAge age |> resultMap (fun a -> name + " (" + to_string a + ")"))
 

@@ -114,7 +114,7 @@ type Either 'a 'b =
 let result =
     match Left 42 with
     | Left n -> n
-    | Right s -> string_length s
+    | Right s -> String.length s
 
 $ funlang either.l3
 42

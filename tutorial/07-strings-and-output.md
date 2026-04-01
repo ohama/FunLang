@@ -27,69 +27,71 @@ funlang> "hello" + " " + "world"
 
 FunLang에서 `+`는 정수 덧셈과 문자열 연결 모두에 사용됩니다. 타입 추론 덕분에 컴파일러가 문맥에서 어떤 `+`인지 판단합니다. 단, 정수와 문자열을 섞어 쓰면 타입 오류가 발생합니다 — `"age: " + 30`은 안 되고, `"age: " + to_string 30`이 필요합니다.
 
-## 내장 문자열 함수
+## 문자열 함수
 
-FunLang는 자주 쓰이는 문자열 연산을 내장 함수로 제공합니다. 각 함수의 동작 방식과 언제 사용하면 좋은지 함께 살펴봅니다.
+FunLang는 자주 쓰이는 문자열 연산을 Prelude의 `String` 모듈과 `^^` 연산자로 제공합니다. 각 함수의 동작 방식과 언제 사용하면 좋은지 함께 살펴봅니다.
 
-### string_length
+> **참고:** 이 함수들은 내부적으로 `string_length`, `string_sub`, `string_concat`, `string_contains` 등의 raw builtin 함수를 기반으로 합니다. raw builtin을 직접 호출할 수도 있지만, 일반적으로는 `String` 모듈 함수와 `^^` 연산자를 사용하는 것을 권장합니다.
+
+### String.length
 
 문자 수를 반환합니다:
 
 ```
-funlang> string_length "hello"
+funlang> String.length "hello"
 5
 
-funlang> string_length ""
+funlang> String.length ""
 0
 ```
 
 빈 문자열의 길이는 0입니다. 인덱스 범위 검사나 반복 횟수 계산에 자주 쓰입니다.
 
-### string_concat
+### `^^` 연산자 (문자열 연결)
 
-커링된 연결 함수 -- 두 개의 문자열을 받습니다:
+`^^` 연산자로 두 문자열을 연결합니다 (Core 모듈에서 제공):
 
 ```
-funlang> string_concat "hello" " world"
+funlang> "hello" ^^ " world"
 "hello world"
 ```
 
-`+` 연산자와 결과는 같지만, `string_concat`이 커링 함수라는 점이 다릅니다. 커링되어 있으므로 부분 적용이 가능합니다:
+`+` 연산자와 결과는 같지만, `^^`는 문자열 전용 연결 연산자라는 점이 다릅니다. 람다와 함께 사용하면 접두사를 붙이는 함수를 만들 수 있습니다:
 
 ```
 $ cat prefix.l3
-let add_prefix = string_concat "prefix:"
+let add_prefix = fun s -> "prefix:" ^^ s
 let result = add_prefix "value"
 
 $ funlang prefix.l3
 "prefix:value"
 ```
 
-`string_concat "prefix:"`는 "앞에 'prefix:'를 붙이는 함수"를 반환합니다. 이렇게 만든 `add_prefix`를 파이프라인에서 재사용할 수 있습니다. 예를 들어 리스트의 모든 항목에 접두사를 붙이거나, 고차 함수에 인자로 전달할 때 편리합니다.
+`fun s -> "prefix:" ^^ s`는 "앞에 'prefix:'를 붙이는 함수"입니다. 이렇게 만든 `add_prefix`를 파이프라인에서 재사용할 수 있습니다. 예를 들어 리스트의 모든 항목에 접두사를 붙이거나, 고차 함수에 인자로 전달할 때 편리합니다.
 
-### string_sub
+### String.substring
 
 시작 인덱스와 길이로 부분 문자열을 추출합니다:
 
 ```
-funlang> string_sub "hello" 1 3
+funlang> String.substring "hello" 1 3
 "ell"
 ```
 
-`string_sub s start len`은 인덱스 `start`부터 `len`개의 문자를 반환합니다.
+`String.substring s start len`은 인덱스 `start`부터 `len`개의 문자를 반환합니다.
 인덱스는 0부터 시작합니다.
 
-Python의 슬라이싱 `s[1:4]`와 비슷하지만, 끝 인덱스가 아니라 길이를 지정한다는 점에 주의하세요. Python에서 `s[1:4]`는 인덱스 1부터 3까지 3개의 문자를 가져오지만, FunLang에서는 `string_sub s 1 3`으로 동일한 결과를 얻습니다. `start + len`이 문자열 길이를 초과하지 않도록 주의하세요.
+Python의 슬라이싱 `s[1:4]`와 비슷하지만, 끝 인덱스가 아니라 길이를 지정한다는 점에 주의하세요. Python에서 `s[1:4]`는 인덱스 1부터 3까지 3개의 문자를 가져오지만, FunLang에서는 `String.substring s 1 3`으로 동일한 결과를 얻습니다. `start + len`이 문자열 길이를 초과하지 않도록 주의하세요.
 
-### string_contains
+### String.contains
 
 문자열이 부분 문자열을 포함하는지 확인합니다:
 
 ```
-funlang> string_contains "hello world" "world"
+funlang> String.contains "hello world" "world"
 true
 
-funlang> string_contains "hello" "xyz"
+funlang> String.contains "hello" "xyz"
 false
 ```
 
@@ -256,7 +258,7 @@ $ funlang sprintf_vs.l3
 
 ## 문자열 슬라이싱 (String Slicing)
 
-`string_sub`보다 간결한 슬라이싱 구문을 제공합니다. `s.[start..stop]`은 인덱스 `start`부터 `stop`까지(양쪽 포함)의 부분 문자열을 반환합니다:
+`String.substring`보다 간결한 슬라이싱 구문을 제공합니다. `s.[start..stop]`은 인덱스 `start`부터 `stop`까지(양쪽 포함)의 부분 문자열을 반환합니다:
 
 ```
 $ cat str_slice.l3
@@ -289,7 +291,7 @@ world
 ()
 ```
 
-`string_sub`가 시작+길이를 사용하는 반면, 슬라이싱은 시작+끝 인덱스를 사용합니다. Python의 `s[1:4]`와 비슷하지만 끝 인덱스가 포함(inclusive)된다는 차이가 있습니다.
+`String.substring`이 시작+길이를 사용하는 반면, 슬라이싱은 시작+끝 인덱스를 사용합니다. Python의 `s[1:4]`와 비슷하지만 끝 인덱스가 포함(inclusive)된다는 차이가 있습니다.
 
 ## String 모듈 함수
 
@@ -317,8 +319,9 @@ spaces
 | `String.endsWith s suffix` | 문자열이 suffix로 끝나는지 확인 |
 | `String.startsWith s prefix` | 문자열이 prefix로 시작하는지 확인 |
 | `String.trim s` | 양쪽 공백 제거 |
-| `String.length s` | 문자열 길이 (`string_length`와 동일) |
-| `String.contains s needle` | 부분 문자열 포함 여부 (`string_contains`와 동일) |
+| `String.length s` | 문자열 길이 |
+| `String.substring s start len` | 부분 문자열 추출 |
+| `String.contains s needle` | 부분 문자열 포함 여부 |
 | `String.concat sep lst` | 구분자로 문자열 리스트를 연결 |
 
 ## StringBuilder
@@ -389,7 +392,7 @@ third
 문자열 함수는 파이프 연산자와 자연스럽게 결합됩니다:
 
 ```
-funlang> "hello" |> string_length
+funlang> "hello" |> String.length
 5
 ```
 
@@ -397,13 +400,13 @@ funlang> "hello" |> string_length
 
 ```
 $ cat string_pipe.l3
-let result = 42 |> to_string |> string_concat "answer: "
+let result = 42 |> to_string |> fun s -> "answer: " ^^ s
 
 $ funlang string_pipe.l3
 "answer: 42"
 ```
 
-`42 |> to_string`은 `"42"`를 만들고, `|> string_concat "answer: "`는 앞서 부분 적용된 `string_concat "answer: "`에 `"42"`를 전달하여 `"answer: 42"`를 만듭니다. 파이프와 커링이 함께 쓰이는 전형적인 패턴입니다. 변환 단계가 많을수록 파이프라인 방식이 중첩 함수 호출보다 훨씬 읽기 좋습니다.
+`42 |> to_string`은 `"42"`를 만들고, `|> fun s -> "answer: " ^^ s`는 `"answer: "`와 `"42"`를 `^^`로 연결하여 `"answer: 42"`를 만듭니다. 파이프와 람다가 함께 쓰이는 전형적인 패턴입니다. 변환 단계가 많을수록 파이프라인 방식이 중첩 함수 호출보다 훨씬 읽기 좋습니다.
 
 ## 실용 예제: 형식화된 보고서
 
@@ -429,8 +432,8 @@ height: 600
 
 이 장에서 다룬 함수들의 핵심 특징을 정리합니다:
 
-- **`string_sub`는 시작+길이를 사용합니다** (시작+끝이 아님): `string_sub "hello" 1 3` = `"ell"`
-- **`string_concat`는 커링되어 있습니다:** `string_concat "prefix"`는 함수를 반환합니다
+- **`String.substring`은 시작+길이를 사용합니다** (시작+끝이 아님): `String.substring "hello" 1 3` = `"ell"`
+- **`^^`는 문자열 연결 연산자입니다:** `"hello" ^^ " world"` = `"hello world"`
 - **`to_string`**은 모든 타입을 받습니다 — 문자열은 그대로, 복합 타입은 구조적 표현
 - **`printf`**는 커링되어 있습니다: 각 `%` 지정자가 하나의 추가 인자를 소비합니다
 - **순서 지정:** 모듈 수준에서 부수 효과를 체이닝하려면 `let _ =`를 사용하세요

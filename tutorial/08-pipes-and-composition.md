@@ -34,18 +34,18 @@ $ funlang pipe_chain.l3
 파이프는 사용자 정의 함수뿐만 아니라 내장 함수와도 함께 동작합니다:
 
 ```
-funlang> "hello" |> string_length
+funlang> "hello" |> String.length
 5
 ```
 
-커링된 내장 함수는 파이프와 자연스럽게 결합됩니다. FunLang의 내장 함수들은 모두 커링을 지원하므로, 인자를 부분적으로 적용한 뒤 파이프로 연결할 수 있습니다:
+Prelude 연산자도 파이프와 자연스럽게 결합됩니다. 예를 들어 `^^` 연산자로 문자열을 연결할 수 있습니다:
 
 ```
-funlang> "world" |> string_concat "hello "
+funlang> "hello " ^^ "world"
 "hello world"
 ```
 
-`string_concat "hello "`는 하나의 인자만 받은 부분 적용 함수입니다. 이 함수가 파이프를 통해 `"world"`를 두 번째 인자로 받아 최종 결과를 만들어냅니다. 이 패턴이 익숙해지면, 데이터 변환 파이프라인을 마치 레고 블록 쌓듯 구성할 수 있게 됩니다.
+이 패턴이 익숙해지면, 데이터 변환 파이프라인을 마치 레고 블록 쌓듯 구성할 수 있게 됩니다.
 
 ## 람다와 파이프
 
@@ -156,7 +156,7 @@ $ funlang comp_example.l3
 
 ```
 $ cat pipeline.l3
-let result = 42 |> to_string |> string_concat "answer: "
+let result = "answer: " ^^ to_string 42
 
 $ funlang pipeline.l3
 "answer: 42"
@@ -166,7 +166,7 @@ $ funlang pipeline.l3
 
 ```
 $ cat formatter.l3
-let format_num = to_string >> string_concat "value="
+let format_num x = "value=" ^^ to_string x
 let result = format_num 99
 
 $ funlang formatter.l3
