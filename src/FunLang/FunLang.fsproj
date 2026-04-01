@@ -39,6 +39,19 @@
     <AssemblyName>fn</AssemblyName>
   </PropertyGroup>
 
+  <!-- Release optimizations (dotnet build -c Release) -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <TieredPGO>true</TieredPGO>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <!-- Publish optimizations (dotnet publish -c Release) -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- 1. AST definitions (manually written) -->
     <Compile Include="Ast.fs" />
