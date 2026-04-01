@@ -1,5 +1,5 @@
 // Test: E0313 Field access on non-record type
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- ExitCode: 1
 // --- Stderr:
 error[E0313]: Cannot access field on non-record type int

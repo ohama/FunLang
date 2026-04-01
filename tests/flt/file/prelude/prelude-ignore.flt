@@ -1,5 +1,5 @@
 // Test: Prelude ignore function returns unit
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = ignore 42
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: constant function ignores second argument
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let k = fun x -> fun y -> x in k 42 99
 // --- Output:

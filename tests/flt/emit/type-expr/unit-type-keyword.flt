@@ -1,4 +1,4 @@
 // Test: () literal has type unit
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr "()"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-type --expr "()"
 // --- Output:
 unit

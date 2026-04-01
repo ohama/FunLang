@@ -1,5 +1,5 @@
 // Test FORIN-03: loop variable is immutable — assignment produces E0320
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ =
     for x in [1; 2; 3] do

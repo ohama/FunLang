@@ -1,4 +1,4 @@
 // Test: --emit-ast for Cons expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "1 :: 2 :: []"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "1 :: 2 :: []"
 // --- Output:
 Cons (Number 1, Cons (Number 2, EmptyList))

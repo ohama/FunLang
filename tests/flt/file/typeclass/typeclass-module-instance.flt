@@ -1,5 +1,5 @@
 // Test: instance declared inside module is accessible globally (Bug 2/5 fix)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 typeclass Render 'a =
     | render : 'a -> string

@@ -1,5 +1,5 @@
 // Test: record update on nested inner record
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Inner = { value: int }
 type Outer = { inner: Inner; name: string }

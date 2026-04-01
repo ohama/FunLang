@@ -1,5 +1,5 @@
 // Test: Prelude List.map qualified access
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = List.map (fun x -> x * 3) [1; 2; 3]
 // --- Output:

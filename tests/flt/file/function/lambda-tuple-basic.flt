@@ -1,5 +1,5 @@
 // Test: basic tuple parameter lambda
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let add = fun (x, y) -> x + y
 let r1 = add (1, 2)

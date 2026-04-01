@@ -1,4 +1,4 @@
 // Test: --emit-ast for LetRec expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "let rec f x = f x in f 1"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "let rec f x = f x in f 1"
 // --- Output:
 LetRec (f x = App (Var "f", Var "x")) in App (Var "f", Number 1)

@@ -1,5 +1,5 @@
 // Test: match result into let, then continue chain
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let grade = match 85 with | s when s >= 90 -> "A" | s when s >= 80 -> "B" | _ -> "C"

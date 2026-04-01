@@ -1,5 +1,5 @@
 // Test: E0307 Unbound field — accessing nonexistent record field
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- ExitCode: 1
 // --- Stderr:
 error[E0307]: Record type P has no field named 'z'

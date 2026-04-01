@@ -1,5 +1,5 @@
 // Test: Char.IsUpper, Char.IsLower, Char.ToLower completeness (STR-02)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = println (to_string (Char.IsUpper 'A'))
 let _ = println (to_string (Char.IsUpper 'a'))

@@ -1,5 +1,5 @@
 // Test: identity function
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let id = fun x -> x in id 42
 // --- Output:

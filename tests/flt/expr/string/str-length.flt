@@ -1,5 +1,5 @@
 // Test: String.length returns the number of characters in a string
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = String.length "hello"
 // --- Output:

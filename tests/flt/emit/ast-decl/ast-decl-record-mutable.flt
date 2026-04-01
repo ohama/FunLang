@@ -1,5 +1,5 @@
 // Test: --emit-ast for record type with mutable field
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 type Counter = { mutable count: int }
 // --- Output:

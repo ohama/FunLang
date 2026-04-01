@@ -1,5 +1,5 @@
 // Test: let _ = expr at module level enables sequencing; result comes from last binding
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let x = 10
 let _ = x

@@ -1,5 +1,5 @@
 // Test: to_string converts bool to string
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = to_string true
 // --- Output:

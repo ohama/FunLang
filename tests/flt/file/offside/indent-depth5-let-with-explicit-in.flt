@@ -1,5 +1,5 @@
 // Test: mixed explicit and implicit 'in' at depth 5
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let a = 1

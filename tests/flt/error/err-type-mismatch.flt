@@ -1,5 +1,5 @@
 // Test: type mismatch error when adding int and bool
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --expr "1 + true"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --expr "1 + true"
 // --- ExitCode: 1
 // --- Stderr:
 error[E0301]: Type mismatch: expected int but got bool

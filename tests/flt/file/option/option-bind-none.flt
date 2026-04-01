@@ -1,5 +1,5 @@
 // Test: Option bind returns None on division by zero
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let optionBind f opt = match opt with
 | Some x -> f x

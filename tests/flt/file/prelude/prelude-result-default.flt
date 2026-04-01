@@ -1,5 +1,5 @@
 // Test: Prelude resultDefault and isOk/isError
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = resultDefault 0 (Ok 42)
 let r2 = resultDefault 0 (Error "x")

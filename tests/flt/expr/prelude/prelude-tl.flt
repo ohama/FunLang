@@ -1,5 +1,5 @@
 // Test: tail of a list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let tl = fun xs -> match xs with | _ :: rest -> rest in tl [10; 20; 30]
 // --- Output:

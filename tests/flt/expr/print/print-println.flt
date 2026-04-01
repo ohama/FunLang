@@ -1,5 +1,5 @@
 // Test: println writes string to stdout with newline and returns unit
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = println "hello"
 // --- Output:

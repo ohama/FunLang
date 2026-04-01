@@ -1,5 +1,5 @@
 // Test: --emit-type for exception declarations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-type %input
 // --- Input:
 exception NotFound
 

@@ -1,5 +1,5 @@
 // Test: nested let mut variables with independent scopes
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let mut x = 1 in let mut y = 10 in let _ = x <- 2 in let _ = y <- 20 in x + y
 // --- Output:

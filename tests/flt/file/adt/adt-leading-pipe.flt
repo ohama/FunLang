@@ -1,5 +1,5 @@
 // Test: ADT with leading pipe and indented constructors
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Dir =
     | North

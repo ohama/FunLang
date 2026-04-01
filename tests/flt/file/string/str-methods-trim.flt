@@ -1,5 +1,5 @@
 // Test: Trim() string method (STR-01)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let trimmed = String.trim " hi "
 let _ = println trimmed

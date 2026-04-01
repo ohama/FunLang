@@ -1,5 +1,5 @@
 // Test: unknown class name in constraint annotation produces E0703 (Bug 7 fix)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --check %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --check %input
 // --- Input:
 let f : Nonexistent 'a => 'a -> string = fun x -> to_string x
 // --- ExitCode: 1

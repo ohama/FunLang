@@ -1,5 +1,5 @@
 // Test: E0501 Circular module dependency
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- ExitCode: 1
 // --- Stderr:
 error[E0501]: Circular module dependency: A -> B -> A

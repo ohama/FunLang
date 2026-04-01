@@ -1,5 +1,5 @@
 // Test: PARAM-01 mixed annotated and plain params in let declarations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let f (x : int) y (z : bool) = if z then x else y
 let g (a : string) (b : string) = a ^^ b

@@ -1,5 +1,5 @@
 // Test: Prelude const function
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let always42 = const 42
 let r1 = always42 "ignored"

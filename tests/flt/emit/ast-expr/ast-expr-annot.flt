@@ -1,4 +1,4 @@
 // Test: --emit-ast for Annot expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "(1 + 2 : int)"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "(1 + 2 : int)"
 // --- Output:
 Annot (Add (Number 1, Number 2), TEInt)

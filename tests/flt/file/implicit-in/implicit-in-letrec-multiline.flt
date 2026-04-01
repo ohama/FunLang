@@ -1,5 +1,5 @@
 // Test: implicit in -- let rec + multiline fun -> + body
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let sorted =
     let rec filter pred = fun xs ->

@@ -1,5 +1,5 @@
 // Test: Prelude optionIter applies function to Some, skips None
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = optionIter (fun x -> println (to_string x)) (Some 42)
 let _ = optionIter (fun x -> println (to_string x)) None

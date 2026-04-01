@@ -1,5 +1,5 @@
 // Test: ++ operator with list ranges
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = [1..3] ++ [10..13] ++ [20..22]
 // --- Output:

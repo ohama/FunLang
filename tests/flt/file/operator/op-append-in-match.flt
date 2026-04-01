@@ -1,5 +1,5 @@
 // Test: ++ operator used inside match body
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let combine xs = match xs with | [] -> [0] | _ -> xs ++ [99]
 let r1 = combine [1; 2]

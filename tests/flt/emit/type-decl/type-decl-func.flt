@@ -1,5 +1,5 @@
 // Test: --emit-type for function declarations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-type %input
 // --- Input:
 let add x y = x + y
 

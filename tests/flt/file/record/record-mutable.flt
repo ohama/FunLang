@@ -1,5 +1,5 @@
 // Test: mutable record field assignment
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Counter = { mutable count: int }
 

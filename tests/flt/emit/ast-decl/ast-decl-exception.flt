@@ -1,5 +1,5 @@
 // Test: --emit-ast for simple exception declaration
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 exception NotFound
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: implicit in — let rec without explicit in
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let rec fact n = if n <= 1 then 1 else n * fact (n - 1)

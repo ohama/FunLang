@@ -1,5 +1,5 @@
 // Test: Hashtable module API — tryGetValue, count, keys (COLL-05, PROP-02, PROP-03)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ht = Hashtable.create ()
 let _ = Hashtable.set ht "x" 42

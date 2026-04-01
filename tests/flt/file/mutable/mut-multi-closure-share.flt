@@ -1,5 +1,5 @@
 // Test: multiple closures share same mutable variable
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let mut x = 0
 let inc y = x <- x + 1

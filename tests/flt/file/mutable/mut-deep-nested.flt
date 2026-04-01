@@ -1,5 +1,5 @@
 // Test: deeply nested let mut (3 levels)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let mut a = 1

@@ -1,5 +1,5 @@
 // Test: basic range [1..5] generates list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = [1..5]
 // --- Output:

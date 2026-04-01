@@ -1,4 +1,4 @@
 // Test: --emit-ast for LambdaAnnot expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "fun (x: int) -> x + 1"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "fun (x: int) -> x + 1"
 // --- Output:
 LambdaAnnot ("x", TEInt, Add (Var "x", Number 1))

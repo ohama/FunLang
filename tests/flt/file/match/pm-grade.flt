@@ -1,5 +1,5 @@
 // Test: when guards for range classification
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let grade score =
     match score with

@@ -1,5 +1,5 @@
 // Test: mutable variable passed to function — function gets value, not ref
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let add10 n = n + 10
 let mut x = 5

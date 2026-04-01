@@ -1,5 +1,5 @@
 // Test: simple ADT declaration and constructor usage
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Color =
     | Red

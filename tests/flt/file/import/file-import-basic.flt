@@ -1,5 +1,5 @@
 // Test: open "lib.fun" imports bindings from an external file
-// --- Command: bash -c 'printf "let add x y = x + y\n" > /tmp/flt-import-lib.fun && src/FunLang/bin/Release/net10.0/FunLang %input'
+// --- Command: bash -c 'printf "let add x y = x + y\n" > /tmp/flt-import-lib.fun && src/FunLang/bin/Release/net10.0/fn %input'
 // --- Input:
 open "/tmp/flt-import-lib.fun"
 let result = add 3 4

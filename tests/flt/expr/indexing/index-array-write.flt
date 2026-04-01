@@ -1,5 +1,5 @@
 // Test IDX-02: arr.[i] <- v writes array element
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.create 3 0
 let _ = arr.[0] <- 42

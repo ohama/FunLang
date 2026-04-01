@@ -1,5 +1,5 @@
 // Test: Prelude map function
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = map (fun x -> x * 2) [1; 2; 3; 4; 5]
 // --- Output:

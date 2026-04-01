@@ -1,5 +1,5 @@
 // Test: mutable variable reassignment and read
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let mut x = 1 in let _ = x <- 99 in x
 // --- Output:

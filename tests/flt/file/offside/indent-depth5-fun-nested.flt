@@ -1,5 +1,5 @@
 // Test: deeply nested lambda (fun) with let bindings (depth 5)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let make_adder = fun base ->
     let offset =

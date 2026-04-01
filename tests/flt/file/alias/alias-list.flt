@@ -1,5 +1,5 @@
 // Test: list type alias (type IntList = int list) with list operations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type IntList = int list
 let xs = [10; 20; 30]

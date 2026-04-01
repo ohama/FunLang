@@ -1,5 +1,5 @@
 // Test: find maximum element in a list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let rec maxList xs = match xs with | x :: [] -> x | x :: rest -> let m = maxList rest in if x > m then x else m

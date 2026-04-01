@@ -1,5 +1,5 @@
 // Test: negative integer pattern matching
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let classify n =
     match n with

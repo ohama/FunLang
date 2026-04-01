@@ -1,5 +1,5 @@
 // Test: printf with %s specifier formats a string without quotes
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = printf "%s" "hi"
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: short-circuit OR does not evaluate right side when left is true
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = true || (1 / 0 = 0)
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: multiple exception handlers selecting correct one
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 exception NotFound
 exception InvalidArg of string

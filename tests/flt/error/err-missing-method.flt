@@ -1,5 +1,5 @@
 // Test: E0705 Missing method — instance missing required class method
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- ExitCode: 1
 // --- Stderr:
 error[E0705]: Instance missing required method: display

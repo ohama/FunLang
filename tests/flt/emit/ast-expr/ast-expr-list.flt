@@ -1,4 +1,4 @@
 // Test: --emit-ast for EmptyList expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "[]"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "[]"
 // --- Output:
 EmptyList

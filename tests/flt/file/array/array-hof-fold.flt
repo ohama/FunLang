@@ -1,5 +1,5 @@
 // Test: Array.fold accumulates result across all elements (TST-20)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.ofList [1; 2; 3; 4; 5]
 let sum = Array.fold (fun acc -> fun x -> acc + x) 0 arr

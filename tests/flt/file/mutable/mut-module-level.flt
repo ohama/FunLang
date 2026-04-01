@@ -1,5 +1,5 @@
 // Test: module-level mutable variable declaration and reassignment
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let mut x = 0
 let _ = x <- 42

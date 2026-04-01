@@ -1,5 +1,5 @@
 // Test: printf with all format specifiers in one call
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = printf "%d %s %b %%\n" 42 "hi" true
 let result = 0

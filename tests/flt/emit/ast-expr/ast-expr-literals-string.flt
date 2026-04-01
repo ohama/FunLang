@@ -1,4 +1,4 @@
 // Test: --emit-ast for String literal
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr '"hello"'
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr '"hello"'
 // --- Output:
 String "hello"

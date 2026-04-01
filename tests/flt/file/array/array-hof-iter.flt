@@ -1,5 +1,5 @@
 // Test: Array.iter applies function to each element in order (TST-20)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.ofList [1; 2; 3]
 let _ = Array.iter (fun x -> println (to_string x)) arr

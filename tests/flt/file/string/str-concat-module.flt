@@ -1,5 +1,5 @@
 // Test: String.concat module function (STR-03)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = String.concat ", " ["a"; "b"; "c"]
 let _ = println result

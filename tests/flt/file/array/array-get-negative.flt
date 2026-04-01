@@ -1,5 +1,5 @@
 // Test: Negative index for Array.get raises catchable exception
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.ofList [10; 20; 30]
 let neg = 0 - 1

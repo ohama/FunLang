@@ -1,4 +1,4 @@
 // Test: --emit-ast pattern: tuple destructuring (TuplePat)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match (1, 2) with | (a, b) -> a"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "match (1, 2) with | (a, b) -> a"
 // --- Output:
 Match (Tuple [Number 1, Number 2], [(TuplePat [VarPat "a", VarPat "b"], Var "a")])

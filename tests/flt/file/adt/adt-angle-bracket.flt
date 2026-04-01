@@ -1,5 +1,5 @@
 // Test: ADT declaration with angle bracket type params (GEN-01)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Result<'a> = Ok of 'a | Error of string
 let extract item = match item with | Ok v -> v | Error _ -> 0

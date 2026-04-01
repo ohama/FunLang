@@ -1,5 +1,5 @@
 // Test: Prelude Result type basic usage
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = Ok 42
 let r2 = Error "oops"

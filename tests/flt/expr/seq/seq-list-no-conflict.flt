@@ -1,5 +1,5 @@
 // Test: list literals [1; 2; 3] continue to parse unchanged (no conflict with sequencing)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let lst = [1; 2; 3]
 // --- Output:

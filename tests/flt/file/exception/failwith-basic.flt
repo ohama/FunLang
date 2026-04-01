@@ -1,5 +1,5 @@
 // Test: failwith raises uncaught exception with message
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = failwith "something went wrong"
 // --- ExitCode: 1

@@ -1,5 +1,5 @@
 // Test: dir_files returns list of files in a directory
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = write_file "/tmp/flt-dirfiles-test.txt" "data"
 let files = dir_files "/tmp"

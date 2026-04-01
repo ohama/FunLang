@@ -1,5 +1,5 @@
 // Test: balanced parentheses checker using integer encoding
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let rec check depth = fun cs ->

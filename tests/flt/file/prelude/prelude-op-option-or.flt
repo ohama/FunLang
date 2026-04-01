@@ -1,5 +1,5 @@
 // Test: Prelude <|> operator for Option alternative
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = None <|> Some 42
 let r2 = Some 1 <|> Some 99

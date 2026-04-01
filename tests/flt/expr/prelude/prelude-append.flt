@@ -1,5 +1,5 @@
 // Test: append two lists
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let rec app xs = fun ys -> match xs with | [] -> ys | x :: rest -> x :: app rest ys in app [1; 2] [3; 4]
 // --- Output:

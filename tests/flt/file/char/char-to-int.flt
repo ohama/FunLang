@@ -1,5 +1,5 @@
 // Test: char_to_int converts char to its ASCII integer value
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = char_to_int 'A'
 // --- Output:

@@ -1,5 +1,5 @@
 // Test: mixed Prelude operators in pipeline
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
 

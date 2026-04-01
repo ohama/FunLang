@@ -1,4 +1,4 @@
 // Test: --emit-ast pattern: cons destructuring (ConsPat)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match [1] with | x :: xs -> x | [] -> 0"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "match [1] with | x :: xs -> x | [] -> 0"
 // --- Output:
 Match (List [Number 1], [(ConsPat (VarPat "x", VarPat "xs"), Var "x"); (EmptyListPat, Number 0)])

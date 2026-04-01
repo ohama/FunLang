@@ -1,5 +1,5 @@
 // Test IDX-04: ht.[key] <- v writes hashtable value
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ht = Hashtable.create ()
 let _ = ht.["name"] <- "Alice"

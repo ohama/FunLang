@@ -1,5 +1,5 @@
 // Test: Char.IsDigit and Char.ToUpper module functions (STR-02)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = println (to_string (Char.IsDigit '3'))
 let _ = println (to_string (Char.IsDigit 'a'))

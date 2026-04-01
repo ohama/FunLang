@@ -1,5 +1,5 @@
 // Test: filter function over a list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let rec filter f = fun xs -> match xs with | [] -> [] | x :: rest -> if f x then x :: filter f rest else filter f rest in filter (fun x -> x > 2) [1; 2; 3; 4]
 // --- Output:

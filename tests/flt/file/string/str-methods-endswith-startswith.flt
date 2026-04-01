@@ -1,5 +1,5 @@
 // Test: EndsWith and StartsWith string methods (STR-01)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = println (to_string (String.endsWith "hello.txt" ".txt"))
 let _ = println (to_string (String.endsWith "hello.txt" ".csv"))

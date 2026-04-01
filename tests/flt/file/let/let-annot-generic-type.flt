@@ -1,5 +1,5 @@
 // Test: Generic type variables in let declaration annotations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let id (x : 'a) : 'a = x
 let const_ (x : 'a) (y : 'b) : 'a = x

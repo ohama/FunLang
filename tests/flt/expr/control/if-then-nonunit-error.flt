@@ -1,5 +1,5 @@
 // Test IFTHEN-02: if-then without else with non-unit then-branch produces type error
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = if true then 42
 // --- ExitCode: 1

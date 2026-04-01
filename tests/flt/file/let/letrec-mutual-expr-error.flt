@@ -1,5 +1,5 @@
 // Test: type errors in expression-level mutual recursion
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --expr "let rec f (x : int) = g true and g (y : int) = f y in f 1"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --expr "let rec f (x : int) = g true and g (y : int) = f y in f 1"
 // --- ExitCode: 1
 // --- Stderr:
 error[E0301]: Type mismatch: expected int but got bool

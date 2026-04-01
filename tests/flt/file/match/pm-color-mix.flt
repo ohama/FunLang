@@ -1,5 +1,5 @@
 // Test: pattern matching on tuple of ADTs (color mixing)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Color =
     | Red

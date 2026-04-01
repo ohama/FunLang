@@ -1,4 +1,4 @@
 // Test: --emit-ast for forward composition
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr 'f >> g'
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr 'f >> g'
 // --- Output:
 ComposeRight (Var "f", Var "g")

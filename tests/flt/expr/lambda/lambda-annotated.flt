@@ -1,5 +1,5 @@
 // Test: curried annotated lambda parameters
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let f = fun (x: int) (y: int) -> x + y in f 3 4
 // --- Stdout:

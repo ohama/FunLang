@@ -1,5 +1,5 @@
 // Test: Prelude fold function (sum)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = fold (fun acc -> fun x -> acc + x) 0 [1..10]
 // --- Output:

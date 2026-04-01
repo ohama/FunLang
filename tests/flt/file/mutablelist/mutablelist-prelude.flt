@@ -1,5 +1,5 @@
 // Test: MutableList Prelude module functions (COLL-04)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ml = MutableList.create ()
 let _ = MutableList.add ml "a"

@@ -1,5 +1,5 @@
 // Test: Option map function using Prelude Option
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let optionMap f opt = match opt with
 | Some x -> Some (f x)

@@ -1,5 +1,5 @@
 // Test: multi-param let with implicit in
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let double x = x * 2

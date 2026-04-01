@@ -1,5 +1,5 @@
 // Test: eprintfn writes formatted output to stderr (STR-04)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = eprintfn "done"
 let _ = eprintfn "error: %s" "oops"

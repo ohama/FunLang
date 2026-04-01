@@ -1,5 +1,5 @@
 // Test: Collection -> ofSeq -> sort pipeline (PRE-04, PRE-05, PRE-01)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ml = MutableList.create ()
 let _ = MutableList.add ml 30

@@ -1,5 +1,5 @@
 // Test: v13.0 String module extensions
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = println (to_string (String.split "a,b,c" ","))
 let _ = println (to_string (String.indexOf "hello world" "world"))

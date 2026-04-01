@@ -1,5 +1,5 @@
 // Test: --emit-ast for record operations (create, field access, copy-update)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 type Point = { x: int; y: int }
 let p = { x = 1; y = 2 }

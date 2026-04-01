@@ -1,5 +1,5 @@
 // Test: min/max with fold for list min/max
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let listMin xs = fold min (hd xs) (tl xs)
 let listMax xs = fold max (hd xs) (tl xs)

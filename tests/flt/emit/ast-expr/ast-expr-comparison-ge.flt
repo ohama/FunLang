@@ -1,4 +1,4 @@
 // Test: --emit-ast for GreaterEqual expression
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "1 >= 2"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "1 >= 2"
 // --- Output:
 GreaterEqual (Number 1, Number 2)

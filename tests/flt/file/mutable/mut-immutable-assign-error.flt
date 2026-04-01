@@ -1,5 +1,5 @@
 // Test: assigning to immutable variable produces E0320 error
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let x = 5 in x <- 10
 // --- ExitCode: 1

@@ -1,5 +1,5 @@
 // Test: wildcard inside constructor pattern
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Tree =
     | Leaf

@@ -1,5 +1,5 @@
 // Test: module containing ADT with constructor matching
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 module Color =
     type T =

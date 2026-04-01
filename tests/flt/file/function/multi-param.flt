@@ -1,5 +1,5 @@
 // Test: multi-parameter function declaration
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let f x y z = x + y + z
 let result = f 1 2 4

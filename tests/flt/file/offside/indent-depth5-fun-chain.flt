@@ -1,5 +1,5 @@
 // Test: chained lambda definitions with deep nesting
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let apply3 = fun f -> fun g -> fun h -> fun x ->
     let a =

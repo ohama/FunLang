@@ -1,5 +1,5 @@
 // Test IDX-05: matrix.[r].[c] chained indexing
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let row0 = Array.create 2 0
 let row1 = Array.create 2 0

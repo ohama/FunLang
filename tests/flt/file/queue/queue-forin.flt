@@ -1,5 +1,5 @@
 // Test: for-in iteration over Queue (LANG-03)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let q = Queue.create ()
 let _ = Queue.enqueue q 1

@@ -1,5 +1,5 @@
 // Test: Array.create and Array.get, Array.length basics
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.create 3 0
 let _ = println (to_string (Array.get arr 0))

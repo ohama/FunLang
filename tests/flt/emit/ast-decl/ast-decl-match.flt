@@ -1,5 +1,5 @@
 // Test: --emit-ast for match expression with constructor patterns (file mode)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 type Color =
     | Red

@@ -1,5 +1,5 @@
 // Test: Array.map used to double elements, then verify via fold
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let src = Array.ofList [10; 20; 30]
 let doubled = Array.map (fun x -> x * 2) src

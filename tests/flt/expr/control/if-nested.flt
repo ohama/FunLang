@@ -1,5 +1,5 @@
 // Test: nested if-then-else with strings
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let x =
     if 1 > 2 then "a"

@@ -1,5 +1,5 @@
 // Test: StringBuilder .add with char value (COLL-01)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let sb = StringBuilder.create ()
 let _ = StringBuilder.add sb "hi"

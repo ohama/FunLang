@@ -1,5 +1,5 @@
 // Test: multiline expression-level let rec ... and ... in (indented form)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 // Two mutually recursive functions (multiline)
 let result1 =

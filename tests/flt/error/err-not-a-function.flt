@@ -1,5 +1,5 @@
 // Test: E0304 Not a function — applying non-function value
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --expr "let x = 42 in x 10"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --expr "let x = 42 in x 10"
 // --- ExitCode: 1
 // --- Stderr:
 error[E0304]: Type int is not a function and cannot be applied

@@ -1,5 +1,5 @@
 // Test: RET-02 combined param annotation and return type in let declarations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let isPos (x : int) : bool = x > 0
 let fmixed (x : int) y (z : bool) : int = if z then x else y

@@ -1,4 +1,4 @@
 // Test: --emit-ast for Bool literal
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "true"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "true"
 // --- Output:
 Bool true

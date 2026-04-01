@@ -2,7 +2,7 @@
 // ++ starts with + so it's INFIXOP2 (additive level, same as +)
 // *. starts with * so it's INFIXOP3 (multiplicative level, same as *)
 // *. binds tighter than ++
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let (++) a b = a + b
 let ( *. ) a b = a * b

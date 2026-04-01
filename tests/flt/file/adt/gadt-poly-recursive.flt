@@ -1,5 +1,5 @@
 // Test: recursive GADT evaluator — Add (IntLit 10, Add (IntLit 20, IntLit 12)) = 42
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Expr 'a =
     | IntLit : int -> int Expr

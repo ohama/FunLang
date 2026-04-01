@@ -1,5 +1,5 @@
 // Test: typeclass declaration with multiple methods parses both to TypeClassDecl methods list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 typeclass Eq 'a =
     | eq : 'a -> 'a -> bool

@@ -1,5 +1,5 @@
 // Test: HashSet Prelude module functions (COLL-02)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let hs = HashSet.create ()
 let _ = println (to_string (HashSet.add hs 10))

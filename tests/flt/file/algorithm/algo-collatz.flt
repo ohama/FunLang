@@ -1,5 +1,5 @@
 // Test: Collatz sequence with TCO and module-level let rec
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let rec collatz n = fun acc ->
     if n = 1 then n :: acc

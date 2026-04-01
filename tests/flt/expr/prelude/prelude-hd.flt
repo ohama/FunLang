@@ -1,5 +1,5 @@
 // Test: head of a list
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let hd = fun xs -> match xs with | x :: _ -> x in hd [10; 20; 30]
 // --- Output:

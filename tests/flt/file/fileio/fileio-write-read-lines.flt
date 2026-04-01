@@ -1,5 +1,5 @@
 // Test: write_lines writes list as lines and read_lines reads them back
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = write_lines "/tmp/flt-fileio-lines.txt" ["line1"; "line2"; "line3"]
 let lines = read_lines "/tmp/flt-fileio-lines.txt"

@@ -1,4 +1,4 @@
 // Test: --emit-ast pattern: empty list (EmptyListPat)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match [] with | [] -> 0 | _ -> 1"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "match [] with | [] -> 0 | _ -> 1"
 // --- Output:
 Match (EmptyList, [(EmptyListPat, Number 0); (WildcardPat, Number 1)])

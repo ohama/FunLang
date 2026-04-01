@@ -1,5 +1,5 @@
 // Test: match nested inside deep let bindings (depth 5)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let x = 10

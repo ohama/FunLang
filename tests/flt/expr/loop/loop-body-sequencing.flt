@@ -1,5 +1,5 @@
 // Test LOOP-01 + SeqExpr: while loop body using ; sequencing
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let mut i = 0
 let mut acc = 0

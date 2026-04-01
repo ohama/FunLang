@@ -1,5 +1,5 @@
 // Test: deeply nested Option pattern matching (3 levels)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let deepGet opt =
     match opt with

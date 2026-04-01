@@ -1,5 +1,5 @@
 // Test: Prelude resultMap function
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = resultMap (fun x -> x * 2) (Ok 21)
 let r2 = resultMap (fun x -> x * 2) (Error "fail")

@@ -1,5 +1,5 @@
 // Test: Hashtable.get on missing key raises catchable exception
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ht = Hashtable.create ()
 let r = try Hashtable.get ht "nope" with e -> "caught"

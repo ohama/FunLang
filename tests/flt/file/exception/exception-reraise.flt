@@ -1,5 +1,5 @@
 // Test: nested try-with where inner handler misses and outer catches
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 exception A
 exception B

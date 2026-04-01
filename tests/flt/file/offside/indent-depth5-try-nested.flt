@@ -1,5 +1,5 @@
 // Test: deeply nested try-with with let bindings (depth 5)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 exception E1
 exception E2

@@ -1,5 +1,5 @@
 // Test NLSEQ-03: while body auto-sequences without explicit semicolons
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let mutable i = 0
 let _ =

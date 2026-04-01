@@ -1,5 +1,5 @@
 // Test: left composition chain
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let add1 x = x + 1
 let mul2 x = x * 2

@@ -3,6 +3,6 @@
 // The MatchClause type is Pattern * Expr option * Expr where the Expr option is the guard,
 // but formatAst binds it as _guard and does not render it.
 // This test verifies the pattern and body are correctly parsed; the guard is parsed but not shown.
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast --expr "match 5 with | x when x > 0 -> 1 | _ -> 0"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr "match 5 with | x when x > 0 -> 1 | _ -> 0"
 // --- Output:
 Match (Number 5, [(VarPat "x", Number 1); (WildcardPat, Number 0)])

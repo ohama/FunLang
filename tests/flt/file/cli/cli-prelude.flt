@@ -1,5 +1,5 @@
 // Test: --prelude flag sets Prelude directory path; Prelude functions are available
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --prelude Prelude %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --prelude Prelude %input
 // --- Input:
 let result = abs (0 - 5)
 // --- Output:

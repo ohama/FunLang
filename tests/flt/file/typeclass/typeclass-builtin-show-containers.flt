@@ -1,5 +1,5 @@
 // Test: built-in Show for bool and char — show true and show 'x' work without user instance
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let a = show true
 let b = show 'x'

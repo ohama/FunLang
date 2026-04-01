@@ -1,5 +1,5 @@
 // Test: typeclass declared in module, instance outside with open (Bug 3 fix)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 module M =
     typeclass Showable 'a =

@@ -1,5 +1,5 @@
 // Test: let rec with deep nesting (depth 5)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let rec sum_to n =

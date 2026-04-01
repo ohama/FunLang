@@ -1,5 +1,5 @@
 // Test: tail call in match expression with 1M iterations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
     let rec countdown n = match n with | 0 -> "done" | n -> countdown (n - 1)

@@ -1,4 +1,4 @@
 // Test: --emit-type let expression infers body type
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-type --expr "let x = 5 in x + 1"
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-type --expr "let x = 5 in x + 1"
 // --- Output:
 int

@@ -1,5 +1,5 @@
 // Test: lambda annotation with angle bracket generic type (GEN-02)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Box<'a> = Box of 'a
 let unbox = fun (x : Box<int>) -> match x with | Box v -> v

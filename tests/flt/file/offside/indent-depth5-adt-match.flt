@@ -1,5 +1,5 @@
 // Test: ADT pattern matching with deep nested let bindings in clauses
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type Expr = Num of int | Add of Expr * Expr | Mul of Expr * Expr
 

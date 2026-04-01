@@ -1,5 +1,5 @@
 // Test: Array.init creates array from index function (TST-20)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.init 4 (fun i -> i * i)
 let _ = println (to_string (Array.get arr 0))

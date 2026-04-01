@@ -1,5 +1,5 @@
 // Test: Prelude resultIter applies function to Ok, skips Error
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = resultIter (fun x -> println (to_string x)) (Ok 42)
 let _ = resultIter (fun x -> println (to_string x)) (Error "oops")

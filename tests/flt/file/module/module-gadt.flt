@@ -1,5 +1,5 @@
 // Test: module containing GADT type
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 module Typed =
     type Expr 'a =

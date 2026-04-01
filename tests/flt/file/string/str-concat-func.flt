@@ -1,5 +1,5 @@
 // Test: ^^ curried function in file mode
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let prefix = fun s -> "Mr. " ^^ s
 let result = prefix "Smith"

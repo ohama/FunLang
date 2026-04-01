@@ -1,5 +1,5 @@
 // Test: List.mapi, List.item, List.isEmpty, List.head, List.tail (PRE-03)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = List.mapi (fun i -> fun x -> i + x) [10; 20; 30]
 let r2 = List.item 1 [10; 20; 30]

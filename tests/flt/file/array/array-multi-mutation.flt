@@ -1,5 +1,5 @@
 // Test: Multiple sequential mutations on same array
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.create 4 0
 let _ = Array.set arr 0 10

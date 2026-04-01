@@ -1,5 +1,5 @@
 // Test: typeclass and instance declarations together parse to separate AST nodes
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang --emit-ast %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast %input
 // --- Input:
 typeclass Show 'a =
     | show : 'a -> string

@@ -1,5 +1,5 @@
 // Test: ADT structural equality (Option values)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let eq1 = if Some 1 = Some 1 then "eq" else "ne"
 let eq2 = if Some 1 = Some 2 then "eq" else "ne"

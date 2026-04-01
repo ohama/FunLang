@@ -1,5 +1,5 @@
 // Test IDX-01: arr.[i] reads array element
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.create 3 0
 let _ = Array.set arr 0 10

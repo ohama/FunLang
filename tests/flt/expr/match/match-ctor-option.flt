@@ -1,5 +1,5 @@
 // Test: nested match with wildcard and constant patterns
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = match (true, 3) with | (true, x) -> x * 10 | (false, _) -> 0
 // --- Output:

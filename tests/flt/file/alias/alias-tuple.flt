@@ -1,5 +1,5 @@
 // Test: tuple type alias (type IntPair = int * int) with destructuring
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 type IntPair = int * int
 let p = (3, 7)

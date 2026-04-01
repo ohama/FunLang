@@ -1,5 +1,5 @@
 // Test: Array.sort (in-place) and Array.ofSeq (PRE-05)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let arr = Array.ofList [3; 1; 2]
 let _ = Array.sort arr

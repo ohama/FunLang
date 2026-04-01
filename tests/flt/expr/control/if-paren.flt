@@ -1,5 +1,5 @@
 // Test: nested if with parenthesization
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = if true then (if false then 1 else 2) else 3
 // --- Stdout:

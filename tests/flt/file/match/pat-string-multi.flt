@@ -1,5 +1,5 @@
 // Test: string pattern matching - multiple string alternatives
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let classify s =
     match s with

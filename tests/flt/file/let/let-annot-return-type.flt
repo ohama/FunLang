@@ -1,5 +1,5 @@
 // Test: RET-01 return type annotation in let declarations
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let add x : int = x + 1
 let f x y : int = x + y

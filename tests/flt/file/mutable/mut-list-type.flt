@@ -1,5 +1,5 @@
 // Test: mutable variable with list type
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let mut xs = [1; 2; 3] in let _ = xs <- [10; 20] in xs
 // --- Output:

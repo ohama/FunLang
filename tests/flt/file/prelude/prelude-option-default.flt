@@ -1,5 +1,5 @@
 // Test: Prelude optionDefault and isSome/isNone
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let r1 = optionDefault 99 (Some 42)
 let r2 = optionDefault 99 None

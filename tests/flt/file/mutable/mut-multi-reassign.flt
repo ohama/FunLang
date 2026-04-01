@@ -1,5 +1,5 @@
 // Test: multiple sequential reassignments — final value wins
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = let mut x = 0 in let _ = x <- 1 in let _ = x <- 2 in let _ = x <- 3 in x
 // --- Output:

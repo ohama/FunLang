@@ -1,5 +1,5 @@
 // Test: mutable variable used with pipe operator
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let mut x = 5
 let _ = x <- x |> (fun n -> n * 2)

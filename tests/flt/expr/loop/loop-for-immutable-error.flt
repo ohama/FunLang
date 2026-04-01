@@ -1,5 +1,5 @@
 // Test LOOP-04: loop variable i is immutable — assignment produces E0320
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ =
     for i = 0 to 9 do

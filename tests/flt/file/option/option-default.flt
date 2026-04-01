@@ -1,5 +1,5 @@
 // Test: Option defaultValue using Prelude Option
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let defaultValue def opt = match opt with
 | Some x -> x

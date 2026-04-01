@@ -1,5 +1,5 @@
 // Test: ADT + Show instance in same module, accessible after open (Bug 4 fix)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 module Colors =
     type Color = | Red | Green | Blue

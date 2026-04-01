@@ -1,5 +1,5 @@
 // Test NLSEQ-MA: multi-line function application (indented args not split into separate expressions)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let add3 a b c = a + b + c
 let result =

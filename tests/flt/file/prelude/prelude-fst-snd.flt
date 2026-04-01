@@ -1,5 +1,5 @@
 // Test: Prelude fst and snd functions
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = (fst (1, 2), snd (1, 2), fst ("a", "b"), snd (true, false))
 // --- Output:

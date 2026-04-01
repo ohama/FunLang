@@ -1,5 +1,5 @@
 // Test: printf with bool and percent escape
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = printf "done=%b at 100%%\n" true
 let result = 0

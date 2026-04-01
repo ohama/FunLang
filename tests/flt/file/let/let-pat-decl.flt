@@ -1,5 +1,5 @@
 // Test: module-level tuple pattern destructuring
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let (a, b) = (10, 20)
 let result = a + b

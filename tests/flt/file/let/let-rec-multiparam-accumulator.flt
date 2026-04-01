@@ -1,5 +1,5 @@
 // Test: local multi-param let rec with accumulator pattern
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result =
   let rec sum acc n =

@@ -1,5 +1,5 @@
 // Test: append_file appends to existing file content
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let _ = write_file "/tmp/flt-fileio-append.txt" "hello"
 let _ = append_file "/tmp/flt-fileio-append.txt" " world"

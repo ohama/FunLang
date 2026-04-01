@@ -1,5 +1,5 @@
 // Test: match on tuple pattern
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = match (1, 2) with | (a, b) -> a + b
 // --- Output:

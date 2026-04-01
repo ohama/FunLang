@@ -1,5 +1,5 @@
 // Test: List comprehension from native collections + ofSeq pipeline (LANG-02, PRE-04)
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let hs = HashSet.create ()
 let _ = HashSet.add hs 3

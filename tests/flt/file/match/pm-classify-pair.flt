@@ -1,5 +1,5 @@
 // Test: tuple pattern with constant, variable, and wildcard
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let classify pair =
     match pair with

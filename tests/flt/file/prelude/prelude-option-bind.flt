@@ -1,5 +1,5 @@
 // Test: Prelude optionBind for chaining
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let safeSqrt n = if n >= 0 then Some (n / 2) else None
 let result = Some 16 |> optionBind safeSqrt |> optionMap (fun x -> x + 1)

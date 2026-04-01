@@ -1,5 +1,5 @@
 // Test: String.contains returns true when a substring is found
-// --- Command: src/FunLang/bin/Release/net10.0/FunLang %input
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let result = String.contains "hello" "ell"
 // --- Output:
