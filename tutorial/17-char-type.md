@@ -29,19 +29,19 @@ fn> '\t'
 
 ## 문자 변환
 
-`char_to_int`와 `int_to_char`로 문자와 ASCII 코드 사이를 변환합니다:
+`Char.toInt`와 `Char.ofInt`로 문자와 ASCII 코드 사이를 변환합니다 (빌트인 `char_to_int`/`int_to_char`도 사용 가능):
 
 ```
 $ cat char_conv.l3
-let code = char_to_int 'A'
-let back = int_to_char 65
+let code = Char.toInt 'A'
+let back = Char.ofInt 65
 let result = code
 
 $ fn char_conv.l3
 65
 ```
 
-`int_to_char`는 0~127 범위의 ASCII 코드만 지원합니다. 범위를 벗어나면 오류가 발생합니다.
+`Char.ofInt`는 0~127 범위의 ASCII 코드만 지원합니다. 범위를 벗어나면 오류가 발생합니다.
 
 이 함수들은 문자 기반 알고리즘에 유용합니다. 예를 들어, 대문자를 소문자로 변환하려면:
 
@@ -99,10 +99,10 @@ Prelude의 `Char` 모듈은 문자 판별 및 변환 함수를 제공합니다. 
 
 ```
 $ cat char_module.l3
-let _ = println (to_string (Char.IsDigit '3'))
-let _ = println (to_string (Char.IsDigit 'a'))
-let _ = println (to_string (Char.IsLetter 'z'))
-let _ = println (to_string (Char.ToUpper 'a'))
+let _ = println (to_string (Char.isDigit '3'))
+let _ = println (to_string (Char.isDigit 'a'))
+let _ = println (to_string (Char.isLetter 'z'))
+let _ = println (to_string (Char.toUpper 'a'))
 
 $ fn char_module.l3
 true
@@ -116,9 +116,9 @@ true
 
 ```
 $ cat char_case.l3
-let _ = println (to_string (Char.IsUpper 'A'))
-let _ = println (to_string (Char.IsLower 'a'))
-let _ = println (to_string (Char.ToLower 'Z'))
+let _ = println (to_string (Char.isUpper 'A'))
+let _ = println (to_string (Char.isLower 'a'))
+let _ = println (to_string (Char.toLower 'Z'))
 
 $ fn char_case.l3
 true
@@ -129,12 +129,14 @@ true
 
 | 함수 | 설명 |
 |------|------|
-| `Char.IsDigit c` | 숫자 문자('0'~'9')인지 확인 |
-| `Char.IsLetter c` | 알파벳 문자인지 확인 |
-| `Char.IsUpper c` | 대문자인지 확인 |
-| `Char.IsLower c` | 소문자인지 확인 |
-| `Char.ToUpper c` | 대문자로 변환 |
-| `Char.ToLower c` | 소문자로 변환 |
+| `Char.isDigit c` | 숫자 문자('0'~'9')인지 확인 |
+| `Char.isLetter c` | 알파벳 문자인지 확인 |
+| `Char.isUpper c` | 대문자인지 확인 |
+| `Char.isLower c` | 소문자인지 확인 |
+| `Char.toUpper c` | 대문자로 변환 |
+| `Char.toLower c` | 소문자로 변환 |
+| `Char.toInt c` | 문자 → ASCII 코드 (int) |
+| `Char.ofInt n` | ASCII 코드 → 문자 (0~127) |
 
 이 함수들을 사용하면 `char_to_int`/`int_to_char`로 ASCII 코드를 직접 계산할 필요 없이, 의도가 명확한 코드를 작성할 수 있습니다.
 
@@ -142,8 +144,8 @@ true
 
 - **문자 리터럴:** `'a'`, `'\n'` (작은따옴표)
 - **문자열 리터럴:** `"hello"` (큰따옴표) — 서로 다른 타입
-- **`char_to_int`:** 문자 → ASCII 코드 (int)
-- **`int_to_char`:** ASCII 코드 → 문자 (0~127만)
+- **`Char.toInt`** (`char_to_int`): 문자 → ASCII 코드 (int)
+- **`Char.ofInt`** (`int_to_char`): ASCII 코드 → 문자 (0~127만)
 - **비교:** `<`, `>`, `<=`, `>=`, `=` 모두 지원
 
 문자열과 문자를 다루는 방법을 알았으니, 다음 장에서는 파이프 연산자와 함수 합성으로 데이터 처리 파이프라인을 구성하는 방법을 알아봅니다.

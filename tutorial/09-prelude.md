@@ -14,7 +14,7 @@ Prelude는 FunLang 바이너리와 같은 위치의 `Prelude/` 디렉토리에 �
 
 - `Prelude/Option.fun` -- Option 타입과 함수 (`optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone` 등)
 - `Prelude/Array.fun` -- 배열 모듈 (`Array.create`, `Array.get`, `Array.set`, `Array.sort`, `Array.ofSeq` 등)
-- `Prelude/Char.fun` -- 문자 모듈 (`Char.IsDigit`, `Char.IsLetter`, `Char.ToUpper`, `Char.ToLower` 등)
+- `Prelude/Char.fun` -- 문자 모듈 (`Char.isDigit`, `Char.isLetter`, `Char.toUpper`, `Char.toLower` 등)
 - `Prelude/Core.fun` -- 핵심 고차 함수 (`id`, `const`, `compose`)
 - `Prelude/HashSet.fun` -- HashSet 모듈 (`HashSet.create`, `HashSet.add`, `HashSet.contains`, `HashSet.count`)
 - `Prelude/Hashtable.fun` -- Hashtable 모듈
@@ -585,7 +585,7 @@ fn> to_string (Some [1; 2; 3])
 |----------|--------|---------|
 | Prelude 타입+함수 | `Prelude/*.fun` 파일 | `Option`, `Result`, `map`, `filter`, `fold`, `sort`, `tryFind`, `choose`, `id`, `compose`, `not`, `min`, `max`, `abs`, `fst`, `snd`, `ignore` 등 |
 | Prelude 타입 클래스 | `Prelude/Typeclass.fun` | `show`, `eq` — 타입 클래스와 기본 타입 인스턴스 ([23장](23-typeclasses.md) 참조) |
-| Prelude 모듈 | `Prelude/*.fun` 파일 | `String.trim`, `Char.IsDigit`, `Array.sort`, `HashSet.create`, `Queue.create`, `MutableList.create`, `StringBuilder.create` 등 |
+| Prelude 모듈 | `Prelude/*.fun` 파일 | `String.trim`, `Char.isDigit`, `Array.sort`, `HashSet.create`, `Queue.create`, `MutableList.create`, `StringBuilder.create` 등 |
 | Prelude 연산자 | `Prelude/*.fun` 파일 | `++` (리스트 연결), `<\|>` (Option 대안), `^^` (문자열 연결) |
 | 런타임 내장 함수 | `initialBuiltinEnv` | `string_length`, `string_concat`, `string_sub`, `string_contains`, `print`, `println`, `printf`, `sprintf`, `printfn` 등 |
 | 산술 연산자 | 내장 | `+`, `-`, `*`, `/`, `%` (모듈로) |

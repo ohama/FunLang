@@ -599,7 +599,7 @@ let eval e =
 
 **String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`, `String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.join`, `String.substring`
 
-**Char functions (qualified):** `Char.IsDigit`, `Char.IsLetter`, `Char.IsUpper`, `Char.IsLower`, `Char.ToUpper`, `Char.ToLower`
+**Char functions (qualified):** `Char.isDigit`, `Char.isLetter`, `Char.isUpper`, `Char.isLower`, `Char.toUpper`, `Char.toLower`, `Char.toInt`, `Char.ofInt`
 
 **HashSet functions (qualified):** `HashSet.create`, `HashSet.add`, `HashSet.contains`, `HashSet.count`
 

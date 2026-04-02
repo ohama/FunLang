@@ -321,7 +321,7 @@ FunLang 실행 시 `Prelude/` 디렉토리의 모든 `*.fun` 파일이 자동 �
 | Array | `Array.fun` | `Array.create`, `Array.map`, `Array.fold`, ... |
 | Hashtable | `Hashtable.fun` | `Hashtable.create`, `Hashtable.set`, ... |
 | String | `String.fun` | `String.length`, `String.endsWith`, `String.trim`, ... |
-| Char | `Char.fun` | `Char.IsDigit`, `Char.ToUpper`, `Char.IsLetter`, ... |
+| Char | `Char.fun` | `Char.isDigit`, `Char.toUpper`, `Char.isLetter`, `Char.toInt`, `Char.ofInt`, ... |
 | HashSet | `HashSet.fun` | `HashSet.create`, `HashSet.add`, ... |
 | Queue | `Queue.fun` | `Queue.create`, `Queue.enqueue`, ... |
 | MutableList | `MutableList.fun` | `MutableList.create`, `MutableList.add`, ... |

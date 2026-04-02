@@ -1,12 +1,12 @@
-// Test: Char.IsUpper, Char.IsLower, Char.ToLower completeness (STR-02)
+// Test: Char.isUpper, Char.isLower, Char.toLower completeness (STR-02)
 // --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
-let _ = println (to_string (Char.IsUpper 'A'))
-let _ = println (to_string (Char.IsUpper 'a'))
-let _ = println (to_string (Char.IsLower 'a'))
-let _ = println (to_string (Char.IsLower 'A'))
-let _ = println (to_string (Char.ToLower 'Z'))
-let _ = println (to_string (Char.ToLower 'z'))
+let _ = println (to_string (Char.isUpper 'A'))
+let _ = println (to_string (Char.isUpper 'a'))
+let _ = println (to_string (Char.isLower 'a'))
+let _ = println (to_string (Char.isLower 'A'))
+let _ = println (to_string (Char.toLower 'Z'))
+let _ = println (to_string (Char.toLower 'z'))
 // --- Output:
 true
 false

@@ -226,7 +226,7 @@ let unique = HashSet.count hs   // 2
 // v7.0: Extended Prelude
 let sorted = List.sort [3; 1; 2]   // [1; 2; 3]
 let found = List.tryFind (fun x -> x > 2) [1; 2; 3]   // Some 3
-let _ = println (to_string (Char.IsDigit '3'))   // true
+let _ = println (to_string (Char.isDigit '3'))   // true
 let _ = println (to_string (String.endsWith "file.txt" ".txt"))   // true
 
 // v10.0: Type Classes
