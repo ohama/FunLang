@@ -1,0 +1,15 @@
+// Test: Int.parse and Int.toString module functions
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let x = Int.parse "42"
+let _ = println (to_string x)
+let _ = println (to_string (x + 8))
+let _ = println (Int.toString 100)
+let y = Int.parse "-7"
+let _ = println (to_string y)
+// --- Output:
+42
+50
+100
+-7
+()
