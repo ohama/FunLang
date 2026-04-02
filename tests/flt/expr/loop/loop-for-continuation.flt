@@ -1,0 +1,12 @@
+// Test: for loop followed by continuation at same indent (no explicit semicolon)
+// Regression test for GitHub issue #1
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let _ =
+    let mutable sum = 0
+    for i = 1 to 3 do
+        sum <- sum + i
+    println (to_string sum)
+// --- Output:
+6
+()

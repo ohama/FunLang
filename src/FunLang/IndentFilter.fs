@@ -355,6 +355,18 @@ let filter (config: IndentConfig) (tokens: Parser.token seq) : Parser.token seq 
                             state <- { newState with Context = newCtx }
                             yield! emitted
                             yield! insTokens
+                            // After DEDENT: inject SEMICOLON if still inside an InExprBlock
+                            // (indent level > block's base column) and no IN tokens were emitted.
+                            if List.isEmpty insTokens then
+                                match newCtx with
+                                | InExprBlock baseCol :: _ when newState.IndentStack.Head > baseCol ->
+                                    let suppressByNext =
+                                        match nextToken with
+                                        | Some t -> isContinuationStart t || isStructuralTerminator t
+                                        | None -> false
+                                    if not suppressByNext then
+                                        yield Parser.SEMICOLON
+                                | _ -> ()
                     else
                         state <- newState
                         // When INDENT is emitted, push appropriate block context
@@ -559,6 +571,18 @@ let filterPositioned (config: IndentConfig) (tokens: PositionedToken list) : Pos
                         state <- { newState with Context = newCtx }
                         for t in emitted do result.Add(withPosOf lastRealToken t)
                         for t in insTokens do result.Add(withPosOf lastRealToken t)
+                        // After DEDENT: inject SEMICOLON if still inside an InExprBlock
+                        // (indent level > block's base column) and no IN tokens were emitted.
+                        if List.isEmpty insTokens then
+                            match newCtx with
+                            | InExprBlock baseCol :: _ when newState.IndentStack.Head > baseCol ->
+                                let suppressByNext =
+                                    match nextToken with
+                                    | Some t -> isContinuationStart t || isStructuralTerminator t
+                                    | None -> false
+                                if not suppressByNext then
+                                    result.Add(withPosOf lastRealToken Parser.SEMICOLON)
+                            | _ -> ()
                 else
                     state <- newState
                     if List.contains Parser.INDENT emitted then

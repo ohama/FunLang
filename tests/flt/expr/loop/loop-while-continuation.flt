@@ -1,0 +1,12 @@
+// Test: while loop followed by continuation at same indent (no explicit semicolon)
+// Regression test for GitHub issue #1
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let _ =
+    let mutable i = 0
+    while i < 3 do
+        i <- i + 1
+    println (to_string i)
+// --- Output:
+3
+()
