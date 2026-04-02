@@ -259,7 +259,7 @@ let main argv =
             let expr = results.GetResult Expr
             try
                 let ast = parse expr "<expr>"
-                match typecheckWithDiagnostic ast with
+                match typecheckExprWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv ast with
                 | Ok ty ->
                     printfn "%s" (Type.formatTypeNormalized ty)
                     0
@@ -277,7 +277,15 @@ let main argv =
                     let input = File.ReadAllText filename
                     TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
-                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
+                    // Filter out modules declared in this file to avoid duplicate errors
+                    // when --check is run on a Prelude file that was already loaded
+                    let declaredNames =
+                        match m with
+                        | Module (decls, _) | NamedModule(_, decls, _) ->
+                            decls |> List.choose (function Decl.ModuleDecl(name, _, _) -> Some name | _ -> None) |> Set.ofList
+                        | EmptyModule _ -> Set.empty
+                    let filteredModules = prelude.Modules |> Map.filter (fun k _ -> not (Set.contains k declaredNames))
+                    match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv filteredModules m with
                     | Ok (warnings, _, _, _, _, _, _) ->
                         for w in warnings do
                             eprintfn "Warning: %s" (formatDiagnostic w)
@@ -398,14 +406,14 @@ let main argv =
             let expr = results.GetResult Expr
             try
                 let ast = parse expr "<expr>"
-                // Type check first
-                match typecheckWithDiagnostic ast with
+                // Type check with prelude environments
+                match typecheckExprWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv ast with
                 | Error diags ->
                     for d in diags do eprintfn "%s" (formatDiagnostic d)
                     1
                 | Ok _ ->
-                    // Type check passed, evaluate
-                    let result = eval Map.empty Map.empty initialEnv false ast
+                    // Type check passed, evaluate with prelude environments
+                    let result = eval prelude.RecEnv prelude.ModuleValueEnv initialEnv false ast
                     printfn "%s" (formatValue result)
                     0
             with ex ->

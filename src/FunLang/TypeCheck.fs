@@ -351,6 +351,23 @@ let typecheckWithDiagnostic (expr: Expr): Result<Type, Diagnostic list> =
     | TypeException err ->
         Error([typeErrorToDiagnostic err])
 
+/// Type check an expression with prelude environments (for -e mode)
+let typecheckExprWithPrelude
+    (ctorEnv: ConstructorEnv) (recEnv: RecordEnv)
+    (classEnv: ClassEnv) (instEnv: InstanceEnv)
+    (preludeTypeEnv: TypeEnv)
+    (expr: Expr): Result<Type, Diagnostic list> =
+    try
+        Bidir.mutableVars <- Set.empty
+        Bidir.currentClassEnv <- classEnv
+        Bidir.currentInstEnv <- instEnv
+        let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
+        let ty = Bidir.synthTopWithCtors ctorEnv mergedEnv expr
+        Ok(ty)
+    with
+    | TypeException err ->
+        Error([typeErrorToDiagnostic err])
+
 /// Recursively collect all match expressions from an expression.
 /// Returns list of (patterns, scrutinee, span) for each Match node.
 let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
