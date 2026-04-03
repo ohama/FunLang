@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Milestone: v11.0 Typed AST Export
 Phase: 79 of 82 (Type Annotation Infrastructure)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-02 — v11.0 roadmap created (phases 79-82)
+Plan: 1 of ? (79-01 complete)
+Status: In progress
+Last activity: 2026-04-03 — Completed 79-01-PLAN.md
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 (0/4 phases)
+Progress: [█░░░░░░░░░░░░░░░░░░░] v11.0 (1/? plans)
 
 ## Performance Metrics
 
@@ -30,7 +30,9 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 (
 ### Decisions
 
 Key cross-milestone context carried forward:
-- pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars) — v11.0 will use same pattern for annotation map
+- pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars) — v11.0 uses same pattern for annotation map (now implemented)
+- annotationMap declared in Bidir.fs at position 2.6; reset at both TypeCheck entry points — 79-02 will populate it in synth
+- TypeAnnotationMap.record skips unknownSpan (synthetic elaboration nodes must not pollute map)
 - Constraint now carries SourceSpan for error location (v10.1) — Span is already threaded through synth
 - ModuleExports includes ClassEnv/InstanceEnv (v10.1) — TypeEnv already available at typeCheckModuleWithPrelude return
 - Pre/post-elaboration AST mismatch is key risk: elaborateTypeclasses rewrites AST before Bidir runs
@@ -48,7 +50,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02
-Stopped at: v11.0 roadmap created, ready to plan Phase 79
+Last session: 2026-04-03
+Stopped at: Completed 79-01-PLAN.md (TypeAnnotationMap module + Bidir mutable + TypeCheck resets)
 Resume file: None
-Next action: /gsd:plan-phase 79
+Next action: Execute 79-02 (populate annotationMap in Bidir.synth)
