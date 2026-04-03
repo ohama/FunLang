@@ -57,7 +57,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 86-01-PLAN.md — Add Prelude defs, remove tokens/AST/grammar/handlers from 10 files (MIG-01, MIG-02, MIG-03)
+- [x] 86-01-PLAN.md — Add Prelude defs, remove tokens/AST/grammar/handlers from 10 files (MIG-01, MIG-02, MIG-03)
 
 ---
 
@@ -85,5 +85,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 84. Attribute Infrastructure | v12.0 | 1/1 | Complete | 2026-04-03 |
 | 85. Fixity System | v12.0 | 1/1 | Complete | 2026-04-03 |
-| 86. Operator Migration | v12.0 | 0/1 | Not started | - |
+| 86. Operator Migration | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
 | 87. Verification | v12.0 | 0/1 | Not started | - |

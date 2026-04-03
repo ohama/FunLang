@@ -51,8 +51,8 @@
 | FIX-01      | 85    | Complete |
 | FIX-02      | 85    | Complete |
 | FIX-03      | 85    | Complete |
-| MIG-01      | 86    |          |
-| MIG-02      | 86    |          |
-| MIG-03      | 86    |          |
+| MIG-01      | 86    | Complete |
+| MIG-02      | 86    | Complete |
+| MIG-03      | 86    | Complete |
 | VER-01      | 87    |          |
 | VER-02      | 87    |          |
