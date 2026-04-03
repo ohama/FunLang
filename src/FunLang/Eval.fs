@@ -721,6 +721,70 @@ let initialBuiltinEnv : Env =
             | HashtableValue ht -> IntValue ht.Count
             | _ -> failwith "hashtable_count: expected hashtable")
 
+        // Phase 83: String-key hashtable builtins + dbg
+
+        // hashtable_create_str : unit -> hashtable<string, 'v>
+        "hashtable_create_str", BuiltinValue (fun _ ->
+            HashtableValue (System.Collections.Generic.Dictionary<Value, Value>()))
+
+        // hashtable_get_str : hashtable<string, 'v> -> string -> 'v
+        "hashtable_get_str", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    match ht.TryGetValue(keyVal) with
+                    | true, v -> v
+                    | false, _ ->
+                        raise (FunLangException (StringValue (sprintf "Hashtable.get_str: key not found")))
+                | _ -> failwith "hashtable_get_str: expected hashtable"))
+
+        // hashtable_set_str : hashtable<string, 'v> -> string -> 'v -> unit
+        "hashtable_set_str", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                BuiltinValue (fun valVal ->
+                    match htVal with
+                    | HashtableValue ht ->
+                        ht.[keyVal] <- valVal
+                        TupleValue []
+                    | _ -> failwith "hashtable_set_str: expected hashtable")))
+
+        // hashtable_containsKey_str : hashtable<string, 'v> -> string -> bool
+        "hashtable_containsKey_str", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht -> BoolValue (ht.ContainsKey(keyVal))
+                | _ -> failwith "hashtable_containsKey_str: expected hashtable"))
+
+        // hashtable_keys_str : hashtable<string, 'v> -> string list
+        "hashtable_keys_str", BuiltinValue (fun htVal ->
+            match htVal with
+            | HashtableValue ht -> ListValue (ht.Keys |> Seq.toList)
+            | _ -> failwith "hashtable_keys_str: expected hashtable")
+
+        // hashtable_remove_str : hashtable<string, 'v> -> string -> unit
+        "hashtable_remove_str", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    ht.Remove(keyVal) |> ignore
+                    TupleValue []
+                | _ -> failwith "hashtable_remove_str: expected hashtable"))
+
+        // hashtable_trygetvalue_str : hashtable<string, 'v> -> string -> (bool * 'v)
+        "hashtable_trygetvalue_str", BuiltinValue (fun htVal ->
+            BuiltinValue (fun keyVal ->
+                match htVal with
+                | HashtableValue ht ->
+                    match ht.TryGetValue(keyVal) with
+                    | true, v  -> TupleValue [BoolValue true;  v]
+                    | false, _ -> TupleValue [BoolValue false; TupleValue []]
+                | _ -> failwith "hashtable_trygetvalue_str: expected hashtable"))
+
+        // dbg : 'a -> 'a  (prints value to stderr, returns unchanged)
+        "dbg", BuiltinValue (fun v ->
+            eprintfn "%A" v
+            v)
+
         // Phase 55: StringBuilder builtins
         // stringbuilder_create : unit -> StringBuilder
         "stringbuilder_create", BuiltinValue (fun _ ->

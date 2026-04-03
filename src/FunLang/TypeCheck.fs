@@ -175,6 +175,16 @@ let initialTypeEnv: TypeEnv =
         "hashtable_trygetvalue", Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TArrow(TVar 0, TTuple [TBool; TVar 1])))
         "hashtable_count",       Scheme([0; 1], [], TArrow(THashtable (TVar 0, TVar 1), TInt))
 
+        // Phase 83: String-key hashtable builtins + dbg
+        "hashtable_create_str",      Scheme([0], [], TArrow(TTuple [], THashtable (TString, TVar 0)))
+        "hashtable_get_str",         Scheme([0], [], TArrow(THashtable (TString, TVar 0), TArrow(TString, TVar 0)))
+        "hashtable_set_str",         Scheme([0], [], TArrow(THashtable (TString, TVar 0), TArrow(TString, TArrow(TVar 0, TTuple []))))
+        "hashtable_containsKey_str", Scheme([0], [], TArrow(THashtable (TString, TVar 0), TArrow(TString, TBool)))
+        "hashtable_keys_str",        Scheme([0], [], TArrow(THashtable (TString, TVar 0), TList TString))
+        "hashtable_remove_str",      Scheme([0], [], TArrow(THashtable (TString, TVar 0), TArrow(TString, TTuple [])))
+        "hashtable_trygetvalue_str", Scheme([0], [], TArrow(THashtable (TString, TVar 0), TArrow(TString, TTuple [TBool; TVar 0])))
+        "dbg",                       Scheme([0], [], TArrow(TVar 0, TVar 0))
+
         // Phase 55: StringBuilder builtins
         // stringbuilder_create : unit -> StringBuilder
         "stringbuilder_create",   Scheme([], [], TArrow(TTuple [], TData("StringBuilder", [])))
