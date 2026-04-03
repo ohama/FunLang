@@ -54,5 +54,5 @@
 | MIG-01      | 86    | Complete |
 | MIG-02      | 86    | Complete |
 | MIG-03      | 86    | Complete |
-| VER-01      | 87    |          |
-| VER-02      | 87    |          |
+| VER-01      | 87    | Complete |
+| VER-02      | 87    | Complete |

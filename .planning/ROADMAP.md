@@ -73,7 +73,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 87-01: Run full flt suite, document results, add TCO deep-pipe test (VER-01, VER-02)
+- [x] 87-01: Run full flt suite, document results, add TCO deep-pipe test (VER-01, VER-02)
 
 ---
 
@@ -86,4 +86,4 @@ Plans:
 | 84. Attribute Infrastructure | v12.0 | 1/1 | Complete | 2026-04-03 |
 | 85. Fixity System | v12.0 | 1/1 | Complete | 2026-04-03 |
 | 86. Operator Migration | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
-| 87. Verification | v12.0 | 0/1 | Not started | - |
+| 87. Verification | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
