@@ -96,10 +96,6 @@ let formatToken (token: Parser.token) : string =
     | Parser.DERIVING -> "DERIVING"
     // Phase 84 (Attributes): Attribute token
     | Parser.ATTR_OPEN -> "ATTR_OPEN"
-    // Phase 9 (Pipe & Composition): Pipe and composition tokens
-    | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
-    | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
-    | Parser.COMPOSE_LEFT -> "COMPOSE_LEFT"
     // Phase 19 (User-Defined Operators): INFIXOP tokens
     | Parser.INFIXOP0 s -> sprintf "INFIXOP0(%s)" s
     | Parser.INFIXOP1 s -> sprintf "INFIXOP1(%s)" s
@@ -207,10 +203,6 @@ let rec formatAst (expr: Ast.Expr) : string =
             |> List.map (fun (pat, _guard, expr) -> sprintf "(%s, %s)" (formatPattern pat) (formatAst expr))
             |> String.concat "; "
         sprintf "TryWith (%s, [%s])" (formatAst body) formattedClauses
-    // Phase 9 (Pipe & Composition)
-    | Ast.PipeRight (l, r, _) -> sprintf "PipeRight (%s, %s)" (formatAst l) (formatAst r)
-    | Ast.ComposeRight (l, r, _) -> sprintf "ComposeRight (%s, %s)" (formatAst l) (formatAst r)
-    | Ast.ComposeLeft (l, r, _) -> sprintf "ComposeLeft (%s, %s)" (formatAst l) (formatAst r)
     // Phase 18 (Ranges)
     | Ast.Range (start, stop, stepOpt, _) ->
         match stepOpt with

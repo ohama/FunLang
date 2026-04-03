@@ -733,44 +733,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         recordTy span finalTy
         (finalS, finalTy)
 
-    // === Phase 9: Pipe and composition operators ===
-    | PipeRight (left, right, span) ->
-        // x |> f  ===  f x
-        let s1, leftTy = synth ctorEnv recEnv ctx env left
-        let s2, rightTy = synth ctorEnv recEnv ctx (applyEnv s1 env) right
-        let resultTy = freshVar()
-        let s3 = unifyWithContext ctx [] span (apply s2 rightTy) (TArrow(apply s2 leftTy, resultTy))
-        let finalTy = apply s3 resultTy
-        recordTy span finalTy
-        (compose s3 (compose s2 s1), finalTy)
 
-    | ComposeRight (left, right, span) ->
-        // f >> g : ('a -> 'b) -> ('b -> 'c) -> ('a -> 'c)
-        let s1, leftTy = synth ctorEnv recEnv ctx env left
-        let s2, rightTy = synth ctorEnv recEnv ctx (applyEnv s1 env) right
-        let a = freshVar()
-        let b = freshVar()
-        let c = freshVar()
-        let s3 = unifyWithContext ctx [] span (apply s2 leftTy) (TArrow(a, b))
-        let s4 = unifyWithContext ctx [] span (apply s3 rightTy) (TArrow(apply s3 b, c))
-        let finalS = compose s4 (compose s3 (compose s2 s1))
-        let finalTy = TArrow(apply finalS a, apply s4 c)
-        recordTy span finalTy
-        (finalS, finalTy)
-
-    | ComposeLeft (left, right, span) ->
-        // f << g : ('b -> 'c) -> ('a -> 'b) -> ('a -> 'c)
-        let s1, leftTy = synth ctorEnv recEnv ctx env left
-        let s2, rightTy = synth ctorEnv recEnv ctx (applyEnv s1 env) right
-        let a = freshVar()
-        let b = freshVar()
-        let c = freshVar()
-        let s3 = unifyWithContext ctx [] span (apply s2 leftTy) (TArrow(b, c))
-        let s4 = unifyWithContext ctx [] span (apply s3 rightTy) (TArrow(a, apply s3 b))
-        let finalS = compose s4 (compose s3 (compose s2 s1))
-        let finalTy = TArrow(apply s4 a, apply finalS c)
-        recordTy span finalTy
-        (finalS, finalTy)
 
     // === Record expressions (Phase 3) ===
     | RecordExpr (_, fields, span) ->

@@ -103,7 +103,6 @@ let canBeFunction (token: Parser.token) : bool =
 /// These tokens cannot start a new statement, so no SEMICOLON should precede them.
 let isContinuationStart (token: Parser.token) : bool =
     match token with
-    | Parser.PIPE_RIGHT | Parser.COMPOSE_RIGHT | Parser.COMPOSE_LEFT -> true
     | Parser.AND | Parser.OR | Parser.CONS | Parser.AND_KW -> true
     | Parser.INFIXOP0 _ | Parser.INFIXOP1 _ | Parser.INFIXOP2 _
     | Parser.INFIXOP3 _ | Parser.INFIXOP4 _ -> true

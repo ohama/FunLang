@@ -417,8 +417,6 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | TryWith(body, clauses, _) ->
         collectMatches body
         @ (clauses |> List.collect (fun (_, _, handler) -> collectMatches handler))
-    | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
-        collectMatches a @ collectMatches b
     | Range(start, stop, stepOpt, _) ->
         collectMatches start @ collectMatches stop @ (stepOpt |> Option.map collectMatches |> Option.defaultValue [])
     // Phase 46 (Loop Constructs)
@@ -553,8 +551,6 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             | LetMut(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | Assign(_, value, _) -> collectTryWiths value
             | Raise(e, _) -> collectTryWiths e
-            | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
-                collectTryWiths a @ collectTryWiths b
             | Range(start, stop, stepOpt, _) ->
                 collectTryWiths start @ collectTryWiths stop @ (stepOpt |> Option.map collectTryWiths |> Option.defaultValue [])
             | ForInExpr(_, coll, body, _) -> collectTryWiths coll @ collectTryWiths body
@@ -644,8 +640,6 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
         let clauseRefs = clauses |> List.map (fun (_, _, handler) -> collectModuleRefs modules handler)
         Set.unionMany (collectModuleRefs modules body :: clauseRefs)
     | Constructor(_, Some arg, _) -> collectModuleRefs modules arg
-    | PipeRight(a, b, _) | ComposeRight(a, b, _) | ComposeLeft(a, b, _) ->
-        Set.union (collectModuleRefs modules a) (collectModuleRefs modules b)
     | Range(start, stop, stepOpt, _) ->
         Set.unionMany [collectModuleRefs modules start; collectModuleRefs modules stop; stepOpt |> Option.map (collectModuleRefs modules) |> Option.defaultValue Set.empty]
     | ForInExpr(_, coll, body, _) -> Set.union (collectModuleRefs modules coll) (collectModuleRefs modules body)
@@ -745,9 +739,6 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
         TryWith(rewriteModuleAccess modules body,
                 clauses |> List.map (fun (p, g, handler) -> (p, g, rewriteModuleAccess modules handler)), s)
     | Constructor(n, Some arg, s) -> Constructor(n, Some(rewriteModuleAccess modules arg), s)
-    | PipeRight(a, b, s) -> PipeRight(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
-    | ComposeRight(a, b, s) -> ComposeRight(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
-    | ComposeLeft(a, b, s) -> ComposeLeft(rewriteModuleAccess modules a, rewriteModuleAccess modules b, s)
     | Range(start, stop, stepOpt, s) ->
         Range(rewriteModuleAccess modules start, rewriteModuleAccess modules stop, stepOpt |> Option.map (rewriteModuleAccess modules), s)
     | _ -> expr  // Literals, Var, Constructor(None), EmptyList -- no rewrite needed

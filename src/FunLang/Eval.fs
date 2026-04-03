@@ -10,9 +10,6 @@ exception FunLangException of Value
 /// Phase 5: Env type now defined in Ast.fs for mutual recursion with Value
 let emptyEnv : Env = Map.empty
 
-/// Counter for generating unique compose variable names (avoids name collision in chained composition)
-let mutable composeCounter = 0
-
 // Phase 12: Printf helpers
 
 /// Parse format string to extract specifier characters in order.
@@ -1078,7 +1075,7 @@ and evalMatchClauses (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>
         | None ->
             evalMatchClauses recEnv moduleEnv env tailPos scrutinee rest
 
-/// Apply a function value to an argument (shared by App, PipeRight, and trampoline loop)
+/// Apply a function value to an argument (shared by App and trampoline loop)
 /// Phase 15: When tailPos=true, body evaluates in tail position so nested tail calls return TailCall
 and applyFunc (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (funcVal: Value) (argVal: Value) (funcExpr: Expr) (tailPos: bool) : Value =
     match funcVal with
@@ -1578,47 +1575,6 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             | e when e.Message = "Match failure: no pattern matched" ->
                 // No handler matched: re-raise the original exception
                 raise (FunLangException exnVal)
-
-    // Phase 9 (Pipe & Composition): Pipe and composition operators
-    // PipeRight uses same trampoline pattern as App (Phase 15)
-    | PipeRight (left, right, _) ->
-        let argVal = eval recEnv moduleEnv env false left
-        let funcVal = eval recEnv moduleEnv env false right
-        if tailPos then
-            TailCall (funcVal, argVal)
-        else
-            let mutable result = applyFunc recEnv moduleEnv funcVal argVal right true
-            while (match result with TailCall _ -> true | _ -> false) do
-                match result with
-                | TailCall (f, a) ->
-                    result <- applyFunc recEnv moduleEnv f a right true
-                | _ -> ()
-            result
-
-    | ComposeRight (left, right, _) ->
-        let fVal = eval recEnv moduleEnv env false left
-        let gVal = eval recEnv moduleEnv env false right
-        // Use unique names to avoid collision in chained composition
-        composeCounter <- composeCounter + 1
-        let counter = composeCounter
-        let param = sprintf "__compose_x_%d" counter
-        let fName = sprintf "__compose_f_%d" counter
-        let gName = sprintf "__compose_g_%d" counter
-        let body = App(Var(gName, unknownSpan), App(Var(fName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
-        let closureEnv = Map.ofList [(fName, fVal); (gName, gVal)]
-        FunctionValue(param, body, closureEnv)
-
-    | ComposeLeft (left, right, _) ->
-        let fVal = eval recEnv moduleEnv env false left
-        let gVal = eval recEnv moduleEnv env false right
-        composeCounter <- composeCounter + 1
-        let counter = composeCounter
-        let param = sprintf "__compose_x_%d" counter
-        let fName = sprintf "__compose_f_%d" counter
-        let gName = sprintf "__compose_g_%d" counter
-        let body = App(Var(fName, unknownSpan), App(Var(gName, unknownSpan), Var(param, unknownSpan), unknownSpan), unknownSpan)
-        let closureEnv = Map.ofList [(fName, fVal); (gName, gVal)]
-        FunctionValue(param, body, closureEnv)
 
     // Phase 18 (Ranges): List range [start..stop] or [start..step..stop]
     | Range (startExpr, stopExpr, stepOpt, _) ->

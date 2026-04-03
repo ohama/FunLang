@@ -213,9 +213,6 @@ let private mapExprChildren (f: Expr -> Expr) (expr: Expr) : Expr =
     | TryWith(body, handlers, s) ->
         let newHandlers = handlers |> List.map (fun (p, guard, body2) -> (p, Option.map f guard, f body2))
         TryWith(f body, newHandlers, s)
-    | PipeRight(a, b, s) -> PipeRight(f a, f b, s)
-    | ComposeRight(a, b, s) -> ComposeRight(f a, f b, s)
-    | ComposeLeft(a, b, s) -> ComposeLeft(f a, f b, s)
     | Range(start, stop, step, s) -> Range(f start, f stop, Option.map f step, s)
     | Modulo(a, b, s) -> Modulo(f a, f b, s)
     | LetMut(n, v, body, s) -> LetMut(n, f v, f body, s)

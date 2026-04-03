@@ -56,8 +56,7 @@ let rec collectSpans (expr: Ast.Expr) : Ast.Span list =
         | Ast.LessThan(e1, e2, _) | Ast.GreaterThan(e1, e2, _)
         | Ast.LessEqual(e1, e2, _) | Ast.GreaterEqual(e1, e2, _)
         | Ast.And(e1, e2, _) | Ast.Or(e1, e2, _)
-        | Ast.App(e1, e2, _) | Ast.Cons(e1, e2, _)
-        | Ast.PipeRight(e1, e2, _) | Ast.ComposeRight(e1, e2, _) | Ast.ComposeLeft(e1, e2, _) ->
+        | Ast.App(e1, e2, _) | Ast.Cons(e1, e2, _) ->
             collectSpans e1 @ collectSpans e2
         | Ast.Negate(e, _) | Ast.Raise(e, _)
         | Ast.Lambda(_, e, _) | Ast.Annot(e, _, _) -> collectSpans e

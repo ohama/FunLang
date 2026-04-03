@@ -110,10 +110,6 @@ type Expr =
     // Phase 6 (Exceptions): Raise and try-with
     | Raise of expr: Expr * span: Span
     | TryWith of body: Expr * handlers: MatchClause list * span: Span
-    // Phase 9 (Pipe & Composition): Pipe and composition operators
-    | PipeRight of left: Expr * right: Expr * span: Span       // x |> f
-    | ComposeRight of left: Expr * right: Expr * span: Span    // f >> g
-    | ComposeLeft of left: Expr * right: Expr * span: Span     // f << g
     // Phase 18 (Ranges): List range syntax
     | Range of start: Expr * stop: Expr * step: Expr option * Span
     // Phase 21: Modulo operator
@@ -332,7 +328,6 @@ let spanOf (expr: Expr) : Span =
     | Annot(_, _, s) | LambdaAnnot(_, _, _, s) -> s
     | RecordExpr(_, _, s) | FieldAccess(_, _, s) | RecordUpdate(_, _, s) | SetField(_, _, _, s) -> s
     | Raise(_, s) | TryWith(_, _, s) -> s
-    | PipeRight(_, _, s) | ComposeRight(_, _, s) | ComposeLeft(_, _, s) -> s
     | Range(_, _, _, s) -> s
     | Modulo(_, _, s) -> s
     | LetMut(_, _, _, s) | Assign(_, _, s) -> s
