@@ -67,15 +67,44 @@ let editDistance (s1: string) (s2: string) : int =
                 d.[i, j] <- min (min (d.[i-1, j] + 1) (d.[i, j-1] + 1)) (d.[i-1, j-1] + cost)
         d.[m, n]
 
-/// Suggest a similar name from a list of candidates
+/// Find related variant names that exist in candidates.
+/// e.g., "hashtable_create" ↔ "hashtable_create_str", "char_to_int" ↔ "Char.toInt"
+let private findRelatedVariants (name: string) (candidates: string seq) : string list =
+    let candidateSet = candidates |> Seq.toList
+    [
+        // _str suffix variant: hashtable_create ↔ hashtable_create_str
+        if name.EndsWith("_str") then
+            let base' = name.[..name.Length - 5]  // remove _str
+            if List.exists (fun c -> c = base') candidateSet then yield base'
+        else
+            let strVariant = name + "_str"
+            if List.exists (fun c -> c = strVariant) candidateSet then yield strVariant
+    ]
+
+/// Suggest similar names from a list of candidates.
+/// Returns the best edit-distance match plus any related variants (e.g., _str suffix).
 let suggest (name: string) (candidates: string seq) : string option =
+    let candidateList = candidates |> Seq.toList
     let threshold = max 2 (name.Length / 3)
-    candidates
-    |> Seq.map (fun s -> (s, editDistance name s))
-    |> Seq.filter (fun (_, d) -> d > 0 && d <= threshold)
-    |> Seq.sortBy snd
-    |> Seq.tryHead
-    |> Option.map fst
+    let best =
+        candidateList
+        |> List.map (fun s -> (s, editDistance name s))
+        |> List.filter (fun (_, d) -> d > 0 && d <= threshold)
+        |> List.sortBy snd
+        |> List.tryHead
+        |> Option.map fst
+    // Find related variants of the best match (or of the original name if no match)
+    let related =
+        match best with
+        | Some bestName -> findRelatedVariants bestName candidateList
+        | None -> findRelatedVariants name candidateList
+    match best, related with
+    | Some b, [] -> Some (sprintf "'%s'" b)
+    | Some b, rs ->
+        let all = b :: (rs |> List.filter (fun r -> r <> b))
+        Some (all |> List.map (sprintf "'%s'") |> String.concat " or ")
+    | None, r :: _ -> Some (sprintf "'%s'" r)
+    | None, [] -> None
 
 /// General error representation with location, message, and helpful context
 type Diagnostic = {
@@ -276,7 +305,7 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             let suggestion = suggest name err.Scope
             let hint =
                 match suggestion with
-                | Some s -> sprintf "Did you mean '%s'?" s
+                | Some s -> sprintf "Did you mean %s?" s
                 | None -> "Make sure the variable is defined before use"
             Some "E0303",
             sprintf "Unbound variable: %s" name,
@@ -291,7 +320,7 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             let suggestion = suggest name err.Scope
             let hint =
                 match suggestion with
-                | Some s -> sprintf "Did you mean '%s'?" s
+                | Some s -> sprintf "Did you mean %s?" s
                 | None -> "Make sure the type declaration defining this constructor is in scope"
             Some "E0305",
             sprintf "Unbound constructor: %s" name,
@@ -363,7 +392,7 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             let suggestion = suggest name err.Scope
             let hint =
                 match suggestion with
-                | Some s -> sprintf "Did you mean '%s'?" s
+                | Some s -> sprintf "Did you mean %s?" s
                 | None -> "Make sure the module is defined before use"
             Some "E0502",
             sprintf "Unresolved module: %s" name,
@@ -434,7 +463,7 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             let suggestion = suggest className err.Scope
             let hint =
                 match suggestion with
-                | Some s -> sprintf "Did you mean '%s'?" s
+                | Some s -> sprintf "Did you mean %s?" s
                 | None -> "Make sure the type class is declared before use"
             Some "E0703",
             sprintf "Unknown type class: %s" className,
