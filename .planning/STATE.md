@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 Milestone: v12.0 Infix Operator Reform
 Phase: 84 of 87 (Attribute Infrastructure)
-Plan: — (ready to plan)
-Status: Ready to plan
-Last activity: 2026-04-03 — Roadmap created for v12.0
+Plan: 01 of 1 in phase (complete)
+Status: Phase 84 complete
+Last activity: 2026-04-03 — Completed 84-01-PLAN.md (attribute infrastructure)
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] v12.0 0/4 phases
+Progress: [█░░░░░░░░░░░░░░░░░░░] v12.0 1/4 phases
 
 ## Performance Metrics
 
@@ -28,6 +28,10 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] v12.0 0
 ## Accumulated Context
 
 ### Decisions
+
+From Phase 84:
+- InfixDecl treated as LetDecl in type-check/eval (attrs are metadata only until phase 85 reads them)
+- Attribute test operators use $> and <$ (not |> and <|) because |> lexes as PIPE_RIGHT, not INFIXOP
 
 From v11.1 (Phase 83):
 - dbg builtin prints to stderr (eprintfn), not stdout
@@ -50,6 +54,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Roadmap created, ready to plan Phase 84
+Stopped at: Completed 84-01-PLAN.md (attribute infrastructure)
 Resume file: None
-Next action: /gsd:plan-phase 84
+Next action: /gsd:plan-phase 85
