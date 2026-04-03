@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 82 — CLI Integration
+**Current focus:** v11.0 Complete
 
 ## Current Position
 
 Milestone: v11.0 Typed AST Export
 Phase: 82 of 82 (CLI Integration)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-03 — Phase 81 complete (Export API)
+Plan: 01 of 01
+Status: Milestone complete
+Last activity: 2026-04-03 — Completed 82-01-PLAN.md (CLI Integration)
 
-Progress: [███████████████░░░░░] v11.0 (3/4 phases)
+Progress: [████████████████████] v11.0 (4/4 phases)
 
 ## Performance Metrics
 
@@ -30,6 +30,9 @@ Progress: [███████████████░░░░░] v11.0 (
 ### Decisions
 
 Key cross-milestone context carried forward:
+- --emit-typed-ast (Phase 82): serializeTypedModule filters annotations by FileName=absUserFile; filters bindings by excluding both BuiltinSchemes (initialTypeEnv) AND prelude.TypeEnv — plan only said exclude BuiltinSchemes but prelude also needed exclusion
+- --emit-typed-ast output format: {"annotations":[{"span":{"startLine","startCol","endLine","endCol"},"type":"..."}],"bindings":{"name":"scheme"}}
+
 - ExportApi.typeCheckFile (Phase 81) uses position-tracked parseModuleFromString to preserve accurate Span data; AnnotationMap snapshot taken immediately after typeCheckModuleWithPrelude to avoid races
 - BindingEnv = TypeEnv type alias (identity wrapper exportBindingEnv) in TypeCheck.fs — Phase 81 uses this for ExportApi surface
 - typeCheckModule returns (warnings, recEnv, modules, typeEnv) — typeEnv includes initialTypeEnv builtins + user bindings
@@ -58,7 +61,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03
-Stopped at: Phase 81 complete, ready to plan Phase 82
+Last session: 2026-04-03T03:42:47Z
+Stopped at: Completed 82-01-PLAN.md (milestone v11.0 complete)
 Resume file: None
-Next action: /gsd:plan-phase 82
+Next action: Plan v12.0 or next milestone
