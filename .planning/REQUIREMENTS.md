@@ -25,7 +25,7 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 
 ### CLI Integration
 
-- [ ] **CLI-01**: `--emit-typed-ast` 플래그 — JSON 형식으로 타입 정보 출력
+- [x] **CLI-01**: `--emit-typed-ast` 플래그 — JSON 형식으로 타입 정보 출력
 
 ## Future Requirements
 
@@ -49,4 +49,4 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 | TE-02       | 80    | ✓ 2026-04-03 |
 | API-01      | 81    | ✓ 2026-04-03 |
 | API-02      | 81    | ✓ 2026-04-03 |
-| CLI-01      | 82    |          |
+| CLI-01      | 82    | ✓ 2026-04-03 |

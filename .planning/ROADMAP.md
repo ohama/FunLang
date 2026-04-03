@@ -76,7 +76,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 82-01-PLAN.md — Add --emit-typed-ast flag, JSON serialization, and flt tests (CLI-01)
+- [x] 82-01-PLAN.md — Add --emit-typed-ast flag, JSON serialization, and flt tests (CLI-01)
 
 ## Progress
 
@@ -85,4 +85,4 @@ Plans:
 | 79. Type Annotation Infrastructure | v11.0 | 2/2 | ✓ Complete | 2026-04-03 |
 | 80. Type Environment Export | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
 | 81. Export API | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
-| 82. CLI Integration | v11.0 | 0/1 | Not started | - |
+| 82. CLI Integration | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
