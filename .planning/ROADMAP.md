@@ -30,11 +30,11 @@ See milestone archive for details.
   2. After `Bidir.synth` runs on any expression, its inferred type (with substitution applied) is recorded in the map
   3. All ~40 `Expr` node variants produce entries — no node is silently skipped
   4. Existing tests pass unchanged (annotation recording is purely additive)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 79-01: Define TypeAnnotationMap module (TA-01)
-- [ ] 79-02: Wire annotation recording into Bidir.synth (TA-02)
+- [ ] 79-01-PLAN.md — Define TypeAnnotationMap module, declare mutable ref, wire resets
+- [ ] 79-02-PLAN.md — Wire annotation recording into every Bidir.synth arm + tests
 
 #### Phase 80: Type Environment Export
 
