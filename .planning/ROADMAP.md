@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0–v11.0** - Phases 1-82 (shipped 2026-04-03)
-- 🚧 **v11.1 Builtin Compatibility** - Phase 83 (in progress)
+- ✅ **v11.1 Builtin Compatibility** - Phase 83 (shipped 2026-04-03)
 
 ## Phases
 
@@ -16,7 +16,7 @@ See milestone archive for details.
 
 </details>
 
-### 🚧 v11.1 Builtin Compatibility (In Progress)
+### ✅ v11.1 Builtin Compatibility (Shipped 2026-04-03)
 
 **Milestone Goal:** FunLangCompiler Prelude 호환을 위한 누락 빌트인 8개 추가 (타입 시그니처 + 런타임)
 
@@ -33,10 +33,10 @@ See milestone archive for details.
   5. 기존 테스트 전부 통과 (regression 없음)
 
 Plans:
-- [ ] 83-01: Add builtin type signatures and runtime (BT-01, BT-02, BR-01, BR-02, VR-01)
+- [x] 83-01: Add builtin type signatures and runtime (BT-01, BT-02, BR-01, BR-02, VR-01)
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 83. Builtin Compatibility | v11.1 | 0/1 | Not started | - |
+| 83. Builtin Compatibility | v11.1 | 1/1 | ✅ Complete | 2026-04-03 |
