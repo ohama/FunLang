@@ -20,11 +20,10 @@ Reform FunLang's hardcoded infix operator handling by introducing a `#[left N]` 
   2. Parser accepts attribute lists before `let` declarations without parse error
   3. An operator defined with `#[left N] let (|>) ...` has the attribute recorded in its AST LetDecl node
   4. Source files without attributes parse identically to before (no regression)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 84-01: Lexer — add ATTR_OPEN (`#[`), ATTR_IDENT, ATTR_INT, ATTR_CLOSE (`]`) tokens
-- [ ] 84-02: Parser — attribute grammar rule, attach to LetDecl AST node (ATTR-01, ATTR-02)
+- [ ] 84-01-PLAN.md — Lexer ATTR_OPEN token + Parser attribute grammar + AST InfixDecl + flt tests
 
 ---
 
@@ -87,7 +86,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 84. Attribute Infrastructure | v12.0 | 0/2 | Not started | - |
+| 84. Attribute Infrastructure | v12.0 | 0/1 | Planned | - |
 | 85. Fixity System | v12.0 | 0/2 | Not started | - |
 | 86. Operator Migration | v12.0 | 0/3 | Not started | - |
 | 87. Verification | v12.0 | 0/1 | Not started | - |
