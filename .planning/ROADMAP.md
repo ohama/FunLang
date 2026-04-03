@@ -73,10 +73,10 @@ Plans:
   1. `langthree --emit-typed-ast file.fun` exits 0 and prints valid JSON
   2. The JSON includes at least the per-expression span→type entries and top-level binding types
   3. `langthree --emit-typed-ast` on a file with a type error exits non-zero with an error message (not malformed JSON)
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 82-01: Add --emit-typed-ast flag and JSON serialization (CLI-01)
+- [ ] 82-01-PLAN.md — Add --emit-typed-ast flag, JSON serialization, and flt tests (CLI-01)
 
 ## Progress
 
