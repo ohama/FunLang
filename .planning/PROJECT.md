@@ -106,6 +106,17 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 
 (None — planning next milestone)
 
+## Current Milestone: v11.0 Typed AST Export
+
+**Goal:** FunLang의 타입 추론 결과를 컴파일러(FunLangCompiler)가 사용할 수 있는 형태로 export — heuristic 기반 타입 추측 제거의 기반
+
+**Target features:**
+- 바인딩 타입 환경 export (`inferTypes` API)
+- AST 노드에 추론된 타입 annotation 부착
+- 컴파일러 소비용 직렬화/API 인터페이스
+
+**Motivation:** ohama/FunLang#3, ohama/FunLang#4
+
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
 - 슈퍼클래스 제약

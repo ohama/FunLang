@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Milestone: (none — planning next)
-Phase: N/A
-Plan: N/A
-Status: v10.1 complete, ready for next milestone
-Last activity: 2026-04-01 — v10.1 milestone archived
+Milestone: v11.0 Typed AST Export
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-03 — Milestone v11.0 started
 
-Progress: [████████████████████] v1.0-v10.1 done (78 phases, 161+ plans)
+Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 planning
 
 ## Performance Metrics
 
