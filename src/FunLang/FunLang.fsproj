@@ -113,6 +113,9 @@
     <!-- 12. Evaluator (uses Ast, used by Program) -->
     <Compile Include="Eval.fs" />
 
+    <!-- 12.5. Fixity environment (post-parse AST rewrite for custom operator fixity) -->
+    <Compile Include="FixityEnv.fs" />
+
     <!-- 13. Prelude loading (uses Eval) -->
     <Compile Include="Prelude.fs" />
 
