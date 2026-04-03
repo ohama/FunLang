@@ -1081,9 +1081,10 @@ and applyFunc (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (func
     match funcVal with
     | FunctionValue (param, body, closureEnv) ->
         // For recursive functions: when calling by name, add self to closure
+        // Only inject if the name is not already in the closure (avoids overwriting captured variables)
         let augmentedClosureEnv =
             match funcExpr with
-            | Var (name, _) -> Map.add name funcVal closureEnv
+            | Var (name, _) when not (Map.containsKey name closureEnv) -> Map.add name funcVal closureEnv
             | _ -> closureEnv
         let callEnv = Map.add param argVal augmentedClosureEnv
         eval recEnv moduleEnv callEnv tailPos body

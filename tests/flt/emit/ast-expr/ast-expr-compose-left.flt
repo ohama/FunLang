@@ -1,4 +1,4 @@
 // Test: --emit-ast for backward composition
 // --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr 'f << g'
 // --- Output:
-ComposeLeft (Var "f", Var "g")
+App (App (Var "<<", Var "f"), Var "g")

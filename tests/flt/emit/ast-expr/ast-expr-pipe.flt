@@ -1,4 +1,4 @@
 // Test: --emit-ast for pipe operator
 // --- Command: src/FunLang/bin/Release/net10.0/fn --emit-ast --expr 'x |> f'
 // --- Output:
-PipeRight (Var "x", Var "f")
+App (App (Var "|>", Var "x"), Var "f")
