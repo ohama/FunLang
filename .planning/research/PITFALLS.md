@@ -1,346 +1,339 @@
-# Domain Pitfalls: Type Classes for FunLang v10.0
+# Domain Pitfalls: Typed AST Export for FunLang
 
-**Domain:** Adding Haskell-style type classes to an existing ML interpreter with HM inference
-**Researched:** 2026-03-31
-**Scope:** Pitfalls specific to adding type classes to FunLang's existing HM + bidirectional checker + GADT + module system
-**Context:** FunLang v9.1 baseline — Scheme(vars, ty) generalization, Bidir.fs synth/check, Infer.freshVar/generalize, Unify.unifyWithContext, Eval.fs tree-walker
+**Domain:** Adding typed AST export to an existing ML-family interpreter
+**Researched:** 2026-04-02
+**Scope:** Pitfalls specific to adding typed AST export to FunLang's existing pipeline
+**Context:** FunLang has HM inference (Infer.fs) + bidirectional checking (Bidir.fs) + type class
+elaboration (Elaborate.elaborateTypeclasses). The current AST (Ast.Expr) carries NO type
+annotations — it carries only source spans. TypeEnv (binding-name → Scheme) is the only
+type information that survives type checking. The consumer (FunLangCompiler) needs concrete
+types on every expression node for MLIR codegen.
 
 ---
 
 ## How to Read This File
 
-Each pitfall has a **Phase** tag indicating which implementation phase is most at risk. Phases assumed are:
+Each pitfall has a **Phase** tag indicating which implementation phase is most at risk:
 
-- **P1**: Type class declarations and instance declarations (parser + AST + typeclass env)
-- **P2**: Constraint-augmented HM inference (Scheme → qualified types, constraint propagation)
-- **P3**: Instance resolution (dictionary building, entailment checking)
-- **P4**: Dictionary passing in evaluator (elaboration or runtime lookup)
-- **P5**: Integration with existing builtins (to_string, comparison operators, arithmetic)
-- **P6**: Constrained instances (e.g. `instance Show (Option 'a) where Show 'a`)
+- **P1**: Design the typed AST data structure
+- **P2**: Thread type collection through Bidir.synth / typeCheckDecls
+- **P3**: Handle elaboration (InstanceDecl → LetDecl rewriting)
+- **P4**: Serialize / export the typed AST
+- **P5**: Consumer (FunLangCompiler) integration
 
 ---
 
 ## PART A: Critical Pitfalls (Cause Rewrites)
 
-### Pitfall TC-1: Constraint Variables Escape Let Generalization
+### Pitfall TA-1: Annotating Pre-Elaboration AST Instead of Post-Elaboration AST
 
-**What goes wrong:** When generalizing a type at a `let` boundary, free type variables are quantified. If constraints are NOT tracked alongside quantified variables, the constraint `Show 'a` for a generalized `'a` disappears from the scheme. The resulting scheme `forall 'a. 'a -> string` looks unconditionally polymorphic but at call sites there is no constraint to discharge — either the wrong instance fires or a runtime crash occurs.
+**What goes wrong:** The pipeline has two distinct AST phases:
+1. Pre-elaboration: `Decl list` from the parser, containing `InstanceDecl` nodes
+2. Post-elaboration: `Decl list` after `Elaborate.elaborateTypeclasses`, where every `InstanceDecl` is replaced by ordinary `LetDecl` bindings
 
-**Why it happens:** FunLang's `generalize` in `Infer.fs` currently produces `Scheme(vars, ty)` with no constraint component. Adding type variables to the quantified set without also capturing their constraints silently produces unsound schemes.
+If type annotations are collected during type checking (which happens on the pre-elaboration AST) and stored per-node by AST identity (e.g., a `Map<Span, Type>`), the annotations reference spans from `InstanceDecl` method bodies — but those spans no longer exist as `InstanceDecl` in the post-elaboration tree. The consumer sees a post-elaboration `LetDecl` for `show_int` but cannot find a type annotation for it because the annotation was keyed to the `InstanceDecl` method body.
 
-**Concrete example:**
+**Why it happens:** `typeCheckModuleWithPrelude` runs before `elaborateTypeclasses`. Any type map built during `typeCheckModuleWithPrelude` uses pre-elaboration structure. `Elaborate.elaborateTypeclasses` creates new `LetDecl` nodes at line 255:
+```fsharp
+methods |> List.map (fun (methodName, methodBody) ->
+    LetDecl(methodName, methodBody, span))
 ```
-let show_it x = show x   (* show : Show 'a => 'a -> string *)
-```
-Without constraint tracking, `show_it` generalizes to `Scheme([a], a -> string)` — no `Show a` constraint retained. Calling `show_it 42` works (Show int resolves), but `show_it (fun x -> x)` also type-checks with no error, then crashes at runtime when the Show dictionary lookup finds nothing.
+These new nodes are not in any type annotation map because they are constructed after type checking.
+
+**Consequences:** The consumer receives a fully annotated AST for user-defined bindings but untyped nodes for all type class method implementations. For MLIR codegen, these are exactly the nodes that carry polymorphic dispatch logic.
 
 **Prevention:**
-- Extend `Scheme` to `Scheme of vars: int list * constraints: Constraint list * ty: Type` from the start of P2.
-- Modify `generalize` to also collect constraints that mention any of the free variables being generalized.
-- At call sites (`instantiate`), re-emit fresh constraint goals from the scheme constraints, substituting fresh vars for quantified vars.
-- Do NOT generalize without simultaneously generalizing constraints.
+- Collect type annotations during type checking as `Map<string, Scheme>` (keyed by binding name), not as `Map<Span, Type>` (keyed by AST node).
+- For instance methods, their types are already in `TypeEnv` after type checking: each method name maps to its scheme.
+- Alternatively, collect annotations on the post-elaboration AST by doing a second lightweight pass (type annotation propagation) after elaboration — looking up binding names in `TypeEnv`.
+- Never key type annotations to `Span` values — spans from `InstanceDecl` method bodies are reused in the `LetDecl` wrappers, but the mapping is fragile.
 
 **Warning signs:**
-- `let f x = show x` type-checks but `f (fun x -> x)` produces no type error.
-- Scheme pretty-printing shows no constraints for functions that use overloaded operations.
+- Type class method bodies have `TError` or `TVar ?_` types in the export.
+- Every `show_*` / `eq_*` / `compare_*` binding in the export has an unknown type.
 
-**Phase:** P2 (constraint-augmented generalization). Must be correct before P3 attempts any resolution.
+**Phase:** P1 (must be decided before any collection machinery is built).
 
 ---
 
-### Pitfall TC-2: Instance Resolution Called at Inference Time Instead of Post-Unification
+### Pitfall TA-2: Exporting TVar Indices Instead of Resolved Concrete Types
 
-**What goes wrong:** Resolution is attempted eagerly during type inference — as soon as a constraint goal is generated — before unification has had a chance to determine what the type variable actually is. The resolver sees an unconstrained `TVar 1042` and either fails (no instance for `TVar`) or picks the wrong instance.
+**What goes wrong:** After `Bidir.synth`, the inferred type of a subexpression may still contain `TVar n` — either because the substitution has not been fully applied, or because the expression is legitimately polymorphic. The consumer (FunLangCompiler for MLIR) needs concrete types. If the export emits raw `TVar 1042` indices, the consumer cannot generate a concrete MLIR type.
 
-**Why it happens:** It is natural to resolve constraints immediately when they are emitted (similar to how unification is called immediately in Algorithm W). But constraints involving type variables must be deferred: `Show (TVar 1042)` cannot be resolved until 1042 is unified with a concrete type.
+**Why it happens:** `Bidir.synth` returns `(Subst * Type)` where the type may reference `TVar n` values that are in the returned `Subst` but have not yet been applied. The substitution must be explicitly applied to every collected type before export:
+```fsharp
+// WRONG: store type from synth directly
+let ty = snd (synth ctorEnv recEnv ctx env expr)
 
-**Concrete example:**
+// RIGHT: apply accumulated substitution before storing
+let (s, ty) = synth ctorEnv recEnv ctx env expr
+let resolvedTy = Type.apply s ty
 ```
-let x = show 42    (* generates: Show ?a, ?a ~ int *)
-```
-If resolution fires before `?a ~ int` unification, the resolver sees `Show TVar 1042` and fails with "no instance for type variable". Correct behavior: defer, unify first, then resolve `Show int`.
+Additionally, generalization at let-boundaries produces schemes with bound `TVar` indices (e.g., `Scheme([42], [], TArrow(TVar 42, TVar 42))`). If the export stores these raw, the consumer sees `TVar 42` rather than `'a`.
+
+**Consequences:** MLIR codegen receives `TVar 1234` and cannot determine the MLIR type to emit. Either codegen fails or emits incorrect type casts.
 
 **Prevention:**
-- Maintain two constraint sets during inference: **wanted** (unresolved goals) and **given** (in-scope axioms from instance heads, local class constraints).
-- Resolve wanted constraints only after unification is complete for a binding group — i.e., at the end of the let-binding, not inline.
-- Alternatively, use a constraint-based reformulation (generate all constraints first, unify second, resolve third). This is cleaner than interleaved Algorithm W style.
+- Apply the full accumulated substitution to every type before storing in the annotation map.
+- In `typeCheckDecls`, the final `TypeEnv` has fully resolved schemes for top-level bindings — use those for export rather than mid-inference snapshots.
+- For let-polymorphic bindings, the exported type should be the instantiated type at each use site, not the generalized scheme — unless the consumer explicitly needs the scheme.
+- Add a `resolveType : Subst -> Type -> Type` post-processing step that replaces any remaining `TVar` with a fresh named variable for export.
 
 **Warning signs:**
-- Calls to `show 42` produce "no instance for TVar" errors even when int has a Show instance.
-- Resolution works for top-level let bindings but fails for intermediate sub-expressions.
+- Exported types contain `TVar` with large numeric indices (e.g., `TVar 1042`).
+- Types that should be concrete (`int`, `bool`) are exported as type variables.
 
-**Phase:** P2/P3 boundary. The discipline of when resolution fires must be decided in P2's design.
+**Phase:** P2 (type collection). Apply substitution discipline from the start.
 
 ---
 
-### Pitfall TC-3: Dictionary Passing via Environment (Not Elaboration) Causes Scope Leaks
+### Pitfall TA-3: Missing Types for Builtin and Prelude Bindings
 
-**What goes wrong:** In a tree-walking interpreter, the simplest approach is to thread a "dictionary environment" alongside the value environment, adding instance dictionaries at declaration sites and looking them up at call sites. This breaks with higher-order functions because the dictionary is captured at the definition site, not resolved at the use site.
+**What goes wrong:** FunLang has two categories of bindings with implicit types:
 
-**Why it happens:** FunLang's `Eval.fs` passes `Env` (a `Map<string, Value>`) as a pure value. If dictionaries are stored in `Env` as `DictValue "Show"` etc., they are subject to normal closure capture. A function `fun f -> f 42` closed over a `Show int` dictionary will fail when called with an argument that requires `Show string` — the wrong dictionary is in the closure.
+1. **Hard-coded builtins** in `TypeCheck.initialTypeEnv` (e.g., `to_string`, `println`, `string_length`). Their types exist as F# `Scheme` values but have no corresponding `Expr` in any parsed AST — they are injected directly into `TypeEnv`.
 
-**Concrete example:**
-```
-let apply_show f x = f (show x)    (* show needs Show ?a dictionary *)
-apply_show identity "hello"         (* should resolve Show string *)
-apply_show identity 42              (* should resolve Show int *)
-```
-If `show`'s dictionary is captured at `apply_show`'s definition site, both calls use the same dictionary — wrong for whichever call doesn't match.
+2. **Prelude bindings** loaded from `Prelude/*.fun` files and evaluated before user code. Their types are in `prelude.TypeEnv` but the `Expr` nodes that define them are not part of the user module's `Decl list`.
+
+If the typed AST export only annotates expressions from the user module, the consumer cannot type-check calls to `println`, `map`, `filter`, etc. — these appear in the user AST as `Var("println", span)` but their types are not in the per-module annotation.
+
+**Why it happens:** `typeCheckModuleWithPrelude` merges `initialTypeEnv` and `prelude.TypeEnv` into a single environment before type-checking user code. The merged environment is used during inference but is not explicitly returned as "these are the external bindings available." The return value is only the user-module's `TypeEnv`.
+
+**Consequences:** Consumer receives typed expressions for user code but untyped references to all standard library functions. For MLIR codegen, every call to a standard function produces a type error.
 
 **Prevention:**
-- The correct model: dictionaries are passed as **explicit lambda arguments** (elaboration). Type inference elaborates `show x` into `show_dict x` where `show_dict` is an explicit parameter.
-- For a tree-walker, elaboration means: during type-checking, rewrite the AST to add dictionary parameters to functions that have class constraints, and add dictionary arguments at call sites.
-- Alternatively: pass dictionaries through a separate "evidence environment" that is threaded correctly alongside the call stack — effectively the same as elaboration but done in the evaluator.
-- Do NOT attempt to resolve dictionaries globally from a flat name table at runtime without elaboration — this is coherent only for a non-higher-order language.
+- Export must include a "preamble" type table covering all builtins and Prelude bindings, separate from per-expression annotations.
+- `TypeCheck.initialTypeEnv` already exists as a `Map<string, Scheme>` — include it in the export as a "builtin type table."
+- `prelude.TypeEnv` is returned from `Prelude.loadPrelude` — include it as a "stdlib type table."
+- The consumer should look up `Var` node types in: (1) per-expression annotation map, (2) user module TypeEnv, (3) prelude TypeEnv, (4) builtin TypeEnv — in that order.
+- Never assume a `Var` node's type is in the per-expression annotation map.
 
 **Warning signs:**
-- Higher-order functions using overloaded operations produce wrong results or wrong-instance errors.
-- `map show [1; 2; 3]` works, but `let f = map show in f [1; 2; 3]` fails or uses wrong instance.
+- `println`, `map`, `filter`, `to_string` have missing or `TVar` types in the export.
+- Only user-defined functions have resolved types; standard library functions are untyped.
 
-**Phase:** P4 (evaluator integration). Must decide elaboration vs. runtime threading in P3 design.
+**Phase:** P1 (export format design must include builtin/prelude tables) and P4 (serialization must emit them).
 
 ---
 
-### Pitfall TC-4: Overlapping `to_string`/Comparison Builtins Break Instance Uniqueness
+### Pitfall TA-4: Type Class Method Names Collide After Elaboration
 
-**What goes wrong:** FunLang has existing built-in functions `to_string`, `=`, `<>`, `<`, `>`, `<=`, `>=` that work on multiple types via ad-hoc runtime dispatch in `Eval.fs`. When type classes are added, these become instances of `Show`, `Eq`, `Ord`. If both the old builtin dispatch AND the new type class dispatch exist simultaneously, there are two competing resolution paths for the same constraint — incoherence.
-
-**Why it happens:** The natural migration path is to add type class instances for `Show int`, `Show string`, etc. while leaving the old builtins intact "for compatibility". The result is that `to_string 42` resolves via the builtin but `show 42` resolves via the type class, and they may diverge if the builtin is not an exact alias.
-
-**Concrete example:**
+**What goes wrong:** `Elaborate.elaborateTypeclasses` converts each `InstanceDecl` method into a top-level `LetDecl` with the method name as-is:
+```fsharp
+LetDecl(methodName, methodBody, span)
 ```
-to_string true   (* builtin: "true" *)
-show true        (* typeclass Show bool: could be different format *)
-```
-If `show` for `bool` is user-extensible but `to_string` is hardcoded, a user overriding `show` for their ADT can never override `to_string` — inconsistency.
+If two instances implement the same method (e.g., `Show int` and `Show string` both implement `show`), the elaborator emits two `LetDecl("show", ...)` bindings at the same scope level. In evaluation, the second binding shadows the first (last-wins). In a typed AST export, if the export stores binding names as keys, the second `show` overwrites the type of the first.
+
+**Why it happens:** FunLang's type class dispatch uses last-definition-wins at evaluation time, which works because type checking has already resolved which `show` is called at each call site. But a typed AST export that is keyed by name rather than by span or node identity cannot distinguish `show : int -> string` from `show : string -> string` after elaboration.
+
+**Consequences:** The exported `TypeEnv` for `show` contains only one type (the last one). The consumer incorrectly infers that `show` always has one concrete type, breaking calls to the other instance.
 
 **Prevention:**
-- Make a clear architectural decision at the start of P5: either (a) the builtins become the default instances and `to_string` becomes an alias for `show`, or (b) the builtins are removed and replaced entirely by type class instances.
-- If (a): the builtin dispatch in `Eval.fs` must delegate through the type class mechanism, not bypass it.
-- If (b): migration requires updating all existing tests that use `to_string`, `=`, etc.
-- Never have both paths active simultaneously.
+- Do NOT key the typed export by binding name alone for instance methods.
+- Option A: Key call-site types by the call-site `Span` (each `App` or `Var` node's span is unique).
+- Option B: During type checking (pre-elaboration), record per-call-site resolved instance method types in a `Map<Span, Type>` and export that alongside the `TypeEnv`.
+- Option C: Rename instance methods during elaboration — `show_int`, `show_string` — and record the renaming map for the consumer.
+- The consumer needs per-call-site types anyway (for MLIR); Option A or B is the correct direction.
 
 **Warning signs:**
-- `to_string` and the method from `Show` produce different output for the same value.
-- Tests that use `=` directly pass while tests that use `Eq.equal` fail, or vice versa.
+- Only one concrete type is exported for any overloaded method name.
+- MLIR codegen for `show 42` and `show "hello"` generates the same type signature.
 
-**Phase:** P5 (builtin integration). The design decision must be made before P1 parser design commits syntax.
+**Phase:** P1 (design — per-callsite vs. per-name keying) and P3 (elaboration must preserve or export the renaming).
 
 ---
 
 ## PART B: Moderate Pitfalls (Cause Delays and Technical Debt)
 
-### Pitfall TC-5: Ambiguous Type Errors with No Good Diagnostic
+### Pitfall TA-5: Collecting Types Inside synth Without Threading the Annotation Map
 
-**What goes wrong:** After inference, a constraint remains with a type variable that is not determined by the function's inputs or outputs. For example:
-
+**What goes wrong:** `Bidir.synth` is a recursive function with the signature:
+```fsharp
+let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list) (env: TypeEnv) (expr: Expr): Subst * Type
 ```
-let x = show (read "42")    (* Show ?a, Read ?a — both unsatisfied, ?a unknown *)
-```
+There are 67+ call sites. Adding a `typeAnnotationMap: Map<Span, Type> ref` parameter to collect per-subexpression types requires updating every call site — exactly the parameter-threading problem that `mutableVars` and `pendingConstraints` were designed to avoid (both use module-level `mutable`).
 
-Without defaulting rules or explicit annotations, inference correctly reports this as ambiguous. But without a clear error message pointing to the ambiguous variable and the unsatisfied constraints, users get a cryptic unification error or a "no instance" error that does not explain what annotation is needed.
+If the annotation map is NOT threaded, the only recourse is another module-level mutable. This is consistent with FunLang's existing pattern but has the same thread-safety caveat.
 
 **Prevention:**
-- After constraint solving, if any wanted constraint contains a type variable that is not reachable from the environment (no context to fix it), report `AmbiguousType` with the constraint name and the variable.
-- Include the source span from where the constrained operation was called.
-- Suggest "add a type annotation to disambiguate" in the error message.
-- Add this to `Diagnostic.fs` as a new `ErrorKind`.
+- Use the established FunLang pattern: module-level `mutable` in `Bidir.fs`.
+- `let mutable typeAnnotations : Map<Span, Type> = Map.empty` — reset at each `typeCheckModuleWithPrelude` entry, populated by `synth` at every node.
+- This is consistent with `mutableVars` and `pendingConstraints` — already accepted precedent in this codebase.
+- Do NOT add `typeAnnotationMap` as a parameter to `synth`/`check` — the call-site explosion is not worth it.
 
 **Warning signs:**
-- Users report confusing type errors on code that should obviously work once annotated.
-- The error message mentions internal `TVar 1042` instead of a human-readable class name.
+- `synth` has a new parameter not present in `check`; `check` lacks annotation collection.
+- Some expression variants annotate correctly but others are missed because the `check` → `synth` delegation doesn't thread the map.
 
-**Phase:** P2/P3. Must be addressed before user-facing testing begins.
+**Phase:** P2. Decide the collection strategy before writing any collection code.
 
 ---
 
-### Pitfall TC-6: Superclass Constraints Cause Infinite Resolution Loops
+### Pitfall TA-6: Let-Generalization Exports Schemes Where Consumer Needs Monotypes
 
-**What goes wrong:** If `Ord 'a` has superclass `Eq 'a`, and the instance resolution for `Eq` tries to use `Ord` as evidence (common when `Eq` methods are defined in terms of `Ord`), you get an infinite loop: resolving `Eq int` looks for `Ord int` which requires `Eq int` to check the superclass...
+**What goes wrong:** At a let-binding, `Bidir.generalize` produces a `Scheme` (e.g., `forall 'a. 'a -> 'a`). This scheme is stored in `TypeEnv`. But within the body of a function, each specific call site has a concrete monotype. If the export stores the generalized `Scheme` for every `Var` reference to a polymorphic binding, the consumer sees `forall 'a. 'a -> 'a` at every call site — it cannot determine the concrete instantiation for that particular call.
 
-**Why it happens:** The Paterson Conditions exist in GHC specifically to prevent this. Without a termination check on resolution depth or constraint set size, the resolver loops.
+For MLIR codegen, the instantiation matters: `id 42` needs `int -> int`, not `forall 'a. 'a -> 'a`.
 
 **Prevention:**
-- For FunLang v10.0 (initial type classes), avoid superclass hierarchies entirely in the first phase. Implement `Show`, `Eq`, `Ord`, `Num` as independent classes with no declared superclass relationship.
-- If superclasses are added later, implement a depth limit (e.g. 50 resolution steps) with a clear error message "constraint resolution exceeded depth limit — possible cycle".
-- Track the set of constraints currently being resolved as a "stack" and detect when the same constraint re-appears in the stack (the Coin-cell check used in real implementations).
+- The annotation for a `Var(name, span)` should be the INSTANTIATED type at that call site, not the Scheme.
+- `Bidir.instantiateAt` already creates a fresh substitution and returns the instantiated monotype. The type returned by `synth (Var(name, span))` IS the instantiated monotype — collect that, not the scheme from TypeEnv.
+- Schemes are only useful in the export as metadata for top-level binding declarations (for the consumer to understand what type parameters exist). Export them separately from per-expression types.
+- Distinguish in the export format: `binding_schemes: Map<string, Scheme>` (for declarations) vs. `expr_types: Map<Span, Type>` (for expressions, always monotypes after instantiation).
 
 **Warning signs:**
-- The type checker hangs on programs with multiple type class constraints.
-- Stack overflow in the F# process when type-checking even simple programs.
+- Every `Var` reference to a polymorphic function has quantified type variables in the export.
+- Consumer cannot distinguish `id 42 : int` from `id "hi" : string` — both show `'a`.
 
-**Phase:** P3 (instance resolution). Relevant if P6 (constrained instances) is in scope.
+**Phase:** P1 (format design) and P2 (collection must use the instantiated type from `synth`, not `TypeEnv` lookup).
 
 ---
 
-### Pitfall TC-7: Constraint Generalization Interacts Badly with Mutable Variables
+### Pitfall TA-7: Breaking Existing Interpreter Behavior by Modifying synth Return Type
 
-**What goes wrong:** FunLang already has a deliberate decision: `let mut x = e` is monomorphic (no generalization). This was correct for preventing unsound polymorphism with mutable references. However, if a mutable variable holds a value of a constrained type, the constraint also must not be generalized. If the implementation forgets this and generalizes `let mut x = 0` to `Scheme([a; Show a], a)`, the mutable variable becomes unsoundly polymorphic.
+**What goes wrong:** A tempting approach is to change `synth` to return `(Subst * Type * TypedExpr)` — a new typed expression tree alongside the existing results. This touches every `synth` and `check` call site (67+), every match branch that pattern-matches on `synth`'s return, and would require a parallel `TypedExpr` discriminated union mirroring `Ast.Expr`.
 
-**Why it happens:** The constraint-augmented generalization in P2 must query `mutableVars` (FunLang already has this `Set<string>` in `Bidir.fs`) and skip generalization for mutable variables — including skipping constraint generalization.
+This is a major refactor. It risks introducing bugs in the inference algorithm itself because the compiler will correctly flag all unhandled cases but may miss subtle logic errors in how `TypedExpr` nodes are constructed.
 
 **Prevention:**
-- Extend the existing `mutableVars` check in `generalize` to cover constraint generalization.
-- Rule: if a binding is in `mutableVars`, produce `Scheme([], [], monotype)` with no quantified variables AND no generalized constraints.
-- This is already correct for the type variable case; ensure the same holds when constraints are added.
+- Do NOT change `synth`'s return type for the MVP of typed AST export.
+- The mutable collection approach (TA-5 prevention) avoids changing any existing signatures.
+- Build a separate `TypedExpr` representation only if needed by the consumer — and populate it in a separate pass over `Expr` using the collected `Map<Span, Type>`, not inline in `synth`.
+- Gate the type annotation collection behind a flag so it has zero cost when not exporting: `if Bidir.collectingTypeAnnotations then Bidir.typeAnnotations <- Map.add span ty Bidir.typeAnnotations`.
 
 **Warning signs:**
-- A `let mut` binding accepts values of different types across different uses in the same scope.
-- Runtime type errors in code that uses mutable variables with overloaded operations.
+- `dotnet build` emits hundreds of new incomplete-match warnings after changing `synth` return type.
+- The number of tests failing after the change is more than 5.
 
-**Phase:** P2. A straightforward extension of the existing mutable variable check.
+**Phase:** P2. The decision between "inline annotation during synth" vs. "post-pass annotation" is the highest-impact design choice.
 
 ---
 
-### Pitfall TC-8: LALR(1) Conflicts from Typeclass Syntax Choices
+### Pitfall TA-8: Type of `to_string` and Other Permissively Polymorphic Builtins
 
-**What goes wrong:** FunLang uses fsyacc (LALR(1)). Type class syntax introduces tokens and productions that can conflict with existing grammar. Common conflict sites:
+**What goes wrong:** Several builtins in `TypeCheck.initialTypeEnv` have intentionally broad types:
+```fsharp
+"to_string", Scheme([0], [], TArrow(TVar 0, TString))
+"printf",    Scheme([0], [], TArrow(TString, TVar 0))
+"failwith",  Scheme([0], [], TArrow(TString, TVar 0))
+```
+These schemes are correct for type checking but useless for MLIR codegen — `TVar 0` resolves to the type at the call site, but that resolution only happens through the inference substitution. If the export emits `'a -> string` for `to_string`, the consumer cannot generate MLIR code.
 
-1. `typeclass Show 'a = ...` — if `typeclass` is a new keyword, it must be added to the lexer. But the parser currently has `let` declarations at top level. A `typeclass` at top level that uses `=` may conflict with `let ... = ...`.
-2. `instance Show int = ...` — the word `instance` may tokenize as `IDENT` unless added as a keyword, causing ambiguity.
-3. Constraint syntax `(Show 'a) =>` in function signatures — the `=>` token does not currently exist. If it is `= >` split across tokens, the lexer produces `ASSIGN GT` which is a sequence the parser cannot distinguish from `=` followed by `>`.
-4. `where` clause — FunLang does not have `where`. Adding it as a keyword may conflict if any existing code uses `where` as an identifier.
+**Why it happens:** `to_string` is intentionally polymorphic because it handles `int`, `bool`, `string`, `char`, and ADT values via runtime dispatch in `Eval.fs`. It has no type class constraint; it is simply broad. The call-site instantiation IS available — `synth (App(Var("to_string"), arg))` will unify `TVar 0` with the arg type and the substitution will resolve it.
 
 **Prevention:**
-- Reserve `typeclass`, `instance`, and `where` as keywords in the lexer (Lexer.fsl) from P1 start.
-- Add `FATARROW` (or `DARROW`) as a distinct token for `=>`.
-- Run `dotnet build` after every lexer/parser change and inspect the shift/reduce report for new conflicts.
-- Keep type class declarations syntactically distinct from `let` declarations — using `typeclass Name 'a where` instead of `typeclass Name 'a =` avoids the `=`-conflict entirely.
+- For `to_string` and similar builtins, the per-call-site type IS resolvable from the collected `Map<Span, Type>` — the `App` node's argument type determines the substitution.
+- Ensure the collection captures the type of the `App` node, not just the `Var` node for `to_string`.
+- For the consumer, document that `to_string` and `printf`/`sprintf`/`printfn`/`failwith` are polymorphic and the concrete argument type must be looked up from the argument expression's span.
+- Alternatively, for these specific builtins, emit them as having multiple concrete overloads in the export (one per observed call-site argument type).
 
 **Warning signs:**
-- fsyacc reports new shift/reduce or reduce/reduce conflicts after parser additions.
-- The parser accepts type class declarations but silently parses them as something else (e.g., a `let` with a wrong name).
+- `to_string 42` exports as `('a -> string) applied to int` rather than `(int -> string) applied to int`.
+- Consumer cannot specialize `to_string` for specific types.
 
-**Phase:** P1. Must be resolved before any other phase can proceed.
+**Phase:** P3 (export format) and P5 (consumer integration documentation).
 
 ---
 
-### Pitfall TC-9: Instance Resolution Not Threaded Through File Imports
+### Pitfall TA-9: Performance Impact of Annotating Every Subexpression
 
-**What goes wrong:** FunLang has a file import system (`open "path.fun"`) with an import cache. The instance environment must be accumulated across imported files. If instance declarations from imported files are not added to the instance environment before processing the importing file, instance resolution fails for any type defined in the imported file.
+**What goes wrong:** FunLang's `Bidir.synth` is called on every subexpression during type checking — for a 500-line program, this may be tens of thousands of calls. If every call performs a `Map.add span ty` on a mutable annotation map, and the map grows to tens of thousands of entries, the constant allocation pressure and map rebalancing may noticeably slow type checking — especially because FunLang uses F#'s immutable `Map` (an AVL tree), not a mutable dictionary.
 
-**Why it happens:** FunLang's existing import system passes `TypeEnv`, `ConstructorEnv`, `RecordEnv` from imported modules to the importer. A new `InstanceEnv` must be threaded through the same pipeline. If it is omitted, instance lookup is limited to the current file only.
-
-**Concrete example:**
-```
-(* types.fun *)
-type Color = Red | Green | Blue
-instance Show Color = ...
-
-(* main.fun *)
-open "types.fun"
-println (show Red)    (* fails: Show Color not in scope if InstanceEnv not propagated *)
-```
+**Why it happens:** `Map<Span, Type>` in F# is an immutable balanced tree. Each `Map.add` produces a new map. With a mutable ref cell (`mutable typeAnnotations`), each mutation replaces the ref with a new map, causing repeated allocation.
 
 **Prevention:**
-- Add `InstanceEnv` as a return value from module type-checking, alongside existing `TypeEnv` etc.
-- Import caching must include `InstanceEnv` in the cached result.
-- Ensure `InstanceEnv` is passed through all call sites in `TypeCheck.fs` and `Cli.fs`.
+- Use `System.Collections.Generic.Dictionary<Span, Type>` (mutable hashtable) instead of F#'s immutable `Map`.
+- `Span` needs a structural equality comparison for hashing — since `Span` is a record, F# derives structural equality by default, so it can be used as a dictionary key without extra work.
+- Gate annotation collection behind a flag (see TA-7 prevention) so normal interpretation incurs zero overhead.
+- Only enable collection when `--emit-typed-ast` (or equivalent flag) is passed.
 
 **Warning signs:**
-- Instances defined in imported files produce "no instance" errors in the importing file.
-- Top-level instances work but instances in Prelude files do not.
+- `dotnet test` takes noticeably longer after annotation collection is added.
+- Memory usage during large file type checking increases substantially.
 
-**Phase:** P3/P6. Must be addressed before any multi-file programs with type classes work.
-
----
-
-### Pitfall TC-10: Constrained Instance Context Reduction Incomplete
-
-**What goes wrong:** `instance Show (Option 'a) where Show 'a` means: to resolve `Show (Option int)`, the resolver must also resolve `Show int` (a subgoal). If context reduction does not recursively resolve subgoals, the constrained instance is accepted at declaration time but fails at use time.
-
-**Concrete example:**
-```
-instance Show (Option 'a) where Show 'a =
-    fun x -> match x with
-             | None -> "None"
-             | Some v -> "Some(" ++ show v ++ ")"
-
-show (Some 42)   (* must resolve: Show (Option int) -> Show int -> ok *)
-show (Some (fun x -> x))  (* must fail: no Show for function types *)
-```
-
-If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42)` may either crash or produce a type error that blames the wrong site.
-
-**Prevention:**
-- Implement context reduction as a recursive procedure that, when resolving `Show (Option int)`:
-  1. Matches against `instance Show (Option 'a) where Show 'a`
-  2. Emits the subgoal `Show int` (with `'a` = `int`)
-  3. Recursively resolves `Show int`
-  4. Builds the composite dictionary `{show = fun x -> ... show_dict_int ...}`
-- Termination: rely on the depth limit from TC-6.
-
-**Warning signs:**
-- `show (Some 42)` works, but `show (Some (fun x -> x))` does not produce a type error (it should).
-- Constrained instances resolve their head but pass dictionary holes to the body.
-
-**Phase:** P6 (constrained instances). This is the hardest resolution case.
+**Phase:** P2. The collection data structure choice must be made before implementing collection.
 
 ---
 
 ## PART C: Minor Pitfalls (Annoying but Fixable)
 
-### Pitfall TC-11: Type Variable Index Collision in Instantiated Constraints
+### Pitfall TA-10: Span Collisions for Synthetic AST Nodes
 
-**What goes wrong:** `Infer.freshVar` starts at 1000 and increments. When a scheme with constraints is instantiated, fresh variables replace quantified variables in both the type AND the constraints. If the constraint instantiation uses a different fresh variable counter than the type instantiation (e.g., by calling freshVar separately), the constraint `Show ?1000` refers to a different variable than the type `?1001 -> string`, even though they should be the same `'a`.
+**What goes wrong:** Some `Expr` nodes are created synthetically with `Ast.unknownSpan` (e.g., nodes injected by match compilation in `MatchCompile.fs`, or the `LetDecl` wrappers created by `elaborateTypeclasses`). If the export is keyed by `Span`, multiple synthetic nodes have the same key (`unknownSpan = { FileName = "<unknown>"; ... }`), and map insertion silently overwrites earlier entries.
 
 **Prevention:**
-- Instantiate the type and all constraints in a single pass using the same substitution mapping `{quantified_var -> fresh_var}`.
-- Never call `freshVar()` separately for constraint instantiation vs. type instantiation.
+- When keying by span, skip nodes with `span = Ast.unknownSpan` or handle them separately.
+- For synthetic nodes from `elaborateTypeclasses`, their types are determined by the instance's method name — look them up in `TypeEnv` rather than the per-span annotation map.
+- Alternatively, assign unique synthetic spans to elaborated nodes: a counter-based `{ FileName = "<elaborated>"; StartLine = n; ... }`.
 
 **Warning signs:**
-- Constraint errors reference type variables not present in the inferred type.
-- `show` works when the constrained variable is the only type variable, but fails when there are multiple type variables.
+- Multiple instance method bodies all map to the same key in the annotation map.
+- Only the last instance processed has type information; earlier ones are overwritten.
 
-**Phase:** P2 (constraint instantiation). Easy to get right if noticed early.
+**Phase:** P3 (elaboration). Address when `elaborateTypeclasses` is extended to produce annotated output.
 
 ---
 
-### Pitfall TC-12: `formatType` Does Not Display Constraints
+### Pitfall TA-11: GADT Branch Type Annotations Capture Branch-Local Refinements
 
-**What goes wrong:** `Type.formatTypeNormalized` and `Type.formatSchemeNormalized` do not show constraints. Error messages that reference constrained types will omit the constraint, producing confusing output like `expected: 'a -> string, got: int -> string` when the real message should be `expected: Show 'a => 'a -> string, got: int -> string`.
+**What goes wrong:** FunLang's GADT checking in `Bidir.fs` uses per-branch substitutions that refine type variables local to that branch. For example, in `match (e : Expr int) with | Num n -> n`, the branch knows the result is `int` via the GADT refinement. If per-expression types are collected during GADT branch checking, the collected types may include branch-local `TVar` refinements that are not valid outside the branch.
+
+**Why it happens:** GADT branches in `Bidir.fs` apply a branch-specific substitution before checking the branch body. Types collected inside the branch body are relative to that substitution. If the annotation map stores raw `Type` values without recording which substitution produced them, the consumer may misinterpret a branch-local `TVar 1099 = TInt` annotation as a global fact.
 
 **Prevention:**
-- Extend `formatSchemeNormalized` to format constraints as `(Show 'a, Eq 'a) => ...` when constraints are present.
-- Update all `Diagnostic.fs` error formatting that calls `formatType` or `formatScheme` to use the constraint-aware version.
+- Apply the full accumulated substitution (including branch-local GADT refinements) to collected types before storing them.
+- This is consistent with TA-2 prevention — always apply the current substitution before storing a type annotation.
+- For the common case, this is already correct if annotations are stored at the end of each branch check using the branch-final substitution.
 
 **Warning signs:**
-- Type error messages reference `'a -> string` without constraint context, confusing users.
+- GADT match branch expressions have wrong types in the export (e.g., `'a` instead of `int`).
+- Types correct for simple matches but wrong for GADT matches.
 
-**Phase:** P2. Fix immediately when Scheme is extended to carry constraints.
+**Phase:** P2 (collection). Must apply substitution discipline inside GADT branch checking.
 
 ---
 
-### Pitfall TC-13: Parser AST for Typeclass/Instance Declarations Not Unified with Module Decl
+### Pitfall TA-12: Consumer Misuse — Treating Scheme as Monotype
 
-**What goes wrong:** FunLang's top-level is a list of `Decl` items. If `TypeclassDecl` and `InstanceDecl` are added as new union cases but are not handled in all visitors — `TypeCheck.fs`, `Bidir.fs`/top-level processing, `Eval.fs`, `Program.fs` pretty-printer, `--emit-ast` output — the F# compiler will silently ignore them via incomplete match warnings (or worse, match-all catch cases will swallow them).
+**What goes wrong:** The export contains two categories of types:
+- `expr_types: Map<Span, Type>` — always monotypes (instantiated at call site)
+- `binding_schemes: Map<string, Scheme>` — may be polymorphic (`Scheme([42], [], ...)`)
+
+Consumers that treat `binding_schemes` entries as monotypes will see `TVar 42` and misinterpret it as an unresolved type variable rather than a quantified type parameter.
 
 **Prevention:**
-- After adding `TypeclassDecl` and `InstanceDecl` to `Ast.fs`, immediately run `dotnet build` and treat ALL new incomplete-match warnings as blocking errors.
-- Add a `failwith "TypeclassDecl not yet implemented"` stub in Eval.fs and TypeCheck.fs so that accidental paths through unimplemented code fail loudly at runtime rather than silently.
-- The `--emit-ast` flag should print the new AST nodes verbatim — add cases to the Format.fs/AST printer immediately.
+- Document the distinction clearly in the export format.
+- Name the fields distinctly: do not use `type` for both categories.
+- Provide a helper: `instantiateScheme : Scheme -> Type list -> Type` that maps type arguments to quantified variables — the consumer should call this when it needs a concrete instantiation.
+- Include the fact that `TVar n` in a `Scheme` where `n` is in the `vars` list is a bound variable (parameter), not a free inference variable.
 
 **Warning signs:**
-- `typeclass` or `instance` declarations in source files are silently ignored.
-- F# compiler emits "incomplete match" warnings that are suppressed by a catch-all.
+- Consumer reports type errors on all polymorphic functions.
+- Consumer treats `forall 'a. 'a -> 'a` as having type `TVar 42 -> TVar 42` with unknown `TVar 42`.
 
-**Phase:** P1. Structural issue that causes silent failures across all subsequent phases.
+**Phase:** P5 (consumer integration). Primarily a documentation and API design issue.
 
 ---
 
-### Pitfall TC-14: Orphan Instance Confusion from Prelude Instances
+### Pitfall TA-13: Over-Engineering the Export Format
 
-**What goes wrong:** The Prelude loads `Show int`, `Eq int`, etc. as default instances. If user code in a `.fun` file also declares `instance Show int = ...`, there are two instances for the same type-class/type pair. This is incoherence. FunLang must enforce: one instance per (class, type) pair globally.
+**What goes wrong:** Attempting to export a complete typed IR with resolved dictionary passing, monomorphized instances, explicit type applications, and reconstructed spine forms before MLIR codegen actually requires them. This adds weeks of work and produces a complex format that changes as the consumer's needs are clarified.
+
+**Concrete over-engineering traps:**
+- Emitting explicit dictionary arguments in the export AST (like GHC's Core) before the consumer proves it needs them.
+- Monomorphizing all polymorphic functions in the export (like MLton) before knowing the consumer's optimization strategy.
+- Defining a complex JSON schema with 30+ node types before the consumer has written a single MLIR lowering pass.
 
 **Prevention:**
-- Maintain the `InstanceEnv` as a `Map<string * string, InstanceInfo>` keyed by `(class_name, type_name)`.
-- When adding a new instance, check for an existing entry and raise `E0XXX DuplicateInstance` if one exists.
-- The Prelude's instances are loaded first (before user code); user code that re-declares a Prelude instance gets a clear error.
+- Start with the minimal format: `(post-elaboration Decl list) + (Map<Span, Type> for expressions) + (Map<string, Scheme> for top-level bindings) + (Map<string, Scheme> for builtins/prelude)`.
+- Let the consumer drive format evolution: add features only when a specific MLIR lowering pass requires them.
+- The first consumer milestone should use the export — if it can type all nodes it needs, the format is sufficient.
 
 **Warning signs:**
-- User accidentally re-declares a builtin instance and does not get an error — instead the last-declared instance silently wins.
+- The export format design phase takes longer than the implementation phase.
+- The export format has fields that no consumer code reads.
 
-**Phase:** P3. Needs to be part of instance registration from the beginning.
+**Phase:** P1 (format design). Make the MVP format as simple as possible.
 
 ---
 
@@ -348,54 +341,57 @@ If context reduction does not propagate `Show int` as a sub-goal, `show (Some 42
 
 | Phase | Topic | Most Likely Pitfall | Mitigation |
 |-------|-------|--------------------|-|
-| P1 | Parser/AST | LALR(1) conflicts from new keywords (TC-8) | Reserve keywords early; use `where` not `=` |
-| P1 | AST | Silent swallow of new Decl variants (TC-13) | Add `failwith` stubs; treat warnings as errors |
-| P2 | HM integration | Constraint not generalized with type vars (TC-1) | Extend Scheme to carry constraints from day one |
-| P2 | HM integration | Type variable collision in instantiation (TC-11) | Single substitution pass for type + constraints |
-| P2 | HM integration | Missing constraint formatting in errors (TC-12) | Extend formatSchemeNormalized immediately |
-| P2 | HM integration | Mutable variable constraint leak (TC-7) | Extend mutableVars check to constraint generalization |
-| P3 | Resolution | Eager resolution before unification (TC-2) | Deferred constraint solving; resolve after unification |
-| P3 | Resolution | Superclass infinite loop (TC-6) | No superclass for v10.0; add depth limit if later |
-| P3 | Resolution | Duplicate/orphan instances (TC-14) | InstanceEnv keyed by (class, type); error on duplicate |
-| P3 | Resolution | Import system missing InstanceEnv (TC-9) | Thread InstanceEnv through import pipeline |
-| P4 | Evaluator | Dictionary scope leak in higher-order functions (TC-3) | Elaboration or evidence-threaded call stack |
-| P5 | Builtins | Dual dispatch incoherence for to_string/= (TC-4) | Decide migration strategy before P1 syntax |
-| P6 | Constrained instances | Incomplete context reduction (TC-10) | Recursive subgoal resolution with depth limit |
-| P2/P3 | Diagnostics | Ambiguous type variable errors (TC-5) | AmbiguousType diagnostic with constraint name and span |
+| P1 | Format design | Pre-elaboration vs. post-elaboration mismatch (TA-1) | Key by binding name or call-site span, not InstanceDecl structure |
+| P1 | Format design | Over-engineering the format (TA-13) | Start minimal: Decl list + two Maps |
+| P1 | Format design | Per-name keying of instance methods (TA-4) | Use per-call-site span as primary key |
+| P2 | Type collection | Raw TVar in collected types (TA-2) | Apply accumulated substitution before storing |
+| P2 | Type collection | Threading annotation map through 67+ synth sites (TA-5) | Module-level mutable (established FunLang pattern) |
+| P2 | Type collection | Storing Scheme where consumer needs monotype (TA-6) | Collect instantiated type from synth return, not TypeEnv lookup |
+| P2 | Type collection | Breaking existing synth signature (TA-7) | Do NOT change synth return type; use mutable collection |
+| P2 | Type collection | Performance of Map allocation per call (TA-9) | Use Dictionary<Span, Type>, gate behind flag |
+| P2 | Type collection | GADT branch-local types escaping (TA-11) | Apply branch substitution before storing |
+| P3 | Elaboration | Synthetic nodes have unknownSpan (TA-10) | Handle unknownSpan nodes via TypeEnv name lookup |
+| P4 | Export | Permissively polymorphic builtins (TA-8) | Export call-site argument type alongside builtin type |
+| P4 | Export | Missing builtin/prelude types (TA-3) | Include builtin and prelude type tables in export |
+| P5 | Consumer | Treating Scheme as monotype (TA-12) | Document Scheme vs. Type distinction; provide instantiateScheme helper |
 
 ---
 
-## PART E: FunLang-Specific Integration Risks
+## PART E: FunLang-Specific Architecture Risks
 
-These pitfalls are not general type-class pitfalls but arise specifically from FunLang's existing design decisions:
+These pitfalls arise specifically from FunLang's existing design, not from the general problem.
 
-### Risk LT-1: `synth`/`check` Signature Explosion
+### Risk AX-1: `Bidir.mutableVars` Pattern Has Thread-Safety Caveat
 
-`Bidir.synth` already takes `ctorEnv`, `recEnv`, `ctx`, `env`. Adding a `classEnv: ClassEnv` and `instanceEnv: InstanceEnv` parameter means every call site in Bidir.fs must be updated. FunLang has 67+ call sites for synth/check (per PROJECT.md "mutableVars avoids threading through 67+ synth/check call sites"). The same problem will recur for class/instance environments.
+The existing mutable state in `Bidir.fs` (`mutableVars`, `pendingConstraints`, `currentClassEnv`, `currentInstEnv`) is explicitly not thread-safe (see comment in `Bidir.fs` line 23: "Tests must run sequentially"). Adding `typeAnnotations` as another mutable follows the same pattern but reinforces the sequential-only constraint. If FunLang ever moves to parallel compilation, this becomes a blocker.
 
-**Mitigation:** Use the same pattern as `mutableVars`: a module-level mutable ref for environments that do not change within a single inference pass. `let mutable classEnv: ClassEnv = Map.empty` in Bidir.fs, set at the top of each top-level binding check. Avoids threading through all call sites.
+**Mitigation:** Document the thread-safety constraint explicitly in the new `typeAnnotations` declaration, consistent with the existing comment. The sequential-only constraint is acceptable for the current milestone scope.
 
-### Risk LT-2: GADT Branch Isolation vs. Constraint Propagation
+---
 
-FunLang's GADT support uses `isPolyExpected` per-branch isolation so each branch gets an independent expected type. If type class constraints are generated within a GADT branch, they must be solved with the GADT refinement in scope (the branch-local substitution). Constraints that escape a GADT branch may reference type variables that are only valid within that branch, causing resolution errors in the outer context.
+### Risk AX-2: `elaborateTypeclasses` Is Not the Only AST-Rewriting Pass
 
-**Mitigation:** Solve constraints locally within each GADT branch before merging branches. Do not defer constraints from GADT branches to the outer wanted set without first applying the branch's local substitution.
+`Elaborate.elaborateTypeclasses` is invoked in `Program.fs` at lines 211 and 465. But `MatchCompile.fs` may also rewrite match expressions. If typed AST export runs before match compilation, the consumer receives pre-compilation match trees (with `OrPat`, nested patterns, etc.) that differ from what the evaluator actually executes.
 
-### Risk LT-3: `callValueRef` Pattern for Builtin Type Class Methods
+**Mitigation:** Clarify the exact pipeline stage at which the export runs. For MLIR codegen, post-match-compilation AST is likely needed (since MLIR needs explicit case analysis, not high-level pattern matching). Ensure the export pass runs at the same stage as evaluation.
 
-FunLang uses a mutable `callValueRef` forward reference to let built-in functions invoke user closures (e.g., `Array.map`). If type class method dispatch at runtime needs to call a user-defined instance method, the same forward-reference pattern is needed — the evaluator must be wired before the instance dictionary is built. Failing to use this pattern causes `NullReferenceException` or stack overflows in F#.
+---
 
-**Mitigation:** When constructing the built-in instance dictionaries (e.g., a `DictValue` for `Show int`), the dictionary values must be `BuiltinValue` or `ClosureValue` that reference the evaluator via `callValueRef`, not direct F# functions that bypass the evaluator.
+### Risk AX-3: `TypeCheck.typeCheckDecls` Discards Per-Expression Types
+
+`typeCheckDecls` returns `TypeEnv * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * Diagnostic list`. There is no per-expression type in the return. All per-expression type information computed during `Bidir.synth` is discarded unless explicitly collected via the mutable approach described in TA-5.
+
+**Mitigation:** Treat `typeCheckDecls` as a black box and collect types inside `Bidir.synth` directly — do not try to extract them from `typeCheckDecls`'s return value. The `TypeEnv` in the return is only top-level binding names → schemes; it does not cover subexpression types.
 
 ---
 
 ## Sources
 
-- [GHC Instance Declarations and Resolution](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/instances.html) — authoritative on instance resolution algorithm and Paterson conditions
-- [Implementing and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html) — dictionary passing mechanics, polymorphic recursion, constraint direction
-- [Type Classes: Confluence, Coherence and Global Uniqueness — ezyang's blog](http://blog.ezyang.com/2014/07/type-classes-confluence-coherence-global-uniqueness/) — orphan instances and coherence
-- [Type Classes in Haskell (Hall, Hammond, Peyton Jones)](https://dl.acm.org/doi/pdf/10.1145/227699.227700) — original qualified types + constraint generalization
-- [Learn From Errors: Overlapping Instances — Serokell](https://serokell.io/blog/learn-from-errors-overlapping-instances) — practical overlapping instance errors
-- [Coherence of Type Class Resolution (Bottu et al.)](https://xnning.github.io/papers/coherence-class.pdf) — formal treatment of superclass nondeterminism
-- [Hindley-Milner with Constraints — Kwang's Haskell Blog](https://kseo.github.io/posts/2017-01-02-hindley-milner-inference-with-constraints.html) — constraint-based HM formulation
-- [Monomorphism Restriction — HaskellWiki](https://wiki.haskell.org/Monomorphism_restriction) — constrained let generalization rules
+- FunLang source: `/src/FunLang/Bidir.fs` — `synth`, `generalize`, `instantiateAt`, mutable state patterns
+- FunLang source: `/src/FunLang/Elaborate.fs` — `elaborateTypeclasses` implementation showing InstanceDecl → LetDecl rewriting
+- FunLang source: `/src/FunLang/TypeCheck.fs` — `typeCheckModuleWithPrelude` return type (no per-expression types)
+- FunLang source: `/src/FunLang/Ast.fs` — `Expr` carries only `Span`, no type field
+- FunLang source: `/src/FunLang/Type.fs` — `Scheme`, `Constraint`, substitution machinery
+- FunLang source: `/src/FunLang/Program.fs` — pipeline order: typecheck → elaborateTypeclasses → evalModuleDecls
+- GHC source code notes on Core IR (System F) — motivation for post-elaboration typed representation
+- "Typing Haskell in Haskell" (Jones 1999) — per-expression type annotation approach in HM systems

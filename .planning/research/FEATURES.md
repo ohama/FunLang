@@ -1,273 +1,288 @@
-# Feature Landscape: v10.0 Type Classes
+# Feature Landscape: Typed AST Export
 
-**Domain:** ML-style interpreter — type class / ad-hoc polymorphism system
-**Researched:** 2026-03-31
-**Milestone focus:** Haskell-style type classes to replace hardcoded `to_string`, polymorphic comparison, and enable user-defined ad-hoc polymorphism
-
----
-
-## Context: What Already Exists
-
-Before categorizing features, the baseline state of the relevant subsystems:
-
-| Aspect | Current State | Problem |
-|--------|--------------|---------|
-| `to_string` | Hardcoded builtin — dispatch in F# on `Value` DU | Cannot be overridden per type; custom types get structural dump |
-| `=` / `<>` equality | Hardcoded `valuesEqual` in Eval.fs — structural comparison on all `Value` types | No way to define custom equality for a type |
-| `<` / `>` / `<=` / `>=` | Hardcoded to `TInt`, `TString`, `TChar` in Bidir.fs | Non-numeric user types cannot be ordered |
-| Parametric polymorphism | Full HM inference (Infer.fs + Bidir.fs + Unify.fs) | Works great — type classes must coexist with it |
-| Type system | `Type.fs` has `TInt`, `TBool`, `TString`, `TChar`, `TVar`, `TArrow`, `TTuple`, `TList`, `TArray`, `THashtable`, `TData`, `TExn` | No constraint representation yet |
-| Modules | F#-style module system, `open "file.fun"` imports | Instances could live in modules — no global scope issue |
-
-The motivation for type classes is concrete and bounded:
-1. `to_string` should dispatch to a user-defined `Show` instance
-2. Comparison operators should require an `Ord` (or `Eq`) constraint
-3. Users writing custom types need a way to make them printable, comparable, hashable
+**Domain:** Compiler-facing typed AST — structured type info export from FunLang to FunLangCompiler
+**Researched:** 2026-04-02
+**Milestone focus:** Replace 6 tracking sets + 8 heuristic functions (~250 lines) in FunLangCompiler with first-class type info derived from HM inference results
 
 ---
 
-## Design Space: Haskell vs Rust Traits vs F# SRTP
+## Context: What the Heuristics Are Replacing
 
-The three dominant models for ad-hoc polymorphism:
+FunLangCompiler currently has no access to FunLang's inferred types. Instead, Elaboration.fs carries forward-propagating sets that grow as the compiler encounters let-bindings, then queries them at call sites:
 
-| Model | Instance Resolution | HM Compatibility | Interpreter Complexity |
-|-------|---------------------|-----------------|------------------------|
-| **Haskell type classes** | Implicit, dictionary-passing, globally coherent | Seamless — constraint variables in type schemes | High — global instance database, coherence, overlapping instances |
-| **Rust traits** | Explicit (static dispatch) or dynamic (`dyn Trait`) | No HM — Rust uses bidirectional checking with explicit types | Medium — no implicit passing, but no HM integration |
-| **F# SRTP** (Statically Resolved Type Parameters) | Compile-time specialization, monomorphization | Poor fit for dynamic interpreter | Very High — requires full type specialization |
-| **Simplified dictionary passing** | Implicit, but no global coherence enforcement at first | HM-compatible with type constraint annotation | Medium — the right fit for an interpreter |
+| Set / Function | Tracks | Used For |
+|----------------|--------|----------|
+| `ArrayVars: Set<string>` | Variable names bound to array-creating expressions | ForInExpr dispatch: `lang_for_in_array` vs `lang_for_in_list` |
+| `CollectionVars: Map<string, CollectionKind>` | Variable names → HashSet/Queue/MutableList/Hashtable | ForInExpr dispatch: `lang_for_in_hashset/queue/mlist/hashtable` |
+| `BoolVars: Set<string>` | Variable names bound to bool-producing expressions | `to_string` dispatch: `lang_to_string_bool` vs `lang_to_string_int` |
+| `StringVars: Set<string>` | Variable names bound to string-valued expressions | IndexGet dispatch: `lang_string_char_at` vs `lang_index_get` |
+| `StringFields: Set<string>` | Record field names with `TEString` type annotation | IndexGet dispatch for field accesses |
+| `MutableVars: Set<string>` | Variable names introduced by `LetMut`/`Assign` | Closure capture coercion: `Ptr` vs `I64` |
+| `isPtrParamBody` (250-line function) | Whether a lambda param needs `Ptr` (list/record/string/ADT) vs `I64` (int/bool) | Lambda param type at codegen |
+| `isArrayExpr` | Structural pattern-match on AST to detect array origins | ForInExpr, for-in dispatch |
+| `isStringExpr` | Structural pattern-match on AST to detect string origins | IndexGet dispatch |
+| `isBoolExpr` | Structural pattern-match on AST to detect bool origins | `to_string` dispatch |
+| `detectCollectionKind` | Structural pattern-match on AST to detect collection origins | ForInExpr dispatch |
+| `bodyReturnsBool` | Traverses function body to detect bool-returning functions | ClosureInfo.InnerReturnIsBool |
 
-**Recommendation: Haskell-style dictionary passing, simplified.**
-
-Dictionary passing means: each type class constraint `C 'a` becomes an implicit argument `dict_C` (a record of methods) at elaboration time. The interpreter passes dictionaries at call sites. This is the proven approach and is how GHC works internally.
-
-The key simplification vs full Haskell: start without orphan instance detection, without overlapping instances, without multi-parameter type classes, and without superclass hierarchies. These can be added incrementally.
+The key insight: all of these are re-deriving information that HM inference already computed. The typed AST export needs to make that information available at each expression node, so the compiler can query it directly instead of re-inferring it from AST structure.
 
 ---
 
 ## Table Stakes
 
-**Must have for type classes to be useful at all.** Without these, the feature is incomplete.
+**These are required for FunLangCompiler to use the typed AST at all.** Without them, the compiler still needs the full set of heuristics.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| `typeclass` declaration syntax | Define what methods a type class requires | Medium | `typeclass Show 'a = { show : 'a -> string }` — introduces class name, type var, method signatures |
-| `instance` declaration syntax | Bind a concrete type to a type class | Medium | `instance Show int = { let show x = to_string x }` |
-| Constraint inference in type schemes | `show` function must carry `Show 'a =>` constraint | High | Requires extending `Scheme` to include constraints; touches Infer.fs, Bidir.fs, Unify.fs |
-| Dictionary passing at call sites | Pass the right method dictionary when calling a constrained function | High | Elaboration step: replace `show x` with `dict.show x`; central to the approach |
-| `Show` typeclass replacing `to_string` | Primary motivation — printable user types | Medium | `show : 'a -> string` where `Show 'a`; existing `to_string` becomes the default `Show int/bool/string/char` instance |
-| `Eq` typeclass | Equality constraint — `=` and `<>` should require `Eq 'a` | Medium | Replaces hardcoded polymorphic equality; `eq : 'a -> 'a -> bool` |
-| `Ord` typeclass with `Eq` superclass | Ordering constraint — `<`, `>`, `<=`, `>=` require `Ord 'a` | Medium | `Ord 'a` implies `Eq 'a`; comparison operators become typeclass-dispatched |
-| Constrained instance declarations | `instance Show (Option 'a) where Show 'a` | High | Instance with constraints on type parameters — required for generic containers |
-| Built-in instances for primitive types | `Show int`, `Show bool`, `Show string`, `Show char`, `Eq int`, `Ord int`, etc. | Low | These wire up existing builtins; defines the "default behavior" baseline |
-| Type error when constraint not satisfied | `show x` without `Show` instance gives a compile error | Medium | Constraint resolution failure must produce clear diagnostic |
+### TS-1: Per-expression type annotation (replaces all heuristics)
+
+Every expression node in the exported AST carries a resolved `Type` from HM inference.
+
+| Compiler heuristic replaced | How the type annotation replaces it |
+|-----------------------------|-------------------------------------|
+| `ArrayVars` | `Var` node's type is `TArray _` |
+| `CollectionVars` | `Var` node's type is `THashtable`, `TData("HashSet",_)`, `TData("Queue",_)`, `TData("MutableList",_)` |
+| `BoolVars` + `isBoolExpr` | Expression node's type is `TBool` |
+| `StringVars` + `isStringExpr` | Expression node's type is `TString` |
+| `StringFields` | `FieldAccess` node's type is `TString` — no separate field set needed |
+| `isPtrParamBody` | Lambda param's type from function type: `TArrow(paramType, _)` — if `paramType` is `TList _`, `TData _`, `TString`, `TArray _`, `THashtable _` → Ptr; if `TInt`, `TBool`, `TChar` → I64 |
+| `isArrayExpr`, `isBoolExpr`, `isStringExpr`, `detectCollectionKind` | Replaced entirely by the type field on the expression node |
+| `bodyReturnsBool` | Return type of lambda: `TArrow(_, TBool)` |
+
+**Implementation notes:**
+- The type must be fully resolved (substitutions applied). Returning a `TVar` for an uninferrable expression is acceptable but degrades to heuristic fallback.
+- A `TError` type indicates inference failure — the compiler can fall back to existing heuristics for that node.
+- The type field must be on every expression node, not just terminal nodes. The compiler needs the type of subexpressions (e.g., `collExpr` inside `ForInExpr`, `argExpr` inside `App`).
+
+**Complexity:** High — requires threading the final substitution back through every expression node after inference completes, or building an expression-keyed type map during inference.
+
+---
+
+### TS-2: Mutable variable flag on let-bindings (replaces `MutableVars`)
+
+The typed AST must clearly mark which variable bindings are mutable (`LetMut`) vs immutable (`Let`/`LetRec`).
+
+**Compiler heuristic replaced:**
+- `MutableVars: Set<string>` — compiler currently checks `Set.contains name env.MutableVars` at every `Var` reference to decide whether to emit a `LlvmLoadOp` from a `RefValue` Ptr cell.
+- Closure capture coercion: `let capType = if Set.contains capName env.MutableVars then Ptr else I64`
+
+**What the typed AST needs to provide:**
+- A `isMutable: bool` flag on the binding node, OR
+- The `LetMut` / `Let` distinction preserved in the typed AST (currently exists in `Ast.Expr` as separate constructors — this information must not be erased in conversion to typed AST)
+
+**Note:** This is actually already present in `Ast.Expr` as separate `LetMut` vs `Let` constructors. The typed AST export must not collapse them into a single binding form. The compiler's `MutableVars` set exists because the set needs to propagate to child scopes. With per-node type info, the binding site is unambiguous, and the compiler can derive mutability from node kind rather than maintaining a set.
+
+**Complexity:** Low — information already exists in AST.
+
+---
+
+### TS-3: Hashtable key type accessible at IndexGet / IndexSet sites (replaces key-type inference)
+
+For `IndexGet(ht, key)` and `IndexSet(ht, key, val)`, the compiler must dispatch to `lang_index_get_str` vs `lang_index_get` based on whether the key is a string.
+
+**Current behavior:** The compiler checks `idxVal.Type` after elaborating the index expression. Since type info is on the expression, this is partially working — but only because `String _` literals elaborate to `Ptr` and `Number _` literals elaborate to `I64`. Variable keys require `StringVars` to be queried.
+
+**What the typed AST provides:** With per-expression types (TS-1), `idxExpr`'s type will be `TString` or `TInt` — no `StringVars` lookup needed.
+
+**Complexity:** Zero additional work beyond TS-1.
+
+---
+
+### TS-4: `ForInExpr` collection type accessible at iteration site (replaces `CollectionVars` + `isArrayExpr`)
+
+The `forInFn` dispatch in `elaborateExpr` selects `lang_for_in_array/list/hashset/queue/mlist/hashtable` based on the collection's type.
+
+**Current behavior:** `detectCollectionKind env.CollectionVars collExpr` and `isArrayExpr env.ArrayVars collExpr` traverse the expression and check the variable sets.
+
+**What the typed AST provides:** With TS-1, `collExpr`'s type will be one of:
+- `TArray _` → `lang_for_in_array`
+- `TList _` → `lang_for_in_list`
+- `TData("HashSet", _)` → `lang_for_in_hashset`
+- `TData("Queue", _)` → `lang_for_in_queue`
+- `TData("MutableList", _)` → `lang_for_in_mlist`
+- `THashtable _ _` → `lang_for_in_hashtable`
+
+**Complexity:** Zero additional work beyond TS-1.
+
+---
+
+### TS-5: Lambda parameter type at definition site (replaces `isPtrParamBody`)
+
+`isPtrParamBody` is the single most complex heuristic — a 250-line recursive traversal of the lambda body to determine if the parameter will be passed as `Ptr` or `I64`. This exists entirely because the compiler does not know the parameter's inferred type.
+
+**What the typed AST provides:** With TS-1 applied to the `Lambda` node, the function's type is `TArrow(paramType, returnType)`. The compiler can read `paramType` directly:
+- `TInt`, `TBool`, `TChar` → `I64`
+- `TString`, `TList _`, `TArray _`, `THashtable _ _`, `TData _ _`, `TTuple _` → `Ptr`
+
+**Note:** This also applies to `LetRec` bindings where the function's inferred type determines the parameter's IR type. The `isPtrParamBody` heuristic was needed because the compiler synthesized the Lambda parameter type from body analysis — with the typed AST, that analysis is done once by HM inference.
+
+**Complexity:** Zero additional work beyond TS-1, but requires verifying that inference produces ground types (not `TVar`) for lambda parameters in all practical cases.
+
+---
+
+### TS-6: `to_string` dispatch type at call site (replaces `BoolVars` + `isBoolExpr`)
+
+`to_string` dispatches to `lang_to_string_bool` vs `lang_to_string_int` based on whether the argument is bool. The compiler currently checks `argVal.Type = I1 || isBoolExpr env.BoolVars env.KnownFuncs argExpr`.
+
+**What the typed AST provides:** With TS-1, `argExpr`'s type is `TBool` or `TInt`. Dispatch is a direct type check.
+
+**Complexity:** Zero additional work beyond TS-1.
+
+---
+
+### TS-7: Export format — typed AST as a parallel structure
+
+The typed AST must be a defined type in FunLang that can be serialized to a format FunLangCompiler can consume without depending on FunLang's internal `Type` module.
+
+**Options:**
+
+| Option | Description | Tradeoff |
+|--------|-------------|----------|
+| **A: Annotated Ast (parallel tree)** | New `TExpr` type that mirrors `Ast.Expr` but carries a `Type` at each node | Clean separation; compiler gets full AST + types; large type definition |
+| **B: Span-keyed type map** | Map from `Span` (source location) to `Type`; original `Ast.Expr` unchanged | Minimal FunLang changes; compiler must correlate by span; fragile if spans are non-unique |
+| **C: Inline annotation via `Annot` reuse** | Reuse `Ast.Annot` to wrap every expression with its inferred type | Abuses existing AST; pollutes pattern matches |
+| **D: Separate serialized type file** | FunLang emits a JSON/binary file of `(span → typeString)` mappings | Language-agnostic; requires parsing overhead in compiler |
+
+**Recommendation: Option A (annotated parallel tree).**
+
+A `TExpr` type that mirrors `Ast.Expr` with a `ty: Type` field at each node is the cleanest interface. The compiler can pattern-match on structure and read `.ty` without span correlation. This is how GHC, OCaml, and most typed compilers represent post-inference ASTs.
+
+**Implementation sketch:**
+```fsharp
+type TExpr =
+    | TNumber of int * ty: Type * span: Span
+    | TVar of string * ty: Type * span: Span
+    | TApp of TExpr * TExpr * ty: Type * span: Span
+    | TLambda of param: string * paramTy: Type * body: TExpr * ty: Type * span: Span
+    // ... all Ast.Expr variants ...
+```
+
+The `ty` field carries the type of the entire expression. `TLambda` additionally carries `paramTy` to directly expose the parameter's inferred type (critical for TS-5).
+
+**Complexity:** High — requires defining the full parallel type and a conversion pass after inference.
 
 ---
 
 ## Differentiators
 
-**Features that set this implementation apart — useful but not strictly required for basic type class functionality.**
+**Useful but not strictly required to replace all heuristics.** The compiler can still function at lower quality without these.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| `Num` typeclass | `+`, `-`, `*` become typeclass-dispatched — enables user-defined numeric types | High | Requires changing arithmetic operators to carry `Num 'a` constraint; risky — may break existing integer arithmetic |
-| Default method implementations | `instance Show (Option 'a)` can omit methods that have sensible defaults | Medium | Class declaration can provide default bodies; instance overrides only what it needs |
-| `derive Show` / `derive Eq` syntax | Automatic instance generation for ADTs | High | Eliminates boilerplate; structurally walks ADT and generates show/eq method — very ergonomic |
-| `Hashable` typeclass | Makes user types usable as hashtable keys | Medium | Requires defining hash function per type; non-trivial to get right |
-| `Functor` / `Foldable` typeclasses | Enables `map`, `foldl` on user-defined containers | Very High | Requires Higher-Kinded Types (`'f 'a`) — a different feature entirely; not in scope |
-| Pretty-print vs debug distinction | Separate `Show` (human-readable) and `Debug` (structural) typeclasses | Low | Mirrors Rust `Display` vs `Debug`; nice-to-have |
-| Named typeclass constraints in annotations | `let f (x : Show 'a => 'a) : string = show x` — explicit user-facing annotations | Medium | Useful for documentation and error messages |
+### D-1: Typed pattern bindings
+
+In `match` clauses and `LetPat`, the bound variables carry their inferred types. This would replace heuristic tracking of what type a `VarPat`-bound variable has (currently tracked via `BoolVars`, `StringVars`, etc. as variables pass through pattern destructuring).
+
+**Value:** Replaces the fragile propagation of `BoolVars`/`StringVars` when pattern-match arms introduce new bindings. E.g., `match x with (a, b) -> ...` — the types of `a` and `b` are currently not available to the compiler without re-running inference.
+
+**Complexity:** Medium — requires threading types into `MatchClause` and `Pattern` nodes in the typed AST.
+
+---
+
+### D-2: Resolved record field types in the typed AST
+
+`FieldAccess(expr, fieldName)` nodes carry the type of the accessed field as an explicit annotation, not just the type of the resulting expression.
+
+**Value:** Currently `StringFields` exists specifically because the compiler needs to know if a field access produces a string (for IndexGet dispatch). With per-expression types (TS-1), `FieldAccess` node's `ty` already provides this. This differentiator is largely superseded by TS-1 — listing it separately for clarity.
+
+**Complexity:** Zero, subsumed by TS-1.
+
+---
+
+### D-3: Type info on declaration nodes (module-level bindings)
+
+`LetDecl` and `LetRecDecl` nodes carry the inferred type scheme of the declared function/value. The compiler currently calls `prePassDecls` to collect type info from AST annotations (TypeExpr) — not from inferred types. With typed declarations, the compiler gets the actual inferred type, not just the user's annotation.
+
+**Value:** Enables the compiler to know the full return type of module-level functions — currently `FuncSignature.ReturnIsBool` and `FuncSignature.InnerReturnIsBool` are computed heuristically from the body. With declaration types, these are read directly.
+
+**Complexity:** Low — declaration types are available after the top-level type-check pass.
+
+---
+
+### D-4: Stable, version-tagged export format
+
+The typed AST export includes a version tag so FunLangCompiler can detect incompatible FunLang versions at startup rather than producing silent miscompilations.
+
+**Value:** Operational reliability as both projects evolve.
+
+**Complexity:** Trivial — add a `version: string` field to the export root.
 
 ---
 
 ## Anti-Features
 
-**Things to deliberately NOT build in v10.0.** Common mistakes in first-generation type class systems.
+**Deliberately do not build these in this milestone.**
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Overlapping instances** | Destroys coherence — same type can resolve to different dictionaries in different contexts; produces subtle non-deterministic bugs | Require exactly one instance per (class, type) pair; error on duplicates |
-| **Orphan instances** (enforcement) | Enforcing "instance must be defined in same module as type or class" is premature — adds complexity without immediate benefit | Allow orphan instances freely for now; add warning later |
-| **Multi-parameter type classes** (`typeclass Conv 'a 'b`) | Requires functional dependencies or type families to be coherent; very complex | Single type parameter per class only |
-| **Higher-Kinded Types in type classes** (`Functor 'f` where `'f : * -> *`) | Requires HKT extension to HM; `TVar` would need to track kinds | Defer to future milestone; `Functor`/`Monad` not in v10.0 |
-| **`Num` typeclass replacing `+`, `-`, `*`** | Would require changing arithmetic expressions in Bidir.fs and Eval.fs; risks regression on all integer/float arithmetic; large blast radius | Keep `+`/`-`/`*` as-is for `int`; only add `Num` if there is a concrete user need |
-| **Automatic `deriving`** in v10.0 | Significant complexity (structural walk of ADT, code generation); nice-to-have but not needed for core type classes | Manual instances first; derive can come in v10.1 or later |
-| **`instance Show []` global list instance** | In Haskell, `[a]` has a single `Show` instance that recursively shows elements — this requires recursive constraint resolution working perfectly | Build the basic case first; container Show instances come after core machinery works |
-| **Type defaulting (integer/fractional defaults)** | Haskell's infamous defaulting rules for ambiguous numeric types; complex and surprising behavior | Keep `TVar` ambiguity defaulting simple; do not try to mimic Haskell's `default (Integer, Double)` |
-| **Incoherent instances** | GHC extension that allows multiple matching instances with arbitrary selection; completely undermines typeclass semantics | Never implement |
+| **Exporting `Scheme` (polymorphic types) at call sites** | FunLangCompiler needs monomorphic types at each use site, not polymorphic schemes. Exporting `Scheme` would require the compiler to instantiate them — re-implementing a piece of type inference in the compiler. | Export fully-applied, instantiated types at each expression node (post-substitution). |
+| **Exporting type variable IDs** | Raw `TVar 1042` in the export is meaningless to the compiler; it cannot act on an unconstrained type variable. | Substitute all remaining `TVar` occurrences with their best-known concrete type, or leave as opaque `Unknown` so the compiler can fall back gracefully. |
+| **Exporting constraint/typeclass info** | The compiler does not need constraint info; it needs resolved monomorphic types. Constraints are resolved by the instance selection in Bidir.fs before the typed AST is built. | Strip all constraint metadata from the export — the compiler sees only `Type` values, not `Scheme` values. |
+| **Replacing MlirType in the compiler** | The compiler's `MlirType` (I64, Ptr, I1) is a different representation level from FunLang's `Type`. Do not try to unify them. | The compiler maps `Type → MlirType` at elaboration time using a straightforward function: `TInt/TBool/TChar → I64`, `TString/TList/TData/TArray/THashtable/TTuple → Ptr`. |
+| **Lazy/on-demand type lookup** | Providing a query API `getTypeOf: Span -> Type option` instead of embedding types in nodes would require the compiler to maintain spans across transformations and make the interface fragile. | Embed types directly in AST nodes (Option A from TS-7). |
+| **Type inference in the compiler** | Any heuristic that re-derives type information from AST structure is technical debt that the typed AST export should eliminate, not supplement. | After typed AST export is available, delete the heuristics entirely rather than keeping them as fallback. |
+| **Exporting intermediate inference states** | The compiler needs the final fully-resolved types, not types mid-inference. Exporting before substitution is fully applied produces TVar noise. | Only export after applying the final `Subst` to every node type. |
 
 ---
 
 ## Feature Dependencies
 
-The dependency graph for v10.0 features:
-
 ```
-1. Typeclass declaration parsing (AST + Parser)
-   └─► 2. Instance declaration parsing (AST + Parser)
-           └─► 3. TypeClass environment (Type.fs: ClassEnv, InstanceEnv)
-                   └─► 4. Constraint representation in Type.fs (TConstraint / ClassConstraint)
-                           └─► 5. Scheme extension: Scheme with constraints
-                                   └─► 6. Constraint inference in Bidir.fs
-                                           └─► 7. Dictionary building in elaboration
-                                                   └─► 8. Dictionary passing in Eval.fs
-                                                           └─► 9. Built-in instances (Show int, Eq int, etc.)
-                                                                   └─► 10. Show replaces to_string
-                                                                           └─► 11. Eq/Ord constrained operators
+TS-7: Typed AST format definition (TExpr type)
+  └─► TS-1: Per-expression type annotation (conversion pass: Ast.Expr → TExpr with types from Bidir.fs)
+        ├─► TS-2: Mutable variable flag (preserved from LetMut vs Let constructors)
+        ├─► TS-3: Hashtable key type (falls out of TS-1 for index expressions)
+        ├─► TS-4: ForInExpr collection type (falls out of TS-1 for collection expressions)
+        ├─► TS-5: Lambda parameter type (falls out of TS-1 for function types)
+        └─► TS-6: to_string dispatch type (falls out of TS-1 for argument expressions)
 
-Superclass constraint (e.g., Ord requires Eq):
-    4 → SupClass resolution → 7 (when building Ord dict, include Eq dict)
+D-1: Typed pattern bindings
+  └─► TS-1 (requires types to be computed for pattern-bound variables too)
+
+D-3: Declaration types
+  └─► TS-1 (declaration types available after top-level typecheck)
 ```
 
-**Critical path:** Steps 1–8 are the core pipeline. Without all of them, nothing works. Steps 9–11 are the payoff that validates the machinery.
+**Critical path:** TS-7 then TS-1. Everything else (TS-2 through TS-6, all differentiators) follows from TS-1 being available. The hard work is TS-7 (defining the format) and TS-1 (threading types through every expression node).
 
-**Independent work:**
-- `Show` instances for primitive types: can be done as soon as step 8 is working
-- `Eq` / `Ord` operator refactoring: depends on `Eq`/`Ord` instances existing (step 9+)
-- Constrained `Option 'a` instances: depends on constraint inference (step 6+)
+**Key dependency:** TS-1 requires that Bidir.fs can produce a complete final substitution after type-checking — either by exposing the accumulated substitution, or by running a "type-annotate" pass that walks the AST querying the type environment. The current Bidir.fs `synth` function is bidirectional and produces a `(Type, MlirOp list)` pair — it does not currently output an annotated AST. This is the primary implementation challenge.
 
 ---
 
 ## MVP Recommendation
 
-### MVP Scope (v10.0)
+### MVP Scope
 
-The minimal set that delivers real value and validates the architecture:
+**Minimum to replace all 6 tracking sets and 8 heuristics:**
 
-**Phase A — Core machinery:**
-1. `typeclass` / `instance` syntax in parser and AST
-2. `ClassEnv` and `InstanceEnv` in the type checker
-3. Constraint representation in `Type.fs` and `Scheme`
-4. Constraint inference in `Bidir.fs` (pass constraint from usage to caller)
-5. Dictionary building and passing in elaboration + `Eval.fs`
+1. **Define `TExpr`** — parallel typed AST type in a new file (e.g., `TypedAst.fs`), mirroring all `Ast.Expr` variants plus `ty: Type` and for lambdas `paramTy: Type`.
 
-**Phase B — Payoff features:**
-6. Built-in `Show` instances for all primitive types (`int`, `bool`, `string`, `char`, `int list`, `bool list`)
-7. `to_string` becomes an alias or delegates to `Show.show`
-8. Built-in `Eq` instances for primitive types; `=` / `<>` become `Eq`-constrained
-9. Built-in `Ord` instances (superclass of `Eq`); `<` / `>` / `<=` / `>=` become `Ord`-constrained
-10. Constrained instances: `instance Show (Option 'a) where Show 'a`
+2. **Conversion pass** — `annotateExpr : TypeEnv -> Subst -> Ast.Expr -> TExpr` that walks the expression tree, looks up each sub-expression's type in the inference results, and builds the `TExpr` tree. Run this pass after `typeCheckModuleWithPrelude` produces the final substitution.
 
-### Post-MVP (Defer to v10.1+)
+3. **Expose from FunLang** — make `TypedAst.TExpr` and `Type.Type` available as a public API, ideally through a new entry point in `TypeCheck.fs` that returns `(TExpr list, TypeEnv)` instead of just a type environment.
+
+4. **Update FunLangCompiler** — add a reference to FunLang's assembly, receive `TExpr list` from the typed check entry point, and replace all `ElabEnv` set lookups with direct `.ty` queries on `TExpr` nodes.
+
+5. **Delete the heuristics** — remove `ArrayVars`, `CollectionVars`, `BoolVars`, `StringVars`, `StringFields`, `MutableVars`, `isPtrParamBody`, `isArrayExpr`, `isStringExpr`, `isBoolExpr`, `detectCollectionKind`, `bodyReturnsBool` from Elaboration.fs.
+
+### Post-MVP (Defer)
 
 | Feature | Reason to Defer |
 |---------|-----------------|
-| `derive Show` / `derive Eq` | Reduces boilerplate but not needed to validate core system |
-| `Num` typeclass | High blast radius; no immediate user demand |
-| `Hashable` typeclass | Non-trivial; depends on MVP working first |
-| `Functor` / `Monad` | Requires HKTs — separate milestone |
-| Default method implementations | Nice ergonomic improvement after core is working |
-| Error messages with constraint context | Improve after MVP; "no instance for Show at ..." messages |
+| D-1: Typed pattern bindings | Heuristics for pattern-bound variables are less common; tackle after core case works |
+| D-3: Declaration types | `FuncSignature.ReturnIsBool` heuristic is less impactful than the core set; defer |
+| D-4: Version tag | Nice-to-have; add in a follow-up |
 
 ---
 
-## Complexity Assessment
+## Confidence Assessment
 
-| Feature | Complexity | Primary Challenge | Files Affected |
-|---------|------------|-------------------|----------------|
-| Typeclass/instance syntax | Low | Parser rules; AST nodes for ClassDecl/InstanceDecl | Lexer.fsl, Parser.fsy, Ast.fs |
-| ClassEnv / InstanceEnv | Low | Data structures only; Map lookups | Type.fs, TypeCheck.fs |
-| Constraint in Type.fs / Scheme | Medium | Scheme extension touches all call sites of `generalize`/`instantiate` | Type.fs, Infer.fs, Bidir.fs |
-| Constraint inference in Bidir.fs | High | Must propagate constraints through all synth/check cases; unification must handle constraint variables | Bidir.fs, Unify.fs |
-| Dictionary building | High | Elaboration pass that resolves instances to concrete dictionaries at call sites | New Elaborate pass or Bidir.fs extension |
-| Dictionary passing in Eval.fs | Medium | Dictionary is a `Value` (record or closure map); method dispatch is a field lookup | Eval.fs |
-| Built-in instances | Low | Wire up existing builtins as instance bodies | New Prelude entries or Eval.fs init |
-| Constrained container instances | Medium | `Show (Option 'a) where Show 'a` — recursive constraint passing | Bidir.fs + dictionary building |
-| Replace `to_string` with `Show` | Low | After Show works, alias or redirect | Eval.fs (remove builtin), Prelude |
-| `Eq`/`Ord` operator refactoring | Medium | Bidir.fs comparison operator cases must carry/check constraints | Bidir.fs, Eval.fs |
-
-**Overall milestone complexity:** HIGH. The core machinery (constraint inference + dictionary passing) is the hard part and requires deep changes to Bidir.fs. The payoff features (Show, Eq, Ord instances) are straightforward once the plumbing exists.
+| Area | Confidence | Basis |
+|------|------------|-------|
+| Heuristic inventory | HIGH | Read all 6 sets + 8 functions in Elaboration.fs directly |
+| Type system completeness | HIGH | `Type.fs` has `TArray`, `THashtable`, `TData`, `TList`, `TBool`, `TString` — all types the heuristics detect are expressible |
+| Conversion pass feasibility | MEDIUM | Bidir.fs produces types per expression but does not currently build an annotated tree; will require new scaffolding |
+| Lambda param type coverage | MEDIUM | `isPtrParamBody` handles edge cases (closures, captured vars, tuple params) that depend on inference being ground; risk of residual TVar for some params |
+| FunLangCompiler integration | HIGH | Elaboration.fs is well-structured; replacing set lookups with `.ty` field accesses is mechanical once types are available |
 
 ---
 
-## Interaction With Existing Features
-
-| Existing Feature | Interaction | Risk |
-|-----------------|-------------|------|
-| HM type inference (Bidir.fs) | Constraints must be inferred and propagated alongside types — constraint variables live alongside type variables | HIGH — central integration point; every `synth`/`check` call may need to propagate constraints |
-| `to_string` builtin | Will be replaced or delegated to `Show` instance | LOW — additive; can keep `to_string` as alias initially |
-| `=` / `<>` operators | Move from untyped structural equality to `Eq`-constrained | MEDIUM — must not break existing code where `=` is used on `int` without explicit `Eq` annotation |
-| `<` / `>` operators | Move from `TInt/TString/TChar` hardcode to `Ord`-constrained | MEDIUM — same; must preserve backward compat for `int` comparisons |
-| Pattern matching | `match` doesn't inherently need type classes, but `=` comparisons in `when` guards may need `Eq` | LOW |
-| Records | Record equality was structural; with `Eq` typeclass, record types would need an explicit `Eq` instance | MEDIUM — must decide: derive automatically or require explicit instance |
-| ADTs | `DataValue` equality is structural in `valuesEqual`; after type classes, user ADTs need `Eq` instance | MEDIUM — migration strategy needed |
-| Module system | Instances could be scoped to modules or global; for MVP, instances are global (like Haskell) | LOW — global instances avoid module complexity initially |
-| `printf`/`sprintf` with `%a` or custom formatters | Currently `%s` requires string; after `Show`, `%s` might take any `Show 'a` | OUT OF SCOPE for v10.0 |
-
----
-
-## Expected Syntax (FunLang Style)
-
-Based on the existing F#-influenced syntax:
-
-```fsharp
-// Class declaration
-typeclass Show 'a =
-    show : 'a -> string
-
-// Instance for built-in type
-instance Show int =
-    let show x = to_string x
-
-// Instance for ADT (no constraints)
-type Color = Red | Green | Blue
-
-instance Show Color =
-    let show c = match c with
-        | Red -> "Red"
-        | Green -> "Green"
-        | Blue -> "Blue"
-
-// Constrained instance (container type)
-instance Show (Option 'a) where Show 'a =
-    let show opt = match opt with
-        | None -> "None"
-        | Some x -> "Some(" ^^ show x ^^ ")"
-
-// Using the typeclass (constraint inferred)
-let printAll xs =
-    List.iter (fun x -> println (show x)) xs
-
-// Explicit constraint in annotation (optional)
-let describe (x : Show 'a => 'a) : string =
-    "Value: " ^^ show x
-
-// Eq typeclass
-typeclass Eq 'a =
-    eq : 'a -> 'a -> bool
-    neq : 'a -> 'a -> bool
-
-// Ord with superclass
-typeclass Ord 'a where Eq 'a =
-    lt : 'a -> 'a -> bool
-    gt : 'a -> 'a -> bool
-    lte : 'a -> 'a -> bool
-    gte : 'a -> 'a -> bool
-```
-
-**Notes on syntax:**
-- `typeclass Name 'a = { method signatures }` — indentation-based, F# style
-- `instance Name Type = { let method = ... }` — mirrors module declaration style
-- `where ConstraintList` for superclass constraints — after the type
-- Constraint annotation in `TypeExpr`: `Show 'a => 'a` — standard Haskell-inspired notation
-- `=` / `<>` / `<` / `>` operators remain as operators; they dispatch via `Eq`/`Ord` dictionaries internally
-
----
-
-## Sources
-
-- [Implementing, and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html)
-- [Making dictionary passing explicit in Haskell — Joachim Breitner](https://www.joachim-breitner.de/blog/398-Making_dictionary_passing_explicit_in_Haskell)
-- [Introduction to Haskell Typeclasses — Serokell](https://serokell.io/blog/haskell-typeclasses)
-- [Type class — Wikipedia](https://en.wikipedia.org/wiki/Type_class)
-- [GHC Instance Declarations and Resolution](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/instances.html)
-- [Orphan instance — HaskellWiki](https://wiki.haskell.org/Orphan_instance)
-- [The trouble with typeclasses — Paul Chiusano](https://pchiusano.github.io/2018-02-13/typeclasses.html)
-- [Coherence of type class resolution — ACM](https://dl.acm.org/doi/10.1145/3341695)
-- [Hindley-Milner type system — Wikipedia](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system)
-
----
-
-**Document Status:** Research complete for v10.0 milestone
-**Confidence Level:** HIGH for feature categorization and MVP scope; MEDIUM for implementation complexity estimates (constraint inference integration depth is uncertain until Bidir.fs is studied in detail)
-**Next Step:** Use this feature catalog to define requirements and roadmap phases for v10.0
+**Document Status:** Research complete for Typed AST export milestone
+**Next Step:** Use this feature catalog to define the typed AST format and conversion pass requirements

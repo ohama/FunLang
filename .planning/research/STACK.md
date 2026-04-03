@@ -1,9 +1,9 @@
-# Technology Stack: FunLang v10.0 Type Classes
+# Technology Stack: Typed AST Export
 
 **Project:** FunLang — ML-style functional language interpreter
-**Researched:** 2026-03-31
-**Milestone:** v10.0 — Haskell-style type classes with dictionary-passing implementation
-**Confidence:** HIGH — implementation strategy derived directly from codebase inspection
+**Researched:** 2026-04-02
+**Milestone:** v11.0 — Typed AST Export (binding type env + node annotations)
+**Confidence:** HIGH — strategy derived from direct codebase inspection
 
 ---
 
@@ -12,336 +12,317 @@
 | Technology | Version | Role |
 |------------|---------|------|
 | F# | .NET 10 | Implementation language |
-| fslex (FsLexYacc) | 12.x | Lexer — Lexer.fsl |
-| fsyacc (FsLexYacc) | 12.x | LALR(1) parser — Parser.fsy |
-| IndentFilter.fs | custom | Token-stream layout filter |
-| Prelude/*.fun | .fun files | Auto-loaded standard library |
+| FsLexYacc | 11.3.0 | Lexer/parser generation |
+| Argu | 6.2.5 | CLI argument parsing |
+| Tomlyn | 2.3.0 | funproj.toml parsing |
 
-No new NuGet packages. Type classes are a language feature implemented entirely within the existing F# source.
-
----
-
-## Implementation Strategy: Dictionary Passing
-
-**Recommendation: Dictionary passing (over monomorphization or vtable dispatch).**
-
-### Why Dictionary Passing
-
-Three strategies exist for implementing type classes at runtime:
-
-| Strategy | How It Works | Verdict |
-|----------|-------------|---------|
-| **Dictionary passing** | Each typeclass instance is a record of functions. At call sites with a typeclass constraint, the dictionary is passed as an extra argument. | **Recommended.** Standard approach for interpreted languages, natural fit for FunLang's tree-walking evaluator. |
-| **Monomorphization** | Generate a specialized copy of each function for each type instantiation, eliminating dictionaries at code generation time. | Inappropriate for an interpreter. Requires full type information at code generation time. FunLang's evaluator is tree-walking, not a compiler. |
-| **Vtable / inline dispatch** | Embed method pointers in the value representation (like C++ vtables). | Would require adding method tables to every `Value` variant — invasive refactor of `CustomEquality`/`CustomComparison` machinery that is already complex in Ast.fs. |
-
-Dictionary passing is the correct choice because:
-1. FunLang is a tree-walking interpreter. Dictionaries are just values — `RecordValue` or `BuiltinValue` tuples — that slot cleanly into the existing `Value` type.
-2. The type checker already threads `ConstructorEnv` and `RecordEnv` through `synth`/`check`. A new `ClassEnv` + `InstanceEnv` follows the identical pattern.
-3. The evaluator already evaluates to `FunctionValue`/`BuiltinValue`. Dictionary-passing turns `show x` into `(dict.show) x` — a field lookup followed by a function application, both already supported.
-4. Haskell itself uses dictionary passing as its canonical implementation of type classes.
+No new NuGet packages. Typed AST export is a pure internal architecture change
+implemented within the existing F# source files.
 
 ---
 
-## Component Changes
+## The Core Decision: What Form Should the Export Take?
 
-### 1. Type.fs — Add Typeclass Constraint Representation
+Three approaches exist for exporting type information from a type checker. They
+are ordered from simplest to most invasive, and the right choice depends on what
+FunLangCompiler actually needs.
 
-**Current state:** `Type` DU has no notion of constraints. `Scheme` is `Scheme of vars: int list * ty: Type`.
+### Approach A: Binding Type Environment (Phase 1 only)
 
-**Change required:** Extend `Scheme` to carry class constraints, and add a `Constraint` type.
+**What:** After type checking, return `Map<string, Scheme>` — the final type
+environment mapping top-level binding names to their inferred type schemes.
 
-```fsharp
-/// A typeclass constraint: "Show 'a", "Eq 'a", "Ord 'a"
-type Constraint =
-    | ClassConstraint of className: string * typeVar: int  // e.g., Show (TVar 5)
+**How it maps to FunLang now:** `typeCheckModuleWithPrelude` already returns
+`TypeEnv` (which is `Map<string, Scheme>`) as its seventh return value. The
+compiler currently ignores this and runs heuristics instead.
 
-/// Extended type scheme with constraints: forall 'a. Show 'a => 'a -> string
-type Scheme = Scheme of vars: int list * constraints: Constraint list * ty: Type
-```
+**What FunLangCompiler gets:** The type of each top-level `let` binding in the
+file. `val myFunc : int -> string -> bool`. Sufficient to replace heuristics
+that guess binding types.
 
-**Why this shape:** Constraints are tied to the quantified variables in a scheme, exactly as in Haskell. The `typeVar: int` field refers to a `TVar` index from the `vars` list, which is the same integer representation already used throughout Type.fs, Unify.fs, Infer.fs, and Bidir.fs. No new type-variable representation is needed.
+**Cost:** Near-zero. The data already exists. The only work is:
+1. Add a `--emit-typed-env` CLI flag (or extend `--emit-type` output format)
+2. Serialize the `TypeEnv` to a consumable format (JSON or stdout)
 
-**Impact on existing code:** Every pattern match on `Scheme(vars, ty)` becomes `Scheme(vars, _, ty)` or `Scheme(vars, constraints, ty)`. This is a mechanical change — F# exhaustive matching ensures the compiler flags every site. Estimated ~15 sites across Type.fs, Infer.fs, Bidir.fs, TypeCheck.fs.
+**Limitation:** Does not provide types for subexpressions. The compiler cannot
+ask "what is the type of this particular `App` node at line 14?"
 
-**Alternative considered:** Add a separate `ConstrainedScheme` DU case and keep `Scheme` unchanged. Rejected because it doubles every pattern-match site without simplifying anything.
+---
 
-### 2. Type.fs — Add Class and Instance Environments
+### Approach B: Span-keyed Type Map (Phase 2, recommended)
 
-**New types to add:**
+**What:** During type checking, accumulate a `Map<Span, Type>` that records the
+inferred type for every expression node that was checked. Return this alongside
+the existing outputs.
 
-```fsharp
-/// A typeclass declaration: "typeclass Show 'a = { show : 'a -> string }"
-type ClassInfo = {
-    TypeParam: int                         // The TVar index for the class parameter ('a)
-    Methods: Map<string, Type>             // method name -> method type (using TypeParam)
+**How it maps to FunLang now:** Every `Expr` variant carries a `Span`. The
+`synth` function in `Bidir.fs` already computes the type for every expression it
+visits. The only missing piece is writing those types into an accumulator.
+
+**What FunLangCompiler gets:** The type of any expression node, identified by
+source location. `(Span("foo.fun", 14, 3, 14, 12), TArrow(TInt, TString))`.
+The compiler can look up "what is the type at line 14, columns 3-12?" and get
+an exact answer instead of heuristics.
+
+**Cost:** Moderate. Requires:
+1. A mutable accumulator in `Bidir.fs` (`let mutable nodeTypes : Map<Span, Type> = Map.empty`)
+2. One write per `synth`/`check` call: `nodeTypes <- Map.add (spanOf expr) resolvedTy nodeTypes`
+3. Expose the accumulator through `typeCheckModuleWithPrelude`
+4. A serialization format for external consumption
+
+**Why span-keyed, not node-ID-keyed:** Every AST node already carries a `Span`.
+Adding a synthetic node ID would require modifying every Ast.fs DU variant (100+
+cases). Span is a stable, deterministic key that the compiler can compute from
+source positions it already knows.
+
+**Critical detail — apply substitution before recording:** The `synth` function
+returns a `(Subst, Type)` pair. The `Type` may still contain unresolved `TVar`
+references at the point of recording. The substitution must be applied before
+storing: `Map.add span (Type.apply subst ty) nodeTypes`. Failure to do this
+produces stale `TVar n` entries in the map.
+
+---
+
+### Approach C: Annotated AST (full typed tree, Phase 3 if needed)
+
+**What:** Define a parallel `TypedExpr` DU where every constructor carries an
+additional `Type` field. Transform `Expr -> TypedExpr` in a post-pass.
+
+**How ML-family compilers do this:**
+- GHC uses `HsExpr GhcTc` where the type-checker stage is a phantom type parameter
+  that changes the annotation type from `()` to `Type`. The actual annotation is
+  stored in a `XRec` wrapper that carries the type alongside the source span.
+- OCaml's `typedtree.ml` defines `expression` with a `exp_type : Types.type_expr`
+  field on every node. It is a completely separate type from `parsetree.ml`.
+- F# compiler (FSharp.Compiler.Service) uses `TypedTreeOps` — a separate typed
+  AST with every node carrying a `TType`.
+- The standard pattern in all three is: untyped AST (from parser) → separate
+  typed AST (from type checker), not mutation of the original.
+
+**Cost for FunLang:** High. Would require duplicating the entire `Expr` DU (~40
+constructors) into a `TypedExpr` DU with `Type` annotations, then writing a
+complete traversal that converts `Expr * TypeEnv -> TypedExpr`. This is several
+hundred lines of mechanical code and would need to stay in sync with every
+future `Expr` addition.
+
+**Verdict: Do not build Phase 3 until the consumer (FunLangCompiler) proves it
+needs per-node types in a typed tree format rather than a span-keyed lookup.**
+The span-keyed map (Approach B) gives identical information with far less
+structural coupling.
+
+---
+
+## Recommended Implementation Strategy
+
+### Phase 1: Extend the existing `--emit-type` output and API
+
+`typeCheckModuleWithPrelude` already returns `TypeEnv`. The FunLangCompiler
+currently ignores it. Phase 1 is making that data accessible in a structured
+format.
+
+**Serialization: JSON via `System.Text.Json`.**
+
+Why JSON:
+- .NET 10 ships `System.Text.Json` in the BCL — zero new NuGet dependencies.
+- FunLangCompiler is a separate process; in-memory sharing requires a shared
+  library or IPC. JSON over stdout is the simplest cross-process interface.
+- Existing `--emit-ast` and `--emit-type` already use stdout text output.
+  JSON follows that pattern.
+
+Why not binary (MessagePack, Protobuf):
+- Would require NuGet packages in both FunLang and FunLangCompiler.
+- Adds no benefit for the volume of data (a type env is typically <200 entries).
+
+Why not a shared .NET library:
+- Would create a compilation dependency coupling two repos. JSON over process
+  boundary preserves independent versioning.
+
+**New CLI flag: `--emit-typed-env`**
+
+Outputs the post-inference `TypeEnv` as JSON to stdout:
+```json
+{
+  "bindings": [
+    { "name": "myFunc", "type": "int -> string -> bool", "scheme": "forall 'a. 'a -> string" }
+  ]
 }
-
-/// A typeclass instance: "instance Show int = { show = fun x -> to_string x }"
-type InstanceInfo = {
-    ClassName: string
-    ConcreteType: Type                     // The type this instance is for (e.g., TInt, TData("Option", [TVar 0]))
-    ConstraintParams: int list             // If constrained instance: extra type vars (e.g., 'a in Show (Option 'a))
-    ConstraintRequirements: Constraint list // What constraints the instance itself requires (e.g., Show 'a)
-    MethodImpls: Map<string, Expr>         // method name -> implementation expression (from Ast)
-}
-
-/// Typeclass environment: class name -> ClassInfo
-type ClassEnv = Map<string, ClassInfo>
-
-/// Instance environment: (class name * canonical type key) -> InstanceInfo
-/// The canonical type key is a normalized string like "int", "bool", "Option"
-type InstanceEnv = Map<string * string, InstanceInfo>
 ```
 
-**The canonical type key** is needed because `InstanceEnv` maps pairs to instances. The key `("Show", "int")` resolves the `Show int` instance. For parameterized instances like `Show (Option 'a)`, the key is `("Show", "Option")` and the `ConstraintRequirements` carries `[ClassConstraint("Show", freshVar)]`.
+The `type` field uses `Type.formatSchemeNormalized` (already exists).
+An optional structured `scheme` field for machine-readable type representation
+can be added by serializing the `Type` DU as tagged JSON.
 
-### 3. Ast.fs — Add Two New Declaration Forms
-
-**Add two variants to `Decl`:**
-
-```fsharp
-// In type Decl:
-| TypeClassDecl of
-    className: string *
-    typeParam: string *                    // e.g., "'a" in "typeclass Show 'a"
-    methods: (string * TypeExpr) list *    // method name + type signature
-    Span
-
-| InstanceDecl of
-    className: string *
-    instanceType: TypeExpr *               // the type being instantiated (e.g., TEInt, TEData("Option", [...]))
-    constraints: (string * string) list *  // constraint list: [("Show", "'a")] for "where Show 'a"
-    methods: (string * Expr) list *        // method implementations
-    Span
-```
-
-**No new `Expr` variants** for the method call sites. Method calls look like ordinary function application: `show x`. Dictionary passing is invisible in the source syntax — the type checker rewrites calls to inject dictionary arguments.
-
-**The `spanOf` function in Ast.fs** does not need changes — it only handles `Expr`, not `Decl`.
-
-**`declSpanOf`** needs two new cases for the new `Decl` variants. This is a three-line addition.
-
-### 4. Lexer.fsl and Parser.fsy — Two New Keyword/Construct Pairs
-
-**New keywords:**
-
-```
-typeclass   (TYPECLASS token)
-instance    (INSTANCE token)
-where       (WHERE token — may already exist; check for GADT usage)
-```
-
-`where` may already appear in the lexer for GADT syntax. Check Lexer.fsl before adding.
-
-**Grammar rules (Parser.fsy):**
-
-Two new top-level `Decl` productions:
-
-```
-// TCLASS-01: typeclass declaration
-TypeClassDecl:
-    | TYPECLASS IDENT TYVAR EQUALS INDENT MethodSigList DEDENT
-        { TypeClassDecl($2, $3, $6, ...) }
-
-// TCLASS-02: instance declaration (unconstrained)
-InstanceDecl:
-    | INSTANCE IDENT TypeExpr EQUALS INDENT MethodImplList DEDENT
-        { InstanceDecl($2, $3, [], $6, ...) }
-
-// TCLASS-03: instance declaration with constraints
-InstanceDecl:
-    | INSTANCE IDENT TypeExpr WHERE ConstraintList EQUALS INDENT MethodImplList DEDENT
-        { InstanceDecl($2, $3, $5, $8, ...) }
-```
-
-`MethodSigList` and `MethodImplList` are new nonterminals following the same pattern as record field lists. The LALR(1) parser handles these without conflict because `TYPECLASS` and `INSTANCE` are distinct shift states from all existing declaration forms (`LET`, `TYPE`, `EXCEPTION`, `OPEN`).
-
-**No changes to `IndentFilter.fs`**: `EQUALS` + INDENT already triggers `InExprBlock` for method bodies, which is exactly right.
-
-### 5. Elaborate.fs — Elaborate TypeClassDecl and InstanceDecl into Environments
-
-**Add two new elaboration functions:**
-
-```fsharp
-/// Elaborate typeclass declaration into ClassInfo
-val elaborateTypeClassDecl :
-    className: string -> typeParam: string -> methods: (string * TypeExpr) list
-    -> ClassInfo
-
-/// Elaborate instance declaration into InstanceInfo
-val elaborateInstanceDecl :
-    ClassEnv -> className: string -> instanceType: TypeExpr ->
-    constraints: (string * string) list -> methods: (string * Expr) list
-    -> string * InstanceInfo     // returns (canonical key, InstanceInfo)
-```
-
-These follow the exact pattern of `elaborateTypeDecl` and `elaborateRecordDecl` already in Elaborate.fs.
-
-### 6. Bidir.fs — Constraint Propagation and Dictionary Injection
-
-This is the most complex change. Bidir.fs must:
-
-**a) Track constraints during inference.**
-
-When `synth` encounters a `Var` lookup whose `Scheme` has constraints, instantiate those constraints along with the type variables. Collect the constraints for the current scope.
-
-The existing `synth` signature:
-```fsharp
-synth : ConstructorEnv -> RecordEnv -> InferContext list -> TypeEnv -> Expr -> Subst * Type
-```
-
-Becomes (extended):
-```fsharp
-synth : ConstructorEnv -> RecordEnv -> ClassEnv -> InstanceEnv ->
-        InferContext list -> TypeEnv -> Expr -> Subst * Type * Constraint list
-```
-
-The returned `Constraint list` is the set of constraints that must be satisfied at the call site. The caller either resolves them (if the concrete type is known) or propagates them outward to the enclosing let-generalization.
-
-**Alternative:** Use a mutable `constraints` accumulator (like `mutableVars` in Bidir.fs). This avoids changing the return type but requires careful scoping. The `mutableVars` pattern already exists in the codebase (`let mutable mutableVars : Set<string> = Set.empty`). For type classes, a mutable approach is viable but risks interference in recursive/mutual contexts. Recommend the explicit return-value approach for correctness, accepting the signature extension.
-
-**b) Resolve instances at let-generalization boundaries.**
-
-At `Let(name, value, body, span)`, after inferring the value type, resolve any constraints where the type is fully known (ground type), and propagate unresolved constraints into the generalized scheme.
-
-**c) Rewrite call sites via dictionary insertion.**
-
-When a method `show` is called on a value whose type is known to be `int`, rewrite:
-```
-show x
-```
-to:
-```
-(dictShow_int.show) x
-```
-
-where `dictShow_int` is the dictionary record for `Show int`, which Eval.fs has already evaluated and stored.
-
-This rewriting happens at the `Var` case in `synth` when the resolved variable is a typeclass method. The rewrite produces an `App(FieldAccess(Var dictName, methodName), arg)` expression (or equivalent) that the evaluator handles without new machinery.
-
-**The key insight:** dictionary rewriting transforms typeclass method calls into ordinary function applications before the evaluator sees them. The evaluator needs zero changes for the basic case.
-
-### 7. TypeCheck.fs — Thread ClassEnv and InstanceEnv Through Declaration Processing
-
-**TypeCheck.fs currently accumulates:**
-- `TypeEnv` (variable types)
-- `ConstructorEnv` (ADT constructors)
-- `RecordEnv` (record types)
-
-**Add:**
-- `ClassEnv` (typeclass declarations)
-- `InstanceEnv` (typeclass instances)
-
-These are accumulated during the declaration processing loop in `typecheckDecls` (the function that processes `Decl list`). When a `TypeClassDecl` is encountered, elaborate it into `ClassEnv`. When an `InstanceDecl` is encountered, elaborate it into `InstanceEnv` and also emit a `let` binding for the dictionary value into both `TypeEnv` and the runtime environment.
-
-**Dictionary name convention:** `__dict_ClassName_TypeKey` (e.g., `__dict_Show_int`). Double underscore marks compiler-generated names. This name is injected into `TypeEnv` at instance registration time.
-
-### 8. Eval.fs — Evaluate Instance Method Bodies into Dictionary Values
-
-When `TypeCheck.fs` processes an `InstanceDecl`, it must also emit a runtime dictionary value. The dictionary is a `RecordValue` (or a `TupleValue` of functions, indexed by method name).
-
-**Recommended shape: RecordValue.**
-
-```fsharp
-// Instance "Show int" with method show = fun x -> to_string x
-// Evaluates to:
-RecordValue("__dict_Show_int", Map [
-    "show", ref (FunctionValue("x", App(Var("to_string", _), Var("x", _)), env))
-])
-```
-
-Eval.fs needs no new match arms. `RecordValue` field lookup (`FieldAccess` or dot-access) is already evaluated. The dictionary values are just ordinary `RecordValue`s stored in the environment under generated names.
-
-**One new concern for Eval.fs:** constrained instances like `Show (Option 'a) where Show 'a` require that the dictionary for `Show (Option 'a)` can look up the dictionary for `Show 'a` at runtime. This means the dictionary constructor must accept the inner dictionary as a parameter:
-
-```fsharp
-// __dict_Show_Option = fun (dictShowA : Show 'a dict) ->
-//     { show = fun x -> match x with Some v -> "Some(" ++ dictShowA.show v ++ ")" | None -> "None" }
-```
-
-This is a `FunctionValue` that returns a `RecordValue`. Already evaluable. No new evaluator machinery.
-
-### 9. Unify.fs — Constraint Unification (Minimal Change)
-
-Unification itself does not need to know about constraints. Constraints are handled at the `generalize` / `instantiate` level in Infer.fs. Unify.fs unifies types, not constraints.
-
-**No change needed to Unify.fs.**
-
-### 10. Infer.fs — Extend generalize and instantiate
-
-**`instantiate`** must instantiate constraint type variables alongside the scheme type variables. A scheme `forall 'a. Show 'a => 'a -> string` instantiates to `Show 'x => 'x -> string` with a fresh `'x`.
-
-**`generalize`** must collect constraints for free variables and include them in the resulting scheme. A function inferred to have type `'a -> string` with constraint `Show 'a` in scope generalizes to `forall 'a. Show 'a => 'a -> string`.
-
-Both changes are localized to these two functions in Infer.fs.
+**Integration point:** `Program.fs` already has the `--emit-type` branch at
+line 329. A new `--emit-typed-env` branch follows the same pattern.
 
 ---
 
-## Summary: What Changes Per File
+### Phase 2: Span-keyed node type map
+
+**New type in `TypeCheck.fs` or a new `TypedAst.fs`:**
+
+```fsharp
+/// Map from source span to inferred type, built during type checking.
+/// Keyed on Span for cross-process consumption (stable, no synthetic IDs needed).
+type NodeTypeMap = Map<Ast.Span, Type>
+```
+
+**Accumulator in `Bidir.fs`:**
+
+```fsharp
+/// Accumulated per-node type annotations. Reset at typeCheckModuleWithPrelude entry.
+/// Populated during synth/check traversal. Apply substitution before writing.
+let mutable nodeTypeMap : NodeTypeMap = Map.empty
+```
+
+This follows the exact pattern of `mutableVars` and `pendingConstraints` already
+in `Bidir.fs` — mutable module-level state reset at the entry point of each
+top-level type check.
+
+**Write site — one line added to `synth` at the return point:**
+
+```fsharp
+// In Bidir.synth, before returning (subst, ty):
+let resolvedTy = Type.apply subst ty
+nodeTypeMap <- Map.add (Ast.spanOf expr) resolvedTy nodeTypeMap
+(subst, ty)  // Return unchanged — accumulator is side-effect
+```
+
+**Expose through `typeCheckModuleWithPrelude`:**
+
+The return type extends from 7-tuple to 8-tuple:
+```fsharp
+Result<Diagnostic list * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv
+       * Map<string, ModuleExports> * TypeEnv * NodeTypeMap, Diagnostic list>
+```
+
+All existing callers use tuple destructuring with `_` for fields they ignore.
+The additional field requires only adding `, _nodeTypeMap` to existing match
+arms. F# exhaustive matching ensures no site is missed.
+
+**New CLI flag: `--emit-typed-ast`**
+
+Outputs the node type map as JSON keyed by span:
+```json
+{
+  "nodes": [
+    {
+      "file": "foo.fun", "startLine": 14, "startCol": 3,
+      "endLine": 14, "endCol": 12,
+      "type": "int -> string"
+    }
+  ]
+}
+```
+
+---
+
+## Patterns From ML-Family Compilers
+
+### How OCaml represents typed AST
+
+OCaml's compiler separates `Parsetree` (untyped) from `Typedtree` (typed).
+The typed tree is produced by `Typecore.type_expression` and carries `exp_type`
+on every node. The key design choice: **typed tree is a separate type**, not an
+annotation added to the parsed tree.
+
+**Lesson for FunLang:** The OCaml approach (Approach C above) works well for a
+full compiler because the typed tree drives code generation. For FunLang, which
+has a separate evaluator that already works on the untyped `Expr`, building a
+full parallel typed tree is over-engineering for the stated goal.
+
+### How GHC represents typed AST
+
+GHC uses Trees That Grow (Najd & Peyton Jones, 2016): a single parametric
+`HsExpr p` where `p` is a phase index. Type annotations are in `XRec p (HsExpr p)`.
+During type checking, the phase is `GhcTc` and the extension fields carry types.
+
+**Lesson for FunLang:** Trees That Grow is elegant but requires F# computation
+expressions or type-level tricks to implement correctly. Not worth it for
+FunLang's scale. The span-keyed map achieves the same query capability with no
+type-level machinery.
+
+### How F# compiler service exposes typed information
+
+FSharp.Compiler.Service exposes `FSharpCheckFileResults.GetSymbolUseAtLocation`
+— a span-keyed query API over the typed results. Internally it stores a
+`SemanticModel`-like dictionary of span → symbol. The consumer does not need
+a typed AST; it queries by position.
+
+**This is exactly Approach B.** The F# compiler itself chose span-keyed maps
+for its public API because it decouples the compiler's internal representation
+from the consumer's view.
+
+---
+
+## Attaching Type Info Without Massive Refactoring
+
+The standard patterns for avoiding a full typed-tree rewrite are:
+
+| Pattern | How | When to Use |
+|---------|-----|-------------|
+| **Side-effect accumulator** | Mutable `Map<Span, Type>` populated during traversal | Recommended for FunLang Phase 2 |
+| **Parallel dictionary** | `Dictionary<NodeId, Type>` where NodeId is an added field | Requires AST surgery; avoid |
+| **Post-pass annotation** | Run a second traversal over the checked AST to add types | Requires re-running substitution logic; error-prone |
+| **Full typed AST** | Separate DU mirroring Expr with Type on each node | Maximum correctness; high maintenance cost |
+
+FunLang's `Bidir.synth` is a recursive descent with substitution accumulation.
+The side-effect accumulator fits naturally: it is already using mutable module
+state (`mutableVars`, `pendingConstraints`, `accumulatedErrors`). Adding
+`nodeTypeMap` follows the established pattern without changing any function
+signatures in the hot path.
+
+---
+
+## What NOT to Build
+
+**Do not build a TypedExpr DU** (Approach C) for this milestone. The 40+
+constructor `Expr` type would need to be mirrored completely. Every future `Expr`
+addition would require a matching `TypedExpr` addition. The FunLangCompiler
+consumer does not need a typed tree — it needs to query "what is the type at
+position X?" which the span-keyed map answers directly.
+
+**Do not add a node ID to Expr variants.** Span is already a stable, unique
+(enough) identifier. Adding `id: int` to every Expr constructor is 400+ lines
+of mechanical change to Ast.fs, Parser.fsy, Format.fs, and all match arms.
+
+**Do not use MessagePack or Protobuf.** The data volume does not justify the
+dependency. System.Text.Json in the BCL is sufficient.
+
+**Do not attempt to serialize FunLang `Type` as a schema-validated external
+format in Phase 1.** Use `formatSchemeNormalized` (string) for Phase 1. Phase 2
+can add a structured JSON representation of `Type` if the compiler needs
+programmatic access to type structure rather than display strings.
+
+---
+
+## File-Level Change Summary
 
 | File | Change | Scope |
 |------|--------|-------|
-| `Type.fs` | Extend `Scheme` with `Constraint list`; add `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types | ~40 lines |
-| `Ast.fs` | Add `TypeClassDecl` and `InstanceDecl` to `Decl` DU; extend `declSpanOf` | ~12 lines |
-| `Lexer.fsl` | Add `typeclass`, `instance`, `where` keywords (if `where` not already present) | ~3-5 lines |
-| `Parser.fsy` | Add `TypeClassDecl`, `InstanceDecl` grammar rules; `MethodSigList`, `MethodImplList` nonterminals | ~30-40 lines |
-| `Elaborate.fs` | Add `elaborateTypeClassDecl`, `elaborateInstanceDecl` | ~50 lines |
-| `Infer.fs` | Extend `instantiate` and `generalize` to handle `Constraint list` in `Scheme` | ~20 lines |
-| `Unify.fs` | **No change** | — |
-| `Bidir.fs` | Thread `ClassEnv`/`InstanceEnv` through `synth`/`check`; constraint resolution; dictionary injection at `Var` sites | ~100-150 lines |
-| `TypeCheck.fs` | Thread `ClassEnv`/`InstanceEnv` through declaration processing; emit dictionary bindings for `InstanceDecl` | ~50 lines |
-| `Eval.fs` | **No new match arms** for basic case; constrained instances evaluated as curried `FunctionValue` returning `RecordValue` | ~0-20 lines |
-| `Format.fs` | Add formatting for `TypeClassDecl` and `InstanceDecl` (if --emit-ast used) | ~10 lines |
-| `Exhaustive.fs` | No change — type class methods are not match scrutinees | — |
-| `Prelude/*.fun` | Add `Show`, `Eq`, `Ord` instances for builtin types; refactor `to_string` overloading | ~50-80 lines |
+| `Type.fs` | No change | — |
+| `Bidir.fs` | Add `nodeTypeMap` mutable accumulator; write resolved type per `synth` call | ~10 lines |
+| `TypeCheck.fs` | Reset `nodeTypeMap` at entry; extend return tuple to include it | ~5 lines |
+| `Cli.fs` | Add `Emit_Typed_Env` and `Emit_Typed_Ast` DU cases | ~6 lines |
+| `Program.fs` | Add `--emit-typed-env` and `--emit-typed-ast` branches using `System.Text.Json` | ~40 lines |
+| `Ast.fs` | No change | — |
+| `Infer.fs` | No change | — |
+| `Unify.fs` | No change | — |
+| `Eval.fs` | No change | — |
 
-**Total estimated change: ~400-450 lines across 10 files. No new NuGet packages.**
+**Total estimated change: ~60 lines across 3 files. No new NuGet packages.**
 
----
-
-## Constraint on Existing Scheme Usages
-
-Changing `Scheme` from `Scheme of vars: int list * ty: Type` to `Scheme of vars: int list * constraints: Constraint list * ty: Type` affects every pattern-match on `Scheme`. Current match sites (confirmed by source inspection):
-
-- `Type.fs`: `applyScheme`, `freeVarsScheme`, `formatSchemeNormalized` — 3 sites
-- `Infer.fs`: `instantiate`, `generalize`, `inferPattern` — 3 sites
-- `Bidir.fs`: `synth` Let/LetRec/LetMut cases, `check` — ~8 sites
-- `TypeCheck.fs`: `initialTypeEnv` declarations (all use `Scheme([], ty)`) — ~60 sites (mechanical `Scheme([], [], ty)` update)
-
-The `TypeCheck.fs` initial environment declarations are the largest mechanical change. All existing entries have `Scheme([], ty)` (no type variables, no constraints) and become `Scheme([], [], ty)`. This is a sed-level change with zero semantic content.
-
----
-
-## Alternatives Considered
-
-| Decision | Alternative | Why This Way |
-|----------|-------------|--------------|
-| Dictionary passing | Monomorphization | Interpreter is tree-walking; no code generation phase to specialize into |
-| Dictionary passing | Vtable in Value DU | Would require adding method pointers to every Value variant; breaks CustomEquality |
-| `RecordValue` for dictionaries | New `DictValue` variant | RecordValue already supports field lookup; zero new Eval.fs machinery |
-| Extend `Scheme` signature | New `ConstrainedScheme` DU case | Would double every pattern match; single clean shape is better |
-| `__dict_ClassName_TypeKey` naming | Fresh integer suffixes | Readable in --emit-ast output; deterministic (no counter) |
-| Constrained instances as curried functions | Monomorphic dictionary records | Runtime lookup of inner dicts requires the function-returning-record shape; this is how Haskell GHC does it too |
-| Constraint tracking via returned list from synth | Mutable accumulator (like mutableVars) | Recursive/mutual let contexts require correct scoping; explicit return is safer |
-
----
-
-## Risk Assessment
-
-| Area | Risk | Mitigation |
-|------|------|------------|
-| `Scheme` shape change | ~70 mechanical sites in TypeCheck.fs initialTypeEnv | All are `Scheme([], ty)` → `Scheme([], [], ty)`; zero semantic change; F# exhaustive matching catches missed sites |
-| Bidir.fs signature extension | Many call sites for `synth`/`check` | Add ClassEnv/InstanceEnv as parameters at the end; existing callers pass empty maps; progressive roll-in |
-| Constraint resolution in Bidir | Incomplete constraint solving could cause silent type errors | Resolve eagerly at let-boundaries; emit error if constraint unsatisfiable rather than silently ignoring |
-| `where` keyword conflict | `where` might conflict with indentation-sensitive contexts | Check whether `where` is already used (GADT) before adding; consider `with` (already used for try-with) — may need a fresh token |
-| Constrained instance dictionary lookup | At runtime, must find inner dict `Show 'a` before constructing `Show (Option 'a)` | Inner dicts are looked up by name `__dict_Show_X` in the eval env; same lookup mechanism as ordinary variables |
-| Prelude integration | Existing `to_string` is a builtin `Scheme([0], TArrow(TVar 0, TString))`; wrapping into a typeclass changes its call convention | Staged migration: keep `to_string` as builtin; add `Show` typeclass that calls `to_string` for builtins; full migration is a follow-on milestone |
+The binding type env (Phase 1) requires only the `Program.fs` + `Cli.fs`
+changes — the `TypeEnv` is already in the return value. Phase 2 (node map)
+adds the `Bidir.fs` + `TypeCheck.fs` changes.
 
 ---
 
 ## Sources
 
-- Codebase inspection: `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs` (all read directly, 2026-03-31)
-- Hindley-Milner with type classes: Jones (1994) "Qualified Types: Theory and Practice" — the standard reference for dictionary-passing HM with constraints
-- GHC Core desugaring: type class instances desugar to records of functions; method calls desugar to record projections — same shape as this design
+- Codebase inspection: `Ast.fs`, `Type.fs`, `Bidir.fs`, `TypeCheck.fs`,
+  `Program.fs`, `Cli.fs`, `FunLang.fsproj` (all read directly, 2026-04-02)
+- OCaml compiler `typing/typedtree.ml`: parallel typed AST design
+- GHC Trees That Grow (Najd & Peyton Jones, JFP 2019): parametric phase-indexed AST
+- FSharp.Compiler.Service: span-keyed `GetSymbolUseAtLocation` query API
+- .NET 10 BCL: `System.Text.Json` — no NuGet required

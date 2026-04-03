@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** FunLang v10.0 — Haskell-style Type Classes
-**Domain:** ML-style interpreter — adding ad-hoc polymorphism to an existing HM type system
-**Researched:** 2026-03-31
+**Project:** FunLang — v11.0 Typed AST Export
+**Domain:** Compiler infrastructure — per-expression type annotation export from an ML-style HM inference engine to an external MLIR codegen consumer
+**Researched:** 2026-04-02
 **Confidence:** HIGH
 
 ## Executive Summary
 
-FunLang v10.0 adds Haskell-style type classes to an existing ML interpreter that already has full Hindley-Milner inference, bidirectional type checking, GADTs, a module system, and a tree-walking evaluator. The canonical implementation strategy is **dictionary passing**: each type class constraint `C 'a` is elaborated into an explicit dictionary argument (a record of method implementations) threaded through the program. This is the same approach GHC uses internally, and it is the correct fit for a tree-walking interpreter because dictionaries are just ordinary `RecordValue`s — no new evaluator machinery is required. The total implementation footprint is approximately 400–450 lines across 10 files with no new NuGet packages.
+FunLangCompiler currently maintains roughly 250 lines of heuristic code (6 tracking sets, 8 re-inference functions) to guess the types that FunLang's Hindley-Milner type checker already computed. The v11.0 milestone eliminates this entirely by exporting per-expression type information from FunLang's `Bidir.synth` pass into a `TypeAnnotationMap` (a `Dictionary<Span, Type>`), exposing it through a new `ExportApi.typeCheckFile` entry point that bundles the post-elaboration `Decl list`, per-expression types, top-level binding schemes, and environment metadata into a single `TypedModule` record consumed in-process by FunLangCompiler.
 
-The recommended approach is to work in five sequential phases corresponding to the natural dependency chain: (1) extend the type infrastructure (`Scheme`, `ClassEnv`, `InstanceEnv`), (2) add parser/AST support, (3) wire constraint inference and resolution through the type checker, (4) construct dictionary values and elaborate call sites, and (5) replace hardcoded builtins with built-in `Show`/`Eq`/`Ord` instances. The payoff features are straightforward once the core machinery is in place. Features requiring Higher-Kinded Types (`Functor`, `Monad`), automatic `deriving`, multi-parameter type classes, and superclass hierarchies are explicitly out of scope for v10.0.
+The recommended implementation is strictly additive. `Bidir.fs` gains ~40 `TypeAnnotationMap.record` call sites (one per `synth` case), `TypeCheck.fs` gains a `clear()` call at the entry point, and two new files (`TypeAnnotationMap.fs`, `ExportApi.fs`) are added to the project. No new NuGet packages are needed. No existing function signatures change. The full build is estimated at ~60–100 lines of new code across 4 files, with the highest-risk work being correct substitution application at every collection site and correct handling of type-class-elaborated nodes.
 
-The primary risk is in the bidirectional type checker (`Bidir.fs`): constraint variables must be generalized alongside type variables, constraint resolution must be deferred until after unification completes, and elaboration (dictionary injection) must happen inline in `synth` rather than at runtime to correctly handle higher-order functions. A secondary risk is the mechanical breadth of the `Scheme` shape change — approximately 70 pattern-match sites in `TypeCheck.fs` require a trivial `Scheme([], ty)` to `Scheme([], [], ty)` update that is complete but tedious. The `mutableVars` pattern already present in `Bidir.fs` provides the correct model for threading `ClassEnv`/`InstanceEnv` without exploding call-site counts.
+The primary risk is correctness, not complexity: recording raw `TVar` indices before applying the accumulated substitution, or failing to resolve instance method types through `TypeEnv` name lookup after `elaborateTypeclasses` rewrites `InstanceDecl` to `LetDecl`. Both are well-understood and have clear, low-cost mitigations. The sequential-only constraint on `Bidir`'s mutable state is an accepted pre-existing limitation of the codebase that this feature extends, not introduces.
 
 ---
 
@@ -19,115 +19,113 @@ The primary risk is in the bidirectional type checker (`Bidir.fs`): constraint v
 
 ### Recommended Stack
 
-No new dependencies. The entire implementation lives within the existing F#/.NET 10 codebase using the existing FsLexYacc toolchain. Type classes are a language feature, not a library. Three new keywords (`typeclass`, `instance`, `where`) and one new token (`=>` as `FATARROW`) are added to the lexer. All runtime dictionary values reuse the existing `RecordValue` DU variant.
+No new NuGet packages are required. The entire feature is implemented within the existing F# + .NET 10 stack. `System.Text.Json` (BCL) is sufficient for an optional `--emit-typed-ast` CLI flag if cross-process JSON output is later desired, but the primary integration model is a direct .NET project reference from FunLangCompiler to FunLang, passing `TypedModule` in memory.
 
 **Core technologies:**
 - **F# / .NET 10** — implementation language; no version change needed
-- **FsLexYacc 12.x** — LALR(1) lexer/parser; new keyword tokens and grammar rules added to existing files
-- **Existing `RecordValue`** — reused as the runtime dictionary representation; zero new `Value` variants required
-- **`Bidir.fs` synth/check** — primary integration point; constraint resolution and elaboration happen here
+- **System.Collections.Generic.Dictionary** — mutable `Span -> Type` accumulator in `TypeAnnotationMap.fs`; chosen over F#'s immutable `Map` to avoid O(n) allocation per `synth` call
+- **System.Text.Json (BCL)** — optional JSON serialization for `--emit-typed-ast` debug flag; zero NuGet cost
 
 ### Expected Features
 
-**Must have (table stakes for v10.0):**
-- `typeclass` and `instance` declaration syntax — defines the surface language
-- Constraint representation in `Scheme` (`forall 'a. Show 'a => 'a -> string`) — foundational type system change
-- Dictionary passing at call sites — elaboration rewrites `show x` to `show_dict.show x` before eval
-- Constraint inference and propagation through `Bidir.fs` — constraints collected and generalized alongside types
-- Built-in `Show`, `Eq`, `Ord` instances for all primitive types
-- Constrained instance declarations (`instance Show (Option 'a) where Show 'a`) — required for generic containers
-- Type error when a constraint is unsatisfied — clear diagnostic with constraint name and source span
+The feature set is fully determined by what is required to replace all 6 tracking sets and 8 heuristic functions in `FunLangCompiler.Elaboration.fs`. Every item on the must-have list resolves automatically from a single underlying capability: per-expression type annotation.
 
-**Should have (differentiators, deferrable within v10.0):**
-- `to_string` becomes an alias for `Show.show` — completes the migration from hardcoded dispatch
-- `=` / `<>` become `Eq`-constrained; `<` / `>` / `<=` / `>=` become `Ord`-constrained — replaces structural builtins
-- Named constraint annotations in user-facing type signatures (`Show 'a => 'a`)
-- Duplicate instance detection (error on re-declaration of the same class/type pair)
+**Must have (table stakes):**
+- **TS-1: Per-expression type annotation** — every `Expr` node in the post-elaboration tree can be queried for its resolved `Type`; this alone replaces all heuristics
+- **TS-2: Mutable variable flag** — `LetMut` vs. `Let` distinction preserved in the exported `Decl list`; no additional work (already present in `Ast.Expr` constructors)
+- **TS-3 through TS-6: Derived dispatch types** — Hashtable key type, ForIn collection type, Lambda parameter type, to_string argument type all fall out of TS-1 at zero additional cost; the compiler reads `.ty` on the relevant expression node
 
-**Defer to v10.1+:**
-- `derive Show` / `derive Eq` automatic instance generation — reduces boilerplate but non-trivial
-- Default method implementations in class declarations
-- `Num` typeclass replacing arithmetic operators — high blast radius, no immediate demand
-- `Hashable` typeclass
-- `Functor` / `Foldable` — requires Higher-Kinded Types, separate milestone
+**Should have (differentiators, deferrable):**
+- **D-1: Typed pattern bindings** — types on `VarPat`-bound variables in match arms; replaces residual `BoolVars`/`StringVars` propagation through destructuring
+- **D-3: Declaration-level type schemes** — `LetDecl` nodes carry inferred `Scheme`; replaces `FuncSignature.ReturnIsBool` heuristic
+- **D-4: Version tag in export** — `version: string` field at export root for FunLangCompiler to detect stale exports at startup
+
+**Defer to post-MVP:**
+- JSON/binary serialization of the full `TypedModule` for cross-process use
+- `TypedExpr` parallel DU (Approach C from STACK.md) — the span-keyed map gives identical information with no structural coupling; only build if FunLangCompiler proves it needs tree-structured typed output
+- Monomorphization, explicit dictionary passing, or Core IR-style lowering in the export
 
 ### Architecture Approach
 
-The pipeline structure is unchanged. Type classes slot in as a new environment pair (`ClassEnv`, `InstanceEnv`) threaded through `TypeCheck.typeCheckModuleWithPrelude` alongside the existing `TypeEnv`, `ConstructorEnv`, and `RecordEnv`. Constraint solving is interleaved with HM inference: constraints are collected during `synth`, deferred past unification, resolved at `let` generalization boundaries, and elaborated inline by rewriting `Var` lookups for constrained methods into `App(Var dictName, ...)` nodes before the evaluator ever sees them. The evaluator remains type-class-unaware.
+The architecture follows FunLang's established pattern of module-level mutable state for cross-cutting concerns during type checking (`mutableVars`, `pendingConstraints`). A new `TypeAnnotationMap.fs` module holds a `Dictionary<Span, Type>` populated as a side effect of `Bidir.synth`. A new `ExportApi.fs` module wraps the existing pipeline into a single `typeCheckFile` call that returns a `TypedModule` record. FunLangCompiler adds a project reference and removes its own Parser/Lexer/Elaboration.fs entirely.
 
 **Major components:**
-1. **Type.fs** — Extended `Scheme of vars * constraints * ty`; new `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types
-2. **Lexer.fsl / Parser.fsy / Ast.fs** — New keywords and grammar rules; `TypeClassDecl` and `InstanceDecl` AST nodes; `TEConstrained` type expression variant
-3. **Infer.fs** — Extended `instantiate`/`generalize` to thread constraints alongside type variables in a single substitution pass
-4. **Bidir.fs** — Constraint resolution at `Var` instantiation; inline elaboration injecting dictionary arguments; `ClassEnv`/`InstanceEnv` threaded as module-level mutable refs (same pattern as `mutableVars`)
-5. **TypeCheck.fs** — Processes `TypeClassDecl` and `InstanceDecl`; builds and registers `RecordValue` dictionaries in the eval environment
-6. **Eval.fs** — Minimal or no changes; receives fully elaborated AST with explicit dictionary applications as ordinary `App`/`Var` nodes
+1. **TypeAnnotationMap.fs (NEW)** — mutable `Dictionary<Span, Type>`; `record`, `tryFind`, `clear`, `snapshot` API; placed between `Bidir.fs` and `TypeCheck.fs` in project file order
+2. **Bidir.fs (MODIFIED, additive)** — one `TypeAnnotationMap.record span (Type.apply s ty)` call added to the return point of each `synth` case (~40 sites); no signature changes
+3. **TypeCheck.fs (MODIFIED, minimal)** — `TypeAnnotationMap.clear()` at entry to `typeCheckModuleWithPrelude`; ensures per-file isolation
+4. **ExportApi.fs (NEW)** — `TypedModule` record type + `typeCheckFile` function; calls parse, clear, typecheck, snapshot, elaborate, bundle; placed after `Prelude.fs`; no dependency on `Eval.fs` or `Program.fs`
+5. **FunLangCompiler (PHASE 5)** — adds project reference, replaces `ElabEnv` set lookups with `TypedModule.ExprTypes[span]` queries, deletes heuristics
 
 ### Critical Pitfalls
 
-1. **Constraint variables escaping let-generalization (TC-1)** — Extend `Scheme` to carry `Constraint list` from the very first commit; modify `generalize` to collect constraints on free variables simultaneously with the type variables. Never generalize a type without also generalizing its constraints. This is a correctness requirement, not an optimization.
+1. **Annotating pre-elaboration structure for instance methods (TA-1)** — `elaborateTypeclasses` creates new `LetDecl` nodes after type checking, so their spans are not in the annotation map. For elaborated nodes, look up the method's `Scheme` from `TypeEnv` by name. Never key instance method types by span alone.
 
-2. **Eager constraint resolution before unification completes (TC-2)** — Maintain "wanted" (unresolved) and "given" (in-scope) constraint sets; resolve wanted constraints only after unification is finished for a binding group, not inline during `synth`. Attempting resolution on `TVar 1042` before it unifies with `int` produces false "no instance" errors that are difficult to debug.
+2. **Recording raw `TVar` before applying the accumulated substitution (TA-2)** — `Bidir.synth` returns `(Subst * Type)` where `Type` may still contain unresolved `TVar n`. Always store `Type.apply s ty`, never the raw `ty`. Failure produces a map full of useless `TVar 1042` entries that the compiler cannot act on.
 
-3. **Dictionary scope leak in higher-order functions (TC-3)** — Use elaboration (rewrite the AST during type checking to add explicit dictionary parameters to constrained functions and explicit dictionary arguments at call sites). Do not thread a flat "dictionary environment" through the evaluator — closures would capture the wrong dictionary for higher-order uses.
+3. **Changing `synth`'s return type to carry a `TypedExpr` (TA-7)** — this touches 67+ call sites and risks introducing inference bugs. The mutable accumulator achieves the same result without touching existing signatures. Do not change `synth`'s return type.
 
-4. **Dual dispatch incoherence for `to_string` and comparison operators (TC-4)** — Decide the migration strategy before writing any Phase 1 syntax: either builtins delegate through the type class mechanism or they are replaced entirely. Never leave both active simultaneously.
+4. **Using F# immutable `Map` for the accumulator instead of `Dictionary` (TA-9)** — each `Map.add` allocates a new AVL tree node; over tens of thousands of synth calls this is significant. Use `Dictionary<Span, Type>` and gate collection behind a flag so normal interpreter runs incur zero overhead.
 
-5. **`synth`/`check` signature explosion (LT-1)** — Thread `ClassEnv` and `InstanceEnv` as module-level mutable refs in `Bidir.fs` (the same pattern as `mutableVars`), not as additional function parameters. This avoids updating 67+ call sites.
+5. **Missing builtin and prelude types for `Var` reference resolution (TA-3)** — the per-span map only covers nodes visited by `Bidir.synth` for user-module code. `println`, `map`, `to_string` etc. appear as `Var` nodes with no span map entry. The export must include `TypeCheck.initialTypeEnv` and `PreludeResult.TypeEnv` as separate lookup tables in `TypedModule`.
 
 ---
 
 ## Implications for Roadmap
 
-The feature dependency chain is strict: parsing and AST must precede type infrastructure wiring, which must precede constraint inference, which must precede dictionary construction and evaluation. The payoff features (built-in instances, operator refactoring) depend on all prior phases working. This dictates a 5-phase structure.
+The natural phase structure follows the existing architecture and minimizes regression risk at each step. All phases are sequentially dependent except the CLI flag (Phase 4), which is optional.
 
-### Phase 1: Core Type Infrastructure
-**Rationale:** Everything downstream depends on the `Scheme` shape and the new environment types. This phase has no parser dependencies and can be tested with F# unit tests before any `.fun` syntax changes.
-**Delivers:** Extended `Scheme of vars * constraints * ty`; `Constraint`, `ClassInfo`, `InstanceInfo`, `ClassEnv`, `InstanceEnv` types in `Type.fs`; helper functions `mkScheme`/`schemeType` for backwards compatibility; mechanical update of all ~70 `Scheme([], ty)` to `Scheme([], [], ty)` sites in `TypeCheck.fs`; extended `formatSchemeNormalized` to display constraints.
-**Addresses:** Table-stakes constraint representation.
-**Avoids:** TC-1 (constraints must be in `Scheme` from the start), TC-11 (single substitution pass for type + constraints during instantiation), TC-12 (format constraints in error messages immediately).
+### Phase 1: TypeAnnotationMap Module
 
-### Phase 2: Parsing and AST
-**Rationale:** New declaration forms must exist in the AST before the type checker can process them. LALR(1) conflict risk is highest here and must be resolved before other phases depend on the grammar.
-**Delivers:** `typeclass`, `instance`, `where`, `FATARROW` (`=>`) tokens in `Lexer.fsl`; `TypeClassDecl` and `InstanceDecl` grammar rules in `Parser.fsy`; corresponding `Decl` variants and `TEConstrained` `TypeExpr` variant in `Ast.fs`; `Format.fs` and `--emit-ast` coverage; `failwith` stubs in `TypeCheck.fs` and `Eval.fs` to prevent silent swallowing.
-**Avoids:** TC-8 (LALR(1) conflicts — use `where` not `=` in class/instance heads; add `FATARROW` as a distinct token; reserve keywords early), TC-13 (new `Decl` variants must be handled everywhere immediately; stubs prevent silent swallowing).
+**Rationale:** Foundation with no call sites yet. Build and test the module in isolation before touching `Bidir.fs`. Locks in the data structure choice (Dictionary vs. Map) before any collection code is written.
+**Delivers:** `TypeAnnotationMap.fs` with `record`, `tryFind`, `clear`, `snapshot`; project file updated; F# unit tests passing.
+**Addresses:** TA-9 (data structure choice locked in before recording sites are written), TA-5 (collection strategy decided up front)
+**Avoids:** Retrofitting from immutable Map to Dictionary after 40 recording sites already exist
 
-### Phase 3: Type Checker Wiring and Constraint Inference
-**Rationale:** The core algorithmic work. Constraint propagation through `synth`/`check`, `generalize`, `instantiate`, and the class/instance environment pipeline. This phase makes programs type-check correctly; it does not yet produce evaluable output.
-**Delivers:** `ClassEnv`/`InstanceEnv` as module-level mutable refs in `Bidir.fs`; `ClassDecl` processing (add methods to `TypeEnv` as constrained schemes); `InstanceDecl` processing (type-check method bodies, register in `InstanceEnv`); `resolveConstraint` linear search; constraint resolution in `Bidir.synth` `Var` case; constraint threading in `Infer.instantiate` and `Infer.generalize`; `InstanceEnv` propagated through the import/module pipeline; duplicate instance detection.
-**Avoids:** TC-2 (defer resolution past unification), TC-6 (no superclass hierarchies in v10.0), TC-7 (extend `mutableVars` check to constraint generalization), TC-9 (thread `InstanceEnv` through import pipeline), TC-14 (error on duplicate instance registration), LT-1 (mutable refs pattern avoids call-site explosion).
+### Phase 2: Wire Bidir.fs to Record Types
 
-### Phase 4: Dictionary Construction and Elaboration
-**Rationale:** Bridges type checker resolution to the evaluator. Elaboration rewrites the AST in-place so the evaluator sees only ordinary `App`/`Var` nodes. This is the phase that makes programs execute.
-**Delivers:** `InstanceDecl` processing emits a `RecordValue` dictionary bound in the eval environment under `__dict_ClassName_TypeKey`; inline elaboration in `Bidir.synth` wraps constrained `Var` lookups with `App(expr, Var dictName)` applications; constrained let-bound functions receive explicit dictionary lambda parameters; constrained parameterized instances (`Show (Option 'a)`) implemented as curried `FunctionValue` returning `RecordValue`.
-**Avoids:** TC-3 (elaboration, not runtime env threading, to correctly handle higher-order functions), TC-10 (recursive context reduction for constrained instances with subgoals), Anti-Pattern 3 (no `MethodCall` AST node; evaluator stays type-class-unaware), LT-3 (`callValueRef` wiring for builtin method closures).
+**Rationale:** This is the core work and the highest-risk phase. The annotation map is populated here. Must be complete before ExportApi can return meaningful data. Run the full test suite after each batch of recording sites to catch regressions early.
+**Delivers:** Every real-source expression node has a resolved `Type` in the annotation map after type checking. `TypeCheck.fs` clears the map at each `typeCheckModuleWithPrelude` entry.
+**Addresses:** TS-1 (all heuristic replacements depend on this), TA-2 (substitution discipline at every site), TA-11 (GADT branch substitution applied before storing)
+**Avoids:** Any change to existing function signatures; all changes are additive
 
-### Phase 5: Built-in Instances and Operator Migration
-**Rationale:** The payoff phase. Once the machinery works end-to-end, wire up the concrete instances that replace hardcoded builtins. This phase is mostly Prelude `.fun` file additions plus targeted changes to `Eval.fs` and `Bidir.fs` to remove old dispatch paths.
-**Delivers:** `Show`, `Eq`, `Ord` instances for all primitive types (`int`, `bool`, `string`, `char`); `Show (Option 'a)` constrained instance; `to_string` becomes an alias delegating to `Show.show`; `=` / `<>` become `Eq`-constrained; `<` / `>` / `<=` / `>=` become `Ord`-constrained; updated `flt` integration tests.
-**Avoids:** TC-4 (single dispatch path — builtins either replaced or delegate through type class; dual paths are incoherent), TC-5 (clear ambiguous-type diagnostics with constraint name and source span).
+### Phase 3: ExportApi Module
+
+**Rationale:** Once the annotation map is populated correctly, bundling outputs into `TypedModule` is mechanical. This phase also resolves the elaboration/synthetic-node issue by applying the `TypeEnv` name fallback for elaborated `LetDecl` nodes.
+**Delivers:** `ExportApi.typeCheckFile` returning `TypedModule` with `Decls`, `TopLevelTypes`, `ExprTypes`, `CtorEnv`, `RecEnv`, `ClassEnv`, `InstEnv`, `Warnings`. Integration test: call on a known source file, verify `ExprTypes` is non-empty with correct types for specific spans.
+**Addresses:** TA-1 (elaboration span gap resolved via TypeEnv name lookup), TA-3 (builtin/prelude type tables included in TypedModule), TA-4 (per-call-site span keying for type-class dispatch)
+**Avoids:** Anti-Pattern 5 — ExportApi must not live in `Program.fs`; keeps CLI/Argu dependencies separate from the library entry point
+
+### Phase 4: CLI Debug Flag (Optional)
+
+**Rationale:** Not required for FunLangCompiler integration (Model A uses in-process reference), but valuable for inspecting export correctness during Phase 5 work.
+**Delivers:** `--emit-typed-ast` flag writing `TypedModule` as JSON to stdout; `--emit-typed-env` flag for top-level `TypeEnv` only (essentially free since `TypeEnv` is already in the return tuple).
+**Addresses:** D-4 (version tag can be added here)
+**Avoids:** Anti-Pattern 3 — do not add JSON serialization layer to the in-process path
+
+### Phase 5: FunLangCompiler Integration
+
+**Rationale:** Can only begin after Phase 3 delivers a validated `ExportApi`. This phase is in the FunLangCompiler repo. The work is largely mechanical: add project reference, replace `ElabEnv` set queries with `ExprTypes[span]` lookups, delete the 6 sets and 8 heuristic functions.
+**Delivers:** FunLangCompiler with no duplicate parser/lexer, no type-guessing heuristics, all type dispatch driven by `TypedModule.ExprTypes`. Estimated ~250 lines deleted from `Elaboration.fs`.
+**Addresses:** All TS-1 through TS-6 heuristic replacements; TA-12 (consumer documentation on `Scheme` vs. monotype distinction)
+**Avoids:** Keeping heuristics as fallback — delete them entirely; partial adoption with heuristic backup creates ambiguity about which path is authoritative
 
 ### Phase Ordering Rationale
 
-- Phase 1 is a prerequisite for everything: `Scheme` shape and environment types must exist before any other phase can compile.
-- Phase 2 provides the AST nodes Phase 3 processes; parsing and type-checking are sequentially dependent.
-- Phase 3 cannot resolve instances until Phase 1's environments exist and Phase 2's AST nodes can be constructed.
-- Phase 4 cannot inject dictionaries until Phase 3 has resolved which instances exist.
-- Phase 5 is the only phase that modifies Prelude `.fun` files and existing `flt` integration tests; it proceeds incrementally once Phase 4 proves the pipeline works end-to-end.
-- The `Scheme` shape change (Phase 1) is the most invasive single change; doing it first ensures F# exhaustive pattern matching flags every incomplete update immediately as a compile error.
+- Phases 1-2-3 are strictly sequential: the map must exist before Bidir writes to it; Bidir must write before ExportApi returns useful data.
+- Phase 4 (CLI flag) is independent of Phase 5 and can be deferred or skipped if FunLangCompiler integration proceeds smoothly via in-process access.
+- Phase 5 is in a separate repo and must not begin until Phase 3 passes integration tests on real FunLang source files covering all expression variants.
+- The most important ordering constraint: do not attempt FunLangCompiler integration until the annotation map has been validated across all `synth` variants.
 
 ### Research Flags
 
-Phases likely needing closer attention during planning:
+Phases needing careful implementation attention (the domain is fully understood; no external research needed):
+- **Phase 2:** Highest implementation risk. GADT branches, type-class method resolution, and substitution correctness at every `synth` case need per-case review. Work in small batches and run tests between them.
+- **Phase 5:** FunLangCompiler heuristic inventory is HIGH confidence, but `isPtrParamBody` (250-line function) may surface edge cases not covered by existing tests. Plan for targeted test additions before deleting it.
 
-- **Phase 3:** Constraint inference in `Bidir.fs` is the highest-uncertainty area. The exact design for "deferred wanted constraints" (collected during `synth`, resolved at let-boundaries) versus "given constraints" (in-scope class constraints) and how they interact with the existing `ctx: InferContext list` should be specified precisely before coding begins. LT-2 (GADT branch isolation vs. constraint propagation) is a related edge case to flag in the Phase 3 plan.
-- **Phase 4:** Elaboration of constrained let-bound functions (adding implicit dict parameters) and constrained parameterized instances (dictionary-functions for `'a`-parameterized types) are the two sub-tasks most likely to require iteration.
-- **Phase 2:** Audit `where` in `Lexer.fsl` before committing to the keyword — existing GADT syntax may already use it contextually. If it does, grammar rules must be adapted. Check before writing parser rules.
-
-Phases with standard, well-documented patterns:
-
-- **Phase 1:** Mechanical data structure extension. F# exhaustive matching is the complete verification strategy. No algorithmic uncertainty.
-- **Phase 5:** Prelude instance wiring is additive and low-risk once Phase 4 is validated end-to-end.
+Phases with standard patterns (no deeper research needed):
+- **Phase 1:** Standard F# module with Dictionary. Mechanical.
+- **Phase 3:** Standard wrapper/bundling following the existing pipeline. Low risk.
+- **Phase 4:** Standard CLI flag addition following the existing `--emit-ast`/`--emit-type` pattern in `Program.fs`.
 
 ---
 
@@ -135,40 +133,35 @@ Phases with standard, well-documented patterns:
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Derived entirely from codebase inspection; no external dependency changes; implementation strategy matches GHC's own approach |
-| Features | HIGH | Feature categorization is well-grounded; MVP scope is conservative and validated against the dependency chain; anti-features are explicitly argued |
-| Architecture | HIGH | Standard HM-with-classes pattern (Jones 1994); component boundaries follow existing `ConstructorEnv`/`RecordEnv` precedent already in the codebase |
-| Pitfalls | HIGH | Most pitfalls are FunLang-specific, derived from direct codebase inspection (67+ call sites, `mutableVars`, `callValueRef`); general pitfalls validated against GHC documentation |
+| Stack | HIGH | All conclusions from direct codebase inspection; no external dependencies to validate |
+| Features | HIGH | Heuristic inventory read from Elaboration.fs directly; all 6 sets + 8 functions confirmed; replacement mapping is one-to-one |
+| Architecture | HIGH | Full source read of Bidir.fs, TypeCheck.fs, Elaborate.fs, Program.fs; proposed pattern matches existing mutable-state conventions |
+| Pitfalls | HIGH | All pitfalls derived from actual source structure; no speculation |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **`where` keyword conflict:** `Lexer.fsl` must be audited before Phase 2 begins to confirm whether `WHERE` already exists. Low risk but must be checked first.
-- **`synth` evidence representation:** Phase 3 requires `synth` to produce constraint resolution evidence alongside types. The exact F# representation (list of dict variable names, structured evidence type, or mutable ref accumulator) should be decided before Phase 3 coding starts. The mutable ref approach (like `mutableVars`) is recommended to avoid call-site explosion.
-- **GADT branch constraint isolation (LT-2):** If constrained instances are used inside GADT match branches, the branch-local type refinement must be applied to constraints before they escape the branch. Flag this in the Phase 3 plan.
-- **`callValueRef` wiring for builtin instance methods (LT-3):** When constructing built-in dictionaries (e.g., `Show int`), method closures must use `callValueRef` to invoke the evaluator. Account for this in Phase 4's dictionary construction design.
+- **Lambda parameter ground-type coverage (MEDIUM):** `isPtrParamBody` handles edge cases where lambda params are captured from outer scopes or involved in mutual recursion. After typed export, verify inference produces ground types (not `TVar`) for lambda parameters across all test cases before declaring `isPtrParamBody` fully replaceable. If residual `TVar` occurs for some params, a targeted fallback may be needed for that specific case.
+
+- **MatchCompile.fs pipeline position (needs clarification):** Clarify whether `MatchCompile.fs` rewrites match expressions before or after `elaborateTypeclasses`. If it runs after type checking, the post-compilation match tree has synthetic nodes not in the annotation map. Establish exact pipeline order before Phase 5 begins.
+
+- **Per-call-site type-class dispatch correctness (needs a targeted test):** The annotation map should record per-call-site instantiated types for `Var` references to polymorphic methods. Verify with a test case that `show 42` and `show "hello"` in the same file produce distinct `Type` entries for the two `Var("show", span)` nodes before FunLangCompiler integration.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- FunLang codebase (direct inspection, 2026-03-31) — `Type.fs`, `Ast.fs`, `Infer.fs`, `Bidir.fs`, `TypeCheck.fs`, `Eval.fs`, `Unify.fs`, `Elaborate.fs`
-- Jones (1994), "Qualified Types: Theory and Practice" — standard reference for constraint-augmented HM
-- GHC instance resolution documentation — authoritative on dictionary passing, Paterson conditions, linear-search resolution
+- FunLang source (direct read, 2026-04-02): `Ast.fs`, `Type.fs`, `Bidir.fs`, `TypeCheck.fs`, `Elaborate.fs`, `Prelude.fs`, `Program.fs`, `Cli.fs`, `FunLang.fsproj`
+- FunLangCompiler source (direct read, 2026-04-02): `Elaboration.fs` — all 6 tracking sets and 8 heuristic functions inventoried
 
 ### Secondary (MEDIUM confidence)
-- [Implementing, and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html) — dictionary passing mechanics
-- [Making dictionary passing explicit in Haskell — Joachim Breitner](https://www.joachim-breitner.de/blog/398-Making_dictionary_passing_explicit_in_Haskell) — GHC elaboration model
-- [Hindley-Milner inference with constraints — Kwang's Haskell Blog](https://kseo.github.io/posts/2017-01-02-hindley-milner-inference-with-constraints.html) — constraint-based HM formulation
-- [Type Classes — Tufts CS150PLD Notes](https://www.cs.tufts.edu/comp/150PLD/Notes/TypeClasses.pdf) — implementation walkthrough
-- [Introduction to Haskell Typeclasses — Serokell](https://serokell.io/blog/haskell-typeclasses) — feature survey
-
-### Tertiary (LOW confidence)
-- [Coherence of type class resolution — Bottu et al.](https://xnning.github.io/papers/coherence-class.pdf) — formal coherence treatment (relevant if superclasses are added later)
-- [Type Classes: Confluence, Coherence and Global Uniqueness — ezyang's blog](http://blog.ezyang.com/2014/07/type-classes-confluence-coherence-global-uniqueness/) — orphan instances and coherence
+- FSharp.Compiler.Service: span-keyed `GetSymbolUseAtLocation` API — validates the span-keyed map approach as industry practice
+- OCaml `typing/typedtree.ml`: parallel typed AST design — validates the alternative (full TypedExpr DU) as correct but higher-cost for this codebase
+- GHC Trees That Grow (Najd & Peyton Jones, JFP 2019): parametric phase-indexed AST — validates why a full typed AST DU is over-engineering at FunLang's scale
+- "Typing Haskell in Haskell" (Jones 1999): per-expression annotation approach in HM systems
 
 ---
-*Research completed: 2026-03-31*
+*Research completed: 2026-04-02*
 *Ready for roadmap: yes*

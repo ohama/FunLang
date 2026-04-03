@@ -1,679 +1,513 @@
-# Architecture Patterns: Type Classes in FunLang
+# Architecture: Typed AST Export
 
-**Domain:** Adding type classes (ad-hoc polymorphism) to an existing ML-style interpreter
-**Researched:** 2026-03-31
-**Confidence:** HIGH
+**Domain:** Adding Typed AST export to an existing ML-style interpreter
+**Researched:** 2026-04-02
+**Confidence:** HIGH (full source read)
 
 ---
 
 ## Overview
 
-This document covers the integration architecture for adding Haskell-style type classes to the
-existing FunLang interpreter. The chosen implementation strategy is **dictionary passing**:
-type class constraints are elaborated into explicit dictionary arguments during type checking,
-and dictionary values are constructed and passed at call sites during evaluation.
+FunLangCompiler currently maintains its own copy of FunLang's Parser/Lexer and runs its own
+elaboration pass with type-guessing heuristics. The goal is to replace that with a single
+authoritative call to FunLang's type inference, receiving back a typed representation that
+the compiler can walk to generate MLIR.
 
-The existing pipeline is unchanged structurally:
+This document defines how the Typed AST export fits into FunLang's existing architecture,
+what new components are needed, and the recommended build order.
+
+---
+
+## Existing Pipeline (Authoritative)
 
 ```
 Source text
-    ↓
-[Lexer.fsl]  →  raw tokens
-    ↓
-[IndentFilter.fs]  →  filtered token stream
-    ↓
-[Parser.fsy]  →  Ast.Module
-    ↓
-[Elaborate.fs]  →  desugared Ast.Module
-    ↓
-[Bidir.fs / TypeCheck.fs]  →  type-checked (with constraint solving)
-    ↓
-[Eval.fs]  →  Value (with dictionary values in env)
+    |
+[Lexer.fsl + IndentFilter.fs]  ->  filtered token stream
+    |
+[Parser.fsy]  ->  Ast.Module   (untyped; every node carries Span)
+    |
+[TypeCheck.typeCheckModuleWithPrelude]
+    |  calls Bidir.synth/check internally
+    |  returns: Ok(warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
+    |
+[Elaborate.elaborateTypeclasses]  ->  desugared Decl list
+    |                               (InstanceDecl -> LetDecl, TypeClassDecl removed)
+    |
+[Eval.evalModuleDecls]  ->  Value
 ```
 
-The type class feature touches: `Ast.fs`, `Type.fs`, `TypeCheck.fs`, `Bidir.fs`, `Eval.fs`,
-`Elaborate.fs` (optionally), `Parser.fsy`, and `Lexer.fsl`.
+Key facts that drive design decisions:
+
+1. `Bidir.synth` returns `(Subst * Type)`. The `Subst` must be applied to get the final
+   ground type for a node. No per-node type annotations are stored anywhere in the current
+   pipeline; type information lives only in the `TypeEnv` at the top-level binding level
+   after type checking finishes.
+
+2. `typeCheckModuleWithPrelude` returns `typeEnv: TypeEnv` which maps **top-level binding
+   names** to `Scheme`. It does NOT return types for sub-expressions. There is no existing
+   data structure that associates types with sub-expression spans.
+
+3. `Elaborate.elaborateTypeclasses` runs AFTER type checking. It rewrites `InstanceDecl`
+   into `LetDecl` nodes and removes `TypeClassDecl` nodes. The AST seen by `Eval` is
+   therefore not the same as the AST seen by `Bidir`. If the compiler needs the elaborated
+   form, it must call `elaborateTypeclasses` on the post-typecheck decls.
+
+4. The `Prelude` is loaded via `Prelude.loadPrelude`, which type-checks and evaluates all
+   `Prelude/*.fun` files and caches results. The returned `PreludeResult` contains fully
+   resolved `TypeEnv`, `CtorEnv`, `RecEnv`, `ClassEnv`, `InstEnv`. Prelude types are just
+   entries in these maps — there is no separate "prelude typed AST" to handle.
 
 ---
 
-## Component 1: New AST Nodes (Ast.fs)
+## What FunLangCompiler Needs
 
-### New Decl variants
+The compiler needs, for each top-level let binding in the user's file:
 
-```fsharp
-// Type class declaration: type class Show 'a where show : 'a -> string
-| ClassDecl of
-    name: string *
-    typeParams: string list *
-    methods: (string * TypeExpr) list *
-    Span
+1. The resolved `Type` of the binding (not a `Scheme` with type variables — a ground type
+   after instantiation, or the scheme itself if the value is polymorphic).
+2. For function bodies: the resolved `Type` at every sub-expression node, so the MLIR
+   lowering knows what types to emit for locals, parameters, and return values.
+3. Constructor and record type metadata (already in `CtorEnv`/`RecEnv` — these can be
+   passed directly).
+4. The elaborated `Decl list` (post-`elaborateTypeclasses`) to walk for code generation.
 
-// Instance declaration: instance Show int where show x = ...
-| InstanceDecl of
-    className: string *
-    typeArgs: TypeExpr list *
-    methods: (string * Expr) list *
-    Span
-```
-
-`ClassDecl` defines the class name, its type parameters, and the type signatures of its methods.
-`InstanceDecl` provides concrete method implementations for a particular type.
-
-### New TypeExpr variant
-
-```fsharp
-// Constrained type: (Show 'a) => 'a -> string
-// Multiple constraints: (Show 'a, Eq 'a) => 'a -> string
-| TEConstrained of constraints: (string * TypeExpr list) list * inner: TypeExpr
-```
-
-This allows user-facing type annotations to specify class constraints. During elaboration this is
-converted into the internal `Scheme`-with-constraints representation.
-
-### New Expr variant (for elaborated code)
-
-```fsharp
-// Explicit dictionary application (produced by elaboration, not parsed)
-// DictApp(expr, dictExpr) applies a dictionary argument to a constrained function
-| DictApp of func: Expr * dict: Expr * span: Span
-
-// Dictionary construction (produced by elaboration, not parsed)
-// DictValue(className, typeName, methods) constructs a dictionary record
-| DictLit of className: string * typeName: string * methods: (string * Expr) list * span: Span
-```
-
-These nodes are synthetic — the parser never produces them. They are introduced by `Elaborate.fs`
-during constraint elaboration, after type checking resolves which instances to use.
-
-**Practical alternative (simpler):** Do not introduce `DictApp`/`DictLit` AST nodes. Instead,
-represent dictionaries as `RecordValue` in the evaluator and pass them as ordinary `Var` references
-injected into the environment by the type checker. This avoids adding new AST nodes at the cost of
-less explicit elaboration. Recommended for a first implementation.
+Items 3 and 4 are already available from the current pipeline. Item 1 is partially available
+(top-level schemes in `TypeEnv`). Item 2 is not available at all — it requires a structural
+change to the type checking pass.
 
 ---
 
-## Component 2: Type System Extensions (Type.fs)
+## Design Decision: Separate TypedAst vs. Annotation Map
 
-### New types
+Two approaches exist for making per-node types available:
 
-```fsharp
-// Constraint: class name + type arguments
-// Example: Show int, Eq 'a, Ord 'a
-type Constraint = {
-    ClassName: string
-    TypeArgs: Type list
-}
+### Option A: Annotation Map (type table keyed by Span)
 
-// Extended Scheme with constraints
-// Old: Scheme of vars: int list * ty: Type
-// New: Scheme of vars: int list * constraints: Constraint list * ty: Type
-type Scheme = Scheme of vars: int list * constraints: Constraint list * ty: Type
-```
-
-**Impact of changing Scheme:** The `Scheme` DU is used throughout `Type.fs`, `Infer.fs`,
-`Bidir.fs`, and `TypeCheck.fs`. Every `Scheme(vars, ty)` construction and pattern match must
-gain the constraints list. For backwards compatibility during incremental implementation, start
-by using `Scheme(vars, [], ty)` (empty constraints) for all existing code, then add constraint
-threads progressively.
-
-### Class and instance environments
+During `Bidir.synth`, record `(span, finalType)` pairs into a mutable side table. After type
+checking, the compiler queries this table by span to get the type of any expression.
 
 ```fsharp
-// Method signature within a class
-// Example: show : forall 'a. Show 'a => 'a -> string
-type ClassMethodInfo = {
-    MethodName: string
-    MethodType: Type    // type with class's type param as TVar
-}
-
-// Type class declaration metadata
-type ClassInfo = {
-    TypeParams: int list        // fresh TVar ids for the class's type parameters
-    Methods: ClassMethodInfo list
-    SuperClasses: string list   // superclass constraints (empty for MVP)
-}
-
-// Instance metadata: which type does this instance cover?
-type InstanceInfo = {
-    ClassName: string
-    InstanceTypes: Type list    // e.g., [TInt] for "instance Show int"
-    DictName: string            // variable name of the dictionary in evaluation env
-    MethodImpls: Map<string, Expr>  // method name -> implementation expr
-}
-
-// Class environment: class name -> class info
-type ClassEnv = Map<string, ClassInfo>
-
-// Instance environment: class name -> list of instances
-type InstanceEnv = Map<string, InstanceInfo list>
+// New module: TypedAst.fs (or inline in Bidir.fs)
+let typeTable = System.Collections.Generic.Dictionary<Ast.Span, Type>()
+let recordType (span: Ast.Span) (ty: Type) = typeTable.[span] <- ty
 ```
 
-These two environments are threaded through `TypeCheck.typeCheckModuleWithPrelude` alongside the
-existing `TypeEnv`, `ConstructorEnv`, and `RecordEnv`.
+Call `recordType span (apply s ty)` at each synth/check call site in Bidir.fs after the
+substitution is known.
+
+**Pros:**
+- No new AST type needed
+- Minimal change to Bidir.fs (additive)
+- Compiler keeps walking the existing `Ast.Expr` / `Ast.Decl` types it already knows
+- Spans are already on every node in `Ast.fs`, providing the key
+
+**Cons:**
+- Relies on Span uniqueness. The `unknownSpan` sentinel (`FileName = "<unknown>"`) is shared
+  across synthetic nodes. Synthetic nodes (builtins, elaborated nodes) will collide.
+- Mutable global state — not thread-safe (acceptable since the existing codebase uses the
+  same pattern: `Bidir.mutableVars`, `Bidir.pendingConstraints`, etc.)
+- After `elaborateTypeclasses`, new `LetDecl` nodes are created with spans copied from
+  `InstanceDecl` — those nodes have types but were never in the type table
+
+### Option B: Typed AST (new parallel DU)
+
+Define a `TypedExpr` / `TypedDecl` type in a new `TypedAst.fs`, where every node carries
+a `Type` field. `Bidir.synth` or a new wrapper produces `TypedExpr` in parallel with
+returning `(Subst * Type)`.
+
+```fsharp
+// TypedAst.fs
+type TypedExpr =
+    | TNumber  of value: int   * ty: Type * span: Ast.Span
+    | TVar     of name: string * ty: Type * span: Ast.Span
+    | TApp     of func: TypedExpr * arg: TypedExpr * ty: Type * span: Ast.Span
+    | TLambda  of param: string * body: TypedExpr * ty: Type * span: Ast.Span
+    | TLet     of name: string * rhs: TypedExpr * body: TypedExpr * ty: Type * span: Ast.Span
+    // ... one variant per Ast.Expr variant
+```
+
+**Pros:**
+- Types are structurally attached; no lookup needed
+- Compiler can pattern match on `TypedExpr` directly
+- No span-uniqueness requirement
+
+**Cons:**
+- ~50+ new DU variants mirroring every `Ast.Expr` variant (Ast.fs has 40+ Expr variants)
+- Bidir.synth must be rewritten to produce `TypedExpr` instead of/alongside the untyped AST
+- Major refactor: every call site in Bidir.fs changes signature
+- `Ast.Decl` mirroring (`TypedDecl`) doubles the size again
+
+### Recommendation: Option A (Annotation Map) for Phase 1
+
+The annotation map approach is strictly additive — Bidir.fs gains `recordType` calls but
+its signature does not change. The compiler can start consuming it immediately. The typed
+AST approach is the long-term ideal but requires significant refactoring that should be a
+separate milestone after the basic export works.
+
+For the collision issue with `unknownSpan`: synthetic nodes in the Prelude already have
+`unknownSpan`. The compiler does not need types for Prelude internal nodes — it only needs
+types for user-file nodes. Prelude nodes can be excluded from recording. A `span.FileName <> "<unknown>"` guard at each `recordType` call site handles this.
 
 ---
 
-## Component 3: Constraint Solving (Bidir.fs + new ConstraintSolver.fs)
+## New Components
 
-### Where constraint solving fits
+### Component 1: TypeAnnotationMap.fs (NEW FILE)
 
-Constraint solving happens in two places:
-
-1. **At `let` generalization boundaries** (`generalize` in `Infer.fs`): constraints on the type
-   are retained in the scheme if the type variable they mention is generalized. This is the
-   standard "ambiguity check" — a constraint like `Show 'a` stays in the scheme only if `'a` is
-   a bound variable.
-
-2. **At instantiation sites** (`instantiate` in `Infer.fs`): when a constrained scheme is
-   instantiated, fresh type variables replace the bound vars, and the constraints become
-   "active" — they must be resolved against the instance environment to find the dictionary.
-
-### Constraint resolution algorithm
-
-**Linear search through instances** is the correct starting implementation (this is what GHC
-does internally for the common case):
+Position in build order: after `Bidir.fs`, before `TypeCheck.fs`.
 
 ```fsharp
-/// Resolve a constraint to an instance.
-/// Returns Some(InstanceInfo) if found, None if no instance matches.
-let resolveConstraint (instEnv: InstanceEnv) (c: Constraint) (subst: Subst) : InstanceInfo option =
-    match Map.tryFind c.ClassName instEnv with
-    | None -> None
-    | Some instances ->
-        instances |> List.tryFind (fun inst ->
-            // Try to unify c.TypeArgs with inst.InstanceTypes under current subst
-            try
-                let _ = List.map2 (fun a b -> unify (apply subst a) (apply subst b)) c.TypeArgs inst.InstanceTypes
-                true
-            with _ -> false)
+module TypeAnnotationMap
+
+open Ast
+open Type
+
+/// Mutable table: span -> resolved Type, populated during Bidir.synth.
+/// Keyed by (FileName, StartLine, StartColumn) tuple for uniqueness.
+/// Cleared at each top-level typeCheckModuleWithPrelude entry.
+let private table =
+    System.Collections.Generic.Dictionary<Span, Type>()
+
+let record (span: Span) (ty: Type) =
+    if span.FileName <> "<unknown>" then
+        table.[span] <- ty
+
+let tryFind (span: Span) : Type option =
+    match table.TryGetValue(span) with
+    | true, ty -> Some ty
+    | _ -> None
+
+let clear () = table.Clear()
+
+let snapshot () : Map<Span, Type> =
+    table |> Seq.map (fun kv -> kv.Key, kv.Value) |> Map.ofSeq
 ```
 
-This runs at every call site where a constrained function is applied. For an interpreter (not a
-compiler), linear search is acceptable — there are never thousands of instances.
+`snapshot()` is the function the export API calls to hand a frozen copy to the compiler.
 
-### Where in Bidir.fs
+### Component 2: ExportApi.fs (NEW FILE)
 
-Add constraint resolution in the `Var` case of `synth`, immediately after `instantiate`:
+Position: after `Prelude.fs`, before `Program.fs`.
+
+This is the single entry point for FunLangCompiler. It wraps the existing pipeline and
+bundles all output into a single `TypedModule` record.
 
 ```fsharp
-| Var (name, span) ->
-    match Map.tryFind name env with
-    | Some (Scheme(vars, constraints, ty)) ->
-        let freshTy = instantiate (Scheme(vars, [], ty))   // existing logic
-        // NEW: for each constraint, resolve instance and record which dict to pass
-        let resolvedDicts =
-            constraints |> List.map (fun c ->
-                let c' = { c with TypeArgs = List.map (apply currentSubst) c.TypeArgs }
-                match resolveConstraint instEnv c' currentSubst with
-                | Some inst -> inst.DictName
-                | None ->
-                    raise (TypeException { Kind = UnresolvedConstraint c'; ... }))
-        // resolvedDicts is a list of env variable names to pass as implicit args
-        (empty, freshTy, resolvedDicts)   // return with dict info
-    | None -> raise (UnboundVar ...)
-```
+module ExportApi
 
-**Representation of resolved constraint evidence:** The simplest model is to return a list of
-dictionary variable names alongside the type. The call site then wraps the original `Expr` with
-`App(expr, Var dictName)` applications, one per resolved constraint. This is done during
-elaboration (see Component 6).
+open Ast
+open Type
+open TypeCheck
 
----
-
-## Component 4: Evaluation Changes (Eval.fs)
-
-### Dictionary values
-
-Dictionaries are first-class values in the evaluator. Use `RecordValue` (already exists in
-`Ast.fs`):
-
-```fsharp
-// A dictionary for "Show int" looks like this at runtime:
-// RecordValue("Show_int", Map.ofList [
-//   ("show", BuiltinValue (fun (IntValue n) -> StringValue (string n)))
-// ])
-```
-
-This means no new `Value` DU variant is needed. Dictionaries are ordinary records, and dictionary
-method dispatch is ordinary field access.
-
-### Dictionary environment initialization
-
-When `TypeCheck.fs` processes an `InstanceDecl`:
-
-1. Evaluate each method implementation expression in the current evaluation environment.
-2. Package them into a `RecordValue` with a generated name (e.g., `"__dict_Show_int"`).
-3. Bind that record value in the evaluation environment under the dictionary variable name.
-
-The dictionary variable name (`inst.DictName`) is the same name that constraint resolution will
-insert at call sites. Example: `__dict_Show_int` is bound in `Env` once the `instance Show int`
-declaration is processed.
-
-### evalExpr changes
-
-No new `eval` cases are needed if the elaboration strategy (Component 6) produces ordinary
-`App` and `Var` nodes. The evaluator sees:
-
-```
-// Original source: show 42
-// After elaboration: show __dict_Show_int 42
-// Which in AST terms: App(App(Var "show", Var "__dict_Show_int"), Number 42)
-```
-
-The `show` function itself was elaborated to take the dictionary as its first argument, and the
-dictionary is in the environment. Evaluation proceeds normally.
-
-**If elaboration is deferred** (phased implementation), add a special `DictMethod` expression
-variant to carry method lookup at eval time. This trades simplicity for phased delivery but
-creates divergence between the "real" representation and the eval representation.
-
-**Recommendation:** Do full elaboration. It is cleaner and the evaluator stays untouched.
-
----
-
-## Component 5: TypeCheck.fs Changes
-
-### New environments threaded through typeCheckModule
-
-The `typeCheckModuleWithPrelude` function currently passes:
-- `TypeEnv` (variable types)
-- `ConstructorEnv` (ADT constructors)
-- `RecordEnv` (record field types)
-- `Map<string, ModuleExports>` (modules)
-
-Add:
-- `ClassEnv` (class declarations)
-- `InstanceEnv` (instance declarations)
-
-These new environments are returned in `ModuleExports` so nested modules and opens work correctly.
-
-### Processing ClassDecl
-
-When a `ClassDecl` is encountered:
-
-1. Create fresh `TVar` ids for the class's type parameters.
-2. Elaborate each method's `TypeExpr` into an internal `Type` referencing those `TVar`s.
-3. Add the class to `ClassEnv`.
-4. Add each method to `TypeEnv` as a constrained scheme:
-   `show : Scheme([a], [Constraint("Show", [TVar a])], TArrow(TVar a, TString))`
-
-This means method names are in scope as ordinary polymorphic functions with class constraints.
-No special treatment needed in `Bidir.fs` beyond the constraint resolution in the `Var` case.
-
-### Processing InstanceDecl
-
-When an `InstanceDecl` is encountered:
-
-1. Look up the class in `ClassEnv`.
-2. Unify the instance's type arguments with the class's type parameters to build a substitution.
-3. Check each provided method has the correct type (type-check the method body against the
-   substituted method type from the class).
-4. Generate a dictionary variable name: `"__dict_" + className + "_" + typeArgStr`.
-5. Build an `InstanceInfo` record and add it to `InstanceEnv`.
-6. At evaluation time, construct the `RecordValue` dictionary and add it to `Env`.
-
-### ModuleExports extension
-
-```fsharp
-type ModuleExports = {
-    TypeEnv: TypeEnv
+/// Everything the compiler needs from one type-checked file
+type TypedModule = {
+    /// Elaborated declarations (post-elaborateTypeclasses, ready for code generation)
+    Decls: Decl list
+    /// Top-level binding types: name -> Scheme
+    TopLevelTypes: TypeEnv
+    /// Per-expression types: span -> Type (resolved, substitution applied)
+    ExprTypes: Map<Ast.Span, Type>
+    /// Constructor metadata
     CtorEnv: ConstructorEnv
+    /// Record metadata
     RecEnv: RecordEnv
-    SubModules: Map<string, ModuleExports>
-    // NEW:
+    /// Class metadata
     ClassEnv: ClassEnv
+    /// Instance metadata
     InstEnv: InstanceEnv
+    /// Type-check warnings
+    Warnings: Diagnostic.Diagnostic list
 }
+
+/// Type-check a source file and return the typed module.
+/// `prelude` is obtained from Prelude.loadPrelude; callers should cache it.
+val typeCheckFile :
+    prelude: Prelude.PreludeResult ->
+    source: string ->
+    filename: string ->
+    Result<TypedModule, Diagnostic.Diagnostic list>
 ```
+
+The implementation calls:
+1. `Program.parseModuleFromString` (or inlined parseModule logic)
+2. `TypeAnnotationMap.clear()`
+3. `TypeCheck.typeCheckModuleWithPrelude` (populates TypeAnnotationMap as side effect)
+4. `Elaborate.elaborateTypeclasses` on the decls
+5. `TypeAnnotationMap.snapshot()`
+6. Bundle everything into `TypedModule`
+
+### Component 3: Bidir.fs modifications (EXISTING FILE, ADDITIVE)
+
+Add `TypeAnnotationMap.record span (apply s ty)` calls at the end of each `synth` and
+`check` case in Bidir.fs. The canonical location is at the point where the final
+substitution is known and applied.
+
+Pattern for each synth case:
+
+```fsharp
+| Number(n, span) ->
+    let ty = TInt
+    TypeAnnotationMap.record span ty     // ADD THIS
+    (empty, ty)
+
+| App(func, arg, span) ->
+    // ... existing logic ...
+    let finalTy = apply composedSubst resultTy
+    TypeAnnotationMap.record span finalTy    // ADD THIS
+    (composedSubst, finalTy)
+```
+
+The `check` function does not need to record — `check` always defers to `synth` via
+subsumption for the type it checks against. Recording in `synth` is sufficient.
+
+**Number of sites:** Approximately 40 expression variants in `Ast.Expr`. Each synth case
+gets one `record` call. This is mechanical, low-risk work.
 
 ---
 
-## Component 6: Elaboration (Elaborate.fs or inline in TypeCheck.fs)
+## Integration Points
 
-### What elaboration does
+### Where in the pipeline to extract type info
 
-After type checking resolves which instance dictionary to use for each constrained call, the
-program must be rewritten so that:
+Extract **after Bidir.synth**, not after Infer. The type is final only after unification
+has run and the substitution has been applied. Bidir is the authoritative type checker —
+Infer.fs is now just a helpers module (see Infer.fs comment at top: "main entry points
+are deprecated in favor of Bidir.synth/synthTop").
 
-1. Every definition with a constraint receives implicit dictionary parameters.
-2. Every call site passes the appropriate dictionary.
+The substitution threading in Bidir is the critical detail: `synth` returns `(Subst * Type)`
+where the `Subst` maps type variable IDs to concrete types. The `Type` return value is
+already partially substituted. The final type is `apply s ty` where `s` is the accumulated
+substitution at that call site. **Record `apply s ty`, not the raw `ty`.**
 
-This is the **dictionary-passing elaboration** transform.
+### How type class elaboration interacts
 
-### Where to do it
+`Elaborate.elaborateTypeclasses` runs AFTER type checking on the original parsed `Decl list`.
+It replaces `InstanceDecl(cls, ty, methods, span)` with individual `LetDecl(methodName, body, span)`
+nodes — the span is copied from the `InstanceDecl`.
 
-**Option A: Inline in TypeCheck.fs** — resolve constraints during `synth`, immediately wrap
-expressions with `App(expr, Var dictName)`. The resulting AST is already in "dictionary-passed"
-form before the evaluator sees it.
+For the compiler:
 
-**Option B: Separate Elaborate.fs pass** — type check first (record constraint evidence as
-metadata), then walk the typed AST and insert dictionary applications. More modular but requires
-storing evidence alongside AST nodes.
+- The elaborated `LetDecl` nodes for type class methods will have spans that correspond to
+  the `InstanceDecl` span, not to the individual method body spans. The `TypeAnnotationMap`
+  will have entries for the method body sub-expressions (recorded during synth when
+  TypeCheck.fs type-checked the InstanceDecl methods), but the top-level `LetDecl` name
+  itself may not have a table entry.
+- **Mitigation:** For InstanceDecl-derived LetDecls, look up the method's `Scheme` from
+  `typeEnv` by method name. This is always available.
 
-**Recommendation for MVP:** Option A (inline). It avoids adding new AST node types and reuses
-the existing `App`/`Var` nodes. The cost is that `synth` in `Bidir.fs` returns slightly more
-information, but the structure stays familiar.
+### How Prelude is handled
 
-### Elaboration of constrained functions
+The `Prelude.PreludeResult` provides fully-resolved `TypeEnv`, `CtorEnv`, `RecEnv`,
+`ClassEnv`, `InstEnv` for all prelude definitions. The compiler does not need a typed AST
+for prelude functions — it only needs their types, which are already in `PreludeResult.TypeEnv`.
 
-When `TypeCheck.fs` processes a `LetDecl` for a constrained function:
+For caching: `Prelude.loadPrelude` is already expensive (parses and type-checks all
+`Prelude/*.fun` files). The result should be cached at the process level. `ExportApi.fs`
+should accept a pre-loaded `PreludeResult` rather than calling `loadPrelude` internally.
 
-```
-// Source: let show_pair (x, y) = "(" ++ show x ++ ", " ++ show y ++ ")"
-// Type: (Show 'a) => ('a * 'a) -> string
-```
+The internal `tcCache` and `evalCache` in `Prelude.fs` are process-level dictionaries —
+repeated `loadPrelude` calls with the same paths do use the file-level cache, but the
+`loadPrelude` function itself still iterates all files to build `PreludeResult`. Cache the
+`PreludeResult` at the call site.
 
-The elaborator rewrites it to:
+### How FunLangCompiler consumes this
 
-```
-// Elaborated: let show_pair __dict_Show = fun (x, y) -> "(" ++ (__dict_Show.show x) ++ ...
-// Type: Show_dict -> ('a * 'a) -> string
-```
+Two deployment models are feasible:
 
-The dictionary becomes an explicit lambda parameter. All uses of `show` inside the body are
-replaced with field accesses on `__dict_Show`.
+**Model A: In-process library reference**
 
-### Elaboration of call sites
+FunLangCompiler adds a project reference to `FunLang.fsproj`. It calls `ExportApi.typeCheckFile`
+directly. The `TypedModule` is an F# record in memory.
 
-When `synth` resolves a constrained `Var` to specific instances, it inserts explicit `App` nodes:
+Advantage: No serialization overhead, full F# type safety.
+Disadvantage: FunLangCompiler must be an F# project (or .NET project). Cross-language use
+requires wrapping.
 
-```
-// Source: show 42
-// Elaborated: App(Var "show", Var "__dict_Show_int")  (before the user argument)
-//   → App(App(Var "show", Var "__dict_Show_int"), Number 42)
-```
+**Model B: CLI invocation with JSON/binary output**
 
-The dictionary insertion happens in the `Var` case of `synth` — the dictionary arguments are
-prepended before the function is applied to its user-visible arguments.
+Add a `--emit-typed-ast` flag to `Program.fs` that runs the full pipeline and writes the
+`TypedModule` to stdout as JSON (or a binary format).
 
----
+Advantage: FunLangCompiler can be in any language. Easy to debug (JSON is readable).
+Disadvantage: Serialization overhead; JSON representation of `Type` DU requires schema design.
 
-## Component 7: Parser and Lexer Changes
-
-### New keywords
-
-- `typeclass` (or `class` — conflicts with potential future OOP syntax; `typeclass` is safer)
-- `instance`
-- `where` (already lexed as `WHERE` in many LALR grammars; check existing token set)
-
-Check whether `where` is already in the lexer for other purposes. If it is used as a contextual
-keyword (e.g., for record `with` syntax), adding `WHERE` as a distinct token requires auditing
-all existing grammar rules.
-
-**Recommendation:** Use `where` for both class/instance bodies and any future where-clauses.
-This matches Haskell's syntax and is immediately recognizable to ML/Haskell users.
-
-### New grammar rules
-
-```
-// Class declaration
-ClassDecl:
-  | TYPECLASS IDENT TypeParams WHERE INDENT MethodSigs DEDENT
-      { ClassDecl($2, $3, $6, ...) }
-
-MethodSigs:
-  | MethodSig                    { [$1] }
-  | MethodSig MethodSigs         { $1 :: $2 }
-
-MethodSig:
-  | IDENT COLON TypeExpr         { ($1, $3) }  // show : 'a -> string
-
-// Instance declaration
-InstanceDecl:
-  | INSTANCE ClassName TypeArgs WHERE INDENT MethodImpls DEDENT
-      { InstanceDecl($2, $3, $6, ...) }
-
-MethodImpls:
-  | MethodImpl                   { [$1] }
-  | MethodImpl MethodImpls       { $1 :: $2 }
-
-MethodImpl:
-  | IDENT EQUALS Expr            { ($1, $3) }  // show x = ...
-```
-
-### Constraint syntax in type annotations
-
-Add `TEConstrained` parsing for user-visible annotations:
-
-```
-// (Show 'a) => 'a -> string
-TypeExpr:
-  | LPAREN ConstraintList RPAREN FATARROW TypeExpr  { TEConstrained($2, $5) }
-
-ConstraintList:
-  | Constraint                               { [$1] }
-  | ConstraintList COMMA Constraint          { $1 @ [$3] }
-
-Constraint:
-  | IDENT TypeExprList           { ($1, $2) }  // Show 'a
-```
-
-`FATARROW` is a new token `=>`. Add it to the lexer.
+**Recommendation: Model A for the initial milestone.** FunLangCompiler is already a .NET
+project. A project reference eliminates all serialization complexity. Model B can be added
+later if cross-language consumption is needed.
 
 ---
 
-## Build Order: What Depends on What
+## Data Flow Changes
 
-The features form a strict dependency chain. Each phase is independently testable.
+### Current data flow (before this milestone)
 
-### Phase 1: Core type class infrastructure (Type.fs, TypeCheck.fs)
-
-**What:** Extend `Scheme` with constraints, add `ClassEnv`/`InstanceEnv`, add `ClassInfo`/
-`InstanceInfo` types, add `resolveConstraint`.
-
-**Does not require:** Parser changes, new AST nodes.
-
-**Test:** F# unit tests in `FunLang.Tests` validating that `Scheme` with constraints can be
-created, that `generalize` preserves constraints, and that `resolveConstraint` finds the right
-instance by linear search.
-
-**Files changed:** `Type.fs`, `TypeCheck.fs` (initialTypeEnv function signature update)
-
-### Phase 2: ClassDecl/InstanceDecl parsing (Lexer.fsl, Parser.fsy, Ast.fs)
-
-**What:** Add `typeclass`, `instance`, `where`, `=>` tokens. Add `ClassDecl`/`InstanceDecl` to
-`Decl` DU. Add `TEConstrained` to `TypeExpr` DU. Add grammar rules.
-
-**Does not require:** Constraint solving, elaboration, evaluation changes.
-
-**Test:** Parse a `typeclass Show 'a where show : 'a -> string` declaration and verify the AST
-matches expected structure. Parse `instance Show int where show x = to_string x` and verify.
-
-**Files changed:** `Lexer.fsl`, `Parser.fsy`, `Ast.fs`
-
-### Phase 3: TypeCheck wiring (TypeCheck.fs, Bidir.fs)
-
-**What:** Thread `ClassEnv`/`InstanceEnv` through `typeCheckModuleWithPrelude`. Process
-`ClassDecl` (add methods to TypeEnv as constrained schemes, add class to ClassEnv). Process
-`InstanceDecl` (type check method bodies, add to InstanceEnv). Add constraint resolution in
-`Bidir.synth`'s `Var` case.
-
-**Does not require:** Evaluation changes (dictionaries not yet in Env).
-
-**Test:** Type-check a program that defines a class and instance. Verify the resolved instance
-is the correct one. Verify that a type error is raised for missing instances.
-
-**Files changed:** `TypeCheck.fs`, `Bidir.fs`
-
-### Phase 4: Evaluation — dictionary construction and method dispatch (Eval.fs, TypeCheck.fs)
-
-**What:** When processing `InstanceDecl`, evaluate method bodies and construct `RecordValue`
-dictionaries. Bind them in the evaluation environment under the generated `DictName`. Wire up
-elaboration in `synth` to prepend `App(expr, Var dictName)` nodes.
-
-**Does not require:** Any further parser changes.
-
-**Test:** End-to-end `.flt` test: define `typeclass Show 'a`, define `instance Show int`,
-call `show 42`, verify output is `"42"`. Then define `instance Show bool` and verify `show true`
-outputs `"true"`. Then verify that a function constrained on `Show 'a` passes the right dict.
-
-**Files changed:** `TypeCheck.fs` (instance processing), `Bidir.fs` (elaboration insertion),
-`Eval.fs` (none, if elaboration rewrites to existing App/Var)
-
-### Phase 5: Constrained polymorphic functions (end-to-end)
-
-**What:** Handle the case where a user-defined function has a class constraint. The function
-receives a dictionary parameter, uses it to call methods, and the call site resolves which
-dictionary to pass.
-
-**Example:**
 ```
-let showPair (x, y) : string = show x ++ ", " ++ show y
-// Type: (Show 'a) => 'a * 'a -> string
+parseModuleFromString -> Module
+    |
+typeCheckModuleWithPrelude -> (warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
+    |                          ^--- only top-level names have types here
+    |
+elaborateTypeclasses -> Decl list
+    |
+evalModuleDecls -> Value
 ```
 
-**Test:** Call `showPair (1, 2)` and `showPair (true, false)` and verify both work with the
-appropriate dictionaries.
+### New data flow (after this milestone)
 
-**Files changed:** `Bidir.fs` (elaboration of constrained let-bound functions), `TypeCheck.fs`
+```
+parseModuleFromString -> Module
+    |
+TypeAnnotationMap.clear()           <-- NEW
+    |
+typeCheckModuleWithPrelude -> (warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv)
+    |                          ^--- Bidir.synth now calls TypeAnnotationMap.record as side effect
+    |
+TypeAnnotationMap.snapshot() -> Map<Span, Type>   <-- NEW
+    |
+elaborateTypeclasses -> Decl list
+    |
+Bundle into TypedModule { Decls, TopLevelTypes, ExprTypes, CtorEnv, RecEnv, ... }   <-- NEW
+    |
+FunLangCompiler consumes TypedModule
+    (walks Decl list, looks up ExprTypes[span] for each expression)
+```
+
+The `evalModuleDecls` call is NOT part of the export path — the compiler does not need
+evaluated `Value`s. The export pipeline terminates after type checking and elaboration.
 
 ---
 
-## Integration Points with Existing Architecture
+## Suggested Build Order
 
-### Scheme change: most invasive change
+### Phase 1: TypeAnnotationMap module
 
-Changing `Scheme of vars * ty` to `Scheme of vars * constraints * ty` affects every pattern
-match on `Scheme` in:
+Build `TypeAnnotationMap.fs` as a standalone module with no call sites yet. Add it to
+`FunLang.fsproj` between `Bidir.fs` and `TypeCheck.fs`. Verify it compiles.
 
-- `Type.fs`: `applyScheme`, `freeVarsScheme`, `formatSchemeNormalized`
-- `Infer.fs`: `instantiate`, `generalize`, `inferPattern`
-- `Bidir.fs`: every `Scheme(vars, ty)` construction and destruction (approx 20+ sites)
-- `TypeCheck.fs`: `initialTypeEnv` (all schemes become `Scheme(vars, [], ty)`)
+Files: `TypeAnnotationMap.fs`, `FunLang.fsproj`
 
-**Mitigation strategy:** Add a helper `mkScheme vars ty = Scheme(vars, [], ty)` and a helper
-`schemeType (Scheme(_, _, ty)) = ty`. Use these in all existing code. Then add constraint-aware
-variants only in the new code paths. This minimizes churn on existing pattern matches.
+Test: F# unit test that `record`, `tryFind`, `clear`, `snapshot` work correctly.
 
-### ConstructorEnv, RecordEnv patterns are a model
+### Phase 2: Wire Bidir.fs to record types
 
-The `ConstructorEnv` and `RecordEnv` additions in earlier milestones established the pattern for
-extending `TypeCheck.typeCheckModuleWithPrelude` with new environment types. Follow the same
-pattern for `ClassEnv`/`InstanceEnv`:
+Add `TypeAnnotationMap.record span (apply s ty)` at the end of each `synth` case in
+`Bidir.fs`. Run existing test suite to verify no regressions.
 
-- Add to `ModuleExports`
-- Thread through all `typeCheckDecl` recursive calls
-- Merge on `OpenDecl` (same as existing `openModuleExports`)
+Files: `Bidir.fs`
 
-### Bidir.synth's Var case is the correct injection point
+Test: After type-checking a simple module, `TypeAnnotationMap.snapshot()` should contain
+entries for every expression span in the source. Verify with a new unit test that types for
+specific spans are correct (e.g., `Number(42, span)` maps to `TInt`).
 
-The `Var` case in `synth` is where polymorphic instantiation happens. This is also where
-constraint resolution must happen — when we instantiate a constrained scheme, we immediately
-resolve the fresh-variable constraints against the instance environment. This keeps constraint
-resolution close to instantiation and avoids a separate "constraint propagation" pass.
+### Phase 3: ExportApi module
 
-### Unify.fs does not change
+Build `ExportApi.fs` with `TypedModule` type and `typeCheckFile` function. Wire it to the
+existing pipeline. Add it to `FunLang.fsproj` after `Prelude.fs`.
 
-Unification is purely structural. Constraints are not part of the `Type` DU — they are only in
-`Scheme`. The unifier never sees constraints. This is a deliberate design: constraints live in
-schemes, not in types, matching the standard Hindley-Milner-with-classes design.
+Files: `ExportApi.fs`, `FunLang.fsproj`
 
-### Eval.fs — minimal change required
+Test: Call `ExportApi.typeCheckFile` on a known source file, verify `TypedModule.ExprTypes`
+is non-empty and contains correct types for a handful of known spans.
 
-If elaboration is done inline in `synth`/`TypeCheck.fs`, the evaluator receives a program that
-already has explicit dictionary arguments. The evaluator sees only `App`, `Var`, `RecordValue`,
-and `FieldAccess` — all existing node types. The only change to `Eval.fs` may be adding
-`RecordValue` construction for the dictionary when processing `InstanceDecl`.
+### Phase 4: CLI flag (optional, for debugging)
+
+Add `--emit-typed-ast` to `Cli.fs` and `Program.fs`. Serialize `TypedModule` to JSON for
+inspection. This is not required for FunLangCompiler Model A but is valuable for debugging
+the export during compiler integration.
+
+Files: `Cli.fs`, `Program.fs`
+
+### Phase 5: FunLangCompiler integration
+
+FunLangCompiler adds project reference, removes its own Parser/Lexer copy, removes its
+`Elaboration.fs`, calls `ExportApi.typeCheckFile`, and uses real types from `ExprTypes` and
+`TopLevelTypes` instead of heuristics.
+
+This phase is in the FunLangCompiler repo, not FunLang.
 
 ---
 
 ## Component Interaction Map
 
 ```
-Lexer.fsl
-  ├─ new tokens: TYPECLASS, INSTANCE, WHERE (if not existing), FATARROW (=>)
-  └─ existing tokens unchanged
+TypeAnnotationMap.fs  (NEW)
+  |- no dependencies on other FunLang modules
+  |- populated by: Bidir.fs (side effect during synth)
+  |- consumed by: ExportApi.fs (snapshot), TypeCheck.fs (clear at entry)
 
-Parser.fsy
-  ├─ new Decl rules: ClassDecl, InstanceDecl
-  ├─ new TypeExpr rule: TEConstrained
-  └─ existing rules unchanged
+Bidir.fs  (MODIFIED, additive)
+  |- adds: TypeAnnotationMap.record calls at each synth case
+  |- signature unchanged: synth still returns (Subst * Type)
+  |- existing tests unaffected
 
-Ast.fs
-  ├─ new Decl variants: ClassDecl, InstanceDecl
-  ├─ new TypeExpr variant: TEConstrained
-  └─ existing variants unchanged
+TypeCheck.fs  (MODIFIED, minimal)
+  |- adds: TypeAnnotationMap.clear() at start of typeCheckModuleWithPrelude
+  |- no other changes
 
-Type.fs
-  ├─ MODIFIED: Scheme gains constraints field
-  ├─ new types: Constraint, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv
-  └─ helper fns: mkScheme, schemeType (for backwards compat)
+ExportApi.fs  (NEW)
+  |- depends on: TypeAnnotationMap, TypeCheck, Prelude, Elaborate, Ast, Type, Diagnostic
+  |- exposes: TypedModule, typeCheckFile
+  |- does NOT depend on: Eval (eval is not needed for compilation)
 
-Infer.fs
-  ├─ MODIFIED: instantiate must drop constraints when instantiating (return active constraints)
-  ├─ MODIFIED: generalize must retain constraints on generalized vars
-  └─ freshVar, inferPattern unchanged
-
-Unify.fs
-  └─ UNCHANGED — constraints not in Type DU
-
-Bidir.fs
-  ├─ MODIFIED: synth Var case — resolve constraints, prepend dict args
-  ├─ MODIFIED: synth Let case — add implicit dict params for constrained let-bindings
-  └─ all other synth cases unchanged
-
-TypeCheck.fs
-  ├─ MODIFIED: typeCheckModuleWithPrelude gains ClassEnv, InstanceEnv params
-  ├─ new: process ClassDecl (build ClassInfo, add methods to TypeEnv)
-  ├─ new: process InstanceDecl (type-check bodies, build InstanceInfo, construct dict value)
-  └─ initialTypeEnv: existing entries gain empty constraints list
-
-Eval.fs
-  ├─ POSSIBLY: add dict construction when processing InstanceDecl (in TypeCheck.fs eval path)
-  └─ UNCHANGED if elaboration rewrites to App(Var dictName) before eval
+Program.fs  (MODIFIED, optional)
+  |- adds: --emit-typed-ast flag wired to ExportApi
 ```
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Storing constraints in the Type DU
+### Anti-Pattern 1: Recording types before applying the substitution
 
-Adding a `TConstraint` or `TForall` variant to `Type.fs` forces the unifier to handle
-constraints structurally. This is the GADT/System F approach, not the Hindley-Milner approach.
-In HM-with-classes, constraints live in `Scheme` only, not in types. The unifier stays simple.
+In `Bidir.synth`, the raw `ty` return value often contains unresolved type variables
+(`TVar n`). These are resolved by the accumulated `Subst`. Always record `apply s ty`,
+never the raw `ty`. Failure to do this produces a table full of `TVar` entries that are
+useless to the compiler.
 
-**Detection:** If `Unify.fs` gains a new pattern match for class constraints, this anti-pattern
-has occurred.
+**Detection:** If the table contains `TVar` entries for non-polymorphic expressions like
+integer literals, this anti-pattern has occurred.
 
-### Anti-Pattern 2: Resolving constraints at generalization time
+### Anti-Pattern 2: Trying to record types in the check function
 
-Constraints should be resolved at **instantiation** (use sites), not at generalization (binding
-sites). Resolving at generalization forces you to know the concrete types at the `let` boundary,
-which breaks parametric polymorphism. A function `show_pair : (Show 'a) => 'a * 'a -> string`
-must be generalized with the constraint retained, not resolved.
+`Bidir.check` validates an expression against a known expected type. It calls `synth`
+internally for most cases (via subsumption). Recording in `check` would double-record many
+nodes and the type would be the expected type, not the synthesized type. Record only in
+`synth` cases. The synthesized type is always the authoritative one.
 
-**Detection:** If `generalize` in `Infer.fs` calls `resolveConstraint`, this anti-pattern has
-occurred.
+### Anti-Pattern 3: Serializing the full TypedModule for in-process use
 
-### Anti-Pattern 3: Implementing method dispatch as a special-case eval path
+If FunLangCompiler is in the same process (Model A), do not add a JSON serialization layer.
+Passing the F# `TypedModule` record directly avoids the overhead and schema complexity.
+Only serialize if cross-process consumption is genuinely required.
 
-It is tempting to add a `MethodCall(className, methodName, arg)` AST node and handle it
-specially in `Eval.fs`. This creates a parallel evaluation path and diverges from the
-dictionary-passing model. All method calls should desugar to ordinary function applications
-before the evaluator sees them. The evaluator should be type-class-unaware.
+### Anti-Pattern 4: Recording types for elaborated (synthetic) nodes
 
-**Detection:** If `Eval.fs` gains a `ClassEnv` or `InstanceEnv` parameter, this anti-pattern
-has occurred.
+`elaborateTypeclasses` creates new `LetDecl` nodes after the type-checking pass has
+completed. These nodes have no entries in `TypeAnnotationMap` because they were never
+visited by `Bidir.synth`. Do not attempt to add them retroactively. Instead, resolve
+the types of these nodes from `TypeEnv` by name at the compiler side. For an `InstanceDecl`
+method like `show` becoming `LetDecl("show", body, span)`, the compiler looks up `typeEnv["show"]`.
 
-### Anti-Pattern 4: Naming dictionaries by type string at call sites
+### Anti-Pattern 5: Putting ExportApi in Program.fs
 
-Generating dictionary variable names using the string form of the type (e.g., `"__dict_Show_int"`)
-works for monomorphic instances. For parametric instances like `instance Show 'a => Show ('a list)`,
-the dictionary is not a fixed value but a function from `Show 'a` dictionary to `Show ('a list)`
-dictionary. The naming scheme must handle this: parametric instances produce dictionary
-**functions**, not dictionary records.
+`Program.fs` is the entry point and mixes CLI argument handling with pipeline orchestration.
+`ExportApi.fs` must be a separate library module so FunLangCompiler can reference it without
+pulling in the CLI argument parsing dependencies (Argu). Keep them separate.
 
-**For MVP:** Defer parametric instances. Only handle ground instances (no type variable in the
-instance head). Document this limitation clearly in the milestone scope.
+---
 
-### Anti-Pattern 5: Putting type class processing in Elaborate.fs instead of TypeCheck.fs
+## Scalability Considerations
 
-The existing `Elaborate.fs` handles syntactic desugaring (infix operators, do-notation, etc.)
-before type information is known. Type class elaboration (dictionary insertion) requires type
-information — specifically, which instance was resolved. It must happen during or after type
-checking, not before. The correct location is inline in `Bidir.fs` `synth`, driven by
-`TypeCheck.fs` instance resolution.
+| Concern | Current (interpreter) | After export |
+|---------|----------------------|--------------|
+| TypeAnnotationMap size | N/A | O(n) where n = expression count; typically small (<10K for most files) |
+| Prelude loading overhead | ~50-100ms (one-time) | Same; caller must cache PreludeResult |
+| Type checking cost | O(n * unification) | Unchanged; annotation recording is O(1) per node |
+| FunLangCompiler coupling | None (separate repo) | Project reference; FunLangCompiler gains FunLang as dependency |
+
+The annotation map holding `Map<Span, Type>` with O(n) entries for a typical source file
+is not a memory concern at interpreter scale.
 
 ---
 
@@ -681,42 +515,40 @@ checking, not before. The correct location is inline in `Bidir.fs` `synth`, driv
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Scheme extension with constraints | HIGH | Standard HM-with-classes; well-trodden path |
-| Dictionary as RecordValue | HIGH | Reuses existing Value DU; no new eval node needed |
-| ClassEnv/InstanceEnv threading | HIGH | Follows exact pattern of ConstructorEnv/RecordEnv |
-| Constraint resolution via linear search | HIGH | Correct for interpreter scale; GHC uses same approach |
-| Elaboration inline in synth | MEDIUM | Requires synth to return extra data; some refactoring needed |
-| Parametric instances (Show 'a => Show 'a list) | LOW | Deferred to post-MVP; dictionary-function approach needed |
-| Superclass constraints | LOW | Deferred; requires superclass dictionary embedding in subclass dict |
-| WHERE token conflict with existing grammar | MEDIUM | Must audit IndentFilter and Parser for existing WHERE uses |
+| Annotation map approach | HIGH | Matches existing mutable-side-table patterns in Bidir.fs |
+| Bidir.fs recording locations | HIGH | Each synth case has a clear final-type return point |
+| Span uniqueness for real source | HIGH | All parsed nodes have unique (file, line, col) spans |
+| Span uniqueness for synthetic nodes | MEDIUM | unknownSpan collision handled by filename guard |
+| InstanceDecl method resolution via TypeEnv | HIGH | typeEnv contains all method names after type checking |
+| Prelude caching requirement | HIGH | Already observed in Prelude.fs code |
+| ExportApi as project reference | HIGH | Both repos are .NET; no serialization needed |
+| CLI JSON flag (Phase 4) | MEDIUM | Requires designing Type DU JSON schema |
 
 ---
 
-## Files Changed by Component
+## Files Changed by Phase
 
-### Phase 1 — Core infrastructure
-- `src/FunLang/Type.fs` — Scheme, Constraint, ClassInfo, InstanceInfo, ClassEnv, InstanceEnv
+### Phase 1 — TypeAnnotationMap
+- `src/FunLang/TypeAnnotationMap.fs` (NEW)
+- `src/FunLang/FunLang.fsproj` (add after Bidir.fs)
 
-### Phase 2 — Parsing
-- `src/FunLang/Lexer.fsl` — TYPECLASS, INSTANCE, FATARROW tokens
-- `src/FunLang/Parser.fsy` — ClassDecl, InstanceDecl, TEConstrained rules
-- `src/FunLang/Ast.fs` — ClassDecl, InstanceDecl Decl variants; TEConstrained TypeExpr variant
+### Phase 2 — Bidir wiring
+- `src/FunLang/Bidir.fs` (additive: ~40 record calls)
+- `src/FunLang/TypeCheck.fs` (additive: clear() at entry point)
 
-### Phase 3 — Type checking wiring
-- `src/FunLang/TypeCheck.fs` — thread ClassEnv/InstanceEnv, process ClassDecl/InstanceDecl
-- `src/FunLang/Bidir.fs` — Var case: constraint resolution + dict arg insertion
-- `src/FunLang/Infer.fs` — instantiate and generalize: constraint threading
+### Phase 3 — ExportApi
+- `src/FunLang/ExportApi.fs` (NEW)
+- `src/FunLang/FunLang.fsproj` (add after Prelude.fs)
 
-### Phase 4 — Evaluation
-- `src/FunLang/TypeCheck.fs` — construct RecordValue dicts for instance declarations
-- `src/FunLang/Eval.fs` — minimal or no changes (elaboration already rewrites AST)
+### Phase 4 — CLI flag (optional)
+- `src/FunLang/Cli.fs` (add --emit-typed-ast flag)
+- `src/FunLang/Program.fs` (handle flag)
 
 ---
 
 ## Sources
 
-- [Implementing, and Understanding Type Classes — okmij.org](https://okmij.org/ftp/Computation/typeclass.html)
-- [Hindley-Milner type system — Wikipedia](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system)
-- [Hindley-Milner inference with constraints — Kwang's Haskell Blog](https://kseo.github.io/posts/2017-01-02-hindley-milner-inference-with-constraints.html)
-- [Type Classes — Tufts CS150PLD Notes](https://www.cs.tufts.edu/comp/150PLD/Notes/TypeClasses.pdf)
-- [GHC Instance declarations and resolution](https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/instances.html)
+- FunLang source: `Ast.fs`, `Type.fs`, `Bidir.fs`, `TypeCheck.fs`, `Elaborate.fs`,
+  `Prelude.fs`, `Program.fs`, `FunLang.fsproj` (read 2026-04-02)
+- Existing `ARCHITECTURE.md` (prior milestone: type classes) — patterns for environment
+  threading and mutable side tables in Bidir.fs
