@@ -359,6 +359,7 @@ let typecheckExprWithPrelude
     (expr: Expr): Result<Type, Diagnostic list> =
     try
         Bidir.mutableVars <- Set.empty
+        Bidir.annotationMap <- TypeAnnotationMap.create()
         Bidir.currentClassEnv <- classEnv
         Bidir.currentInstEnv <- instEnv
         let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) initialTypeEnv preludeTypeEnv
@@ -1264,6 +1265,8 @@ let typeCheckModuleWithPrelude
         Bidir.currentClassEnv <- preludeClassEnv
         Bidir.currentInstEnv <- preludeInstEnv
         Bidir.pendingConstraints <- []
+        // Phase 79: Reset per-expression type annotation map
+        Bidir.annotationMap <- TypeAnnotationMap.create()
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) ->

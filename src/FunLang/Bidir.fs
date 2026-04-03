@@ -24,6 +24,12 @@ let mutable currentInstEnv : InstanceEnv = Map.empty
 /// NOTE: Not thread-safe. Tests must run sequentially or use separate entry points.
 let mutable accumulatedErrors : Diagnostic.TypeError list = []
 
+/// Per-expression type annotation map populated during synth (Phase 79).
+/// Keys are Span values from Ast.spanOf; values are fully substituted types.
+/// Reset at typeCheckModuleWithPrelude entry (same pattern as mutableVars).
+let mutable annotationMap : System.Collections.Generic.Dictionary<Ast.Span, Type> =
+    TypeAnnotationMap.create()
+
 /// Apply a substitution to all pending constraints (resolves stale TVar refs after unification)
 let applySubstToConstraints (s: Subst) =
     pendingConstraints <- pendingConstraints |> List.map (fun c ->
