@@ -25,6 +25,7 @@ type CliArgs =
     | Emit_Filtered_Tokens
     | Emit_Ast
     | Emit_Type
+    | Emit_Typed_Ast
     | Check
     | Deps
     | Prelude of path: string
@@ -40,6 +41,7 @@ with
             | Emit_Filtered_Tokens -> "show tokens after IndentFilter"
             | Emit_Ast -> "show parsed AST"
             | Emit_Type -> "show inferred type"
+            | Emit_Typed_Ast -> "emit typed AST as JSON (span->type map + top-level bindings)"
             | Check -> "type-check without executing"
             | Deps -> "show file dependency tree"
             | Prelude _ -> "set Prelude directory path"

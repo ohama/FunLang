@@ -1,5 +1,6 @@
 open System
 open System.IO
+open System.Text.Json.Nodes
 open FSharp.Text.Lexing
 open Argu
 open Cli
@@ -90,6 +91,34 @@ let rec private collectDeps (filePath: string) (visited: Set<string>) (depth: in
                 let resolved = TypeCheck.resolveImportPath importPath absPath
                 collectDeps resolved (Set.add absPath visited) (depth + 1))
         (absPath, depth, false) :: childResults
+
+/// Serialize a TypedModule to JSON, filtering to user-file spans and non-builtin/non-prelude bindings.
+let private serializeTypedModule (userFile: string) (tm: ExportApi.TypedModule) : string =
+    let absUserFile = Path.GetFullPath(userFile)
+    // Load prelude TypeEnv to know which keys to exclude from bindings output
+    let preludeTypeEnv = (Prelude.loadPrelude None None).TypeEnv
+    let root = JsonObject()
+    // Build "annotations" array filtered to spans in the user file
+    let annotations = JsonArray()
+    for kv in tm.AnnotationMap do
+        if kv.Key.FileName = absUserFile then
+            let spanObj = JsonObject()
+            spanObj["startLine"] <- JsonValue.Create(kv.Key.StartLine)
+            spanObj["startCol"] <- JsonValue.Create(kv.Key.StartColumn)
+            spanObj["endLine"] <- JsonValue.Create(kv.Key.EndLine)
+            spanObj["endCol"] <- JsonValue.Create(kv.Key.EndColumn)
+            let entry = JsonObject()
+            entry["span"] <- spanObj
+            entry["type"] <- JsonValue.Create(Type.formatTypeNormalized kv.Value)
+            annotations.Add(entry)
+    root["annotations"] <- annotations
+    // Build "bindings" object: exclude builtins and prelude bindings
+    let bindings = JsonObject()
+    for kv in tm.BindingEnv do
+        if not (Map.containsKey kv.Key tm.BuiltinSchemes) && not (Map.containsKey kv.Key preludeTypeEnv) then
+            bindings[kv.Key] <- JsonValue.Create(Type.formatSchemeNormalized kv.Value)
+    root["bindings"] <- bindings
+    root.ToJsonString()
 
 [<EntryPoint>]
 let main argv =
@@ -325,6 +354,21 @@ let main argv =
         elif results.Contains Deps then
             eprintfn "Usage: fn --deps <file>"
             1
+        // --emit-typed-ast with file: type-check and emit JSON annotation map + bindings
+        elif results.Contains Emit_Typed_Ast && results.Contains File then
+            let filename = results.GetResult File
+            if File.Exists filename then
+                try
+                    let typed = ExportApi.typeCheckFile filename
+                    let json = serializeTypedModule filename typed
+                    printfn "%s" json
+                    0
+                with ex ->
+                    eprintfn "Error: %s" ex.Message
+                    1
+            else
+                eprintfn "File not found: %s" filename
+                1
         // --emit-type with file (module pipeline)
         elif results.Contains Emit_Type && results.Contains File then
             let filename = results.GetResult File
