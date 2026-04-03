@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Milestone: (none — planning next)
-Phase: N/A
-Plan: N/A
-Status: v11.1 complete, ready for next milestone
-Last activity: 2026-04-03 — v11.1 Builtin Compatibility milestone archived
+Milestone: v12.0 Infix Operator Reform
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-03 — Milestone v12.0 started
 
-Progress: N/A (between milestones)
+Progress: [░░░░░░░░░░░░░░░░░░░░] v12.0 planning
 
 ## Performance Metrics
 

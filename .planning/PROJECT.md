@@ -108,9 +108,19 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - String-key hashtable 빌트인 7개 (hashtable_create_str/get_str/set_str/containsKey_str/keys_str/remove_str/trygetvalue_str) — v11.1
 - dbg 빌트인 ('a -> 'a, stderr 출력 + identity) — v11.1
 
-### Active
+## Current Milestone: v12.0 Infix Operator Reform
 
-(None — planning next milestone)
+**Goal:** `|>`, `>>`, `<<`를 특수 AST 노드에서 일반 INFIXOP + Prelude 정의로 변경하고, `#[left N]` attribute로 연산자 우선순위/결합성을 지정할 수 있게 함
+
+**Target features:**
+- #[left N] / #[right N] attribute 파싱 및 fixity 테이블 (#7)
+- |>, >>, << 를 Prelude/Core.fun으로 이동 (#6)
+- PipeRight/ComposeRight/ComposeLeft AST 노드 제거
+- Pratt parser 기반 연산자 우선순위 후처리
+
+**References:** ohama/FunLang#6, ohama/FunLang#7
+
+### Active
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -267,4 +277,4 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 | funproj.toml paths relative to project dir | Cargo 관례 준수, CWD 독립적 | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after v11.1 milestone archived*
+*Last updated: 2026-04-03 after v12.0 milestone started*
