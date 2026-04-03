@@ -1,5 +1,31 @@
 # Project Milestones: FunLang
 
+## v11.0 Typed AST Export (Shipped: 2026-04-03)
+
+**Delivered:** HM 타입 추론 결과를 per-expression annotation map + top-level binding environment로 export — FunLangCompiler의 ~250줄 heuristic 타입 추측 코드 대체 기반
+
+**Phases completed:** 79-82 (5 plans total)
+
+**Key accomplishments:**
+- ConcurrentDictionary<Span, Type> annotation map — 65 recordTy call sites covering all 52 Expr variants
+- BindingEnv type alias + exportBindingEnv — builtins + prelude + user bindings in one map
+- ExportApi.typeCheckFile → TypedModule record (AnnotationMap + BindingEnv + BuiltinSchemes)
+- `fn --emit-typed-ast file.fun` — JSON output with annotations + bindings (filtered to user file)
+- 7/7 requirements shipped (TA-01, TA-02, TE-01, TE-02, API-01, API-02, CLI-01)
+
+**Stats:**
+- 31 files changed, +3,333 LOC
+- 4 phases, 5 plans
+- 1 day (2026-04-03)
+- 244 F# unit tests + 711 flt tests
+- 82 phases, 168+ plans executed across v1.0-v11.0
+
+**Git range:** `feat(79-01)` → `docs(phase-82): complete`
+
+**What's next:** TBD — next milestone via /gsd:new-milestone
+
+---
+
 ## v10.1 Type Class Error Reporting & Module Integration (Shipped: 2026-04-01)
 
 **Delivered:** 타입 클래스 에러 리포팅 개선 (E0701-E0706 Span 정보), 모듈 시스템과 타입 클래스 통합 (ClassEnv/InstanceEnv export), multiline expression-level `let rec ... and ...` IndentFilter 지원
