@@ -1,5 +1,29 @@
 # Project Milestones: FunLang
 
+## v12.0 Infix Operator Reform (Shipped: 2026-04-03)
+
+**Delivered:** `#[left N]`/`#[right N]` attribute 시스템 + FixityEnv/Pratt post-processor + `|>`/`>>`/`<<` Prelude 이동 — PipeRight/ComposeRight/ComposeLeft AST 노드 및 전용 토큰 완전 제거
+
+**Phases completed:** 84-87 (4 plans total)
+
+**Key accomplishments:**
+- `#[left N]`/`#[right N]` attribute 파싱 — ATTR_OPEN 토큰, InfixDecl AST 노드
+- FixityEnv.fs — 우선순위 테이블 + Pratt precedence climbing post-parse rewrite (265줄)
+- `|>`/`>>`/`<<` Prelude/Core.fun 이동 — 10개 파일에서 39개 참조 제거
+- applyFunc closure 버그 수정 (self-name injection이 compose 체인에서 무한 재귀 유발)
+- Mixed-precedence 연산자 체인 정확한 재구성 (`2 $+ 3 $* 4 = 14`)
+
+**Stats:**
+- 40 files changed, +2,157 LOC
+- ~16,896 lines of F# source
+- 4 phases, 4 plans
+- 1 day (2026-04-03)
+- 244 F# unit tests + 723 flt tests passing
+
+**Git range:** `baab238` → `a4b5ebf`
+
+---
+
 ## v11.1 Builtin Compatibility (Shipped: 2026-04-03)
 
 **Delivered:** FunLangCompiler Prelude 호환을 위한 8개 빌트인 추가 — hashtable_*_str 7개 (string-key 전용) + dbg 1개 (identity debug)

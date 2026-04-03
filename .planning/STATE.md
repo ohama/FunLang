@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 86 — Operator Migration (v12.0 Infix Operator Reform)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v12.0 Infix Operator Reform
-Phase: 86 of 87 (Operator Migration)
-Plan: 01 of 1 in phase (complete)
-Status: Phase 86 complete
-Last activity: 2026-04-03 — Completed 86-01-PLAN.md (operator migration)
+Milestone: (none — planning next)
+Phase: N/A
+Plan: N/A
+Status: v12.0 complete, ready for next milestone
+Last activity: 2026-04-03 — v12.0 Infix Operator Reform milestone archived
 
-Progress: [███░░░░░░░░░░░░░░░░░] v12.0 3/4 phases
+Progress: N/A (between milestones)
 
 ## Performance Metrics
 
@@ -57,8 +57,7 @@ From v11.1 (Phase 83):
 - Bug 9: E0701 shows internal type variable for indirect polymorphic constraint
 - Bug 10: E0704 never fires (E0301 used instead, functionally correct)
 
-1 pre-existing flt failure:
-- tests/flt/error/err-occurs-check.flt
+0 pre-existing flt failures (err-occurs-check fixed in v12.0)
 
 ### Blockers/Concerns
 
@@ -67,6 +66,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 86-01-PLAN.md (operator migration)
+Stopped at: v12.0 milestone archived
 Resume file: None
-Next action: /gsd:plan-phase 87
+Next action: /gsd:new-milestone

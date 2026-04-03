@@ -107,20 +107,13 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - `--emit-typed-ast` CLI flag — JSON 형식 타입 정보 출력 (annotations + bindings) — v11.0
 - String-key hashtable 빌트인 7개 (hashtable_create_str/get_str/set_str/containsKey_str/keys_str/remove_str/trygetvalue_str) — v11.1
 - dbg 빌트인 ('a -> 'a, stderr 출력 + identity) — v11.1
-
-## Current Milestone: v12.0 Infix Operator Reform
-
-**Goal:** `|>`, `>>`, `<<`를 특수 AST 노드에서 일반 INFIXOP + Prelude 정의로 변경하고, `#[left N]` attribute로 연산자 우선순위/결합성을 지정할 수 있게 함
-
-**Target features:**
-- #[left N] / #[right N] attribute 파싱 및 fixity 테이블 (#7)
-- |>, >>, << 를 Prelude/Core.fun으로 이동 (#6)
-- PipeRight/ComposeRight/ComposeLeft AST 노드 제거
-- Pratt parser 기반 연산자 우선순위 후처리
-
-**References:** ohama/FunLang#6, ohama/FunLang#7
+- `#[left N]`/`#[right N]` attribute 파싱 (ATTR_OPEN 토큰, InfixDecl AST) — v12.0
+- FixityEnv.fs — 연산자 우선순위 테이블 + Pratt precedence climbing post-parse rewrite — v12.0
+- `|>`/`>>`/`<<` Prelude/Core.fun 이동 (PipeRight/ComposeRight/ComposeLeft AST 제거) — v12.0
 
 ### Active
+
+(None — planning next milestone)
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -142,6 +135,13 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - IDE 통합 / LSP — 언어 기능 완성 후
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
+
+## Previous Milestone: v12.0 Infix Operator Reform (2026-04-03)
+
+**Delivered:** #[left N]/#[right N] attribute + FixityEnv + Pratt rewrite + |>/>>/<< Prelude 이동
+- 40 files changed, +2,157 LOC in v12.0
+- 723 flt tests, 244 unit tests
+- 87 phases, 173+ plans executed across v1.0-v12.0
 
 ## Previous Milestone: v11.1 Builtin Compatibility (2026-04-03)
 
@@ -277,4 +277,4 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 | funproj.toml paths relative to project dir | Cargo 관례 준수, CWD 독립적 | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after v12.0 milestone started*
+*Last updated: 2026-04-03 after v12.0 milestone archived*
