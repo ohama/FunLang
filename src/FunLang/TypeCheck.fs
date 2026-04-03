@@ -1297,3 +1297,12 @@ let typeCheckModule (m: Module) : Result<Diagnostic list * RecordEnv * Map<strin
     match typeCheckModuleWithPrelude Map.empty Map.empty Map.empty Map.empty Map.empty Map.empty m with
     | Ok (warnings, _ctorEnv, recEnv, _classEnv, _instEnv, modules, typeEnv) -> Ok (warnings, recEnv, modules, typeEnv)
     | Error e -> Error e
+
+/// The complete exported binding environment: builtins + prelude + user top-level bindings.
+type BindingEnv = TypeEnv
+
+/// Extract the binding environment from a successful typeCheckModuleWithPrelude result.
+/// The returned TypeEnv already contains initialTypeEnv (builtins) + preludeTypeEnv + user bindings,
+/// because typeCheckModuleWithPrelude merges them before calling typeCheckDecls.
+/// This function is an identity wrapper — it documents the intent for Phase 81 ExportApi.
+let exportBindingEnv (moduleTypeEnv: TypeEnv) : BindingEnv = moduleTypeEnv
