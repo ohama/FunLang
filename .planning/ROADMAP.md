@@ -33,8 +33,8 @@ See milestone archive for details.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 79-01-PLAN.md — Define TypeAnnotationMap module, declare mutable ref, wire resets
-- [ ] 79-02-PLAN.md — Wire annotation recording into every Bidir.synth arm + tests
+- [x] 79-01-PLAN.md — Define TypeAnnotationMap module, declare mutable ref, wire resets
+- [x] 79-02-PLAN.md — Wire annotation recording into every Bidir.synth arm + tests
 
 #### Phase 80: Type Environment Export
 
@@ -82,7 +82,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 79. Type Annotation Infrastructure | v11.0 | 0/2 | Not started | - |
+| 79. Type Annotation Infrastructure | v11.0 | 2/2 | ✓ Complete | 2026-04-03 |
 | 80. Type Environment Export | v11.0 | 0/1 | Not started | - |
 | 81. Export API | v11.0 | 0/1 | Not started | - |
 | 82. CLI Integration | v11.0 | 0/1 | Not started | - |

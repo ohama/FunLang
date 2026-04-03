@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 79 complete — ready for Phase 80 (Typed AST Export)
+**Current focus:** Phase 80 — Type Environment Export
 
 ## Current Position
 
 Milestone: v11.0 Typed AST Export
-Phase: 79 of 82 (Type Annotation Infrastructure) — COMPLETE
-Plan: 2 of 2 (79-02 complete)
-Status: In progress
-Last activity: 2026-04-03 — Completed 79-02-PLAN.md
+Phase: 80 of 82 (Type Environment Export)
+Plan: —
+Status: Ready to plan
+Last activity: 2026-04-03 — Phase 79 complete (Type Annotation Infrastructure)
 
-Progress: [██░░░░░░░░░░░░░░░░░░] v11.0 (2/? plans)
+Progress: [█████░░░░░░░░░░░░░░░] v11.0 (1/4 phases)
 
 ## Performance Metrics
 
@@ -56,6 +56,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 79-02-PLAN.md (annotationMap recording in Bidir.synth + TypeAnnotationTests)
+Stopped at: Phase 79 complete, ready to plan Phase 80
 Resume file: None
-Next action: Execute Phase 80 (Typed AST Export — read annotationMap to produce typed AST)
+Next action: /gsd:plan-phase 80

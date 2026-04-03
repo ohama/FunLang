@@ -10,8 +10,8 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 
 ### Type Annotation Infrastructure
 
-- [ ] **TA-01**: TypeAnnotationMap 모듈 — `Dictionary<Span, Type>`로 per-expression 타입 기록 구조 정의
-- [ ] **TA-02**: Bidir.synth에서 모든 Expr 노드의 추론된 타입을 annotation map에 기록 (substitution 적용 후)
+- [x] **TA-01**: TypeAnnotationMap 모듈 — `ConcurrentDictionary<Span, Type>`로 per-expression 타입 기록 구조 정의
+- [x] **TA-02**: Bidir.synth에서 모든 Expr 노드의 추론된 타입을 annotation map에 기록 (substitution 적용 후)
 
 ### Type Environment Export
 
@@ -43,8 +43,8 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 
 | Requirement | Phase | Verified |
 |-------------|-------|----------|
-| TA-01       | 79    |          |
-| TA-02       | 79    |          |
+| TA-01       | 79    | ✓ 2026-04-03 |
+| TA-02       | 79    | ✓ 2026-04-03 |
 | TE-01       | 80    |          |
 | TE-02       | 80    |          |
 | API-01      | 81    |          |
