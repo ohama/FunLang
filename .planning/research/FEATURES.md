@@ -1,274 +1,356 @@
-# Feature Landscape: Typed AST Export
+# Feature Landscape: Infix Operator Reform (v12.0)
 
-**Domain:** Compiler-facing typed AST — structured type info export from FunLang to FunLangCompiler
+**Domain:** Operator precedence / fixity system in FunLang interpreter
 **Researched:** 2026-04-02
-**Milestone focus:** Replace 6 tracking sets + 8 heuristic functions (~250 lines) in FunLangCompiler with first-class type info derived from HM inference results
+**Milestone focus:** Replace hardcoded `|>`, `>>`, `<<` AST nodes with user-definable operators; add `#[left N]` / `#[right N]` attribute syntax for explicit precedence/associativity
 
 ---
 
-## Context: What the Heuristics Are Replacing
+## Context: What is Being Reformed
 
-FunLangCompiler currently has no access to FunLang's inferred types. Instead, Elaboration.fs carries forward-propagating sets that grow as the compiler encounters let-bindings, then queries them at call sites:
+The current system has two tiers of operator handling, and the goal is to collapse them:
 
-| Set / Function | Tracks | Used For |
-|----------------|--------|----------|
-| `ArrayVars: Set<string>` | Variable names bound to array-creating expressions | ForInExpr dispatch: `lang_for_in_array` vs `lang_for_in_list` |
-| `CollectionVars: Map<string, CollectionKind>` | Variable names → HashSet/Queue/MutableList/Hashtable | ForInExpr dispatch: `lang_for_in_hashset/queue/mlist/hashtable` |
-| `BoolVars: Set<string>` | Variable names bound to bool-producing expressions | `to_string` dispatch: `lang_to_string_bool` vs `lang_to_string_int` |
-| `StringVars: Set<string>` | Variable names bound to string-valued expressions | IndexGet dispatch: `lang_string_char_at` vs `lang_index_get` |
-| `StringFields: Set<string>` | Record field names with `TEString` type annotation | IndexGet dispatch for field accesses |
-| `MutableVars: Set<string>` | Variable names introduced by `LetMut`/`Assign` | Closure capture coercion: `Ptr` vs `I64` |
-| `isPtrParamBody` (250-line function) | Whether a lambda param needs `Ptr` (list/record/string/ADT) vs `I64` (int/bool) | Lambda param type at codegen |
-| `isArrayExpr` | Structural pattern-match on AST to detect array origins | ForInExpr, for-in dispatch |
-| `isStringExpr` | Structural pattern-match on AST to detect string origins | IndexGet dispatch |
-| `isBoolExpr` | Structural pattern-match on AST to detect bool origins | `to_string` dispatch |
-| `detectCollectionKind` | Structural pattern-match on AST to detect collection origins | ForInExpr dispatch |
-| `bodyReturnsBool` | Traverses function body to detect bool-returning functions | ClosureInfo.InnerReturnIsBool |
+**Tier 1 — Hardcoded operators** (what we want to remove)
 
-The key insight: all of these are re-deriving information that HM inference already computed. The typed AST export needs to make that information available at each expression node, so the compiler can query it directly instead of re-inferring it from AST structure.
+| Operator | Token | AST node | Eval handler | Bidir handler |
+|----------|-------|----------|--------------|---------------|
+| `|>` | `PIPE_RIGHT` | `PipeRight` | tailcall-aware application | unifies `right : leftTy -> resultTy` |
+| `>>` | `COMPOSE_RIGHT` | `ComposeRight` | closure synthesis with counter | unifies `left : a->b`, `right : b->c` |
+| `<<` | `COMPOSE_LEFT` | `ComposeLeft` | closure synthesis with counter | unifies `left : b->c`, `right : a->b` |
+
+These are currently treated specially in: Lexer.fsl, Parser.fsy, Ast.fs, Eval.fs, Bidir.fs, Infer.fs (stub), TypeCheck.fs (5 match arms), Format.fs, TypeAnnotationTests.fs.
+
+**Tier 2 — User-defined operators** (the existing foundation to build on)
+
+| Precedence bucket | First chars | Associativity | Parser rule |
+|------------------|-------------|---------------|-------------|
+| INFIXOP0 | `= < > | & $ !` | left | `Expr INFIXOP0 Expr` |
+| INFIXOP1 | `@ ^` | right | `Expr INFIXOP1 Expr` |
+| INFIXOP2 | `+ -` | left | `Expr INFIXOP2 Term` |
+| INFIXOP3 | `* / %` | left | `Term INFIXOP3 Factor` |
+| INFIXOP4 | `**` | right | `Factor INFIXOP4 Factor` |
+
+All INFIXOP variants desugar identically in the parser: `App(App(Var(op), left), right)`. No special AST nodes. No special evaluator handling. Type inference works via the operator's bound type in the environment — if `(|>)` is defined in the prelude as a function, Bidir.synth handles it as `App(App(Var("|>"), left), right)`, same as any other user function.
+
+**The fundamental insight:** `|>`, `>>`, `<<` would work as plain INFIXOP operators if:
+1. They can be defined in Prelude/Core.fun with `let (|>) x f = f x`, etc.
+2. Their precedence and associativity can be specified explicitly (not inferred from first character).
+3. The lexer routes them to INFIXOP instead of dedicated tokens.
 
 ---
 
 ## Table Stakes
 
-**These are required for FunLangCompiler to use the typed AST at all.** Without them, the compiler still needs the full set of heuristics.
+**These are required to achieve the milestone goals (issues #6 and #7).**
 
-### TS-1: Per-expression type annotation (replaces all heuristics)
+### TS-1: `#[left N]` and `#[right N]` attribute parsing
 
-Every expression node in the exported AST carries a resolved `Type` from HM inference.
+Syntax to declare a fixity for an operator definition:
 
-| Compiler heuristic replaced | How the type annotation replaces it |
-|-----------------------------|-------------------------------------|
-| `ArrayVars` | `Var` node's type is `TArray _` |
-| `CollectionVars` | `Var` node's type is `THashtable`, `TData("HashSet",_)`, `TData("Queue",_)`, `TData("MutableList",_)` |
-| `BoolVars` + `isBoolExpr` | Expression node's type is `TBool` |
-| `StringVars` + `isStringExpr` | Expression node's type is `TString` |
-| `StringFields` | `FieldAccess` node's type is `TString` — no separate field set needed |
-| `isPtrParamBody` | Lambda param's type from function type: `TArrow(paramType, _)` — if `paramType` is `TList _`, `TData _`, `TString`, `TArray _`, `THashtable _` → Ptr; if `TInt`, `TBool`, `TChar` → I64 |
-| `isArrayExpr`, `isBoolExpr`, `isStringExpr`, `detectCollectionKind` | Replaced entirely by the type field on the expression node |
-| `bodyReturnsBool` | Return type of lambda: `TArrow(_, TBool)` |
-
-**Implementation notes:**
-- The type must be fully resolved (substitutions applied). Returning a `TVar` for an uninferrable expression is acceptable but degrades to heuristic fallback.
-- A `TError` type indicates inference failure — the compiler can fall back to existing heuristics for that node.
-- The type field must be on every expression node, not just terminal nodes. The compiler needs the type of subexpressions (e.g., `collExpr` inside `ForInExpr`, `argExpr` inside `App`).
-
-**Complexity:** High — requires threading the final substitution back through every expression node after inference completes, or building an expression-keyed type map during inference.
-
----
-
-### TS-2: Mutable variable flag on let-bindings (replaces `MutableVars`)
-
-The typed AST must clearly mark which variable bindings are mutable (`LetMut`) vs immutable (`Let`/`LetRec`).
-
-**Compiler heuristic replaced:**
-- `MutableVars: Set<string>` — compiler currently checks `Set.contains name env.MutableVars` at every `Var` reference to decide whether to emit a `LlvmLoadOp` from a `RefValue` Ptr cell.
-- Closure capture coercion: `let capType = if Set.contains capName env.MutableVars then Ptr else I64`
-
-**What the typed AST needs to provide:**
-- A `isMutable: bool` flag on the binding node, OR
-- The `LetMut` / `Let` distinction preserved in the typed AST (currently exists in `Ast.Expr` as separate constructors — this information must not be erased in conversion to typed AST)
-
-**Note:** This is actually already present in `Ast.Expr` as separate `LetMut` vs `Let` constructors. The typed AST export must not collapse them into a single binding form. The compiler's `MutableVars` set exists because the set needs to propagate to child scopes. With per-node type info, the binding site is unambiguous, and the compiler can derive mutability from node kind rather than maintaining a set.
-
-**Complexity:** Low — information already exists in AST.
-
----
-
-### TS-3: Hashtable key type accessible at IndexGet / IndexSet sites (replaces key-type inference)
-
-For `IndexGet(ht, key)` and `IndexSet(ht, key, val)`, the compiler must dispatch to `lang_index_get_str` vs `lang_index_get` based on whether the key is a string.
-
-**Current behavior:** The compiler checks `idxVal.Type` after elaborating the index expression. Since type info is on the expression, this is partially working — but only because `String _` literals elaborate to `Ptr` and `Number _` literals elaborate to `I64`. Variable keys require `StringVars` to be queried.
-
-**What the typed AST provides:** With per-expression types (TS-1), `idxExpr`'s type will be `TString` or `TInt` — no `StringVars` lookup needed.
-
-**Complexity:** Zero additional work beyond TS-1.
-
----
-
-### TS-4: `ForInExpr` collection type accessible at iteration site (replaces `CollectionVars` + `isArrayExpr`)
-
-The `forInFn` dispatch in `elaborateExpr` selects `lang_for_in_array/list/hashset/queue/mlist/hashtable` based on the collection's type.
-
-**Current behavior:** `detectCollectionKind env.CollectionVars collExpr` and `isArrayExpr env.ArrayVars collExpr` traverse the expression and check the variable sets.
-
-**What the typed AST provides:** With TS-1, `collExpr`'s type will be one of:
-- `TArray _` → `lang_for_in_array`
-- `TList _` → `lang_for_in_list`
-- `TData("HashSet", _)` → `lang_for_in_hashset`
-- `TData("Queue", _)` → `lang_for_in_queue`
-- `TData("MutableList", _)` → `lang_for_in_mlist`
-- `THashtable _ _` → `lang_for_in_hashtable`
-
-**Complexity:** Zero additional work beyond TS-1.
-
----
-
-### TS-5: Lambda parameter type at definition site (replaces `isPtrParamBody`)
-
-`isPtrParamBody` is the single most complex heuristic — a 250-line recursive traversal of the lambda body to determine if the parameter will be passed as `Ptr` or `I64`. This exists entirely because the compiler does not know the parameter's inferred type.
-
-**What the typed AST provides:** With TS-1 applied to the `Lambda` node, the function's type is `TArrow(paramType, returnType)`. The compiler can read `paramType` directly:
-- `TInt`, `TBool`, `TChar` → `I64`
-- `TString`, `TList _`, `TArray _`, `THashtable _ _`, `TData _ _`, `TTuple _` → `Ptr`
-
-**Note:** This also applies to `LetRec` bindings where the function's inferred type determines the parameter's IR type. The `isPtrParamBody` heuristic was needed because the compiler synthesized the Lambda parameter type from body analysis — with the typed AST, that analysis is done once by HM inference.
-
-**Complexity:** Zero additional work beyond TS-1, but requires verifying that inference produces ground types (not `TVar`) for lambda parameters in all practical cases.
-
----
-
-### TS-6: `to_string` dispatch type at call site (replaces `BoolVars` + `isBoolExpr`)
-
-`to_string` dispatches to `lang_to_string_bool` vs `lang_to_string_int` based on whether the argument is bool. The compiler currently checks `argVal.Type = I1 || isBoolExpr env.BoolVars env.KnownFuncs argExpr`.
-
-**What the typed AST provides:** With TS-1, `argExpr`'s type is `TBool` or `TInt`. Dispatch is a direct type check.
-
-**Complexity:** Zero additional work beyond TS-1.
-
----
-
-### TS-7: Export format — typed AST as a parallel structure
-
-The typed AST must be a defined type in FunLang that can be serialized to a format FunLangCompiler can consume without depending on FunLang's internal `Type` module.
-
-**Options:**
-
-| Option | Description | Tradeoff |
-|--------|-------------|----------|
-| **A: Annotated Ast (parallel tree)** | New `TExpr` type that mirrors `Ast.Expr` but carries a `Type` at each node | Clean separation; compiler gets full AST + types; large type definition |
-| **B: Span-keyed type map** | Map from `Span` (source location) to `Type`; original `Ast.Expr` unchanged | Minimal FunLang changes; compiler must correlate by span; fragile if spans are non-unique |
-| **C: Inline annotation via `Annot` reuse** | Reuse `Ast.Annot` to wrap every expression with its inferred type | Abuses existing AST; pollutes pattern matches |
-| **D: Separate serialized type file** | FunLang emits a JSON/binary file of `(span → typeString)` mappings | Language-agnostic; requires parsing overhead in compiler |
-
-**Recommendation: Option A (annotated parallel tree).**
-
-A `TExpr` type that mirrors `Ast.Expr` with a `ty: Type` field at each node is the cleanest interface. The compiler can pattern-match on structure and read `.ty` without span correlation. This is how GHC, OCaml, and most typed compilers represent post-inference ASTs.
-
-**Implementation sketch:**
-```fsharp
-type TExpr =
-    | TNumber of int * ty: Type * span: Span
-    | TVar of string * ty: Type * span: Span
-    | TApp of TExpr * TExpr * ty: Type * span: Span
-    | TLambda of param: string * paramTy: Type * body: TExpr * ty: Type * span: Span
-    // ... all Ast.Expr variants ...
+```funlang
+#[left 1]
+let (|>) x f = f x
 ```
 
-The `ty` field carries the type of the entire expression. `TLambda` additionally carries `paramTy` to directly expose the parameter's inferred type (critical for TS-5).
+**What the attribute expresses:**
+- `left` or `right` — associativity
+- `N` — numeric precedence level (integer, 0 = lowest user level)
 
-**Complexity:** High — requires defining the full parallel type and a conversion pass after inference.
+**Parsing requirements:**
+- `#[` ... `]` before a `let (op) ...` definition, at module level and inside module blocks
+- Attribute content: `left N` or `right N` where N is an integer literal
+- The attribute binds to the immediately following `let (op)` binding
+- Non-operator `let` bindings with attributes are a parse error (or silently ignored — decide)
+
+**Constraint:** fsyacc is LALR(1). The attribute syntax must be parseable without lookahead beyond one token after `#[`. Since the content is `IDENT INT`, this is straightforward.
+
+**Complexity:** Medium — requires new tokens (`HASH_LBRACKET`, or lex `#[` as a single token), new grammar rules for the attribute prefix, and a way to attach the attribute to the binding node in the AST.
+
+---
+
+### TS-2: Fixity table — runtime-populated precedence registry
+
+A data structure mapping operator strings to `(associativity, precedence_level)` pairs, populated as the interpreter loads modules and encounters attributed operator definitions.
+
+**Required operations:**
+- `registerFixity : string -> Associativity -> int -> unit` — called when `#[left N] let (op) ...` is parsed/evaluated
+- `lookupFixity : string -> (Associativity * int) option` — called by the Pratt parser post-processor
+- **Default for unattributed operators:** Infer from first character (INFIXOP0-4 buckets), exactly as today. This is mandatory for backward compatibility — `<|>` in Option.fun, `^^` in Core.fun, `++` in Prelude, and all user-defined operators written before v12.0 must continue to work without modification.
+
+**Initialization order matters:** The fixity table must be populated before expression parsing begins for any file that uses the operator with its attribute-specified precedence. Since FunLang loads Prelude before user files, Prelude-defined operators with attributes will always be available.
+
+**Complexity:** Low — a mutable dictionary is sufficient. The lookup is fast (constant time). Thread-safety is not required (single-threaded interpreter).
+
+---
+
+### TS-3: Pratt parser post-processor for expression trees
+
+The fsyacc-generated parser is LALR(1) with static precedence tables baked into the generated state machine. It cannot dynamically use the fixity table at parse time. The standard solution is a **Pratt post-processing pass** that re-associates expression trees after the LALR parser produces them.
+
+**What the LALR parser produces for `a |> b >> c`:**
+
+With `|>` and `>>` mapped to INFIXOP0 (starts with `|` and `>` respectively), the LALR parser would parse this as `INFIXOP0(a, INFIXOP0(b, c))` — wrong. The Pratt pass must re-associate based on the fixity table.
+
+**Alternative approach — Single INFIXOP bucket:**
+
+Map all user-defined operators to a single INFIXOP level in the LALR grammar (e.g., INFIXOP0), let the LALR parser build a flat spine, then have the Pratt pass rebuild the tree with correct precedence and associativity. This is the OCaml approach for custom operators.
+
+**Pratt pass inputs:**
+- A flat or minimally-structured expression tree produced by LALR
+- The fixity table
+
+**Pratt pass outputs:**
+- A correctly-associated expression tree using the existing `App(App(Var(op), left), right)` desugaring
+
+**Complexity:** High — the Pratt pass is the most algorithmically complex part of this milestone. It must handle:
+- Mixed precedence levels in chained operator expressions
+- Left vs right associativity
+- Operators at different levels interleaved (e.g., `a |> b >> c |> d`)
+- Parenthesized subexpressions (must be opaque to the pass)
+
+The pass operates on the `App(App(Var(op), ...))` structure. A simpler representation is a flat list `[expr, op, expr, op, expr]` that the pass rebuilds into a tree — this is the classic Pratt approach.
+
+---
+
+### TS-4: `|>`, `>>`, `<<` moved to Prelude/Core.fun
+
+After TS-1 through TS-3 are in place, Prelude/Core.fun gains:
+
+```funlang
+#[left 1]
+let (|>) x f = f x
+
+#[left 2]
+let (>>) f g = fun x -> g (f x)
+
+#[right 2]
+let (<<) f g = fun x -> f (g x)
+```
+
+**Semantic preservation requirements:**
+- `|>` must preserve tail-call optimization. Currently `PipeRight` in Eval.fs has a special tailcall path (`TailCall(funcVal, argVal)`). When `|>` becomes `App(App(Var("|>"), x), f)`, the `App` evaluator's existing trampoline handles tail calls through the `applyFunc` path. Verify this is correct — the current `App` evaluator already handles `TailCall` in `AppExpr`. The key question: does `(|>) x f` in tail position trigger TCO through the existing App trampoline? It should, because the final application `f x` inside `(|>)` is a tail call within the `(|>)` body.
+- `>>` and `<<` currently synthesize closures with unique names (composeCounter) to avoid shadowing. A prelude definition `fun x -> g (f x)` uses the bound names `f` and `g` from the closure — this is correct and simpler than the current approach.
+
+**Removal of special AST nodes:**
+- `PipeRight`, `ComposeRight`, `ComposeLeft` removed from `Ast.fs`
+- Corresponding match arms removed from: Eval.fs, Bidir.fs, Infer.fs, TypeCheck.fs (5 locations), Format.fs, TypeAnnotationTests.fs
+- `PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT` tokens removed from Lexer.fsl, Parser.fsy
+
+**Complexity:** Medium — mechanical removal across many files, but each removal is straightforward. The type-checking correctness follows from the prelude definition being type-inferred normally.
+
+---
+
+### TS-5: Default precedence for unattributed operators — backward compatibility
+
+Any operator defined without a `#[left N]` / `#[right N]` attribute must default to the existing first-character bucket:
+
+| First char | Default level | Default associativity |
+|------------|---------------|-----------------------|
+| `= < > | & $ !` | 0 | left |
+| `@ ^` | 1 | right |
+| `+ -` | 2 | left |
+| `* / %` | 3 | left |
+| `**` (starts with `**`) | 4 | right |
+
+This preserves the behavior of all existing user-defined operators (`<|>`, `^^`, `++`, any user operators) without requiring them to be updated.
+
+**Complexity:** Zero new implementation — this is the existing INFIXOP0-4 classification, already in `classifyInfixOp` in Lexer.fsl. The fixity table's `lookupFixity` returns `None` for unattributed operators, and the caller falls back to the first-character classification.
+
+---
+
+### TS-6: Error message for malformed attribute syntax
+
+When `#[left N]` or `#[right N]` is used with invalid syntax, the error must be clear:
+
+| Error case | Message |
+|------------|---------|
+| `#[left]` — missing precedence | "Expected precedence level after 'left' in operator attribute" |
+| `#[nonassoc 2]` — unknown associativity | "Unknown associativity 'nonassoc'; expected 'left' or 'right'" |
+| `#[left 2]` before a non-operator `let` | "Operator attribute #[left N] can only precede an operator definition: let (op) ..." |
+| `#[left -1]` — negative precedence | "Precedence level must be a non-negative integer" |
+| `#[left 100]` — out of range | Either accept (no upper limit) or bound at 9 (matching INFIXOP0-4 convention + 5 extra levels) |
+
+**Complexity:** Low — these are parse-time and semantic errors, following existing diagnostic patterns (Diagnostic.fs, E0xxx codes).
 
 ---
 
 ## Differentiators
 
-**Useful but not strictly required to replace all heuristics.** The compiler can still function at lower quality without these.
+**Useful extensions but not required for issues #6 and #7.**
 
-### D-1: Typed pattern bindings
+### D-1: `#[nonassoc N]` — non-associative operators
 
-In `match` clauses and `LetPat`, the bound variables carry their inferred types. This would replace heuristic tracking of what type a `VarPat`-bound variable has (currently tracked via `BoolVars`, `StringVars`, etc. as variables pass through pattern destructuring).
+Allows declaring that chaining an operator is a parse error: `a op b op c` must be parenthesized.
 
-**Value:** Replaces the fragile propagation of `BoolVars`/`StringVars` when pattern-match arms introduce new bindings. E.g., `match x with (a, b) -> ...` — the types of `a` and `b` are currently not available to the compiler without re-running inference.
+**Value:** Prevents bugs like `1 < 2 < 3` being silently parsed. The existing grammar already uses `%nonassoc` for `EQUALS LT GT LE GE NE` — this extends that concept to user-defined operators.
 
-**Complexity:** Medium — requires threading types into `MatchClause` and `Pattern` nodes in the typed AST.
+**Complexity:** Medium — the Pratt pass must emit a parse error when it encounters two non-associative operators at the same level without parentheses.
 
----
-
-### D-2: Resolved record field types in the typed AST
-
-`FieldAccess(expr, fieldName)` nodes carry the type of the accessed field as an explicit annotation, not just the type of the resulting expression.
-
-**Value:** Currently `StringFields` exists specifically because the compiler needs to know if a field access produces a string (for IndexGet dispatch). With per-expression types (TS-1), `FieldAccess` node's `ty` already provides this. This differentiator is largely superseded by TS-1 — listing it separately for clarity.
-
-**Complexity:** Zero, subsumed by TS-1.
+**Recommendation:** Defer. The existing comparison operators are already non-associative via the LALR grammar. User-defined operators are unlikely to need this in practice. Add in a follow-up if requested.
 
 ---
 
-### D-3: Type info on declaration nodes (module-level bindings)
+### D-2: Attribute on `let rec` operator definitions
 
-`LetDecl` and `LetRecDecl` nodes carry the inferred type scheme of the declared function/value. The compiler currently calls `prePassDecls` to collect type info from AST annotations (TypeExpr) — not from inferred types. With typed declarations, the compiler gets the actual inferred type, not just the user's annotation.
+Allow:
+```funlang
+#[left 1]
+let rec (>>=) m f = ...
+```
 
-**Value:** Enables the compiler to know the full return type of module-level functions — currently `FuncSignature.ReturnIsBool` and `FuncSignature.InnerReturnIsBool` are computed heuristically from the body. With declaration types, these are read directly.
+**Value:** Monadic bind `>>=` is a common operator that benefits from explicit precedence.
 
-**Complexity:** Low — declaration types are available after the top-level type-check pass.
+**Complexity:** Low — same attribute parsing; the binding node is `LetRecDecl` instead of `LetDecl`. The fixity table registration is the same.
+
+**Recommendation:** Include if the attribute parsing infrastructure handles it naturally. The AST attribute attachment likely covers both `let` and `let rec` with minimal extra work.
 
 ---
 
-### D-4: Stable, version-tagged export format
+### D-3: Fixity declaration as a standalone statement (separate from `let`)
 
-The typed AST export includes a version tag so FunLangCompiler can detect incompatible FunLang versions at startup rather than producing silent miscompilations.
+Some languages (Haskell's `infixl`, `infixr`) separate fixity declarations from definitions:
 
-**Value:** Operational reliability as both projects evolve.
+```funlang
+infixl 1 |>
+let (|>) x f = f x
+```
 
-**Complexity:** Trivial — add a `version: string` field to the export root.
+**Value:** Allows setting fixity for built-in or imported operators without redefining them.
+
+**Complexity:** High — requires new syntax, new AST node, ordering semantics (declaration must precede use in scope).
+
+**Recommendation:** Do not build. The attribute-on-definition approach covers all use cases in this milestone. Standalone fixity declarations add syntax complexity without clear benefit given FunLang's module system.
+
+---
+
+### D-4: Precedence level validation against existing levels
+
+When a user writes `#[left 3]`, warn if this conflicts with the built-in levels (INFIXOP3 is multiplication level). A warning clarifies that user operators at level 3 will interleave with `*`, `/`, `%`.
+
+**Value:** Prevents surprising interactions.
+
+**Complexity:** Low — a single check at fixity registration time.
+
+**Recommendation:** Defer. The interaction is correct-by-construction (the Pratt pass uses numeric levels consistently), and users who write `#[left 3]` intend to operate at that level.
 
 ---
 
 ## Anti-Features
 
-**Deliberately do not build these in this milestone.**
+**Explicitly do not build these in v12.0.**
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Exporting `Scheme` (polymorphic types) at call sites** | FunLangCompiler needs monomorphic types at each use site, not polymorphic schemes. Exporting `Scheme` would require the compiler to instantiate them — re-implementing a piece of type inference in the compiler. | Export fully-applied, instantiated types at each expression node (post-substitution). |
-| **Exporting type variable IDs** | Raw `TVar 1042` in the export is meaningless to the compiler; it cannot act on an unconstrained type variable. | Substitute all remaining `TVar` occurrences with their best-known concrete type, or leave as opaque `Unknown` so the compiler can fall back gracefully. |
-| **Exporting constraint/typeclass info** | The compiler does not need constraint info; it needs resolved monomorphic types. Constraints are resolved by the instance selection in Bidir.fs before the typed AST is built. | Strip all constraint metadata from the export — the compiler sees only `Type` values, not `Scheme` values. |
-| **Replacing MlirType in the compiler** | The compiler's `MlirType` (I64, Ptr, I1) is a different representation level from FunLang's `Type`. Do not try to unify them. | The compiler maps `Type → MlirType` at elaboration time using a straightforward function: `TInt/TBool/TChar → I64`, `TString/TList/TData/TArray/THashtable/TTuple → Ptr`. |
-| **Lazy/on-demand type lookup** | Providing a query API `getTypeOf: Span -> Type option` instead of embedding types in nodes would require the compiler to maintain spans across transformations and make the interface fragile. | Embed types directly in AST nodes (Option A from TS-7). |
-| **Type inference in the compiler** | Any heuristic that re-derives type information from AST structure is technical debt that the typed AST export should eliminate, not supplement. | After typed AST export is available, delete the heuristics entirely rather than keeping them as fallback. |
-| **Exporting intermediate inference states** | The compiler needs the final fully-resolved types, not types mid-inference. Exporting before substitution is fully applied produces TVar noise. | Only export after applying the final `Subst` to every node type. |
+| **Modify the LALR grammar to be dynamically extensible** | fsyacc generates a static state machine; adding dynamic precedence rules requires regenerating the parser per program. This is architecturally unsound. | Use a static LALR grammar (single INFIXOP bucket for all user ops) + Pratt post-processing pass. Standard approach in OCaml-family parsers. |
+| **Remove the INFIXOP0-4 first-character classification** | Over 700 flt tests use operators whose precedence is determined by first character. Removing this default breaks all existing operator code. | Keep the first-character defaults; `#[left N]` overrides them. |
+| **Support operator sections `(|> f)` or `(f |>)`** | Partial application of operators in section syntax requires parser changes and is a separate feature (not in issues #6 or #7). | Users write `fun x -> x |> f` instead. |
+| **Allow attribute on expression-level `let`** | Expression-level operators are scoped to a block; precedence attributes in expressions would require the Pratt pass to be scope-aware. Complex, low value. | Only support attributes on module-level operator definitions. |
+| **`#[left N]` for built-in infix operators (`+`, `-`, `*`, etc.)** | Built-in arithmetic operators are hardcoded as `Add`, `Subtract`, `Multiply` AST nodes — they are not INFIXOP. Changing their precedence is a separate architectural decision. | Leave built-in arithmetic operators alone. |
+| **Retroactively add `#[left N]` to all existing Prelude operators** | `<|>`, `^^`, `++` already work correctly via first-character classification. Adding attributes adds noise with zero behavior change. | Only add attributes to operators that need precedence not expressible via first character (i.e., `|>`, `>>`, `<<`). |
+| **Pratt parser for the full grammar** | Full Pratt parsing replaces the LALR grammar, which is a complete rewrite of the parser. Out of scope. | Apply the Pratt pass only to the flat chains of user-defined operators within expressions. LALR handles everything else. |
+| **`#[precedence N]` without associativity** | Associativity is semantically required to resolve `a op b op c`. A precedence-only attribute forces a default (likely left), which is silently wrong for right-associative operators like `>>`. | Always require explicit `left` or `right`. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-TS-7: Typed AST format definition (TExpr type)
-  └─► TS-1: Per-expression type annotation (conversion pass: Ast.Expr → TExpr with types from Bidir.fs)
-        ├─► TS-2: Mutable variable flag (preserved from LetMut vs Let constructors)
-        ├─► TS-3: Hashtable key type (falls out of TS-1 for index expressions)
-        ├─► TS-4: ForInExpr collection type (falls out of TS-1 for collection expressions)
-        ├─► TS-5: Lambda parameter type (falls out of TS-1 for function types)
-        └─► TS-6: to_string dispatch type (falls out of TS-1 for argument expressions)
+TS-1: #[left N] / #[right N] attribute parsing
+  └─► TS-2: Fixity table (populated when attributed definitions are loaded)
+        └─► TS-3: Pratt post-processor (uses fixity table at expression tree construction)
+              └─► TS-4: |>, >>, << moved to Prelude (now safe to remove special AST nodes)
 
-D-1: Typed pattern bindings
-  └─► TS-1 (requires types to be computed for pattern-bound variables too)
+TS-5: Default precedence (no new work — existing first-char classification)
+  └─► already satisfies backward compat, blocks nothing
 
-D-3: Declaration types
-  └─► TS-1 (declaration types available after top-level typecheck)
+TS-6: Error messages (can be done alongside TS-1)
 ```
 
-**Critical path:** TS-7 then TS-1. Everything else (TS-2 through TS-6, all differentiators) follows from TS-1 being available. The hard work is TS-7 (defining the format) and TS-1 (threading types through every expression node).
+**Critical path:** TS-1 → TS-2 → TS-3 → TS-4.
 
-**Key dependency:** TS-1 requires that Bidir.fs can produce a complete final substitution after type-checking — either by exposing the accumulated substitution, or by running a "type-annotate" pass that walks the AST querying the type environment. The current Bidir.fs `synth` function is bidirectional and produces a `(Type, MlirOp list)` pair — it does not currently output an annotated AST. This is the primary implementation challenge.
+TS-3 (Pratt post-processor) is the hardest part and is the dependency for everything else. Until the Pratt pass exists, removing the special AST nodes (TS-4) would break `|>`, `>>`, `<<`.
+
+TS-4 is the visible deliverable (issues #6). TS-1 through TS-3 are the enabling infrastructure (issue #7).
+
+**TS-5 is a non-dependency** — it is already implemented via `classifyInfixOp` in the lexer. No new work required. Mentioning it as a feature is important for the requirements document to make clear that backward compat is guaranteed.
+
+---
+
+## Interaction with Existing INFIXOP0-4 Levels
+
+The INFIXOP0-4 levels serve two purposes:
+
+1. **First-character classification at lex time** — `classifyInfixOp` in Lexer.fsl
+2. **Parser precedence tokens** — `%left INFIXOP0`, `%left INFIXOP2`, etc.
+
+After reform:
+
+- Purpose 1 is retained unchanged (backward compat for unattributed operators).
+- Purpose 2 is the obstacle: if `|>` (starts with `|`) falls into INFIXOP0, and `>>` (starts with `>`) also falls into INFIXOP0, the LALR parser treats them at the same precedence. The Pratt pass then re-associates correctly. This means the LALR grammar only needs to handle the coarse bucket; fine-grained precedence is the Pratt pass's responsibility.
+
+**Numeric precedence scale recommendation:**
+
+Map the existing 5 buckets to a 0-9 integer scale (2 levels per bucket, leaving room for user levels between):
+
+| INFIXOP level | Numeric range | Example operators |
+|---------------|---------------|-------------------|
+| INFIXOP0 (comparison) | 0-1 | `|>` (level 1), comparison ops, `<|>` |
+| INFIXOP1 (concat) | 2-3 | `@@`, `^^`, concat-style |
+| INFIXOP2 (additive) | 4-5 | `+`, `-`, additive-style |
+| INFIXOP3 (multiplicative) | 6-7 | `*`, `/`, multiply-style |
+| INFIXOP4 (exponentiation) | 8-9 | `**`, exponent-style |
+
+`>>` and `<<` should sit at level 2 (above pipe, below additive). This matches F# and Haskell conventions where function composition binds tighter than pipe.
+
+**Specific recommended levels:**
+
+| Operator | Level | Assoc | Rationale |
+|----------|-------|-------|-----------|
+| `|>` | 1 | left | Lowest user op; chains naturally left-to-right |
+| `>>` | 2 | left | Above pipe; `f >> g |> x` = `(f >> g) |> x` |
+| `<<` | 2 | right | Same level as `>>`, right-assoc: `f << g << h` = `f << (g << h)` |
+
+---
+
+## Operators: Prelude vs Builtin After Reform
+
+| Operator | Before v12.0 | After v12.0 | Notes |
+|----------|-------------|-------------|-------|
+| `|>` | Builtin (PIPE_RIGHT token, PipeRight AST) | Prelude/Core.fun | TCO via App trampoline |
+| `>>` | Builtin (COMPOSE_RIGHT token, ComposeRight AST) | Prelude/Core.fun | Closure via lambda |
+| `<<` | Builtin (COMPOSE_LEFT token, ComposeLeft AST) | Prelude/Core.fun | Closure via lambda |
+| `<|>` | Prelude/Option.fun (INFIXOP0 via `<`) | Unchanged | No attribute needed |
+| `^^` | Prelude/Core.fun (INFIXOP1 via `^`) | Unchanged | No attribute needed |
+| `++` | Prelude (INFIXOP2 via `+`) | Unchanged | No attribute needed |
+| `+`, `-`, `*`, `/`, `%` | Builtin AST nodes | Unchanged | Not touched this milestone |
+| `=`, `<`, `>`, etc. | Builtin AST nodes | Unchanged | Not touched this milestone |
+| `::` | Builtin (CONS token, Cons AST) | Unchanged | Not touched this milestone |
 
 ---
 
 ## MVP Recommendation
 
-### MVP Scope
+**Minimum to deliver issues #6 and #7:**
 
-**Minimum to replace all 6 tracking sets and 8 heuristics:**
+1. **Implement TS-1** — Parse `#[left N]` and `#[right N]` before `let (op)` definitions at module level. Attach fixity info to the binding AST node (or store it alongside). Add parse errors (TS-6) for malformed attributes.
 
-1. **Define `TExpr`** — parallel typed AST type in a new file (e.g., `TypedAst.fs`), mirroring all `Ast.Expr` variants plus `ty: Type` and for lambdas `paramTy: Type`.
+2. **Implement TS-2** — Build the fixity table as a module-level mutable dictionary. Populate it during evaluation of module top-level bindings (or during parsing if fixity is needed at parse time — but since we use a Pratt post-pass, evaluation-time population is sufficient for the Pratt pass applied to later expressions).
 
-2. **Conversion pass** — `annotateExpr : TypeEnv -> Subst -> Ast.Expr -> TExpr` that walks the expression tree, looks up each sub-expression's type in the inference results, and builds the `TExpr` tree. Run this pass after `typeCheckModuleWithPrelude` produces the final substitution.
+   **Important ordering consideration:** The Pratt post-pass runs after LALR parsing. If fixity is stored in the parsed AST (on the binding node), the post-pass can use it even on the same file. If fixity is only available after evaluation, the post-pass must run after the fixity-registering bindings are evaluated — which works because FunLang evaluates top-level bindings in order.
 
-3. **Expose from FunLang** — make `TypedAst.TExpr` and `Type.Type` available as a public API, ideally through a new entry point in `TypeCheck.fs` that returns `(TExpr list, TypeEnv)` instead of just a type environment.
+3. **Implement TS-3** — Write the Pratt post-processor. Input: a right-leaning `App(App(Var(op), left), right)` tree for a chain of operators. Output: correctly-associated tree based on fixity table. Apply this pass after each `Expr` production in the parser (or as a separate tree-walk after the full parse).
 
-4. **Update FunLangCompiler** — add a reference to FunLang's assembly, receive `TExpr list` from the typed check entry point, and replace all `ElabEnv` set lookups with direct `.ty` queries on `TExpr` nodes.
+4. **Implement TS-4** — Add `|>`, `>>`, `<<` to Prelude/Core.fun with `#[left 1]`, `#[left 2]`, `#[right 2]` attributes respectively. Remove `PipeRight`, `ComposeRight`, `ComposeLeft` from all files. Remove `PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT` tokens.
 
-5. **Delete the heuristics** — remove `ArrayVars`, `CollectionVars`, `BoolVars`, `StringVars`, `StringFields`, `MutableVars`, `isPtrParamBody`, `isArrayExpr`, `isStringExpr`, `isBoolExpr`, `detectCollectionKind`, `bodyReturnsBool` from Elaboration.fs.
+5. **Verify TS-5** — Run existing flt test suite. Unattributed operators must behave identically to today.
 
-### Post-MVP (Defer)
+**Post-MVP (defer):**
 
 | Feature | Reason to Defer |
 |---------|-----------------|
-| D-1: Typed pattern bindings | Heuristics for pattern-bound variables are less common; tackle after core case works |
-| D-3: Declaration types | `FuncSignature.ReturnIsBool` heuristic is less impactful than the core set; defer |
-| D-4: Version tag | Nice-to-have; add in a follow-up |
+| D-1: `#[nonassoc N]` | No current need; comparison operators already non-assoc via grammar |
+| D-2: Attribute on `let rec` | Minor; add if the implementation handles it for free |
+| D-4: Level conflict warnings | Nice diagnostic, not blocking |
 
 ---
 
@@ -276,13 +358,15 @@ D-3: Declaration types
 
 | Area | Confidence | Basis |
 |------|------------|-------|
-| Heuristic inventory | HIGH | Read all 6 sets + 8 functions in Elaboration.fs directly |
-| Type system completeness | HIGH | `Type.fs` has `TArray`, `THashtable`, `TData`, `TList`, `TBool`, `TString` — all types the heuristics detect are expressible |
-| Conversion pass feasibility | MEDIUM | Bidir.fs produces types per expression but does not currently build an annotated tree; will require new scaffolding |
-| Lambda param type coverage | MEDIUM | `isPtrParamBody` handles edge cases (closures, captured vars, tuple params) that depend on inference being ground; risk of residual TVar for some params |
-| FunLangCompiler integration | HIGH | Elaboration.fs is well-structured; replacing set lookups with `.ty` field accesses is mechanical once types are available |
+| Existing operator system (INFIXOP0-4) | HIGH | Read Lexer.fsl, Parser.fsy directly; fully understood |
+| Scope of hardcoded operator removal (TS-4) | HIGH | Grep found all 12 files containing PipeRight/ComposeRight/ComposeLeft |
+| Attribute syntax feasibility (TS-1) | HIGH | `#[` is not currently used in FunLang; straightforward new token + grammar rule |
+| Fixity table design (TS-2) | HIGH | Standard approach; no F#/fsyacc-specific obstacles |
+| Pratt post-processor necessity (TS-3) | HIGH | LALR cannot use runtime fixity; Pratt post-pass is the established solution |
+| TCO preservation for `|>` after reform (TS-4) | MEDIUM | App trampoline handles `f x` tail calls; needs verification that `(|>) x f` as App chain reaches the trampoline in the same way as PipeRight did |
+| Backward compat for unattributed operators | HIGH | First-character classification unchanged; no user-visible behavior change |
 
 ---
 
-**Document Status:** Research complete for Typed AST export milestone
-**Next Step:** Use this feature catalog to define the typed AST format and conversion pass requirements
+**Document Status:** Research complete for v12.0 Infix Operator Reform — Features dimension
+**Next step:** Use this to structure phase requirements (attribute parsing phase, fixity table phase, Pratt pass phase, prelude migration phase)

@@ -1,166 +1,189 @@
 # Project Research Summary
 
-**Project:** FunLang — v11.0 Typed AST Export
-**Domain:** Compiler infrastructure — per-expression type annotation export from an ML-style HM inference engine to an external MLIR codegen consumer
+**Project:** FunLang — v12.0 Infix Operator Reform + v11.0 Typed AST Export
+**Domain:** Language infrastructure — user-defined operator fixity declarations, special AST node removal, and per-expression type annotation export
 **Researched:** 2026-04-02
 **Confidence:** HIGH
 
 ## Executive Summary
 
-FunLangCompiler currently maintains roughly 250 lines of heuristic code (6 tracking sets, 8 re-inference functions) to guess the types that FunLang's Hindley-Milner type checker already computed. The v11.0 milestone eliminates this entirely by exporting per-expression type information from FunLang's `Bidir.synth` pass into a `TypeAnnotationMap` (a `Dictionary<Span, Type>`), exposing it through a new `ExportApi.typeCheckFile` entry point that bundles the post-elaboration `Decl list`, per-expression types, top-level binding schemes, and environment metadata into a single `TypedModule` record consumed in-process by FunLangCompiler.
+This research covers two related but independent milestones for FunLang. The **operator reform** (issues #6 and #7) removes the hardcoded `PipeRight`, `ComposeRight`, and `ComposeLeft` AST nodes and replaces them with ordinary prelude-defined operators backed by a runtime fixity table and a post-parse Pratt rewrite pass. The **typed AST export** (v11.0) adds per-expression type annotations to the pipeline output so FunLangCompiler can replace its own type-guessing elaboration pass with the authoritative FunLang type checker. Both milestones are strictly additive in their first phases, with breaking cleanup deferred to later phases.
 
-The recommended implementation is strictly additive. `Bidir.fs` gains ~40 `TypeAnnotationMap.record` call sites (one per `synth` case), `TypeCheck.fs` gains a `clear()` call at the entry point, and two new files (`TypeAnnotationMap.fs`, `ExportApi.fs`) are added to the project. No new NuGet packages are needed. No existing function signatures change. The full build is estimated at ~60–100 lines of new code across 4 files, with the highest-risk work being correct substitution application at every collection site and correct handling of type-class-elaborated nodes.
+The recommended approach for operator reform follows the GHC Haskell model: the LALR(1) parser continues to handle expression structure, but operator chains involving user-declared precedence are collected into `InfixChain` nodes and resolved by a separate Pratt precedence-climbing pass applied immediately after parsing. No replacement of the fsyacc grammar is required or desirable — the existing ~1,000-line grammar handles indent-sensitive parsing, pattern syntax, type classes, and modules, none of which should be touched. For typed AST export, an annotation map approach (span-keyed `Dictionary<Span, Type>`, populated as a side effect during `Bidir.synth`) is preferred over a full parallel `TypedExpr` DU rewrite because it is strictly additive and works with the existing `Ast.Expr` types that FunLangCompiler already understands.
 
-The primary risk is correctness, not complexity: recording raw `TVar` indices before applying the accumulated substitution, or failing to resolve instance method types through `TypeEnv` name lookup after `elaborateTypeclasses` rewrites `InstanceDecl` to `LetDecl`. Both are well-understood and have clear, low-cost mitigations. The sequential-only constraint on `Bidir`'s mutable state is an accepted pre-existing limitation of the codebase that this feature extends, not introduces.
-
----
+The critical risk for operator reform is silent semantic breakage: the LALR precedence table encodes `|>`'s position relative to comparisons and boolean operators, and any unintended shift produces wrong parse trees that still type-check — just to wrong values. Run the full 714-test suite after every grammar edit. For typed AST export, the main risk is recording unresolved type variables; all `TypeAnnotationMap.record` calls must use `apply s ty` (substitution applied), not the raw synthesis result.
 
 ## Key Findings
 
 ### Recommended Stack
 
-No new NuGet packages are required. The entire feature is implemented within the existing F# + .NET 10 stack. `System.Text.Json` (BCL) is sufficient for an optional `--emit-typed-ast` CLI flag if cross-process JSON output is later desired, but the primary integration model is a direct .NET project reference from FunLangCompiler to FunLang, passing `TypedModule` in memory.
+No new NuGet packages are required for either milestone. The full implementation lives within the existing F# source files. The only new files needed are `FixityEnv.fs` (operator reform), `TypeAnnotationMap.fs` (typed AST export), and `ExportApi.fs` (typed AST export).
 
 **Core technologies:**
-- **F# / .NET 10** — implementation language; no version change needed
-- **System.Collections.Generic.Dictionary** — mutable `Span -> Type` accumulator in `TypeAnnotationMap.fs`; chosen over F#'s immutable `Map` to avoid O(n) allocation per `synth` call
-- **System.Text.Json (BCL)** — optional JSON serialization for `--emit-typed-ast` debug flag; zero NuGet cost
+- **F# / .NET 10** — implementation language; no change
+- **FsLexYacc 11.3.0** — LALR(1) parser; kept as-is; the Pratt pass runs on LALR output, not replacing it
+- **System.Collections.Generic.Dictionary** — mutable accumulator for both the fixity table and the type annotation map; O(1) lookup vs. F# immutable `Map`'s O(log n)
+- **Argu 6.2.5 / Tomlyn 2.3.0** — no change; optional `--emit-typed-ast` flag adds one Argu case
+
+**Why no parser replacement:** A hand-written Pratt parser would be 2,000–3,000 lines of new code with high regression risk across the indent-sensitive grammar. The GHC two-pass approach achieves the same result with ~300–400 lines of new code and zero grammar rewrite risk.
 
 ### Expected Features
 
-The feature set is fully determined by what is required to replace all 6 tracking sets and 8 heuristic functions in `FunLangCompiler.Elaboration.fs`. Every item on the must-have list resolves automatically from a single underlying capability: per-expression type annotation.
+**Must have (operator reform table stakes):**
+- `#[left N]` / `#[right N]` attribute syntax parsed before `let (op)` definitions (TS-1)
+- Runtime fixity table (`FixityEnv`) populated from attribute declarations, with first-character defaults for unattributed operators (TS-2, TS-5)
+- Pratt post-processor that resolves `InfixChain` nodes into correctly-nested `App(App(...))` trees before type checking (TS-3)
+- `|>`, `>>`, `<<` moved to `Prelude/Core.fun` with `#[left 1]`, `#[left 2]`, `#[right 2]` attributes; `PipeRight`/`ComposeRight`/`ComposeLeft` AST nodes removed (TS-4)
+- Error messages for malformed attribute syntax (`#[left]`, `#[nonassoc N]`, negative levels) (TS-6)
 
-**Must have (table stakes):**
-- **TS-1: Per-expression type annotation** — every `Expr` node in the post-elaboration tree can be queried for its resolved `Type`; this alone replaces all heuristics
-- **TS-2: Mutable variable flag** — `LetMut` vs. `Let` distinction preserved in the exported `Decl list`; no additional work (already present in `Ast.Expr` constructors)
-- **TS-3 through TS-6: Derived dispatch types** — Hashtable key type, ForIn collection type, Lambda parameter type, to_string argument type all fall out of TS-1 at zero additional cost; the compiler reads `.ty` on the relevant expression node
+**Must have (typed AST export table stakes):**
+- `TypeAnnotationMap.fs` — `Dictionary<Span, Type>` populated as `Bidir.synth` side effect (~40 additive `record` calls)
+- `ExportApi.fs` — `typeCheckFile` returning `TypedModule` (post-elaboration decls, per-expression types, top-level type schemes, constructor/record/class/instance environments)
+- FunLangCompiler project reference to `FunLang.fsproj` (in-process Model A; no serialization)
 
-**Should have (differentiators, deferrable):**
-- **D-1: Typed pattern bindings** — types on `VarPat`-bound variables in match arms; replaces residual `BoolVars`/`StringVars` propagation through destructuring
-- **D-3: Declaration-level type schemes** — `LetDecl` nodes carry inferred `Scheme`; replaces `FuncSignature.ReturnIsBool` heuristic
-- **D-4: Version tag in export** — `version: string` field at export root for FunLangCompiler to detect stale exports at startup
+**Should have (include if low-effort):**
+- Attribute on `let rec` operator definitions (D-2 — same parsing infrastructure, minor extra work)
+- `--emit-typed-ast` CLI flag (optional Phase 4 of export milestone, useful for debugging)
 
-**Defer to post-MVP:**
-- JSON/binary serialization of the full `TypedModule` for cross-process use
-- `TypedExpr` parallel DU (Approach C from STACK.md) — the span-keyed map gives identical information with no structural coupling; only build if FunLangCompiler proves it needs tree-structured typed output
-- Monomorphization, explicit dictionary passing, or Core IR-style lowering in the export
+**Defer to v2+:**
+- `#[nonassoc N]` — useful but no current need; comparison operators already non-associative via grammar (D-1)
+- Module-scoped fixity — global last-declaration-wins is sufficient for MVP (IR-10)
+- Standalone `infixl`/`infixr` fixity declarations separate from the definition (D-3)
+- Full `TypedExpr`/`TypedDecl` parallel DU — correct long-term direction but a separate milestone
 
 ### Architecture Approach
 
-The architecture follows FunLang's established pattern of module-level mutable state for cross-cutting concerns during type checking (`mutableVars`, `pendingConstraints`). A new `TypeAnnotationMap.fs` module holds a `Dictionary<Span, Type>` populated as a side effect of `Bidir.synth`. A new `ExportApi.fs` module wraps the existing pipeline into a single `typeCheckFile` call that returns a `TypedModule` record. FunLangCompiler adds a project reference and removes its own Parser/Lexer/Elaboration.fs entirely.
+Operator reform adds `FixityEnv.fs` between `Ast.fs` and the generated lexer in `.fsproj` build order. The LALR parser emits `InfixChain` nodes for user-defined operator chains; `Program.fs` calls `FixityEnv.prattRewrite` immediately after parsing and before type checking. `PreludeResult` gains a `FixityEnv` field so prelude-defined fixity is available to user files. `TypeAnnotationMap.fs` (positioned after `Bidir.fs`, before `TypeCheck.fs`) is populated by Bidir and snapshotted by `ExportApi.fs` (positioned after `Prelude.fs`).
 
-**Major components:**
-1. **TypeAnnotationMap.fs (NEW)** — mutable `Dictionary<Span, Type>`; `record`, `tryFind`, `clear`, `snapshot` API; placed between `Bidir.fs` and `TypeCheck.fs` in project file order
-2. **Bidir.fs (MODIFIED, additive)** — one `TypeAnnotationMap.record span (Type.apply s ty)` call added to the return point of each `synth` case (~40 sites); no signature changes
-3. **TypeCheck.fs (MODIFIED, minimal)** — `TypeAnnotationMap.clear()` at entry to `typeCheckModuleWithPrelude`; ensures per-file isolation
-4. **ExportApi.fs (NEW)** — `TypedModule` record type + `typeCheckFile` function; calls parse, clear, typecheck, snapshot, elaborate, bundle; placed after `Prelude.fs`; no dependency on `Eval.fs` or `Program.fs`
-5. **FunLangCompiler (PHASE 5)** — adds project reference, replaces `ElabEnv` set lookups with `TypedModule.ExprTypes[span]` queries, deletes heuristics
+**Major new/modified components:**
+1. **FixityEnv.fs** (NEW) — `FixityInfo`, `FixityEnv`, `defaultFixityEnv`, `collectInfixDecls`, `prattRewrite`; inserted between `Ast.fs` and `Lexer.fs` in `.fsproj`
+2. **InfixChain / InfixDecl** (NEW in Ast.fs) — transient node for LALR operator chains; `InfixDecl` for `#[left N]` / `#[right N]` declarations
+3. **TypeAnnotationMap.fs** (NEW) — `Dictionary<Span, Type>` with `record`, `tryFind`, `clear`, `snapshot`; between `Bidir.fs` and `TypeCheck.fs`
+4. **ExportApi.fs** (NEW) — `TypedModule` record + `typeCheckFile` entry point; after `Prelude.fs`; no dependency on `Eval.fs` or `Program.fs`
+5. **Bidir.fs** (MODIFIED, additive) — ~40 `TypeAnnotationMap.record span (apply s ty)` calls; no signature changes
+6. **Prelude/Core.fun** (MODIFIED) — gains `(|>)`, `(>>)`, `(<<)` definitions with fixity attributes
 
 ### Critical Pitfalls
 
-1. **Annotating pre-elaboration structure for instance methods (TA-1)** — `elaborateTypeclasses` creates new `LetDecl` nodes after type checking, so their spans are not in the annotation map. For elaborated nodes, look up the method's `Scheme` from `TypeEnv` by name. Never key instance method types by span alone.
+1. **Silent precedence regression (IR-1)** — shifting `|>` relative to comparisons in the `%left`/`%right` table produces wrong values (not parse errors) in 23+ pipe-using flt tests. Run `scripts/fslit tests/flt/` after every grammar edit; add an explicit regression test asserting `1 = 2 |> not` evaluates to `false`.
 
-2. **Recording raw `TVar` before applying the accumulated substitution (TA-2)** — `Bidir.synth` returns `(Subst * Type)` where `Type` may still contain unresolved `TVar n`. Always store `Type.apply s ty`, never the raw `ty`. Failure produces a map full of useless `TVar 1042` entries that the compiler cannot act on.
+2. **LALR conflicts from attribute syntax (IR-2)** — `#[` as a new token or `infixl`/`infixr` keywords risk shift-reduce or reduce-reduce conflicts. After any grammar change: `dotnet build ... 2>&1 | grep -i conflict`. Treat any new conflict as a blocker.
 
-3. **Changing `synth`'s return type to carry a `TypedExpr` (TA-7)** — this touches 67+ call sites and risks introducing inference bugs. The mutable accumulator achieves the same result without touching existing signatures. Do not change `synth`'s return type.
+3. **Flat-chain ambiguity if LALR and Pratt overlap (IR-3)** — if the LALR grammar partially folds operator chains and Pratt also re-associates, Pratt receives opaque pre-folded `App` nodes it cannot rebalance. Choose one mechanism per operator class: LALR for arithmetic, Pratt for user-declared infix. Do not mix.
 
-4. **Using F# immutable `Map` for the accumulator instead of `Dictionary` (TA-9)** — each `Map.add` allocates a new AVL tree node; over tens of thousands of synth calls this is significant. Use `Dictionary<Span, Type>` and gate collection behind a flag so normal interpreter runs incur zero overhead.
+4. **FunLangCompiler breaks silently on AST node removal (IR-4)** — removing `PipeRight`/`ComposeRight`/`ComposeLeft` breaks any consumer that pattern-matches those names. Grep all consumers (`grep -rn "PipeRight\|ComposeRight\|ComposeLeft" /Users/ohama/vibe-coding/`) before Phase 4; coordinate with FunLangCompiler.
 
-5. **Missing builtin and prelude types for `Var` reference resolution (TA-3)** — the per-span map only covers nodes visited by `Bidir.synth` for user-module code. `println`, `map`, `to_string` etc. appear as `Var` nodes with no span map entry. The export must include `TypeCheck.initialTypeEnv` and `PreludeResult.TypeEnv` as separate lookup tables in `TypedModule`.
+5. **IndentFilter not updated for new tokens (IR-6)** — any token class change requires updating `isContinuationStart` in `IndentFilter.fs` in the same commit, or multi-line pipe chains silently become parse errors.
 
----
+6. **Recording unresolved type variables (typed AST anti-pattern)** — in `Bidir.synth`, always record `apply s ty`, never the raw `ty`. Unresolved `TVar` entries are useless to FunLangCompiler.
 
 ## Implications for Roadmap
 
-The natural phase structure follows the existing architecture and minimizes regression risk at each step. All phases are sequentially dependent except the CLI flag (Phase 4), which is optional.
+The operator reform phases must be sequential (infrastructure before behavior change, behavior change before prelude migration). The typed AST export phases are independent and can proceed in parallel with operator reform Phase 2 or 3. Both milestones share the same codebase and must maintain a passing 714-test suite at every phase boundary.
 
-### Phase 1: TypeAnnotationMap Module
+### Phase 1: Fixity Infrastructure (no behavior change)
 
-**Rationale:** Foundation with no call sites yet. Build and test the module in isolation before touching `Bidir.fs`. Locks in the data structure choice (Dictionary vs. Map) before any collection code is written.
-**Delivers:** `TypeAnnotationMap.fs` with `record`, `tryFind`, `clear`, `snapshot`; project file updated; F# unit tests passing.
-**Addresses:** TA-9 (data structure choice locked in before recording sites are written), TA-5 (collection strategy decided up front)
-**Avoids:** Retrofitting from immutable Map to Dictionary after 40 recording sites already exist
+**Rationale:** Add all new types and modules without changing how anything parses or evaluates. This gives confidence the infrastructure compiles cleanly before touching parser behavior. All 714 tests must pass after this phase.
+**Delivers:** `FixityEnv.fs`, `InfixDecl` and `InfixChain` AST nodes, `#[left N]` / `#[right N]` attribute parsing, pass-through arms in TypeCheck/Eval/Format, error messages for malformed attributes.
+**Addresses:** TS-1, TS-2, TS-6
+**Avoids:** IR-2 (check for LALR conflicts after every grammar change), IR-3 (Pratt/LALR boundary must be documented before any grammar changes are written)
+**Research flag:** Standard patterns — GHC fixity resolution is the authoritative reference; no additional research needed.
 
-### Phase 2: Wire Bidir.fs to Record Types
+### Phase 2: INFIXOP* Operators Through Pratt
 
-**Rationale:** This is the core work and the highest-risk phase. The annotation map is populated here. Must be complete before ExportApi can return meaningful data. Run the full test suite after each batch of recording sites to catch regressions early.
-**Delivers:** Every real-source expression node has a resolved `Type` in the annotation map after type checking. `TypeCheck.fs` clears the map at each `typeCheckModuleWithPrelude` entry.
-**Addresses:** TS-1 (all heuristic replacements depend on this), TA-2 (substitution discipline at every site), TA-11 (GADT branch substitution applied before storing)
-**Avoids:** Any change to existing function signatures; all changes are additive
+**Rationale:** Change LALR rules for `Expr INFIXOP* Expr` to produce `InfixChain`, implement the full Pratt rewrite, and wire it into `Program.fs` and `Prelude.fs`. For operators with no `InfixDecl`, the default INFIXOP-level-to-numeric-precedence mapping preserves existing behavior exactly.
+**Delivers:** Pratt rewrite working end-to-end. User can write `#[left 6] let (<|>) ...` and that operator behaves at precedence 6 regardless of leading character.
+**Uses:** `FixityEnv.fs` (Phase 1), `InfixChain` (Phase 1), `PreludeResult.FixityEnv`
+**Implements:** TS-3, TS-5
+**Avoids:** IR-1 (run full flt suite after grammar changes), IR-7 (use `Dictionary` for fixity table — already mandated by Phase 1 architecture)
+**Research flag:** The subtle edge case is the LALR Term/Factor hierarchy interaction (IR-3, ARCHITECTURE-operator-reform Anti-Pattern 5). Strongly consider limiting `InfixChain` to the top-level expression grammar (pipe/compose level) in Phase 2, deferring arithmetic operator routing to a later phase to reduce risk.
 
-### Phase 3: ExportApi Module
+### Phase 3: Prelude Migration and Special Node Removal
 
-**Rationale:** Once the annotation map is populated correctly, bundling outputs into `TypedModule` is mechanical. This phase also resolves the elaboration/synthetic-node issue by applying the `TypeEnv` name fallback for elaborated `LetDecl` nodes.
-**Delivers:** `ExportApi.typeCheckFile` returning `TypedModule` with `Decls`, `TopLevelTypes`, `ExprTypes`, `CtorEnv`, `RecEnv`, `ClassEnv`, `InstEnv`, `Warnings`. Integration test: call on a known source file, verify `ExprTypes` is non-empty with correct types for specific spans.
-**Addresses:** TA-1 (elaboration span gap resolved via TypeEnv name lookup), TA-3 (builtin/prelude type tables included in TypedModule), TA-4 (per-call-site span keying for type-class dispatch)
-**Avoids:** Anti-Pattern 5 — ExportApi must not live in `Program.fs`; keeps CLI/Argu dependencies separate from the library entry point
+**Rationale:** With the Pratt rewrite in place and `#[left 1] let (|>) x f = f x` working in Prelude, remove the nine special-case locations for `PipeRight`/`ComposeRight`/`ComposeLeft`. The `--emit-ast` flt tests for compose need updated expected output.
+**Delivers:** Issues #6 and #7 closed. ~150 lines removed, ~20 lines added. `|>`, `>>`, `<<` are ordinary prelude functions. 29 `|>` tests, 8 `>>` tests, 4 `<<` tests all pass via the generic `App(App(...))` path.
+**Addresses:** TS-4 fully
+**Avoids:** IR-4 (grep all consumers before removing AST nodes; coordinate with FunLangCompiler), IR-5 (`-e` mode and REPL must explicitly initialize fixity table — add `fn -e "5 |> (fun x -> x + 1)"` flt test), IR-6 (update `isContinuationStart` atomically with lexer changes), IR-8 (preserve specific Bidir error messages via `match op with "|>" -> ...` in the generic handler), IR-12 (update `Format.fs` in the same commit as `Ast.fs`)
+**Research flag:** Needs coordination with FunLangCompiler repo before removing AST nodes. Verify no hard-coded `"PipeRight"` strings in FunLangCompiler's JSON/AST consumer.
 
-### Phase 4: CLI Debug Flag (Optional)
+### Phase 4: Typed AST Export (TypeAnnotationMap + ExportApi)
 
-**Rationale:** Not required for FunLangCompiler integration (Model A uses in-process reference), but valuable for inspecting export correctness during Phase 5 work.
-**Delivers:** `--emit-typed-ast` flag writing `TypedModule` as JSON to stdout; `--emit-typed-env` flag for top-level `TypeEnv` only (essentially free since `TypeEnv` is already in the return tuple).
-**Addresses:** D-4 (version tag can be added here)
-**Avoids:** Anti-Pattern 3 — do not add JSON serialization layer to the in-process path
-
-### Phase 5: FunLangCompiler Integration
-
-**Rationale:** Can only begin after Phase 3 delivers a validated `ExportApi`. This phase is in the FunLangCompiler repo. The work is largely mechanical: add project reference, replace `ElabEnv` set queries with `ExprTypes[span]` lookups, delete the 6 sets and 8 heuristic functions.
-**Delivers:** FunLangCompiler with no duplicate parser/lexer, no type-guessing heuristics, all type dispatch driven by `TypedModule.ExprTypes`. Estimated ~250 lines deleted from `Elaboration.fs`.
-**Addresses:** All TS-1 through TS-6 heuristic replacements; TA-12 (consumer documentation on `Scheme` vs. monotype distinction)
-**Avoids:** Keeping heuristics as fallback — delete them entirely; partial adoption with heuristic backup creates ambiguity about which path is authoritative
+**Rationale:** Independent of operator reform; can proceed in parallel with Phase 2 or 3. Strictly additive. FunLangCompiler gains authoritative types and can remove its own elaboration heuristics (~250 lines of 6 tracking sets and 8 heuristic functions).
+**Delivers:** `TypeAnnotationMap.fs`, `ExportApi.fs`, `TypedModule` record, `typeCheckFile` entry point. FunLangCompiler project reference replaces its private parser/lexer/elaboration copy.
+**Uses:** Existing `Bidir.fs` `synth` cases, `TypeCheck.typeCheckModuleWithPrelude`, `Elaborate.elaborateTypeclasses`
+**Avoids:** Recording raw `TVar` (always `apply s ty`), recording in `check` instead of `synth`, putting `ExportApi` in `Program.fs`, using immutable `Map` instead of `Dictionary`
+**Research flag:** Standard patterns — annotation map matches existing `Bidir.mutableVars`/`pendingConstraints` idiom. The optional `--emit-typed-ast` CLI sub-phase requires designing a `Type` DU JSON schema; check F# `System.Text.Json` discriminated union support before that sub-phase begins.
 
 ### Phase Ordering Rationale
 
-- Phases 1-2-3 are strictly sequential: the map must exist before Bidir writes to it; Bidir must write before ExportApi returns useful data.
-- Phase 4 (CLI flag) is independent of Phase 5 and can be deferred or skipped if FunLangCompiler integration proceeds smoothly via in-process access.
-- Phase 5 is in a separate repo and must not begin until Phase 3 passes integration tests on real FunLang source files covering all expression variants.
-- The most important ordering constraint: do not attempt FunLangCompiler integration until the annotation map has been validated across all `synth` variants.
+- Phases 1-2-3 (operator reform) are strictly sequential: fixity infrastructure must compile before behavior changes; behavior changes must work before prelude migration; prelude functions must be defined before special AST nodes are removed.
+- Phase 4 (typed AST export) is independent of operator reform; the only coordination point is ensuring `ExportApi.fs` is updated alongside Phase 3 if it serializes `PipeRight`/`ComposeRight`/`ComposeLeft` nodes.
+- The phased approach preserves a passing 714-test suite at every phase boundary — this is non-negotiable given the breadth of the grammar and the silent-failure modes of precedence regressions.
+- Phase 3 (node removal) must not begin until prelude definitions of `|>`, `>>`, `<<` are working end-to-end with correct precedence and TCO — verify with a deep pipe chain tail-call stress test before proceeding.
 
 ### Research Flags
 
-Phases needing careful implementation attention (the domain is fully understood; no external research needed):
-- **Phase 2:** Highest implementation risk. GADT branches, type-class method resolution, and substitution correctness at every `synth` case need per-case review. Work in small batches and run tests between them.
-- **Phase 5:** FunLangCompiler heuristic inventory is HIGH confidence, but `isPtrParamBody` (250-line function) may surface edge cases not covered by existing tests. Plan for targeted test additions before deleting it.
+Phases needing deeper implementation attention during planning:
+- **Phase 2 (Pratt + LALR interaction):** The Term/Factor hierarchy boundary (IR-3) is the subtlest part of the reform. Consider limiting `InfixChain` scope to top-level operators only in Phase 2 to reduce risk surface.
+- **Phase 4 (typed export, `--emit-typed-ast` sub-phase):** F# discriminated union JSON serialization needs evaluation before schema is designed. Check `FSharp.SystemTextJson` vs. manual serialization.
 
-Phases with standard patterns (no deeper research needed):
-- **Phase 1:** Standard F# module with Dictionary. Mechanical.
-- **Phase 3:** Standard wrapper/bundling following the existing pipeline. Low risk.
-- **Phase 4:** Standard CLI flag addition following the existing `--emit-ast`/`--emit-type` pattern in `Program.fs`.
-
----
+Phases with standard patterns (no additional research needed):
+- **Phase 1:** Pure type/module addition; well-understood F# patterns.
+- **Phase 3:** Mirrors existing `TypeEnv` accumulation in `loadPrelude`; node removal is mechanical with enumerated file/line locations.
+- **Phase 4 (core annotation map):** Matches existing mutable-side-table pattern in `Bidir.fs`.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All conclusions from direct codebase inspection; no external dependencies to validate |
-| Features | HIGH | Heuristic inventory read from Elaboration.fs directly; all 6 sets + 8 functions confirmed; replacement mapping is one-to-one |
-| Architecture | HIGH | Full source read of Bidir.fs, TypeCheck.fs, Elaborate.fs, Program.fs; proposed pattern matches existing mutable-state conventions |
-| Pitfalls | HIGH | All pitfalls derived from actual source structure; no speculation |
+| Stack | HIGH | Direct codebase inspection; all file locations enumerated; no new packages |
+| Features | HIGH | All 12 consumer files for PipeRight/ComposeRight/ComposeLeft found via grep; INFIXOP0-4 system fully traced; 6 heuristic sets and 8 functions in FunLangCompiler inventoried |
+| Architecture (operator reform) | HIGH | GHC fixity resolution is authoritative precedent; FunLang architecture fully traced across all affected files |
+| Architecture (typed AST export) | HIGH | `Bidir.synth` return type and substitution threading verified; Span uniqueness confirmed for non-synthetic nodes |
+| Pitfalls | HIGH | Derived from direct source reading + known LALR/Pratt failure modes; all IndentFilter line numbers verified |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Lambda parameter ground-type coverage (MEDIUM):** `isPtrParamBody` handles edge cases where lambda params are captured from outer scopes or involved in mutual recursion. After typed export, verify inference produces ground types (not `TVar`) for lambda parameters across all test cases before declaring `isPtrParamBody` fully replaceable. If residual `TVar` occurs for some params, a targeted fallback may be needed for that specific case.
+- **TCO preservation for `|>` after prelude migration (MEDIUM):** The `App` trampoline should handle `(|>) x f = f x` in tail position correctly, but needs an explicit test comparing tail-recursive behavior before and after migration. Add a deep pipe chain stress test (e.g., 10,000 iterations) that would stack-overflow without TCO before Phase 3 lands.
 
-- **MatchCompile.fs pipeline position (needs clarification):** Clarify whether `MatchCompile.fs` rewrites match expressions before or after `elaborateTypeclasses`. If it runs after type checking, the post-compilation match tree has synthetic nodes not in the annotation map. Establish exact pipeline order before Phase 5 begins.
+- **`<<` right-associativity window (MEDIUM):** Until Phase 2 is complete and `#[right 2]` is active, `<<` may be temporarily left-associative if routed through the character-class rule. Add a Phase 1 regression test asserting `(f << g << h) 1 = f (g (h 1))` fails visibly if associativity is wrong.
 
-- **Per-call-site type-class dispatch correctness (needs a targeted test):** The annotation map should record per-call-site instantiated types for `Var` references to polymorphic methods. Verify with a test case that `show 42` and `show "hello"` in the same file produce distinct `Type` entries for the two `Var("show", span)` nodes before FunLangCompiler integration.
+- **FunLangCompiler node name audit (requires external repo access):** Before Phase 3, grep the FunLangCompiler repo for `"PipeRight"`, `"ComposeRight"`, `"ComposeLeft"` as strings to determine if a compatibility shim is needed in `ExportApi.fs` during the transition window.
 
----
+- **`--emit-typed-ast` JSON schema:** The `Type` discriminated union needs a serialization format. This is a sub-gap within Phase 4; the core annotation map work does not require it.
+
+- **MatchCompile.fs pipeline position (typed export):** Verify whether `MatchCompile.fs` runs before or after `elaborateTypeclasses`. If it creates synthetic match tree nodes after type checking, those nodes have no annotation map entries. Establish exact pipeline order before Phase 5 of typed export begins.
 
 ## Sources
 
-### Primary (HIGH confidence)
-- FunLang source (direct read, 2026-04-02): `Ast.fs`, `Type.fs`, `Bidir.fs`, `TypeCheck.fs`, `Elaborate.fs`, `Prelude.fs`, `Program.fs`, `Cli.fs`, `FunLang.fsproj`
-- FunLangCompiler source (direct read, 2026-04-02): `Elaboration.fs` — all 6 tracking sets and 8 heuristic functions inventoried
+### Primary (HIGH confidence — direct codebase reads, 2026-04-02)
+- `src/FunLang/Ast.fs` — DU cases (lines 104-112), `Decl` type (lines 349-371), `spanOf`
+- `src/FunLang/Lexer.fsl` — `classifyOperator` (lines 11-22), hardcoded pipe/compose tokens (lines 127-130)
+- `src/FunLang/Parser.fsy` — precedence table (lines 98-111), INFIXOP0-4 rules (lines 293-355), pipe/compose grammar rules (lines 281-283)
+- `src/FunLang/IndentFilter.fs` — `isContinuationStart` (lines 104-110)
+- `src/FunLang/Bidir.fs` — `synth` cases, pipe/compose handlers (lines 737-773)
+- `src/FunLang/Eval.fs` — eval cases for pipe/compose (lines 1584-1621)
+- `src/FunLang/TypeCheck.fs` — four match arms (lines 420, 556, 647, 748-750), `typeCheckModuleWithPrelude`
+- `src/FunLang/Prelude.fs` — `PreludeResult` type (lines 13-22), `loadPrelude` (lines 266-316)
+- `src/FunLang/Program.fs` — pipeline entry points
+- `src/FunLang/Format.fs` — AST printer cases (lines 98-100, 209-211)
+- `src/FunLang/Infer.fs` — stub arms (lines 407-408)
+- `tests/flt/` — 29 files using `|>`, 8 using `>>`, 4 using `<<`, 714 total
 
-### Secondary (MEDIUM confidence)
-- FSharp.Compiler.Service: span-keyed `GetSymbolUseAtLocation` API — validates the span-keyed map approach as industry practice
-- OCaml `typing/typedtree.ml`: parallel typed AST design — validates the alternative (full TypedExpr DU) as correct but higher-cost for this codebase
-- GHC Trees That Grow (Najd & Peyton Jones, JFP 2019): parametric phase-indexed AST — validates why a full typed AST DU is over-engineering at FunLang's scale
-- "Typing Haskell in Haskell" (Jones 1999): per-expression annotation approach in HM systems
+### Secondary (HIGH confidence — authoritative external references)
+- [Haskell 98 Report: fixity declarations](https://www.haskell.org/onlinereport/decls.html) — two-pass model; direct precedent for the LALR + Pratt approach
+- [Kowainik: Fix(ity) me](https://kowainik.github.io/posts/fixity) — GHC post-parse Pratt pass mechanics
+- [Simple but Powerful Pratt Parsing (matklad)](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html) — binding-power algorithm used in `prattRewrite`
+- [Rust compiler dev guide](https://rustc-dev-guide.rust-lang.org/the-parser.html) — `#[attr]` as single token design
+- [OCaml custom operators](https://blog.shaynefletcher.org/2016/09/custom-operators-in-ocaml.html) — character-class precedence (what FunLang already does)
+- [Adamant: Operator Precedence](https://blog.adamant-lang.org/2019/operator-precedence/) — intransitive precedence; surveyed and rejected as over-engineering
+
+### Tertiary (MEDIUM confidence — surveyed, not primary guidance)
+- FSharp.Compiler.Service `GetSymbolUseAtLocation` — validates span-keyed annotation map as industry practice
+- GHC Trees That Grow (Najd & Peyton Jones, JFP 2019) — validates why full `TypedExpr` DU is over-engineering at FunLang's scale
+- [Adamant precedence blog post](https://blog.adamant-lang.org/2019/operator-precedence/) — partial-order precedence; surveyed, rejected
 
 ---
 *Research completed: 2026-04-02*

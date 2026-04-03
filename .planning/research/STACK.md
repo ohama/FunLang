@@ -1,9 +1,10 @@
-# Technology Stack: Typed AST Export
+# Technology Stack: Infix Operator Reform
 
 **Project:** FunLang — ML-style functional language interpreter
 **Researched:** 2026-04-02
-**Milestone:** v11.0 — Typed AST Export (binding type env + node annotations)
-**Confidence:** HIGH — strategy derived from direct codebase inspection
+**Milestone:** Infix operator system reform — `#[left N]` / `#[right N]` attributes,
+  `|>` / `>>` / `<<` moved to Prelude, Pratt-style precedence resolution
+**Confidence:** HIGH — strategy derived from direct codebase inspection + cross-language survey
 
 ---
 
@@ -12,317 +13,372 @@
 | Technology | Version | Role |
 |------------|---------|------|
 | F# | .NET 10 | Implementation language |
-| FsLexYacc | 11.3.0 | Lexer/parser generation |
+| FsLexYacc (fslex + fsyacc) | 11.3.0 | LALR(1) parser generation |
 | Argu | 6.2.5 | CLI argument parsing |
 | Tomlyn | 2.3.0 | funproj.toml parsing |
 
-No new NuGet packages. Typed AST export is a pure internal architecture change
-implemented within the existing F# source files.
+No new NuGet packages required. The entire reform is implemented within
+the existing F# source files using standard F# data structures.
 
 ---
 
-## The Core Decision: What Form Should the Export Take?
+## The Core Problem
 
-Three approaches exist for exporting type information from a type checker. They
-are ordered from simplest to most invasive, and the right choice depends on what
-FunLangCompiler actually needs.
+FunLang's parser is LALR(1). LALR(1) parsers determine precedence at compile
+time by encoding it into the grammar's shift/reduce table. This means operator
+precedence is baked into the generated `Parser.fs` — it cannot be changed at
+runtime based on user-supplied `#[left N]` attributes.
 
-### Approach A: Binding Type Environment (Phase 1 only)
+There are exactly three viable strategies for user-defined precedence in a
+language with a generated LALR(1) parser. They are ordered from most invasive
+to least:
 
-**What:** After type checking, return `Map<string, Scheme>` — the final type
-environment mapping top-level binding names to their inferred type schemes.
+### Strategy 1: Replace fsyacc with a hand-written Pratt parser (REJECT)
 
-**How it maps to FunLang now:** `typeCheckModuleWithPrelude` already returns
-`TypeEnv` (which is `Map<string, Scheme>`) as its seventh return value. The
-compiler currently ignores this and runs heuristics instead.
+Pratt parsing handles arbitrary user-defined precedence naturally, with precedence
+tables consulted at runtime. Languages like Rust use hand-written recursive descent
+with Pratt-style operator loops.
 
-**What FunLangCompiler gets:** The type of each top-level `let` binding in the
-file. `val myFunc : int -> string -> bool`. Sufficient to replace heuristics
-that guess binding types.
+**Why to reject for FunLang:** The existing fsyacc grammar covers indent filtering,
+complex pattern syntax, type declarations, record expressions, module system, type
+classes, and list comprehensions — roughly 1,000 lines of production-quality grammar
+rules. Replacing it with a hand-written parser is a 2,000–3,000 line rewrite with
+high regression risk. The milestone does not justify this scope.
 
-**Cost:** Near-zero. The data already exists. The only work is:
-1. Add a `--emit-typed-env` CLI flag (or extend `--emit-type` output format)
-2. Serialize the `TypeEnv` to a consumable format (JSON or stdout)
+### Strategy 2: Extend LALR grammar with a generic `InfixChain` node, resolve in a post-pass (RECOMMENDED)
 
-**Limitation:** Does not provide types for subexpressions. The compiler cannot
-ask "what is the type of this particular `App` node at line 14?"
+**What:** Add a single new grammar rule that collects any sequence of expressions
+separated by user-defined INFIXOP tokens into a flat list: `InfixChain`. After
+the LALR parse produces the AST, a lightweight post-pass walks the tree and
+restructures every `InfixChain` into a correct precedence tree using the
+binding-power (Pratt/precedence-climbing) algorithm applied to the flat list.
 
----
+**Precedence information source:** A mutable `OperatorTable : Map<string, int * Assoc>`
+populated when the interpreter evaluates `#[left N]` / `#[right N]` attribute
+declarations above an operator definition in the Prelude or user code.
 
-### Approach B: Span-keyed Type Map (Phase 2, recommended)
+**How this is already half-done:** The LALR grammar already produces
+`App(App(Var(op), left), right)` for all INFIXOP tokens. The post-pass needs
+only to identify chains of same-or-related-precedence operators and rebalance.
 
-**What:** During type checking, accumulate a `Map<Span, Type>` that records the
-inferred type for every expression node that was checked. Return this alongside
-the existing outputs.
+### Strategy 3: Keep LALR levels, map attributes to existing levels (PARTIAL SOLUTION)
 
-**How it maps to FunLang now:** Every `Expr` variant carries a `Span`. The
-`synth` function in `Bidir.fs` already computes the type for every expression it
-visits. The only missing piece is writing those types into an accumulator.
+**What:** Keep the existing INFIXOP0–INFIXOP4 buckets. Allow `#[left N]` to
+select which bucket an operator falls into (0–4), resolving the bucket at
+lex-time based on the operator table.
 
-**What FunLangCompiler gets:** The type of any expression node, identified by
-source location. `(Span("foo.fun", 14, 3, 14, 12), TArrow(TInt, TString))`.
-The compiler can look up "what is the type at line 14, columns 3-12?" and get
-an exact answer instead of heuristics.
+**Why partially useful:** Eliminates PipeRight / ComposeRight / ComposeLeft as
+special AST nodes immediately. `|>` becomes INFIXOP0 (starts with `|`, which maps
+to bucket 0), `>>` becomes INFIXOP4 (starts with `**` logic — actually INFIXOP3
+or needs a new bucket), and `<<` similarly.
 
-**Cost:** Moderate. Requires:
-1. A mutable accumulator in `Bidir.fs` (`let mutable nodeTypes : Map<Span, Type> = Map.empty`)
-2. One write per `synth`/`check` call: `nodeTypes <- Map.add (spanOf expr) resolvedTy nodeTypes`
-3. Expose the accumulator through `typeCheckModuleWithPrelude`
-4. A serialization format for external consumption
-
-**Why span-keyed, not node-ID-keyed:** Every AST node already carries a `Span`.
-Adding a synthetic node ID would require modifying every Ast.fs DU variant (100+
-cases). Span is a stable, deterministic key that the compiler can compute from
-source positions it already knows.
-
-**Critical detail — apply substitution before recording:** The `synth` function
-returns a `(Subst, Type)` pair. The `Type` may still contain unresolved `TVar`
-references at the point of recording. The substitution must be applied before
-storing: `Map.add span (Type.apply subst ty) nodeTypes`. Failure to do this
-produces stale `TVar n` entries in the map.
+**Why insufficient alone:** Users cannot express precedence finer than 5 levels.
+Two distinct user operators that should have different precedences within the same
+character class are indistinguishable. This is the existing OCaml / F* limitation:
+character-based buckets only.
 
 ---
 
-### Approach C: Annotated AST (full typed tree, Phase 3 if needed)
+## Recommended Approach: Strategy 2 — LALR + Post-Pass Rebalance
 
-**What:** Define a parallel `TypedExpr` DU where every constructor carries an
-additional `Type` field. Transform `Expr -> TypedExpr` in a post-pass.
+This is the same technique used by GHC for Haskell's `infixl`/`infixr`/`infix`
+fixity declarations. GHC's parser produces a flat left-spine of operator applications
+during parsing (using the low-precedence default), then the renamer applies fixity
+resolution in a separate pass that restructures the spine.
 
-**How ML-family compilers do this:**
-- GHC uses `HsExpr GhcTc` where the type-checker stage is a phantom type parameter
-  that changes the annotation type from `()` to `Type`. The actual annotation is
-  stored in a `XRec` wrapper that carries the type alongside the source span.
-- OCaml's `typedtree.ml` defines `expression` with a `exp_type : Types.type_expr`
-  field on every node. It is a completely separate type from `parsetree.ml`.
-- F# compiler (FSharp.Compiler.Service) uses `TypedTreeOps` — a separate typed
-  AST with every node carrying a `TType`.
-- The standard pattern in all three is: untyped AST (from parser) → separate
-  typed AST (from type checker), not mutation of the original.
+### How GHC Does It (the authoritative precedent)
 
-**Cost for FunLang:** High. Would require duplicating the entire `Expr` DU (~40
-constructors) into a `TypedExpr` DU with `Type` annotations, then writing a
-complete traversal that converts `Expr * TypeEnv -> TypedExpr`. This is several
-hundred lines of mechanical code and would need to stay in sync with every
-future `Expr` addition.
+From the Haskell Prime fixity resolution specification: the context-free grammar
+parses all infix operator applications as a flat sequence (alternating operands and
+operators). A post-parse pass takes the flat list and applies the precedence/
+associativity table to produce a correctly parenthesized tree. The algorithm
+is standard precedence climbing:
 
-**Verdict: Do not build Phase 3 until the consumer (FunLangCompiler) proves it
-needs per-node types in a typed tree format rather than a span-keyed lookup.**
-The span-keyed map (Approach B) gives identical information with far less
-structural coupling.
-
----
-
-## Recommended Implementation Strategy
-
-### Phase 1: Extend the existing `--emit-type` output and API
-
-`typeCheckModuleWithPrelude` already returns `TypeEnv`. The FunLangCompiler
-currently ignores it. Phase 1 is making that data accessible in a structured
-format.
-
-**Serialization: JSON via `System.Text.Json`.**
-
-Why JSON:
-- .NET 10 ships `System.Text.Json` in the BCL — zero new NuGet dependencies.
-- FunLangCompiler is a separate process; in-memory sharing requires a shared
-  library or IPC. JSON over stdout is the simplest cross-process interface.
-- Existing `--emit-ast` and `--emit-type` already use stdout text output.
-  JSON follows that pattern.
-
-Why not binary (MessagePack, Protobuf):
-- Would require NuGet packages in both FunLang and FunLangCompiler.
-- Adds no benefit for the volume of data (a type env is typically <200 entries).
-
-Why not a shared .NET library:
-- Would create a compilation dependency coupling two repos. JSON over process
-  boundary preserves independent versioning.
-
-**New CLI flag: `--emit-typed-env`**
-
-Outputs the post-inference `TypeEnv` as JSON to stdout:
-```json
-{
-  "bindings": [
-    { "name": "myFunc", "type": "int -> string -> bool", "scheme": "forall 'a. 'a -> string" }
-  ]
-}
+```
+resolve_flat_chain(operands, operators, table):
+  use the binding-power loop to repeatedly:
+    peek at the next operator's (prec, assoc)
+    if prec > current_min_bp: recurse for right operand
+    if prec == current_min_bp and assoc == Left: reduce immediately
+    if prec == current_min_bp and assoc == Right: recurse
+    if prec < current_min_bp: return current accumulation
 ```
 
-The `type` field uses `Type.formatSchemeNormalized` (already exists).
-An optional structured `scheme` field for machine-readable type representation
-can be added by serializing the `Type` DU as tagged JSON.
+This is algebraically identical to Pratt parsing. The `l_bp` / `r_bp` split
+handles left-associative operators (r_bp = l_bp + 1) vs. right-associative
+(r_bp = l_bp).
 
-**Integration point:** `Program.fs` already has the `--emit-type` branch at
-line 329. A new `--emit-typed-env` branch follows the same pattern.
+### What Changes in FunLang
 
----
-
-### Phase 2: Span-keyed node type map
-
-**New type in `TypeCheck.fs` or a new `TypedAst.fs`:**
+**New AST node in `Ast.fs`:**
 
 ```fsharp
-/// Map from source span to inferred type, built during type checking.
-/// Keyed on Span for cross-process consumption (stable, no synthetic IDs needed).
-type NodeTypeMap = Map<Ast.Span, Type>
+// Flat operator chain — produced by LALR when precedence is unknown at parse time.
+// Resolved to nested App/InfixOp nodes by Elaborate.resolveOperatorChains.
+// Invariant: exprs.Length = ops.Length + 1
+| InfixChain of exprs: Expr list * ops: (string * Span) list * span: Span
 ```
 
-**Accumulator in `Bidir.fs`:**
+**New grammar rule in `Parser.fsy`:**
+
+The existing INFIXOP rules already desugar to `App(App(Var(op), left), right)`.
+This needs to change for operators whose precedence will be declared via attributes.
+For Phase 1 of the reform, the safest approach is: keep existing INFIXOP0–4 rules
+for the character-class operators (they won't have `#[left N]`), and add a
+separate token class `USEROP` for operators that are explicitly attribute-declared.
+`InfixChain` is only needed for `USEROP` sequences.
+
+However, for moving `|>` / `>>` / `<<` specifically, the simpler path is:
+
+1. Add `|>` / `>>` / `<<` as INFIXOP0/INFIXOP1 tokens respectively (character class)
+2. Remove `PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT` tokens
+3. Remove `PipeRight`, `ComposeRight`, `ComposeLeft` AST nodes
+4. Add Prelude definitions for `(|>)`, `(>>)`, `(<<)`
+
+This requires no post-pass rebalancer. The character-class bucket handles precedence.
+`|>` starts with `|` → INFIXOP0 (comparison level). This is lower precedence than
+arithmetic — correct. `>>` starts with `>` → INFIXOP0. `<<` starts with `<` →
+INFIXOP0. Both `>>` and `<<` at INFIXOP0, left-associative. This may not be
+ideal for `<<` (compose-left should be right-associative), but it is sufficient
+for Phase 1.
+
+**New runtime table in `Elaborate.fs` or a new `OpTable.fs`:**
 
 ```fsharp
-/// Accumulated per-node type annotations. Reset at typeCheckModuleWithPrelude entry.
-/// Populated during synth/check traversal. Apply substitution before writing.
-let mutable nodeTypeMap : NodeTypeMap = Map.empty
+type Assoc = Left | Right | Non
+
+/// Runtime operator precedence table, populated from #[left N] / #[right N] declarations.
+/// Keys are operator strings (e.g. "|>", "+++"). Values are (precedence 0-9, associativity).
+/// Initialized with defaults for all built-in operators.
+let mutable operatorTable : Map<string, int * Assoc> = Map.ofList [
+    ("|>",  (1, Left))
+    (">>",  (9, Left))
+    ("<<",  (9, Right))
+    // ... other operators added at declaration time
+]
 ```
 
-This follows the exact pattern of `mutableVars` and `pendingConstraints` already
-in `Bidir.fs` — mutable module-level state reset at the entry point of each
-top-level type check.
+**New elaboration pass:**
 
-**Write site — one line added to `synth` at the return point:**
-
-```fsharp
-// In Bidir.synth, before returning (subst, ty):
-let resolvedTy = Type.apply subst ty
-nodeTypeMap <- Map.add (Ast.spanOf expr) resolvedTy nodeTypeMap
-(subst, ty)  // Return unchanged — accumulator is side-effect
-```
-
-**Expose through `typeCheckModuleWithPrelude`:**
-
-The return type extends from 7-tuple to 8-tuple:
-```fsharp
-Result<Diagnostic list * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv
-       * Map<string, ModuleExports> * TypeEnv * NodeTypeMap, Diagnostic list>
-```
-
-All existing callers use tuple destructuring with `_` for fields they ignore.
-The additional field requires only adding `, _nodeTypeMap` to existing match
-arms. F# exhaustive matching ensures no site is missed.
-
-**New CLI flag: `--emit-typed-ast`**
-
-Outputs the node type map as JSON keyed by span:
-```json
-{
-  "nodes": [
-    {
-      "file": "foo.fun", "startLine": 14, "startCol": 3,
-      "endLine": 14, "endCol": 12,
-      "type": "int -> string"
-    }
-  ]
-}
-```
+`Elaborate.fs` already exists and handles some AST transformations. Add a
+`resolveOperatorChains` traversal that rewrites `InfixChain` nodes using the
+operator table. This pass runs before type checking, so the type checker sees
+only correctly-nested `App` nodes.
 
 ---
 
-## Patterns From ML-Family Compilers
+## The `#[left N]` / `#[right N]` Attribute Syntax
 
-### How OCaml represents typed AST
+### Lexing Strategy
 
-OCaml's compiler separates `Parsetree` (untyped) from `Typedtree` (typed).
-The typed tree is produced by `Typecore.type_expression` and carries `exp_type`
-on every node. The key design choice: **typed tree is a separate type**, not an
-annotation added to the parsed tree.
+The sequence `#[` is the critical question. Current lexer state:
 
-**Lesson for FunLang:** The OCaml approach (Approach C above) works well for a
-full compiler because the typed tree drives code generation. For FunLang, which
-has a separate evaluator that already works on the untyped `Expr`, building a
-full parallel typed tree is over-engineering for the stated goal.
+- `[` is `LBRACKET`
+- `#` is not currently in `op_char` and would fail with an error
+- `#[` is not a token
 
-### How GHC represents typed AST
+**Recommended approach: Lex `#[` as a single token `ATTR_OPEN`.**
 
-GHC uses Trees That Grow (Najd & Peyton Jones, 2016): a single parametric
-`HsExpr p` where `p` is a phase index. Type annotations are in `XRec p (HsExpr p)`.
-During type checking, the phase is `GhcTc` and the extension fields carry types.
+In `Lexer.fsl`, add before the catch-all rule:
 
-**Lesson for FunLang:** Trees That Grow is elegant but requires F# computation
-expressions or type-level tricks to implement correctly. Not worth it for
-FunLang's scale. The span-keyed map achieves the same query capability with no
-type-level machinery.
+```
+| "#["   { ATTR_OPEN }
+```
 
-### How F# compiler service exposes typed information
+This requires `#[` to appear before the general identifier and operator rules.
+Because fslex uses longest-match with first-match tiebreak, and `#` is currently
+illegal, there is no conflict. The `]` is the existing `RBRACKET` token.
 
-FSharp.Compiler.Service exposes `FSharpCheckFileResults.GetSymbolUseAtLocation`
-— a span-keyed query API over the typed results. Internally it stores a
-`SemanticModel`-like dictionary of span → symbol. The consumer does not need
-a typed AST; it queries by position.
+This is exactly how Rust lexes `#[`: it is a single token sequence `POUND LBRACKET`
+that the parser recognizes as the start of an outer attribute. FunLang can go
+further and make it a single `ATTR_OPEN` token, since attributes are always
+`#[ident rest]` and FunLang does not need the `#` to appear standalone.
 
-**This is exactly Approach B.** The F# compiler itself chose span-keyed maps
-for its public API because it decouples the compiler's internal representation
-from the consumer's view.
+**Alternative: Two tokens `HASH` + `LBRACKET`.**
+
+Add `| '#' { HASH }` to the lexer. In the grammar, recognize attribute syntax
+as `HASH LBRACKET ...`. This is less ergonomic but keeps the lexer simpler.
+The parser still needs a dedicated rule for attribute syntax, so the two-token
+approach has no grammar advantage.
+
+**Verdict: Single `ATTR_OPEN` token is cleaner.** It makes the parser rule
+unambiguous:
+
+```
+AttributeDecl:
+    | ATTR_OPEN IDENT NUMBER RBRACKET  { Attribute($2, $3) }
+    | ATTR_OPEN IDENT IDENT  NUMBER RBRACKET  { Attribute($2 + " " + $3, $4) }
+    // i.e.: #[left 5], #[right 5]
+```
+
+### Grammar Position
+
+Attributes in ML-family languages (OCaml `[@attr]`, F# `[<Attr>]`) attach to the
+following declaration. In FunLang, `#[left N]` precedes the operator `let` binding:
+
+```
+#[left 5]
+let (|>) x f = f x
+```
+
+In the grammar, `LetDecl` needs an optional leading `AttributeDecl`. The attribute
+payload is not stored in the `LetDecl` AST node (keep `Decl` clean). Instead,
+the elaboration pass collects attribute–declaration pairs and updates the
+`operatorTable` before processing the rest of the module.
 
 ---
 
-## Attaching Type Info Without Massive Refactoring
+## The Eval.fs `PipeRight` / `ComposeRight` / `ComposeLeft` Removal
 
-The standard patterns for avoiding a full typed-tree rewrite are:
+These three cases in `Eval.fs` are the most code-intensive parts of the removal:
 
-| Pattern | How | When to Use |
-|---------|-----|-------------|
-| **Side-effect accumulator** | Mutable `Map<Span, Type>` populated during traversal | Recommended for FunLang Phase 2 |
-| **Parallel dictionary** | `Dictionary<NodeId, Type>` where NodeId is an added field | Requires AST surgery; avoid |
-| **Post-pass annotation** | Run a second traversal over the checked AST to add types | Requires re-running substitution logic; error-prone |
-| **Full typed AST** | Separate DU mirroring Expr with Type on each node | Maximum correctness; high maintenance cost |
+- `PipeRight`: dispatches to `applyFunc`, supports the trampoline TCO path
+- `ComposeRight` / `ComposeLeft`: construct synthetic closures with unique names
+  via `composeCounter`
 
-FunLang's `Bidir.synth` is a recursive descent with substitution accumulation.
-The side-effect accumulator fits naturally: it is already using mutable module
-state (`mutableVars`, `pendingConstraints`, `accumulatedErrors`). Adding
-`nodeTypeMap` follows the established pattern without changing any function
-signatures in the hot path.
+When `|>` becomes a Prelude function, these eval cases disappear. But the Prelude
+definition must be semantically equivalent:
+
+```fsharp
+// Prelude/Core.fun
+let (|>) x f = f x
+let (>>) f g x = g (f x)
+let (<<) f g x = f (g x)
+```
+
+The trampoline TCO for `PipeRight` is the only concern. The Prelude definition
+`let (|>) x f = f x` desugars to `App(Var "f", Var "x")`. Since `App` already
+goes through `applyFunc` with `tailPos`, TCO is preserved for the final application.
+The only loss is the specialized fast path in `eval` for `PipeRight` — but that
+fast path exists today only because `PipeRight` was a special node. After removal,
+`f x` in the Prelude body gets the normal `App` TCO treatment, which is identical.
+
+**Conclusion: No TCO regression from removing PipeRight.**
+
+---
+
+## Phased Implementation Order
+
+The research supports this sequencing:
+
+### Phase 1: Remove special AST nodes for `|>`, `>>`, `<<`
+
+- Lex `|>` → `INFIXOP0 "|>"`, `>>` → `INFIXOP3 ">>"`, `<<` → `INFIXOP3 "<<"`
+  (using existing character-class rules — `|` starts INFIXOP0, `>` and `<` start
+  INFIXOP0; but for `>>` and `<<` specifically we want higher precedence, so lex
+  them explicitly before the catch-all as INFIXOP3 or INFIXOP4)
+- Add `(|>)`, `(>>)`, `(<<)` definitions to `Prelude/Core.fun`
+- Remove `PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT` tokens from lexer + parser
+- Remove `PipeRight`, `ComposeRight`, `ComposeLeft` from `Ast.fs`, `Eval.fs`,
+  `Bidir.fs`, `Format.fs`, `Elaborate.fs`, `TypeCheck.fs`
+- All existing tests should pass; pipe/composition tests now exercise Prelude paths
+
+**Precedence concern for `>>` / `<<`:** The character class rules give `>` →
+INFIXOP0 (comparison level). `>>` and `<<` as composition operators need higher
+precedence than function application, which is modeled by giving them their own
+explicit tokens matched before the catch-all. Map them to INFIXOP3 (multiplicative
+level) or INFIXOP4 (exponentiation level) via an explicit rule in the lexer.
+
+### Phase 2: Add `#[left N]` / `#[right N]` attribute syntax
+
+- Add `ATTR_OPEN` token to `Lexer.fsl`
+- Add `AttributeDecl` grammar rule to `Parser.fsy`
+- Add `OperatorAttr` to `Decl` DU (or handle purely in elaboration without AST storage)
+- Implement operator table in `Elaborate.fs` or new `OpTable.fs`
+- Elaborate pass reads attributes and populates the table before type checking
+
+### Phase 3: Add `InfixChain` node and post-pass rebalancer (if needed)
+
+- Add `InfixChain` to `Ast.fs`
+- Change grammar rules for attribute-declared operators to produce `InfixChain`
+- Implement `resolveOperatorChains` using the binding-power algorithm
+- This phase is only needed if Phase 2 users need finer control than the 5 INFIXOP
+  buckets provide
+
+**Recommendation: Phase 3 is optional.** If the goal is only to move `|>` / `>>` / `<<`
+to Prelude and allow future operators to be declared with `#[left N]`, the existing
+INFIXOP bucket system (mapped via the operator table at lex time) is sufficient.
+Full Pratt rebalancing adds complexity with little practical gain unless FunLang
+needs more than 5 distinct precedence levels.
 
 ---
 
 ## What NOT to Build
 
-**Do not build a TypedExpr DU** (Approach C) for this milestone. The 40+
-constructor `Expr` type would need to be mirrored completely. Every future `Expr`
-addition would require a matching `TypedExpr` addition. The FunLangCompiler
-consumer does not need a typed tree — it needs to query "what is the type at
-position X?" which the span-keyed map answers directly.
+**Do not replace fsyacc with a hand-written parser.** The grammar is large,
+well-tested, and handles indent-sensitive parsing via `IndentFilter.fs`. A rewrite
+is out of scope.
 
-**Do not add a node ID to Expr variants.** Span is already a stable, unique
-(enough) identifier. Adding `id: int` to every Expr constructor is 400+ lines
-of mechanical change to Ast.fs, Parser.fsy, Format.fs, and all match arms.
+**Do not add `InfixChain` in Phase 1.** The existing INFIXOP0–4 buckets handle
+the immediate goal of removing special AST nodes. `InfixChain` is only needed
+for user operators with custom numeric precedence that falls between existing
+buckets.
 
-**Do not use MessagePack or Protobuf.** The data volume does not justify the
-dependency. System.Text.Json in the BCL is sufficient.
+**Do not attempt intransitive or partial-order precedence** (as proposed by
+Adamant's blog). This is theoretically elegant but adds error-reporting complexity
+and is unnecessary for the stated goals. Ten numeric levels (0–9 like Haskell)
+are sufficient and familiar.
 
-**Do not attempt to serialize FunLang `Type` as a schema-validated external
-format in Phase 1.** Use `formatSchemeNormalized` (string) for Phase 1. Phase 2
-can add a structured JSON representation of `Type` if the compiler needs
-programmatic access to type structure rather than display strings.
+**Do not store attributes in the `Decl` DU if avoidable.** Attributes are a
+parsing artifact that feed the operator table. The elaborator can consume them
+and discard them, keeping `Decl` clean. Only add an `OperatorAttr` DU case if
+the attribute needs to propagate through the pipeline (e.g., for serialization
+or IDE tooling).
+
+**Do not try to make `>>` and `<<` have different associativity at INFIXOP3.**
+The grammar `%left INFIXOP3` means all INFIXOP3 operators are left-associative.
+If `<<` must be right-associative, it needs its own grammar level or a post-pass.
+For Phase 1, accept left-associativity for all three pipe/compose operators and
+add a note. Phase 3 can correct this.
 
 ---
 
-## File-Level Change Summary
+## Cross-Language Survey Summary
 
-| File | Change | Scope |
+| Language | Approach | Notes |
+|----------|----------|-------|
+| Haskell (GHC) | Two-pass: LALR flat spine → fixity resolution pass | Exact pattern to follow for FunLang |
+| OCaml | Character-class buckets, baked into yacc grammar | What FunLang already does; no user extension |
+| F* | Inherits OCaml character-class system | Same limitation as OCaml |
+| F# | Character-class operators, limited user extension | Same limitation |
+| Rust | Hand-written recursive descent, no user-defined precedence | Not applicable |
+| Scala | Character-class buckets (first char determines level) | Same limitation as OCaml |
+
+The GHC approach is the right model: parse with a permissive default, resolve
+in a separate pass. FunLang's version of this is lighter-weight because it only
+needs to handle the 5 existing INFIXOP buckets plus attribute-declared overrides,
+not an arbitrary 0–9 system with local scoping.
+
+---
+
+## Files Affected by the Reform
+
+| File | Change | Phase |
 |------|--------|-------|
-| `Type.fs` | No change | — |
-| `Bidir.fs` | Add `nodeTypeMap` mutable accumulator; write resolved type per `synth` call | ~10 lines |
-| `TypeCheck.fs` | Reset `nodeTypeMap` at entry; extend return tuple to include it | ~5 lines |
-| `Cli.fs` | Add `Emit_Typed_Env` and `Emit_Typed_Ast` DU cases | ~6 lines |
-| `Program.fs` | Add `--emit-typed-env` and `--emit-typed-ast` branches using `System.Text.Json` | ~40 lines |
-| `Ast.fs` | No change | — |
-| `Infer.fs` | No change | — |
-| `Unify.fs` | No change | — |
-| `Eval.fs` | No change | — |
+| `Lexer.fsl` | Remove `PIPE_RIGHT`/`COMPOSE_RIGHT`/`COMPOSE_LEFT`; lex `|>` as INFIXOP0, `>>`/`<<` as explicit tokens; add `ATTR_OPEN` | 1, 2 |
+| `Parser.fsy` | Remove 3 special token decls + 3 grammar rules; add `AttributeDecl` rule | 1, 2 |
+| `Ast.fs` | Remove `PipeRight`/`ComposeRight`/`ComposeLeft`; optionally add `InfixChain` | 1, 3 |
+| `Eval.fs` | Remove 3 eval cases; remove `composeCounter` | 1 |
+| `Bidir.fs` | Remove 3 type-check cases | 1 |
+| `Format.fs` | Remove 3 format cases | 1 |
+| `Elaborate.fs` | Add operator table; add attribute processing; add `resolveOperatorChains` | 2, 3 |
+| `Prelude/Core.fun` | Add `(|>)`, `(>>)`, `(<<)` definitions | 1 |
+| `TypeCheck.fs` | Minor: pass operator table through if needed for type class resolution | 2 |
 
-**Total estimated change: ~60 lines across 3 files. No new NuGet packages.**
-
-The binding type env (Phase 1) requires only the `Program.fs` + `Cli.fs`
-changes — the `TypeEnv` is already in the return value. Phase 2 (node map)
-adds the `Bidir.fs` + `TypeCheck.fs` changes.
+**Total estimated change for Phase 1: ~150 lines removed, ~20 lines added.**
+Phase 2 adds ~100 lines. Phase 3 adds ~200 lines if pursued.
 
 ---
 
 ## Sources
 
-- Codebase inspection: `Ast.fs`, `Type.fs`, `Bidir.fs`, `TypeCheck.fs`,
-  `Program.fs`, `Cli.fs`, `FunLang.fsproj` (all read directly, 2026-04-02)
-- OCaml compiler `typing/typedtree.ml`: parallel typed AST design
-- GHC Trees That Grow (Najd & Peyton Jones, JFP 2019): parametric phase-indexed AST
-- FSharp.Compiler.Service: span-keyed `GetSymbolUseAtLocation` query API
-- .NET 10 BCL: `System.Text.Json` — no NuGet required
+- Codebase inspection: `Lexer.fsl`, `Parser.fsy`, `Ast.fs`, `Eval.fs`,
+  `Prelude/Core.fun` (read directly, 2026-04-02)
+- [Haskell 98 Report: Declarations — fixity declarations](https://www.haskell.org/onlinereport/decls.html)
+- [Kowainik: Fix(ity) me — Haskell fixity resolution mechanics](https://kowainik.github.io/posts/fixity)
+- [FStar: Parsing and operator precedence](https://github.com/FStarLang/FStar/wiki/Parsing-and-operator-precedence) — OCaml-inherited character-class system
+- [Simple but Powerful Pratt Parsing (matklad)](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html) — binding-power algorithm
+- [From Precedence Climbing to Pratt Parsing (Russ Cox / Theo Johnson-Freyd)](https://www.engr.mun.ca/~theo/Misc/pratt_parsing.htm) — equivalence proof
+- [Rust compiler dev guide: Lexing and parsing](https://rustc-dev-guide.rust-lang.org/the-parser.html) — `#[attr]` as `POUND LBRACKET` token pair
+- [Adamant: Operator Precedence — We Can Do Better](https://blog.adamant-lang.org/2019/operator-precedence/) — intransitive precedence alternative (surveyed, rejected as over-engineering)
+- [OCaml: Custom operators](https://blog.shaynefletcher.org/2016/09/custom-operators-in-ocaml.html) — confirms character-class approach

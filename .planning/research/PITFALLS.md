@@ -1,339 +1,533 @@
-# Domain Pitfalls: Typed AST Export for FunLang
+# Domain Pitfalls: Infix Operator Reform in FunLang
 
-**Domain:** Adding typed AST export to an existing ML-family interpreter
-**Researched:** 2026-04-02
-**Scope:** Pitfalls specific to adding typed AST export to FunLang's existing pipeline
-**Context:** FunLang has HM inference (Infer.fs) + bidirectional checking (Bidir.fs) + type class
-elaboration (Elaborate.elaborateTypeclasses). The current AST (Ast.Expr) carries NO type
-annotations — it carries only source spans. TypeEnv (binding-name → Scheme) is the only
-type information that survives type checking. The consumer (FunLangCompiler) needs concrete
-types on every expression node for MLIR codegen.
+**Domain:** Reforming an operator system in an existing ML-family interpreter  
+**Researched:** 2026-04-02  
+**Scope:** Common mistakes when adding user-defined fixity declarations and migrating
+`PipeRight`/`ComposeRight`/`ComposeLeft` to the generic infix mechanism in FunLang  
+**Project context:** FunLang has 714 flt tests, ~16,600 LOC. `|>` appears in 23 flt tests
+and throughout Prelude code. The current pipeline is:
+`Lexer → IndentFilter → Parser → AST → Bidir → Eval`.
+`PipeRight`/`ComposeRight`/`ComposeLeft` are dedicated AST nodes (Ast.fs lines 105-107)
+with handlers in Bidir.fs, Eval.fs, Infer.fs, Format.fs, and ExportApi.fs.
 
 ---
 
 ## How to Read This File
 
-Each pitfall has a **Phase** tag indicating which implementation phase is most at risk:
+Each pitfall has a **Phase** tag for the phase most at risk:
 
-- **P1**: Design the typed AST data structure
-- **P2**: Thread type collection through Bidir.synth / typeCheckDecls
-- **P3**: Handle elaboration (InstanceDecl → LetDecl rewriting)
-- **P4**: Serialize / export the typed AST
-- **P5**: Consumer (FunLangCompiler) integration
+- **P1**: Grammar / parser changes (new fixity syntax, Pratt post-processor)
+- **P2**: AST migration (retiring dedicated nodes, adding generic `InfixApp`)
+- **P3**: Fixity declaration loading (prelude order, scope rules)
+- **P4**: Pipeline integration (IndentFilter, error messages, ExportApi)
+- **P5**: Consumer coordination (FunLangCompiler, ExportApi typed-AST format)
 
 ---
 
-## PART A: Critical Pitfalls (Cause Rewrites)
+## PART A: Critical Pitfalls (Cause Rewrites or Silent Semantic Breaks)
 
-### Pitfall TA-1: Annotating Pre-Elaboration AST Instead of Post-Elaboration AST
+### Pitfall IR-1: Precedence Changes Alter Existing Code Semantics Silently
 
-**What goes wrong:** The pipeline has two distinct AST phases:
-1. Pre-elaboration: `Decl list` from the parser, containing `InstanceDecl` nodes
-2. Post-elaboration: `Decl list` after `Elaborate.elaborateTypeclasses`, where every `InstanceDecl` is replaced by ordinary `LetDecl` bindings
+**What goes wrong:** The current LALR grammar encodes `|>` as `%left PIPE_RIGHT` at the
+*lowest* precedence level — below `OR`, `AND`, and all comparisons. Any change that moves
+`|>` relative to other operators changes the parse tree of existing code without a syntax
+error. For example, if `|>` were accidentally given higher precedence than comparisons:
 
-If type annotations are collected during type checking (which happens on the pre-elaboration AST) and stored per-node by AST identity (e.g., a `Map<Span, Type>`), the annotations reference spans from `InstanceDecl` method bodies — but those spans no longer exist as `InstanceDecl` in the post-elaboration tree. The consumer sees a post-elaboration `LetDecl` for `show_int` but cannot find a type annotation for it because the annotation was keyed to the `InstanceDecl` method body.
-
-**Why it happens:** `typeCheckModuleWithPrelude` runs before `elaborateTypeclasses`. Any type map built during `typeCheckModuleWithPrelude` uses pre-elaboration structure. `Elaborate.elaborateTypeclasses` creates new `LetDecl` nodes at line 255:
-```fsharp
-methods |> List.map (fun (methodName, methodBody) ->
-    LetDecl(methodName, methodBody, span))
 ```
-These new nodes are not in any type annotation map because they are constructed after type checking.
-
-**Consequences:** The consumer receives a fully annotated AST for user-defined bindings but untyped nodes for all type class method implementations. For MLIR codegen, these are exactly the nodes that carry polymorphic dispatch logic.
-
-**Prevention:**
-- Collect type annotations during type checking as `Map<string, Scheme>` (keyed by binding name), not as `Map<Span, Type>` (keyed by AST node).
-- For instance methods, their types are already in `TypeEnv` after type checking: each method name maps to its scheme.
-- Alternatively, collect annotations on the post-elaboration AST by doing a second lightweight pass (type annotation propagation) after elaboration — looking up binding names in `TypeEnv`.
-- Never key type annotations to `Span` values — spans from `InstanceDecl` method bodies are reused in the `LetDecl` wrappers, but the mapping is fragile.
-
-**Warning signs:**
-- Type class method bodies have `TError` or `TVar ?_` types in the export.
-- Every `show_*` / `eq_*` / `compare_*` binding in the export has an unknown type.
-
-**Phase:** P1 (must be decided before any collection machinery is built).
-
----
-
-### Pitfall TA-2: Exporting TVar Indices Instead of Resolved Concrete Types
-
-**What goes wrong:** After `Bidir.synth`, the inferred type of a subexpression may still contain `TVar n` — either because the substitution has not been fully applied, or because the expression is legitimately polymorphic. The consumer (FunLangCompiler for MLIR) needs concrete types. If the export emits raw `TVar 1042` indices, the consumer cannot generate a concrete MLIR type.
-
-**Why it happens:** `Bidir.synth` returns `(Subst * Type)` where the type may reference `TVar n` values that are in the returned `Subst` but have not yet been applied. The substitution must be explicitly applied to every collected type before export:
-```fsharp
-// WRONG: store type from synth directly
-let ty = snd (synth ctorEnv recEnv ctx env expr)
-
-// RIGHT: apply accumulated substitution before storing
-let (s, ty) = synth ctorEnv recEnv ctx env expr
-let resolvedTy = Type.apply s ty
+x = 5 |> f       -- currently: x = (5 |> f)  i.e.  Equal(x, PipeRight(5, f))
+                  -- if |> rose above =: (x = 5) |> f  i.e.  PipeRight(Equal(x,5), f)
 ```
-Additionally, generalization at let-boundaries produces schemes with bound `TVar` indices (e.g., `Scheme([42], [], TArrow(TVar 42, TVar 42))`). If the export stores these raw, the consumer sees `TVar 42` rather than `'a`.
 
-**Consequences:** MLIR codegen receives `TVar 1234` and cannot determine the MLIR type to emit. Either codegen fails or emits incorrect type casts.
+This breaks silently — the code still parses and evaluates without a type error if `f`
+accepts a `bool`.
+
+**Why it happens:** FsYacc's `%left`/`%right`/`%nonassoc` table is ordered lowest-to-highest
+from top to bottom. Adding a new `infixl` / `infixr` keyword must slot into the correct
+position. Off-by-one errors in the ordering table are invisible at build time.
+
+**Consequences:** Existing flt tests pass at the parsing level (the grammar accepts the input)
+but produce wrong values. The 23 pipe-using flt tests and any Prelude code using `|>` would
+fail with wrong outputs rather than parse errors, making the regression harder to locate.
 
 **Prevention:**
-- Apply the full accumulated substitution to every type before storing in the annotation map.
-- In `typeCheckDecls`, the final `TypeEnv` has fully resolved schemes for top-level bindings — use those for export rather than mid-inference snapshots.
-- For let-polymorphic bindings, the exported type should be the instantiated type at each use site, not the generalized scheme — unless the consumer explicitly needs the scheme.
-- Add a `resolveType : Subst -> Type -> Type` post-processing step that replaces any remaining `TVar` with a fresh named variable for export.
+- Lock the precedence of `|>` (PIPE_RIGHT), `>>` (COMPOSE_RIGHT), and `<<` (COMPOSE_LEFT)
+  to their current levels throughout the reform. Do not change their numeric positions in
+  the `%left`/`%right` table as a side effect of adding new rows.
+- After every grammar change that touches the precedence table, run the full 714-test suite
+  before proceeding to the next change. Do not batch multiple precedence edits.
+- Add a regression test that explicitly checks associativity and precedence of `|>` with
+  comparisons: `1 = 2 |> not` must parse as `Equal(1, PipeRight(2, not))` = `false`, not
+  as `PipeRight(Equal(1,2), not)` = `true`.
 
 **Warning signs:**
-- Exported types contain `TVar` with large numeric indices (e.g., `TVar 1042`).
-- Types that should be concrete (`int`, `bool`) are exported as type variables.
+- `|>`-heavy tests in `tests/flt/file/pipe/` or `tests/flt/expr/pipe/` produce wrong numeric
+  output (not parse errors).
+- `dotnet test` passes but `scripts/fslit tests/flt/` shows output mismatches in pipe tests.
 
-**Phase:** P2 (type collection). Apply substitution discipline from the start.
+**Phase:** P1. Must be verified after any grammar edit.
 
 ---
 
-### Pitfall TA-3: Missing Types for Builtin and Prelude Bindings
+### Pitfall IR-2: LALR(1) Conflicts When Adding Fixity Declaration Syntax
 
-**What goes wrong:** FunLang has two categories of bindings with implicit types:
+**What goes wrong:** Adding `infixl` / `infixr` / `infix` as declaration keywords creates
+LALR conflicts in two distinct ways:
 
-1. **Hard-coded builtins** in `TypeCheck.initialTypeEnv` (e.g., `to_string`, `println`, `string_length`). Their types exist as F# `Scheme` values but have no corresponding `Expr` in any parsed AST — they are injected directly into `TypeEnv`.
+1. **Keyword collision with identifiers.** FunLang uses bare `IDENT` for many things. If
+   `infixl` is added as a keyword token it becomes reserved; any existing code that uses
+   `infixl` as a variable name silently breaks. If it is NOT added as a keyword (parsed via
+   IDENT dispatch), the parser must lookahead to decide whether `infixl 6 (+)` is a fixity
+   declaration or a function call expression — which can require 2+ tokens of lookahead that
+   LALR(1) cannot provide.
 
-2. **Prelude bindings** loaded from `Prelude/*.fun` files and evaluated before user code. Their types are in `prelude.TypeEnv` but the `Expr` nodes that define them are not part of the user module's `Decl list`.
+2. **Reduce-reduce conflict with module-level declarations.** The module rule currently
+   matches `TopDecl` alternatives. A fixity declaration `infixl 6 (++)` begins with an IDENT
+   (`infixl`) or keyword followed by a `NUMBER` and a `LPAREN IDENT RPAREN`. The `NUMBER`
+   token is also the start of an expression. If the module parser cannot distinguish a fixity
+   declaration from an expression statement `infixl 6 (+)` (a call to `infixl` with args),
+   a reduce-reduce conflict arises on the `NUMBER` token.
 
-If the typed AST export only annotates expressions from the user module, the consumer cannot type-check calls to `println`, `map`, `filter`, etc. — these appear in the user AST as `Var("println", span)` but their types are not in the per-module annotation.
+**Why it happens:** FsYacc (FunLang's LALR(1) generator) resolves shift-reduce conflicts by
+defaulting to shift (usually correct) but resolves reduce-reduce conflicts by choosing the
+first rule in the grammar (potentially wrong). It emits a warning to stderr during `dotnet
+build` but does NOT fail the build — the conflict is silently accepted with possibly wrong
+behavior.
 
-**Why it happens:** `typeCheckModuleWithPrelude` merges `initialTypeEnv` and `prelude.TypeEnv` into a single environment before type-checking user code. The merged environment is used during inference but is not explicitly returned as "these are the external bindings available." The return value is only the user-module's `TypeEnv`.
-
-**Consequences:** Consumer receives typed expressions for user code but untyped references to all standard library functions. For MLIR codegen, every call to a standard function produces a type error.
+**Consequences:** The grammar compiles but fixity declarations in some syntactic positions
+parse as function calls; or fixity declarations shadow variable names silently. The bug is
+intermittent: it depends on which token follows the declaration.
 
 **Prevention:**
-- Export must include a "preamble" type table covering all builtins and Prelude bindings, separate from per-expression annotations.
-- `TypeCheck.initialTypeEnv` already exists as a `Map<string, Scheme>` — include it in the export as a "builtin type table."
-- `prelude.TypeEnv` is returned from `Prelude.loadPrelude` — include it as a "stdlib type table."
-- The consumer should look up `Var` node types in: (1) per-expression annotation map, (2) user module TypeEnv, (3) prelude TypeEnv, (4) builtin TypeEnv — in that order.
-- Never assume a `Var` node's type is in the per-expression annotation map.
+- Add `INFIXL`, `INFIXR`, `INFIX` as reserved keyword tokens (similar to how `TYPECLASS`
+  and `INSTANCE` were added at line 87 of Parser.fsy). This avoids IDENT-dispatch ambiguity.
+- After any grammar change, grep the FsYacc build output for `"conflict"`:
+  ```
+  dotnet build src/FunLang/FunLang.fsproj 2>&1 | grep -i conflict
+  ```
+  Treat any new conflict as a blocker — do not proceed with conflicts present.
+- Use `%nonassoc` for the `INFIXL`/`INFIXR`/`INFIX` keyword token (it only appears at
+  declaration level, never in an expression) to prevent it from participating in any
+  expression-level shift-reduce decision.
 
 **Warning signs:**
-- `println`, `map`, `filter`, `to_string` have missing or `TVar` types in the export.
-- Only user-defined functions have resolved types; standard library functions are untyped.
+- `dotnet build` output contains `"SR conflict"` or `"RR conflict"`.
+- A fixity declaration parses correctly in one position but causes a parse error in another
+  (e.g., works as first decl in a module, fails after a `let` decl).
 
-**Phase:** P1 (export format design must include builtin/prelude tables) and P4 (serialization must emit them).
+**Phase:** P1. Must be resolved before any fixity declaration tests are written.
 
 ---
 
-### Pitfall TA-4: Type Class Method Names Collide After Elaboration
+### Pitfall IR-3: Flat-Chain Ambiguity After Pratt Post-Processing
 
-**What goes wrong:** `Elaborate.elaborateTypeclasses` converts each `InstanceDecl` method into a top-level `LetDecl` with the method name as-is:
-```fsharp
-LetDecl(methodName, methodBody, span)
+**What goes wrong:** A Pratt parser for user-defined operators is typically implemented as
+a *post-processing pass* that receives a flat list of atoms and operators from the LALR
+parser, then rebuilds the tree with correct precedence. The key invariant is: the LALR
+grammar must produce a *completely flat chain* — i.e., it must NOT attempt to apply any
+precedence at parse time for user-defined operators. If the LALR grammar applies even one
+level of precedence (e.g., `INFIXOP2` left-associates operands at parse time as currently
+implemented in Parser.fsy lines 327-331), then a mixed expression like:
+
 ```
-If two instances implement the same method (e.g., `Show int` and `Show string` both implement `show`), the elaborator emits two `LetDecl("show", ...)` bindings at the same scope level. In evaluation, the second binding shadows the first (last-wins). In a typed AST export, if the export stores binding names as keys, the second `show` overwrites the type of the first.
+a ++ b ** c     -- ++ is user INFIXOP2, ** is user INFIXOP4
+```
 
-**Why it happens:** FunLang's type class dispatch uses last-definition-wins at evaluation time, which works because type checking has already resolved which `show` is called at each call site. But a typed AST export that is keyed by name rather than by span or node identity cannot distinguish `show : int -> string` from `show : string -> string` after elaboration.
+gets partially folded by the LALR parser before the Pratt pass sees it. The Pratt pass then
+receives `(a ++ b)` as a pre-folded unit and `** c` as a dangling tail — it cannot rebalance
+the tree because `(a ++ b)` is already an opaque `App` node, not individual atoms.
 
-**Consequences:** The exported `TypeEnv` for `show` contains only one type (the last one). The consumer incorrectly infers that `show` always has one concrete type, breaking calls to the other instance.
+**Why it happens:** FunLang's current grammar handles INFIXOP0–4 directly in `Parser.fsy`
+(lines 293-355) using the existing Term/Factor hierarchy — not a post-processing Pratt pass.
+If the reform strategy is to add a Pratt pass on top of the existing LALR grammar (rather
+than replacing the LALR rules), the two mechanisms must not overlap on the same operator
+class.
+
+**Consequences:** Expressions involving two different user-defined operators at different
+precedence levels parse incorrectly. The wrong operand grouping is used without an error.
+For built-in operators (`+`, `-`, `*`, `/`) that have hard-coded LALR rules, this does not
+apply — only user-defined `INFIXOP*` operators are affected.
 
 **Prevention:**
-- Do NOT key the typed export by binding name alone for instance methods.
-- Option A: Key call-site types by the call-site `Span` (each `App` or `Var` node's span is unique).
-- Option B: During type checking (pre-elaboration), record per-call-site resolved instance method types in a `Map<Span, Type>` and export that alongside the `TypeEnv`.
-- Option C: Rename instance methods during elaboration — `show_int`, `show_string` — and record the renaming map for the consumer.
-- The consumer needs per-call-site types anyway (for MLIR); Option A or B is the correct direction.
+- Choose ONE approach, not both: either (A) keep INFIXOP0-4 handled entirely by the LALR
+  grammar (current approach), or (B) produce a fully flat token sequence for ALL user
+  operators and apply a Pratt pass for all of them. Do not use LALR for some operator
+  classes and Pratt for others.
+- If adding dynamic fixity (user-declared precedence), approach (B) is required because the
+  LALR table is static. In that case, the LALR grammar must emit a flat `InfixChain` node
+  containing the unevaluated operand/operator sequence, and the Pratt pass rebuilds the
+  correct tree from that.
+- The Pratt pass must see ALL operators in a chain simultaneously — it cannot be applied
+  incrementally operator-by-operator.
 
 **Warning signs:**
-- Only one concrete type is exported for any overloaded method name.
-- MLIR codegen for `show 42` and `show "hello"` generates the same type signature.
+- `a +++ b *** c` (with `+++ :: INFIXOP2`, `*** :: INFIXOP4`) produces the wrong grouping:
+  check by asserting `(a +++ (b *** c))` = expected but `((a +++ b) *** c)` = wrong.
+- Tests pass for single-operator expressions but fail for chains of two different
+  user-defined operators.
 
-**Phase:** P1 (design — per-callsite vs. per-name keying) and P3 (elaboration must preserve or export the renaming).
+**Phase:** P1. The architecture decision (LALR-only vs. Pratt-over-flat-chain) must be made
+before any grammar changes are written.
+
+---
+
+### Pitfall IR-4: Removing Dedicated AST Nodes Breaks FunLangCompiler and ExportApi
+
+**What goes wrong:** `PipeRight`, `ComposeRight`, and `ComposeLeft` are dedicated `Ast.Expr`
+union cases. They are matched exhaustively in:
+
+| File | Lines | What happens on removal |
+|------|-------|------------------------|
+| `Bidir.fs` | 737, 747, 761 | Compile error (incomplete match) |
+| `Eval.fs` | 1584, 1598, 1611 | Compile error (incomplete match) |
+| `Infer.fs` | 407 | Compile error (incomplete match) |
+| `Format.fs` | 209-211 | Compile error (incomplete match) |
+
+If the reform plan replaces `PipeRight` with a generic `InfixApp("|>", left, right, span)`
+node, every match site above must be updated simultaneously. A partial update compiles
+successfully if the new `InfixApp` case is added to `Ast.Expr` before the old cases are
+removed — but during the transition window, both representations exist in the AST and any
+pass that only handles one form silently ignores the other.
+
+Additionally, `ExportApi.fs` serializes the AST for FunLangCompiler. If FunLangCompiler has
+hard-coded handlers for `"PipeRight"`, `"ComposeRight"`, `"ComposeLeft"` in the emitted JSON
+or S-expression format, removing these nodes breaks the consumer without a compiler error on
+the FunLang side.
+
+**Why it happens:** FunLang's AST discriminated union gives exhaustiveness checking only
+within a single project build. FunLangCompiler is a separate consumer; it has no compile-time
+link to `Ast.fs`. The FunLang build succeeds after removing AST nodes even if FunLangCompiler
+breaks.
+
+**Consequences:** FunLangCompiler silently receives `InfixApp("|>", ...)` nodes it does not
+recognize and either crashes at runtime or generates incorrect code for pipe expressions.
+This is not caught by `scripts/fslit` because flt tests run the interpreter, not the compiler.
+
+**Prevention:**
+- Before removing any AST node, audit all consumers: grep for the node name across the full
+  repo including any external projects:
+  ```
+  grep -rn "PipeRight\|ComposeRight\|ComposeLeft" /Users/ohama/vibe-coding/
+  ```
+- Coordinate the AST change with FunLangCompiler in the same pull request or in consecutive
+  commits with a documented protocol.
+- Maintain backward compatibility by keeping the old nodes as aliases or by having
+  `ExportApi.fs` emit a compatibility shim: serialize `InfixApp("|>", ...)` as `PipeRight`
+  in the export format until FunLangCompiler is updated.
+- The safest migration order: (1) add `InfixApp` to AST, (2) update all internal passes to
+  handle both, (3) update FunLangCompiler, (4) remove old nodes.
+
+**Warning signs:**
+- `grep -rn "PipeRight"` returns zero hits in `*.fs` files after the change, but no compile
+  error was thrown — meaning the removal happened but some match site was missed via
+  wildcard (`| _ ->`).
+- FunLangCompiler tests (if any) fail with "unknown node type" errors.
+
+**Phase:** P2 (AST migration) and P5 (consumer coordination). Must be planned before any
+AST node is removed.
 
 ---
 
 ## PART B: Moderate Pitfalls (Cause Delays and Technical Debt)
 
-### Pitfall TA-5: Collecting Types Inside synth Without Threading the Annotation Map
+### Pitfall IR-5: Prelude Fixity Must Be Known Before User Code Is Parsed
 
-**What goes wrong:** `Bidir.synth` is a recursive function with the signature:
+**What goes wrong:** If `|>` and `>>` are migrated from hard-coded tokens to
+fixity-declared-in-prelude operators, the Prelude files must be fully loaded (parsed,
+evaluated, and their fixity table extracted) BEFORE any user file is lexed or parsed. The
+current pipeline in `Program.fs` loads Prelude first, then parses user code — which is
+correct. The risk is in two edge cases:
+
+1. **`-e` (inline expression) mode.** `Program.fs` currently supports a `--eval` / `-e` flag
+   that parses a string expression. If the `-e` path bypasses `loadPrelude`, user code that
+   uses `|>` in an inline expression will fail with "unknown operator" errors. This is
+   already a known issue (commit `7f53f3a` fixed a similar prelude-in-e-mode bug).
+
+2. **REPL mode.** The REPL (`Repl.fs`) may parse each line before the fixity table is
+   populated if initialization order changes.
+
+**Why it happens:** Fixity information is parser-level state — it must be available at lex
+time (to classify tokens) or at Pratt-pass time (to assign precedence). If it is stored in a
+module-level mutable (consistent with FunLang's existing `mutableVars` pattern), a stale
+empty table at parse time produces wrong results silently.
+
+**Consequences:** `|>` in `-e` mode or REPL throws a parse error or is treated as `INFIXOP0`
+(comparison level) instead of its correct precedence — causing silent wrong-precedence
+parsing for inline expressions.
+
+**Prevention:**
+- Gate any fixity table mutation behind the same initialization check used by prelude loading.
+- In `-e` mode, explicitly call the fixity-table initialization step even if no user file is
+  loaded (see how commit `7f53f3a` fixed prelude loading for `-e`).
+- Add an flt test for `-e` mode with `|>` to ensure regression coverage:
+  ```
+  // Command: src/FunLang/bin/Release/net10.0/fn -e "5 |> (fun x -> x + 1)"
+  // Output: 6
+  ```
+- In REPL mode, populate the fixity table once at startup, before the first prompt.
+
+**Warning signs:**
+- `fn -e "5 |> println"` fails with a parse error after the change.
+- REPL throws "unexpected token |>" on the first line that uses `|>`.
+
+**Phase:** P3 (fixity loading). Must be tested immediately after the loading mechanism is
+implemented.
+
+---
+
+### Pitfall IR-6: IndentFilter Continuation Detection Breaks for New Operators
+
+**What goes wrong:** `IndentFilter.fs` contains `isContinuationStart` (line 104), which
+decides whether a token at the start of an indented line continues the previous expression
+or starts a new declaration. Currently it explicitly lists:
+
 ```fsharp
-let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list) (env: TypeEnv) (expr: Expr): Subst * Type
+| Parser.PIPE_RIGHT | Parser.COMPOSE_RIGHT | Parser.COMPOSE_LEFT -> true
+| Parser.INFIXOP0 _ | Parser.INFIXOP1 _ | Parser.INFIXOP2 _ | Parser.INFIXOP3 _ | Parser.INFIXOP4 _ -> true
 ```
-There are 67+ call sites. Adding a `typeAnnotationMap: Map<Span, Type> ref` parameter to collect per-subexpression types requires updating every call site — exactly the parameter-threading problem that `mutableVars` and `pendingConstraints` were designed to avoid (both use module-level `mutable`).
 
-If the annotation map is NOT threaded, the only recourse is another module-level mutable. This is consistent with FunLang's existing pattern but has the same thread-safety caveat.
+If the reform introduces a new token class (e.g., `INFIXOP_USER` or replaces the hard-coded
+tokens with a generic `INFIX_OP of string`) and that token class is not added to
+`isContinuationStart`, then multi-line infix expressions silently break:
+
+```
+let result =
+  someList
+  |> filter pred    -- IndentFilter sees |> on a new line; if isContinuationStart
+                    -- returns false, it inserts a NEWLINE/DEDENT between lines,
+                    -- breaking the pipe chain into two separate expressions
+```
+
+**Why it happens:** `isContinuationStart` is a structural match on token tags. Adding new
+token cases to the lexer does not automatically update this function — the compiler does not
+warn because the existing wildcard or exhaustive match may still compile cleanly.
+
+**Consequences:** Multi-line pipe chains (`x\n  |> f\n  |> g`) silently become parse errors
+or evaluate as separate expressions (the second line is treated as a standalone expression
+`|> f` which is invalid). This affects 23+ flt tests that use `|>` across lines.
 
 **Prevention:**
-- Use the established FunLang pattern: module-level `mutable` in `Bidir.fs`.
-- `let mutable typeAnnotations : Map<Span, Type> = Map.empty` — reset at each `typeCheckModuleWithPrelude` entry, populated by `synth` at every node.
-- This is consistent with `mutableVars` and `pendingConstraints` — already accepted precedent in this codebase.
-- Do NOT add `typeAnnotationMap` as a parameter to `synth`/`check` — the call-site explosion is not worth it.
+- Any new operator token must be added to `isContinuationStart` in the same commit that
+  introduces the token.
+- Write the flt test for multi-line chained `|>` BEFORE implementing the token change, so
+  the test fails visibly if `isContinuationStart` is missed.
+- After any token change, search `IndentFilter.fs` for `isContinuationStart` and verify all
+  new token cases are covered.
 
 **Warning signs:**
-- `synth` has a new parameter not present in `check`; `check` lacks annotation collection.
-- Some expression variants annotate correctly but others are missed because the `check` → `synth` delegation doesn't thread the map.
+- Tests in `tests/flt/file/pipe/` pass for single-line pipes but fail for multi-line pipes.
+- Parser error on `|>` at the start of a continuation line: `"unexpected token |>"`.
 
-**Phase:** P2. Decide the collection strategy before writing any collection code.
+**Phase:** P1 (if token classes change) and P4 (IndentFilter integration). Must be updated
+in lockstep with any lexer change.
 
 ---
 
-### Pitfall TA-6: Let-Generalization Exports Schemes Where Consumer Needs Monotypes
+### Pitfall IR-7: Pratt Post-Processing Performance Regression
 
-**What goes wrong:** At a let-binding, `Bidir.generalize` produces a `Scheme` (e.g., `forall 'a. 'a -> 'a`). This scheme is stored in `TypeEnv`. But within the body of a function, each specific call site has a concrete monotype. If the export stores the generalized `Scheme` for every `Var` reference to a polymorphic binding, the consumer sees `forall 'a. 'a -> 'a` at every call site — it cannot determine the concrete instantiation for that particular call.
+**What goes wrong:** If a Pratt post-processor is added to rebuild operator trees after
+LALR parsing, it runs on every expression in every file, including all Prelude files and all
+714 flt tests. Naively building a Pratt pass that re-traverses the entire `Expr` tree
+(visiting every `App`, `Let`, `LetRec`, `Match`, etc. to find `InfixChain` nodes) adds a
+constant multiplier to parse time. For FunLang's interpreted use case this is likely
+acceptable, but if the pass uses immutable F# `Map` for the fixity table and rebuilds it at
+each operator lookup, the cost per lookup is O(log n) where n is the number of fixity
+declarations.
 
-For MLIR codegen, the instantiation matters: `id 42` needs `int -> int`, not `forall 'a. 'a -> 'a`.
+**Why it happens:** F#'s immutable `Map<string, Fixity>` is appropriate for persistent
+functional data but has higher constant factor than `Dictionary<string, Fixity>`. With
+hundreds of user-defined operators, 714 test files × n fixity lookups per file accumulates.
+
+**Consequences:** `scripts/fslit tests/flt/` noticeably slows. This is a regression that
+does not affect correctness but degrades developer experience.
 
 **Prevention:**
-- The annotation for a `Var(name, span)` should be the INSTANTIATED type at that call site, not the Scheme.
-- `Bidir.instantiateAt` already creates a fresh substitution and returns the instantiated monotype. The type returned by `synth (Var(name, span))` IS the instantiated monotype — collect that, not the scheme from TypeEnv.
-- Schemes are only useful in the export as metadata for top-level binding declarations (for the consumer to understand what type parameters exist). Export them separately from per-expression types.
-- Distinguish in the export format: `binding_schemes: Map<string, Scheme>` (for declarations) vs. `expr_types: Map<Span, Type>` (for expressions, always monotypes after instantiation).
+- Use `System.Collections.Generic.Dictionary<string, Fixity>` (or F# `dict`) for the
+  fixity table — consistent with the `Dictionary<Span, Type>` recommendation in the typed
+  AST pitfalls.
+- The fixity table is populated once at prelude load time and is read-only during parsing —
+  a mutable dictionary initialized once is the right pattern here.
+- Gate Pratt re-traversal behind a check: only call the Pratt pass on `InfixChain` nodes;
+  skip expression subtrees that contain no user-defined operators (i.e., short-circuit on
+  nodes that are not `InfixChain`).
 
 **Warning signs:**
-- Every `Var` reference to a polymorphic function has quantified type variables in the export.
-- Consumer cannot distinguish `id 42 : int` from `id "hi" : string` — both show `'a`.
+- `time scripts/fslit tests/flt/` is more than 20% slower after the Pratt pass is added.
+- Profiling shows the fixity table lookup function consuming >5% of total parse time.
 
-**Phase:** P1 (format design) and P2 (collection must use the instantiated type from `synth`, not `TypeEnv` lookup).
+**Phase:** P1 (architecture) and P4 (if integrated). Measure baseline before implementing.
 
 ---
 
-### Pitfall TA-7: Breaking Existing Interpreter Behavior by Modifying synth Return Type
+### Pitfall IR-8: Error Messages Degrade When Hard-Coded Nodes Are Removed
 
-**What goes wrong:** A tempting approach is to change `synth` to return `(Subst * Type * TypedExpr)` — a new typed expression tree alongside the existing results. This touches every `synth` and `check` call site (67+), every match branch that pattern-matches on `synth`'s return, and would require a parallel `TypedExpr` discriminated union mirroring `Ast.Expr`.
+**What goes wrong:** The current type checker (`Bidir.fs` lines 737-761) provides specific
+error messages for misuses of `|>`, `>>`, and `<<` because these are dedicated AST nodes with
+dedicated match arms. For example, `Bidir.fs` line 737 for `PipeRight` can say
+`"pipe operator |> requires a function on the right"`. If `PipeRight` is replaced by
+`InfixApp("|>", ...)`, the generic `InfixApp` handler must reconstruct the operator name
+from the string payload to produce an equally specific error. If it falls back to a generic
+`"type mismatch in infix expression"`, the quality of error messages for the most common
+operators degrades.
 
-This is a major refactor. It risks introducing bugs in the inference algorithm itself because the compiler will correctly flag all unhandled cases but may miss subtle logic errors in how `TypedExpr` nodes are constructed.
+**Why it happens:** Specific error messages require knowing which operator caused the error.
+A generic `InfixApp` case only knows the operator by its string name at runtime, not at
+compile time. The handler must explicitly branch on the operator string to restore specificity:
 
-**Prevention:**
-- Do NOT change `synth`'s return type for the MVP of typed AST export.
-- The mutable collection approach (TA-5 prevention) avoids changing any existing signatures.
-- Build a separate `TypedExpr` representation only if needed by the consumer — and populate it in a separate pass over `Expr` using the collected `Map<Span, Type>`, not inline in `synth`.
-- Gate the type annotation collection behind a flag so it has zero cost when not exporting: `if Bidir.collectingTypeAnnotations then Bidir.typeAnnotations <- Map.add span ty Bidir.typeAnnotations`.
-
-**Warning signs:**
-- `dotnet build` emits hundreds of new incomplete-match warnings after changing `synth` return type.
-- The number of tests failing after the change is more than 5.
-
-**Phase:** P2. The decision between "inline annotation during synth" vs. "post-pass annotation" is the highest-impact design choice.
-
----
-
-### Pitfall TA-8: Type of `to_string` and Other Permissively Polymorphic Builtins
-
-**What goes wrong:** Several builtins in `TypeCheck.initialTypeEnv` have intentionally broad types:
 ```fsharp
-"to_string", Scheme([0], [], TArrow(TVar 0, TString))
-"printf",    Scheme([0], [], TArrow(TString, TVar 0))
-"failwith",  Scheme([0], [], TArrow(TString, TVar 0))
+| InfixApp(op, left, right, span) ->
+    match op with
+    | "|>" -> (* pipe-specific error *)
+    | ">>" | "<<" -> (* compose-specific error *)
+    | _ -> (* generic infix error *)
 ```
-These schemes are correct for type checking but useless for MLIR codegen — `TVar 0` resolves to the type at the call site, but that resolution only happens through the inference substitution. If the export emits `'a -> string` for `to_string`, the consumer cannot generate MLIR code.
 
-**Why it happens:** `to_string` is intentionally polymorphic because it handles `int`, `bool`, `string`, `char`, and ADT values via runtime dispatch in `Eval.fs`. It has no type class constraint; it is simply broad. The call-site instantiation IS available — `synth (App(Var("to_string"), arg))` will unify `TVar 0` with the arg type and the substitution will resolve it.
+If this branching is not added, the specific error messages are permanently lost.
+
+**Consequences:** Users writing `42 |> 5` (pipe with non-function right-hand side) receive
+`"type mismatch in expression at line X"` instead of `"right side of |> must be a function,
+got int"`. Error quality degrades for the most commonly used operators.
 
 **Prevention:**
-- For `to_string` and similar builtins, the per-call-site type IS resolvable from the collected `Map<Span, Type>` — the `App` node's argument type determines the substitution.
-- Ensure the collection captures the type of the `App` node, not just the `Var` node for `to_string`.
-- For the consumer, document that `to_string` and `printf`/`sprintf`/`printfn`/`failwith` are polymorphic and the concrete argument type must be looked up from the argument expression's span.
-- Alternatively, for these specific builtins, emit them as having multiple concrete overloads in the export (one per observed call-site argument type).
+- Before removing `PipeRight`/`ComposeRight`/`ComposeLeft`, extract and document all
+  error messages currently in their Bidir.fs handlers.
+- The `InfixApp` handler in Bidir.fs must include a `match op with` branch for `|>`, `>>`,
+  and `<<` with the same messages.
+- Write flt tests in `tests/flt/error/` for type errors involving `|>` before the migration,
+  asserting the exact error message text. These tests fail if messages degrade.
 
 **Warning signs:**
-- `to_string 42` exports as `('a -> string) applied to int` rather than `(int -> string) applied to int`.
-- Consumer cannot specialize `to_string` for specific types.
+- Error flt tests for `|>` misuse produce a different error message string after the change.
+- `grep -n "pipe\|compose" src/FunLang/Bidir.fs` shows zero hits after the migration.
 
-**Phase:** P3 (export format) and P5 (consumer integration documentation).
+**Phase:** P2 (AST migration) and P4 (error handling). Preserve error messages explicitly.
 
 ---
 
-### Pitfall TA-9: Performance Impact of Annotating Every Subexpression
+### Pitfall IR-9: Operator-Section Parsing (`(+)`, `(|>)`) Breaks for New Operators
 
-**What goes wrong:** FunLang's `Bidir.synth` is called on every subexpression during type checking — for a 500-line program, this may be tens of thousands of calls. If every call performs a `Map.add span ty` on a mutable annotation map, and the map grows to tens of thousands of entries, the constant allocation pressure and map rebalancing may noticeably slow type checking — especially because FunLang uses F#'s immutable `Map` (an AVL tree), not a mutable dictionary.
+**What goes wrong:** FunLang supports operator sections — using an operator as a first-class
+function by wrapping it in parentheses. The current grammar has explicit rules for this
+(Parser.fsy lines 420-424 for INFIXOP0-4, and lines 1003-1007 for operator name extraction).
+These rules are enumerated by token class. If new operator token classes are added (e.g., a
+generic `INFIX_OP of string`) or if the fixity system introduces operators that do not belong
+to INFIXOP0-4 classes, the operator-section rules do not automatically cover them.
 
-**Why it happens:** `Map<Span, Type>` in F# is an immutable balanced tree. Each `Map.add` produces a new map. With a mutable ref cell (`mutable typeAnnotations`), each mutation replaces the ref with a new map, causing repeated allocation.
+For example, if `|>` is migrated from a hard-coded `PIPE_RIGHT` token to a user-fixity
+operator, then `(|>)` would need to be handled by the operator-section rule for whatever
+token class `|>` is lexed as. If the section rules only list `INFIXOP0`-`INFIXOP4` and not
+`PIPE_RIGHT` (or its replacement), `(|>)` fails to parse.
+
+**Why it happens:** The operator-section rules are written as explicit token-class matches,
+not as a catch-all. The lexer's `classifyOperator` function assigns `|>` to a specific class,
+but the section rule must independently list that class.
+
+**Consequences:** `(|>)` fails with a parse error. Code like `List.map (|>) items funcs`
+that uses `|>` as a first-class function breaks.
 
 **Prevention:**
-- Use `System.Collections.Generic.Dictionary<Span, Type>` (mutable hashtable) instead of F#'s immutable `Map`.
-- `Span` needs a structural equality comparison for hashing — since `Span` is a record, F# derives structural equality by default, so it can be used as a dictionary key without extra work.
-- Gate annotation collection behind a flag (see TA-7 prevention) so normal interpretation incurs zero overhead.
-- Only enable collection when `--emit-typed-ast` (or equivalent flag) is passed.
+- If `|>` and `>>` stay as hard-coded tokens (`PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT`),
+  add explicit operator-section rules for them alongside the INFIXOP0-4 rules.
+- If they are migrated to a new generic token, update the section rules to cover the new
+  token class.
+- Add flt tests for `(|>)` as a value before the migration: `let f = (|>) in f 5 inc`.
 
 **Warning signs:**
-- `dotnet test` takes noticeably longer after annotation collection is added.
-- Memory usage during large file type checking increases substantially.
+- `(|>)` produces `"unexpected token |>"` inside parentheses.
+- Operator sections for user-defined operators like `(++)` stop working after a token class
+  change.
 
-**Phase:** P2. The collection data structure choice must be made before implementing collection.
+**Phase:** P1 (grammar changes) and P2 (if token class changes). Easy to miss because
+operator sections are an uncommon pattern.
 
 ---
 
 ## PART C: Minor Pitfalls (Annoying but Fixable)
 
-### Pitfall TA-10: Span Collisions for Synthetic AST Nodes
+### Pitfall IR-10: Fixity Scope Creep — Module-Local vs. Global Fixity
 
-**What goes wrong:** Some `Expr` nodes are created synthetically with `Ast.unknownSpan` (e.g., nodes injected by match compilation in `MatchCompile.fs`, or the `LetDecl` wrappers created by `elaborateTypeclasses`). If the export is keyed by `Span`, multiple synthetic nodes have the same key (`unknownSpan = { FileName = "<unknown>"; ... }`), and map insertion silently overwrites earlier entries.
+**What goes wrong:** In Haskell and OCaml, fixity declarations are module-scoped — `infixl 6
+(++)` in module A does not affect module B unless explicitly imported. FunLang currently has
+no module-private namespace for operators (all user operators are globally named). If fixity
+declarations are added without a scoping rule, two modules that both declare `infixl 6 (++)`
+at different levels create an inconsistency: which declaration wins when both modules are
+`open`ed?
+
+**Why it happens:** The first implementation of fixity declarations will likely use a single
+global fixity table (simplest to implement). This is fine for MVP but becomes a problem when
+FunLang projects use multiple modules with conflicting operator definitions.
 
 **Prevention:**
-- When keying by span, skip nodes with `span = Ast.unknownSpan` or handle them separately.
-- For synthetic nodes from `elaborateTypeclasses`, their types are determined by the instance's method name — look them up in `TypeEnv` rather than the per-span annotation map.
-- Alternatively, assign unique synthetic spans to elaborated nodes: a counter-based `{ FileName = "<elaborated>"; StartLine = n; ... }`.
+- For MVP: document that fixity declarations are global and last-declaration-wins (consistent
+  with FunLang's existing last-definition-wins for type class instances).
+- Do NOT attempt to implement module-scoped fixity in the first milestone. Defer to a
+  follow-up.
+- Record a test that explicitly verifies last-declaration-wins behavior so the semantics are
+  locked and visible.
 
 **Warning signs:**
-- Multiple instance method bodies all map to the same key in the annotation map.
-- Only the last instance processed has type information; earlier ones are overwritten.
+- Two flt tests that each define `infixl 6 (+++)` at different levels interfere when run
+  in the same process (if the fixity table is a module-level static).
+- The test runner (fslit) runs tests in separate processes, which masks this issue.
 
-**Phase:** P3 (elaboration). Address when `elaborateTypeclasses` is extended to produce annotated output.
+**Phase:** P3. Note it as a known limitation with a follow-up ticket.
 
 ---
 
-### Pitfall TA-11: GADT Branch Type Annotations Capture Branch-Local Refinements
+### Pitfall IR-11: `--check` Mode Must Not Apply Pratt Rewriting
 
-**What goes wrong:** FunLang's GADT checking in `Bidir.fs` uses per-branch substitutions that refine type variables local to that branch. For example, in `match (e : Expr int) with | Num n -> n`, the branch knows the result is `int` via the GADT refinement. If per-expression types are collected during GADT branch checking, the collected types may include branch-local `TVar` refinements that are not valid outside the branch.
+**What goes wrong:** FunLang has a `--check` flag (commit `7f53f3a` notes a `--check on
+prelude files` fix). If `--check` mode runs only the parser and type-checker but skips the
+Pratt post-processor (because it is conceptually a "parse" step), operator trees are not
+rebuilt and type checking operates on a malformed AST. Conversely, if the Pratt pass always
+runs, it must be safe to call on partially initialized state (before prelude is fully loaded).
 
-**Why it happens:** GADT branches in `Bidir.fs` apply a branch-specific substitution before checking the branch body. Types collected inside the branch body are relative to that substitution. If the annotation map stores raw `Type` values without recording which substitution produced them, the consumer may misinterpret a branch-local `TVar 1099 = TInt` annotation as a global fact.
+**Why it happens:** `--check` mode has a shorter pipeline than normal evaluation. Any new
+pass added between parsing and type checking must be explicitly included in the `--check`
+code path, or it is silently skipped.
 
 **Prevention:**
-- Apply the full accumulated substitution (including branch-local GADT refinements) to collected types before storing them.
-- This is consistent with TA-2 prevention — always apply the current substitution before storing a type annotation.
-- For the common case, this is already correct if annotations are stored at the end of each branch check using the branch-final substitution.
+- The Pratt post-processing pass should be part of parsing, not a separate pipeline stage.
+  Build it into the parser's output so that by the time any downstream pass (including
+  `--check`) receives the AST, the operator tree is already correct.
+- Search `Program.fs` for all code paths that call the parser and ensure each one includes
+  the Pratt pass.
 
 **Warning signs:**
-- GADT match branch expressions have wrong types in the export (e.g., `'a` instead of `int`).
-- Types correct for simple matches but wrong for GADT matches.
+- `fn --check file.fun` passes but `fn file.fun` fails with a type error for operator
+  expressions.
 
-**Phase:** P2 (collection). Must apply substitution discipline inside GADT branch checking.
+**Phase:** P4. Verify `--check` mode explicitly in testing.
 
 ---
 
-### Pitfall TA-12: Consumer Misuse — Treating Scheme as Monotype
+### Pitfall IR-12: `Format.fs` AST Printer Loses Operator Identity
 
-**What goes wrong:** The export contains two categories of types:
-- `expr_types: Map<Span, Type>` — always monotypes (instantiated at call site)
-- `binding_schemes: Map<string, Scheme>` — may be polymorphic (`Scheme([42], [], ...)`)
+**What goes wrong:** `Format.fs` currently prints `PipeRight(...)` and `ComposeRight(...)`
+as named constructors (lines 209-211). If these are replaced by `InfixApp("|>", ...)`, the
+formatter must be updated to print `InfixApp("|>", ...)` instead. If it falls back to a
+generic `App(App(...))` representation (since `InfixApp` is desugared to `App(App(...))` in
+the parser action), the formatted output loses all trace of the original operator name.
 
-Consumers that treat `binding_schemes` entries as monotypes will see `TVar 42` and misinterpret it as an unresolved type variable rather than a quantified type parameter.
-
-**Prevention:**
-- Document the distinction clearly in the export format.
-- Name the fields distinctly: do not use `type` for both categories.
-- Provide a helper: `instantiateScheme : Scheme -> Type list -> Type` that maps type arguments to quantified variables — the consumer should call this when it needs a concrete instantiation.
-- Include the fact that `TVar n` in a `Scheme` where `n` is in the `vars` list is a bound variable (parameter), not a free inference variable.
-
-**Warning signs:**
-- Consumer reports type errors on all polymorphic functions.
-- Consumer treats `forall 'a. 'a -> 'a` as having type `TVar 42 -> TVar 42` with unknown `TVar 42`.
-
-**Phase:** P5 (consumer integration). Primarily a documentation and API design issue.
-
----
-
-### Pitfall TA-13: Over-Engineering the Export Format
-
-**What goes wrong:** Attempting to export a complete typed IR with resolved dictionary passing, monomorphized instances, explicit type applications, and reconstructed spine forms before MLIR codegen actually requires them. This adds weeks of work and produces a complex format that changes as the consumer's needs are clarified.
-
-**Concrete over-engineering traps:**
-- Emitting explicit dictionary arguments in the export AST (like GHC's Core) before the consumer proves it needs them.
-- Monomorphizing all polymorphic functions in the export (like MLton) before knowing the consumer's optimization strategy.
-- Defining a complex JSON schema with 30+ node types before the consumer has written a single MLIR lowering pass.
+**Why it happens:** If the `InfixApp` desugaring happens at parse time (i.e., the parser
+action immediately converts `InfixApp(op, l, r)` to `App(App(Var(op), l), r)` as currently
+done for INFIXOP0-1 at lines 295-301 of Parser.fsy), then the AST never contains an
+`InfixApp` node — it is already an `App` tree. `Format.fs` has no way to distinguish
+`println "hello"` from `println |> arg` in the formatted output.
 
 **Prevention:**
-- Start with the minimal format: `(post-elaboration Decl list) + (Map<Span, Type> for expressions) + (Map<string, Scheme> for top-level bindings) + (Map<string, Scheme> for builtins/prelude)`.
-- Let the consumer drive format evolution: add features only when a specific MLIR lowering pass requires them.
-- The first consumer milestone should use the export — if it can type all nodes it needs, the format is sufficient.
+- If preserving the original operator name in the formatted AST output matters (for debugging
+  or for ExportApi), keep `InfixApp` as a distinct AST node rather than desugaring at parse
+  time.
+- Update `Format.fs` in the same commit that changes the AST.
+- Check the `emit/ast-expr/` flt tests — they test `--emit-ast` output which uses
+  `Format.formatAst`. These tests will fail if operator formatting changes.
 
 **Warning signs:**
-- The export format design phase takes longer than the implementation phase.
-- The export format has fields that no consumer code reads.
+- `tests/flt/emit/ast-expr/` tests fail after the AST change.
+- Formatted AST shows `App(App(Var("|>"), ...)` instead of `PipeRight(...)` or
+  `InfixApp("|>", ...)`.
 
-**Phase:** P1 (format design). Make the MVP format as simple as possible.
+**Phase:** P2 (AST migration). Update `Format.fs` alongside `Ast.fs`.
 
 ---
 
@@ -341,57 +535,77 @@ Consumers that treat `binding_schemes` entries as monotypes will see `TVar 42` a
 
 | Phase | Topic | Most Likely Pitfall | Mitigation |
 |-------|-------|--------------------|-|
-| P1 | Format design | Pre-elaboration vs. post-elaboration mismatch (TA-1) | Key by binding name or call-site span, not InstanceDecl structure |
-| P1 | Format design | Over-engineering the format (TA-13) | Start minimal: Decl list + two Maps |
-| P1 | Format design | Per-name keying of instance methods (TA-4) | Use per-call-site span as primary key |
-| P2 | Type collection | Raw TVar in collected types (TA-2) | Apply accumulated substitution before storing |
-| P2 | Type collection | Threading annotation map through 67+ synth sites (TA-5) | Module-level mutable (established FunLang pattern) |
-| P2 | Type collection | Storing Scheme where consumer needs monotype (TA-6) | Collect instantiated type from synth return, not TypeEnv lookup |
-| P2 | Type collection | Breaking existing synth signature (TA-7) | Do NOT change synth return type; use mutable collection |
-| P2 | Type collection | Performance of Map allocation per call (TA-9) | Use Dictionary<Span, Type>, gate behind flag |
-| P2 | Type collection | GADT branch-local types escaping (TA-11) | Apply branch substitution before storing |
-| P3 | Elaboration | Synthetic nodes have unknownSpan (TA-10) | Handle unknownSpan nodes via TypeEnv name lookup |
-| P4 | Export | Permissively polymorphic builtins (TA-8) | Export call-site argument type alongside builtin type |
-| P4 | Export | Missing builtin/prelude types (TA-3) | Include builtin and prelude type tables in export |
-| P5 | Consumer | Treating Scheme as monotype (TA-12) | Document Scheme vs. Type distinction; provide instantiateScheme helper |
+| P1 | Grammar/precedence table | Precedence shift silently breaks `|>` semantics (IR-1) | Run full flt suite after each table change |
+| P1 | Fixity declaration syntax | LALR conflicts from new keyword (IR-2) | Reserved keywords; check `dotnet build` output for "conflict" |
+| P1 | Pratt + LALR interaction | Flat-chain ambiguity for mixed operators (IR-3) | Choose one mechanism; document the decision |
+| P1 | Token classes | Operator sections break for new/changed tokens (IR-9) | Add section rules alongside token introduction |
+| P2 | AST node removal | FunLangCompiler and ExportApi break silently (IR-4) | Grep all consumers; migrate in stages |
+| P2 | AST node removal | Error messages degrade for `|>`, `>>`, `<<` (IR-8) | Preserve specific Bidir error messages explicitly |
+| P2 | Format.fs | Operator identity lost in AST printer (IR-12) | Update Format.fs in same commit as Ast.fs |
+| P3 | Fixity loading order | `-e` mode and REPL skip fixity init (IR-5) | Explicit fixity init in all entry points; flt test for `-e` mode |
+| P3 | Fixity scope | Global table causes cross-module conflicts (IR-10) | Document last-wins; defer scoping |
+| P4 | IndentFilter | Multi-line pipe chains break (IR-6) | Update `isContinuationStart` in same commit as token changes |
+| P4 | `--check` mode | Pratt pass skipped in check pipeline (IR-11) | Embed Pratt in parser output, not as a separate stage |
+| P4 | Performance | Pratt pass too slow on 714 tests (IR-7) | Use `Dictionary` for fixity table; measure baseline first |
+| P5 | FunLangCompiler | Removed AST nodes break consumer (IR-4) | Coordinate with consumer; emit compatibility shim in ExportApi |
 
 ---
 
 ## PART E: FunLang-Specific Architecture Risks
 
-These pitfalls arise specifically from FunLang's existing design, not from the general problem.
+### Risk IR-AX-1: Hard-Coded Tokens Are an Asset, Not a Liability
 
-### Risk AX-1: `Bidir.mutableVars` Pattern Has Thread-Safety Caveat
+The current system has `PIPE_RIGHT`, `COMPOSE_RIGHT`, and `COMPOSE_LEFT` as named token
+types. This is not technical debt — it gives the lexer O(1) classification, gives the LALR
+table deterministic precedence, and gives Bidir.fs type-safe match exhaustion. The reform
+should preserve these properties. If the goal is only to add *new* user-defined operators
+with custom fixity, the cleanest approach is to keep the hard-coded tokens for built-in
+operators and add the fixity mechanism only for INFIXOP0-4 user operators. Migrating
+hard-coded tokens to the dynamic fixity system is optional and carries the IR-4, IR-6, IR-8,
+IR-9 risks with no user-visible benefit.
 
-The existing mutable state in `Bidir.fs` (`mutableVars`, `pendingConstraints`, `currentClassEnv`, `currentInstEnv`) is explicitly not thread-safe (see comment in `Bidir.fs` line 23: "Tests must run sequentially"). Adding `typeAnnotations` as another mutable follows the same pattern but reinforces the sequential-only constraint. If FunLang ever moves to parallel compilation, this becomes a blocker.
-
-**Mitigation:** Document the thread-safety constraint explicitly in the new `typeAnnotations` declaration, consistent with the existing comment. The sequential-only constraint is acceptable for the current milestone scope.
+**Recommendation:** Keep `PIPE_RIGHT`, `COMPOSE_RIGHT`, `COMPOSE_LEFT` as hard-coded tokens.
+Add fixity declarations only for the INFIXOP0-4 category, where the first-character rule is
+already the precedence assignment mechanism. This is the minimal-risk path.
 
 ---
 
-### Risk AX-2: `elaborateTypeclasses` Is Not the Only AST-Rewriting Pass
+### Risk IR-AX-2: The `classifyOperator` Function in Lexer.fsl Is the Fixity Bottleneck
 
-`Elaborate.elaborateTypeclasses` is invoked in `Program.fs` at lines 211 and 465. But `MatchCompile.fs` may also rewrite match expressions. If typed AST export runs before match compilation, the consumer receives pre-compilation match trees (with `OrPat`, nested patterns, etc.) that differ from what the evaluator actually executes.
+The lexer's `classifyOperator` (Lexer.fsl lines 11-22) hard-codes the precedence of any
+user-defined operator based on its first character. This is how `++` becomes `INFIXOP2` and
+`**` becomes `INFIXOP4` without any declarations. If dynamic fixity is added, the lexer can
+no longer assign the token class at lex time (because the class depends on declarations not
+yet parsed). The lexer must either emit a single `INFIXOP_UNKNOWN` token and let the Pratt
+pass assign precedence, or it must consult a pre-populated fixity table at lex time. The
+former requires changing the LALR grammar; the latter requires the fixity table to be
+populated before lexing (requiring Prelude to be evaluated before any user file is even
+lexed, which is the current order — but must be preserved explicitly).
 
-**Mitigation:** Clarify the exact pipeline stage at which the export runs. For MLIR codegen, post-match-compilation AST is likely needed (since MLIR needs explicit case analysis, not high-level pattern matching). Ensure the export pass runs at the same stage as evaluation.
-
----
-
-### Risk AX-3: `TypeCheck.typeCheckDecls` Discards Per-Expression Types
-
-`typeCheckDecls` returns `TypeEnv * ConstructorEnv * RecordEnv * ClassEnv * InstanceEnv * Map<string, ModuleExports> * Diagnostic list`. There is no per-expression type in the return. All per-expression type information computed during `Bidir.synth` is discarded unless explicitly collected via the mutable approach described in TA-5.
-
-**Mitigation:** Treat `typeCheckDecls` as a black box and collect types inside `Bidir.synth` directly — do not try to extract them from `typeCheckDecls`'s return value. The `TypeEnv` in the return is only top-level binding names → schemes; it does not cover subexpression types.
+**Recommendation:** Document this dependency explicitly in the implementation plan. The
+correct load order is: (1) lex and parse Prelude files using default precedences, (2)
+extract fixity declarations from Prelude, (3) populate fixity table, (4) lex and parse user
+files using the populated table.
 
 ---
 
 ## Sources
 
-- FunLang source: `/src/FunLang/Bidir.fs` — `synth`, `generalize`, `instantiateAt`, mutable state patterns
-- FunLang source: `/src/FunLang/Elaborate.fs` — `elaborateTypeclasses` implementation showing InstanceDecl → LetDecl rewriting
-- FunLang source: `/src/FunLang/TypeCheck.fs` — `typeCheckModuleWithPrelude` return type (no per-expression types)
-- FunLang source: `/src/FunLang/Ast.fs` — `Expr` carries only `Span`, no type field
-- FunLang source: `/src/FunLang/Type.fs` — `Scheme`, `Constraint`, substitution machinery
-- FunLang source: `/src/FunLang/Program.fs` — pipeline order: typecheck → elaborateTypeclasses → evalModuleDecls
-- GHC source code notes on Core IR (System F) — motivation for post-elaboration typed representation
-- "Typing Haskell in Haskell" (Jones 1999) — per-expression type annotation approach in HM systems
+- FunLang source: `/src/FunLang/Parser.fsy` — precedence table (lines 98-111), INFIXOP0-4
+  rules (lines 293-355), existing LALR conflict notes (lines 247, 894)
+- FunLang source: `/src/FunLang/Lexer.fsl` — `classifyOperator` (lines 11-22), hard-coded
+  pipe/compose tokens (lines 127-130), operator catch-all rule (line 168)
+- FunLang source: `/src/FunLang/IndentFilter.fs` — `isContinuationStart` (lines 104-109)
+- FunLang source: `/src/FunLang/Ast.fs` — `PipeRight`/`ComposeRight`/`ComposeLeft` nodes
+  (lines 105-107)
+- FunLang source: `/src/FunLang/Eval.fs` — pipe/compose handlers (lines 1584-1621)
+- FunLang source: `/src/FunLang/Bidir.fs` — pipe/compose type inference (lines 737-761)
+- FunLang source: `/src/FunLang/Infer.fs` — stub handlers for pipe/compose (line 407)
+- FunLang source: `/src/FunLang/Format.fs` — AST printer for pipe/compose (lines 209-211)
+- FunLang tests: `tests/flt/expr/pipe/`, `tests/flt/file/pipe/`, `tests/flt/expr/compose/`,
+  `tests/flt/file/operator/` — 23 pipe tests, 8 compose tests, 3 operator definition tests
+- Git history: commit `7f53f3a` — prelude-in-e-mode bug (precedent for IR-5)
+- "Crafting Interpreters" (Nystrom) — Pratt parsing chapter, flat-chain invariant
+- GHC Commentary on Fixity Resolution — post-parse Pratt pass architecture
+- OCaml source: `parsing/lexer.mll` — INFIXOP0-4 first-character classification (same
+  approach used in FunLang)
