@@ -24,13 +24,14 @@ let defaultFixity (op: string) : FixityInfo =
 
 /// Collect fixity declarations from a list of module-level declarations.
 /// Accumulates into the existing FixityEnv.
-let collectFixity (existing: FixityEnv) (decls: Decl list) : FixityEnv =
+let rec collectFixity (existing: FixityEnv) (decls: Decl list) : FixityEnv =
     (existing, decls) ||> List.fold (fun env decl ->
         match decl with
         | InfixDecl(attrs, name, _, _) ->
             match attrs |> List.tryPick (function FixityAttr(assoc, prec) -> Some(assoc, prec)) with
             | Some(assoc, prec) -> Map.add name { Assoc = assoc; Prec = prec } env
             | None -> env
+        | ModuleDecl(_, innerDecls, _) -> collectFixity env innerDecls
         | _ -> env)
 
 /// Look up an operator's fixity, falling back to default if not declared.
