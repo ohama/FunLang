@@ -132,6 +132,8 @@ rule tokenize = parse
     | "<-"          { LARROW }
     // Phase 71 (Type Classes): Fat arrow for constraint annotation (BEFORE catch-all op_char rule)
     | "=>"          { FATARROW }
+    // Phase 84 (Attributes): Attribute open bracket - must come before single-char operators
+    | "#["          { ATTR_OPEN }
     // Comments: don't consume newline so it triggers NEWLINE token
     | "//" [^ '\n' '\r']*          { tokenize lexbuf }   // Single-line comment (newline handled separately)
     | "(*"          { block_comment 1 lexbuf }   // Start block comment, depth=1

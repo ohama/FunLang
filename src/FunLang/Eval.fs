@@ -1809,6 +1809,10 @@ let rec evalModuleDecls
         | DerivingDecl(_, _, _) ->
             // Handled by TypeCheck; elaborated away before eval
             (env, modEnv)
+        | InfixDecl(_, name, body, _) ->
+            // Phase 84 (Attributes): Treat as LetDecl for evaluation (attrs are metadata only)
+            let value = eval recEnv modEnv env false body
+            (Map.add name value env, modEnv)
         | FileImportDecl(path, _span) ->
             // Use currentEvalFile for path resolution (span.FileName may be empty due to
             // fsyacc position tracking using lexbuf.StartPos which isn't updated in filtered-token mode)

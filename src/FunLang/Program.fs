@@ -510,7 +510,7 @@ let main argv =
                         let finalEnv, moduleEnv =
                             Eval.evalModuleDecls mergedRecEnv prelude.ModuleValueEnv initialEnv elaboratedDecls
                         // Print the last let binding's value (look up from env to avoid re-evaluating side effects)
-                        match elaboratedDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
+                        match elaboratedDecls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | InfixDecl(_, name, _, _) -> Some name | _ -> None) with
                         | Some lastName ->
                             match Map.tryFind lastName finalEnv with
                             | Some result -> printfn "%s" (formatValue result)

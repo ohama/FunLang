@@ -94,6 +94,8 @@ let formatToken (token: Parser.token) : string =
     | Parser.INSTANCE -> "INSTANCE"
     | Parser.FATARROW -> "FATARROW"
     | Parser.DERIVING -> "DERIVING"
+    // Phase 84 (Attributes): Attribute token
+    | Parser.ATTR_OPEN -> "ATTR_OPEN"
     // Phase 9 (Pipe & Composition): Pipe and composition tokens
     | Parser.PIPE_RIGHT -> "PIPE_RIGHT"
     | Parser.COMPOSE_RIGHT -> "COMPOSE_RIGHT"
@@ -360,6 +362,12 @@ let rec formatDecl (decl: Ast.Decl) : string =
         sprintf "InstanceDecl \"%s\" %s [%s]" className (formatTypeExpr instType) methodsStr
     | Ast.DerivingDecl(typeName, classNames, _) ->
         sprintf "DerivingDecl \"%s\" [%s]" typeName (classNames |> String.concat ", ")
+    | Ast.InfixDecl(attrs, name, body, _) ->
+        let attrsStr = attrs |> List.map (fun (Ast.FixityAttr(assoc, prec)) ->
+            match assoc with
+            | Ast.Left -> sprintf "#[left %d]" prec
+            | Ast.Right -> sprintf "#[right %d]" prec) |> String.concat " "
+        sprintf "InfixDecl (%s \"%s\", %s)" attrsStr name (formatAst body)
 
 /// Format a module as string
 let formatModule (m: Ast.Module) : string =

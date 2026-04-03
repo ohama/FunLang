@@ -1239,6 +1239,21 @@ let rec typeCheckDecls
                     | _ -> ()
                 (envAcc, cEnv, rEnv, clsEnv, iEnvAcc, mods, warns)
 
+            | InfixDecl(_, name, body, span) ->
+                // Phase 84 (Attributes): Treat as LetDecl for type checking (attrs recorded in AST only)
+                let refsInBody = collectModuleRefs mods body
+                let rewrittenBody = rewriteModuleAccess mods body
+                let (envForSynth, ctorEnvForSynth, recEnvForSynth) =
+                    if Set.isEmpty refsInBody then (env, cEnv, rEnv)
+                    else mergeModuleExportsForTypeCheck mods refsInBody env cEnv rEnv
+                let s, ty = Bidir.synth ctorEnvForSynth recEnvForSynth [] envForSynth rewrittenBody
+                let ty' = apply s ty
+                Bidir.applySubstToConstraints s
+                let scheme = generalize (applyEnv s env) ty'
+                let env' = Map.add name scheme env
+                let matchWarnings = checkMatchWarnings cEnv body
+                (env', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
+
           with
           | TypeException err ->
               // Multi-error: accumulate ONLY expression-level type errors (v11.1)

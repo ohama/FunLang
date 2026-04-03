@@ -97,7 +97,7 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
             let mergedRecEnv = Map.fold (fun acc k v -> Map.add k v acc) state.RecEnv recEnv
             let (finalEnv, moduleEnv) = Eval.evalModuleDecls mergedRecEnv state.ModuleValueEnv state.Env elaborated
             // Print the last binding's value
-            match decls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | _ -> None) with
+            match decls |> List.rev |> List.tryPick (function LetDecl(name, _, _) -> Some name | InfixDecl(_, name, _, _) -> Some name | _ -> None) with
             | Some lastName ->
                 match Map.tryFind lastName finalEnv with
                 | Some value ->
@@ -114,6 +114,7 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
                 | Some (TypeClassDecl _) -> printfn "typeclass defined"
                 | Some (InstanceDecl _) -> printfn "instance defined"
                 | Some (DerivingDecl _) -> printfn "deriving applied"
+                | Some (InfixDecl _) -> printfn "infix operator defined"
                 | _ -> ()
             Some {
                 Env = finalEnv
