@@ -48,7 +48,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 80-01-PLAN.md — Add BindingEnv alias + exportBindingEnv helper, TypeEnvTests for TE-01/TE-02
+- [x] 80-01-PLAN.md — Add BindingEnv alias + exportBindingEnv helper, TypeEnvTests for TE-01/TE-02
 
 #### Phase 81: Export API
 
@@ -83,6 +83,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 79. Type Annotation Infrastructure | v11.0 | 2/2 | ✓ Complete | 2026-04-03 |
-| 80. Type Environment Export | v11.0 | 0/1 | Not started | - |
+| 80. Type Environment Export | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
 | 81. Export API | v11.0 | 0/1 | Not started | - |
 | 82. CLI Integration | v11.0 | 0/1 | Not started | - |

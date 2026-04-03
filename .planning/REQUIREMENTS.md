@@ -15,8 +15,8 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 
 ### Type Environment Export
 
-- [ ] **TE-01**: 바인딩 타입 환경 export — top-level let 바인딩의 이름 → TypeScheme 매핑
-- [ ] **TE-02**: Builtin/Prelude 타입 스킴을 export에 포함
+- [x] **TE-01**: 바인딩 타입 환경 export — top-level let 바인딩의 이름 → TypeScheme 매핑
+- [x] **TE-02**: Builtin/Prelude 타입 스킴을 export에 포함
 
 ### Export API
 
@@ -45,8 +45,8 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 |-------------|-------|----------|
 | TA-01       | 79    | ✓ 2026-04-03 |
 | TA-02       | 79    | ✓ 2026-04-03 |
-| TE-01       | 80    |          |
-| TE-02       | 80    |          |
+| TE-01       | 80    | ✓ 2026-04-03 |
+| TE-02       | 80    | ✓ 2026-04-03 |
 | API-01      | 81    |          |
 | API-02      | 81    |          |
 | CLI-01      | 82    |          |

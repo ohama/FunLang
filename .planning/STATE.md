@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Phase 80 — Type Environment Export
+**Current focus:** Phase 81 — Export API
 
 ## Current Position
 
 Milestone: v11.0 Typed AST Export
-Phase: 80 of 82 (Type Environment Export)
-Plan: 01 of ? complete
-Status: In progress
-Last activity: 2026-04-03 — Completed 80-01-PLAN.md (BindingEnv alias + TypeEnvTests)
+Phase: 81 of 82 (Export API)
+Plan: —
+Status: Ready to plan
+Last activity: 2026-04-03 — Phase 80 complete (Type Environment Export)
 
-Progress: [██████░░░░░░░░░░░░░░] v11.0 (2/4 phases in progress)
+Progress: [██████████░░░░░░░░░░] v11.0 (2/4 phases)
 
 ## Performance Metrics
 
@@ -58,6 +58,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 80-01-PLAN.md (BindingEnv alias, exportBindingEnv, TypeEnvTests)
+Stopped at: Phase 80 complete, ready to plan Phase 81
 Resume file: None
-Next action: Continue Phase 80 planning or execute next plan
+Next action: /gsd:plan-phase 81
