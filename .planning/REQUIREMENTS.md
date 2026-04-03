@@ -31,8 +31,8 @@ FunLangCompiler가 v11.0 Typed AST를 통합했으나, 컴파일러 Prelude에 t
 
 | Requirement | Phase | Verified |
 |-------------|-------|----------|
-| BT-01       |       |          |
-| BT-02       |       |          |
-| BR-01       |       |          |
-| BR-02       |       |          |
-| VR-01       |       |          |
+| BT-01       | 83    |          |
+| BT-02       | 83    |          |
+| BR-01       | 83    |          |
+| BR-02       | 83    |          |
+| VR-01       | 83    |          |
