@@ -1,0 +1,7 @@
+// Test: dbg builtin returns value unchanged (Phase 83)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let x = dbg 42
+let _ = println (to_string x)
+// --- Output:
+42

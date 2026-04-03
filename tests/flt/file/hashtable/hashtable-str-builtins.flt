@@ -1,0 +1,24 @@
+// Test: hashtable_*_str builtins (Phase 83)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let ht = hashtable_create_str ()
+let _ = hashtable_set_str ht "x" 10
+let _ = hashtable_set_str ht "y" 20
+let _ = println (to_string (hashtable_get_str ht "x"))
+let _ = println (to_string (hashtable_get_str ht "y"))
+let _ = println (to_string (hashtable_containsKey_str ht "x"))
+let _ = println (to_string (hashtable_containsKey_str ht "z"))
+let keys = hashtable_keys_str ht
+let _ = println (to_string (List.length keys))
+let _ = hashtable_remove_str ht "x"
+let _ = println (to_string (hashtable_containsKey_str ht "x"))
+let result = hashtable_trygetvalue_str ht "y"
+let _ = println (to_string result)
+// --- Output:
+10
+20
+true
+false
+2
+false
+(true, 20)
