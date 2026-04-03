@@ -27,7 +27,8 @@ let mutable accumulatedErrors : Diagnostic.TypeError list = []
 /// Per-expression type annotation map populated during synth (Phase 79).
 /// Keys are Span values from Ast.spanOf; values are fully substituted types.
 /// Reset at typeCheckModuleWithPrelude entry (same pattern as mutableVars).
-let mutable annotationMap : System.Collections.Generic.Dictionary<Ast.Span, Type> =
+/// Uses ConcurrentDictionary to allow parallel test execution.
+let mutable annotationMap : System.Collections.Concurrent.ConcurrentDictionary<Ast.Span, Type> =
     TypeAnnotationMap.create()
 
 /// Apply a substitution to all pending constraints (resolves stale TVar refs after unification)
@@ -157,17 +158,30 @@ let isGadtMatch (ctorEnv: ConstructorEnv) (clauses: MatchClause list) : bool =
 /// Synthesize type for expression (inference mode)
 /// Returns: (substitution, inferred type)
 let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list) (env: TypeEnv) (expr: Expr): Subst * Type =
+    /// Record inferred type for a span, skipping unknownSpan (synthetic elaboration nodes).
+    let recordTy span ty = TypeAnnotationMap.record annotationMap span ty
     match expr with
     // === Literals (BIDIR-03) ===
-    | Number (_, _) -> (empty, TInt)
-    | Bool (_, _) -> (empty, TBool)
-    | String (_, _) -> (empty, TString)
-    | Char (_, _) -> (empty, TChar)
+    | Number (_, span) ->
+        recordTy span TInt
+        (empty, TInt)
+    | Bool (_, span) ->
+        recordTy span TBool
+        (empty, TBool)
+    | String (_, span) ->
+        recordTy span TString
+        (empty, TString)
+    | Char (_, span) ->
+        recordTy span TChar
+        (empty, TChar)
 
     // === Variables (BIDIR-03) ===
     | Var (name, span) ->
         match Map.tryFind name env with
-        | Some scheme -> (empty, instantiateAt (Some span) scheme)
+        | Some scheme ->
+            let ty = instantiateAt (Some span) scheme
+            recordTy span ty
+            (empty, ty)
         | None ->
             raise (TypeException {
                 Kind = UnboundVar name
@@ -182,37 +196,49 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         // Phase 55: StringBuilder() type interception
         match name with
         | "StringBuilder" ->
+            let resultTy = TData("StringBuilder", [])
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
                 let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
-                (compose s2 s, TData("StringBuilder", []))
+                recordTy span resultTy
+                (compose s2 s, resultTy)
             | None ->
-                (empty, TData("StringBuilder", []))
+                recordTy span resultTy
+                (empty, resultTy)
         | "HashSet" ->
+            let resultTy = TData("HashSet", [])
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
                 let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
-                (compose s2 s, TData("HashSet", []))
+                recordTy span resultTy
+                (compose s2 s, resultTy)
             | None ->
-                (empty, TData("HashSet", []))
+                recordTy span resultTy
+                (empty, resultTy)
         | "Queue" ->
+            let resultTy = TData("Queue", [])
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
                 let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
-                (compose s2 s, TData("Queue", []))
+                recordTy span resultTy
+                (compose s2 s, resultTy)
             | None ->
-                (empty, TData("Queue", []))
+                recordTy span resultTy
+                (empty, resultTy)
         | "MutableList" ->
+            let resultTy = TData("MutableList", [])
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
                 let s2 = unifyWithContext ctx [] span (apply s argTy) (TTuple [])
-                (compose s2 s, TData("MutableList", []))
+                recordTy span resultTy
+                (compose s2 s, resultTy)
             | None ->
-                (empty, TData("MutableList", []))
+                recordTy span resultTy
+                (empty, resultTy)
         | _ ->
         match Map.tryFind name ctorEnv with
         | None ->
@@ -220,10 +246,14 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             // Return a fresh TData-like type
             let resultTy = freshVar()
             match argOpt with
-            | None -> (empty, resultTy)
+            | None ->
+                recordTy span resultTy
+                (empty, resultTy)
             | Some argExpr ->
                 let s, _argTy = synth ctorEnv recEnv ctx env argExpr
-                (s, apply s resultTy)
+                let finalTy = apply s resultTy
+                recordTy span finalTy
+                (s, finalTy)
         | Some ctorInfo ->
             // Instantiate type params with fresh variables
             let freshVars = ctorInfo.TypeParams |> List.map (fun _ -> freshVar())
@@ -232,13 +262,17 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             match (ctorInfo.ArgType, argOpt) with
             | (None, None) ->
                 // Nullary constructor (e.g., None)
+                recordTy span resultType
                 (empty, resultType)
             | (Some argType, Some argExpr) ->
                 // Constructor with argument (e.g., Some 42)
                 let expectedArgTy = apply subst argType
                 let s1, actualArgTy = synth ctorEnv recEnv ctx env argExpr
                 let s2 = unifyWithContext ctx [] span expectedArgTy actualArgTy
-                (compose s2 s1, apply (compose s2 s1) resultType)
+                let finalSubst = compose s2 s1
+                let finalTy = apply finalSubst resultType
+                recordTy span finalTy
+                (finalSubst, finalTy)
             | (None, Some _) ->
                 raise (TypeException {
                     Kind = ArityMismatch (name, 0, 1)
@@ -274,14 +308,19 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | _ ->
             let resultTy = freshVar()
             let s3 = unifyWithContext ctx [] span appliedFuncTy (TArrow (argTy, resultTy))
-            (compose s3 (compose s2 s1), apply s3 resultTy)
+            let finalSubst = compose s3 (compose s2 s1)
+            let finalTy = apply s3 resultTy
+            recordTy span finalTy
+            (finalSubst, finalTy)
 
     // === Lambda (unannotated) (BIDIR-05 - HYBRID approach) ===
-    | Lambda (param, body, _) ->
+    | Lambda (param, body, span) ->
         let paramTy = freshVar()
         let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = synth ctorEnv recEnv ctx bodyEnv body
-        (s, TArrow (apply s paramTy, bodyTy))
+        let finalTy = TArrow (apply s paramTy, bodyTy)
+        recordTy span finalTy
+        (s, finalTy)
 
     // === LambdaAnnot (annotated lambda) ===
     | LambdaAnnot (param, paramTyExpr, body, span) ->
@@ -289,7 +328,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let ctx' = InCheckMode (paramTy, "annotation", span) :: ctx
         let bodyEnv = Map.add param (Scheme ([], [], paramTy)) env
         let s, bodyTy = synth ctorEnv recEnv ctx' bodyEnv body
-        (s, TArrow (apply s paramTy, bodyTy))
+        let finalTy = TArrow (apply s paramTy, bodyTy)
+        recordTy span finalTy
+        (s, finalTy)
 
     // === Annot (type annotation) ===
     | Annot (e, tyExpr, span) ->
@@ -305,7 +346,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let expectedTy = elaborateTypeExpr tyExpr
         let ctx' = InCheckMode (expectedTy, "annotation", span) :: ctx
         let s = check ctorEnv recEnv ctx' env e expectedTy
-        (s, apply s expectedTy)
+        let finalTy = apply s expectedTy
+        recordTy span finalTy
+        (s, finalTy)
 
     // === Let (BIDIR-07 - let-polymorphism) ===
     | Let (name, value, body, span) ->
@@ -316,7 +359,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let scheme = generalize env' (apply s1 valueTy)
         let bodyEnv = Map.add name scheme env'
         let s2, bodyTy = synth ctorEnv recEnv (InLetBody (name, span) :: ctx) bodyEnv body
-        (compose s2 s1, bodyTy)
+        let finalSubst = compose s2 s1
+        recordTy span bodyTy
+        (finalSubst, bodyTy)
 
     // === LetMut (Phase 42 - mutable variable, NO generalization) ===
     | LetMut (name, value, body, span) ->
@@ -329,6 +374,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         mutableVars <- Set.add name mutableVars
         let s2, bodyTy = synth ctorEnv recEnv (InLetBody (name, span) :: ctx) bodyEnv body
         mutableVars <- savedMutableVars  // restore (name goes out of scope)
+        recordTy span bodyTy
         (compose s2 s1, bodyTy)
 
     // === WhileExpr (Phase 46 - while loop) ===
@@ -338,6 +384,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s12 = compose s2 s1
         let env' = applyEnv s12 env
         let s3, _bodyTy = synth ctorEnv recEnv ctx env' body
+        recordTy span (TTuple [])
         (compose s3 s12, TTuple [])  // while always returns unit
 
     // === ForExpr (Phase 46 - for loop) ===
@@ -354,6 +401,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let loopEnv = Map.add var (Scheme([], [], TInt)) env2
         // Do NOT add var to mutableVars — loop variable must be immutable
         let s5, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
+        recordTy span (TTuple [])
         (compose s5 s1234, TTuple [])  // for always returns unit
 
     // === ForInExpr (Phase 51/58 - for-in collection loop) ===
@@ -399,6 +447,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 generalize (applyEnv s13 env2) ty')
         let loopEnv = Map.fold (fun acc k v -> Map.add k v acc) (applyEnv s13 env2) generalizedPatEnv
         let s3, _bodyTy = synth ctorEnv recEnv ctx loopEnv body
+        recordTy span (TTuple [])
         (compose s3 s13, TTuple [])  // for-in always returns unit
 
     // === Assign (Phase 42 - mutable variable assignment) ===
@@ -416,6 +465,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let varTy = instantiate scheme
             let s1, valTy = synth ctorEnv recEnv ctx env value
             let s2 = unifyWithContext ctx [] span (apply s1 varTy) valTy
+            recordTy span (TTuple [])
             (compose s2 s1, TTuple [])  // returns unit
         | None ->
             raise (TypeException {
@@ -463,6 +513,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 let scheme = generalize env' (apply bodySubst funcTy)
                 Map.add name scheme acc) env'
         let s3, exprTy = synth ctorEnv recEnv ctx exprEnv inExpr
+        recordTy span exprTy
         (compose s3 bodySubst, exprTy)
 
     // === If ===
@@ -475,7 +526,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         // Branches must have same type
         let s5 = unifyWithContext ctx [] span (apply s4 thenTy) (apply s4 elseTy)
         let finalSubst = compose s5 (compose s4 (compose s3 (compose s2 s1)))
-        (finalSubst, apply s5 thenTy)
+        let finalTy = apply s5 thenTy
+        recordTy span finalTy
+        (finalSubst, finalTy)
 
     // === Binary operators ===
     // Add supports both int and string (overloaded)
@@ -489,10 +542,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let resultTy = apply s3 appliedT1
         // Verify result is int or string
         match resultTy with
-        | TInt | TString -> (compose s3 (compose s2 s1), resultTy)
+        | TInt | TString ->
+            recordTy span resultTy
+            (compose s3 (compose s2 s1), resultTy)
         | TVar _ ->
             // Ambiguous - default to int (backward compatible)
             let s4 = unifyWithContext ctx [] span resultTy TInt
+            recordTy span TInt
             (compose s4 (compose s3 (compose s2 s1)), TInt)
         | _ ->
             raise (TypeException {
@@ -505,11 +561,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     | Subtract (e1, e2, _) | Multiply (e1, e2, _) | Divide (e1, e2, _) | Modulo (e1, e2, _) ->
         let s = inferBinaryOp ctorEnv recEnv ctx env e1 e2 TInt TInt
+        recordTy (spanOf expr) TInt
         (s, TInt)
 
     | Negate (e, _) ->
         let s, t = synth ctorEnv recEnv ctx env e
         let s' = unifyWithContext ctx [] (spanOf e) (apply s t) TInt
+        recordTy (spanOf expr) TInt
         (compose s' s, TInt)
 
     // Equality supports any type (polymorphic equality)
@@ -517,6 +575,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s1, t1 = synth ctorEnv recEnv ctx env e1
         let s2, t2 = synth ctorEnv recEnv ctx (applyEnv s1 env) e2
         let s3 = unifyWithContext ctx [] span (apply s2 t1) t2
+        recordTy span TBool
         (compose s3 (compose s2 s1), TBool)
 
     // Comparison operators work on int, string, or char (ordered types)
@@ -528,10 +587,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s3 = unifyWithContext ctx [] span appliedT1 t2
         let resultTy = apply s3 appliedT1
         match resultTy with
-        | TInt | TString | TChar -> (compose s3 (compose s2 s1), TBool)
+        | TInt | TString | TChar ->
+            recordTy span TBool
+            (compose s3 (compose s2 s1), TBool)
         | TVar _ ->
             // Ambiguous - default to int (backward compatible)
             let s4 = unifyWithContext ctx [] span resultTy TInt
+            recordTy span TBool
             (compose s4 (compose s3 (compose s2 s1)), TBool)
         | _ ->
             raise (TypeException {
@@ -544,6 +606,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     | And (e1, e2, _) | Or (e1, e2, _) ->
         let s = inferBinaryOp ctorEnv recEnv ctx env e1 e2 TBool TBool
+        recordTy (spanOf expr) TBool
         (s, TBool)
 
     // === Tuple (BIDIR-03) ===
@@ -552,19 +615,25 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s', ty = synth ctorEnv recEnv (InTupleElement (idx, span) :: ctx) (applyEnv s env) e
             (compose s' s, ty :: tys, idx + 1)
         let finalS, revTys, _ = List.fold folder (empty, [], 0) exprs
-        (finalS, TTuple (List.rev revTys))
+        let finalTy = TTuple (List.rev revTys)
+        recordTy span finalTy
+        (finalS, finalTy)
 
     // === EmptyList ===
-    | EmptyList _ ->
+    | EmptyList span ->
         let elemTy = freshVar()
-        (empty, TList elemTy)
+        let finalTy = TList elemTy
+        recordTy span finalTy
+        (empty, finalTy)
 
     // === List literal ===
     | List (exprs, span) ->
         match exprs with
         | [] ->
             let elemTy = freshVar()
-            (empty, TList elemTy)
+            let finalTy = TList elemTy
+            recordTy span finalTy
+            (empty, finalTy)
         | first :: rest ->
             let s1, elemTy = synth ctorEnv recEnv (InListElement (0, span) :: ctx) env first
             let folder (s, ty, idx) e =
@@ -572,14 +641,18 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 let s'' = unifyWithContext ctx [] span (apply s' ty) eTy
                 (compose s'' (compose s' s), apply s'' eTy, idx + 1)
             let finalS, elemTy', _ = List.fold folder (s1, elemTy, 1) rest
-            (finalS, TList elemTy')
+            let finalTy = TList elemTy'
+            recordTy span finalTy
+            (finalS, finalTy)
 
     // === Cons ===
     | Cons (head, tail, span) ->
         let s1, headTy = synth ctorEnv recEnv (InConsHead span :: ctx) env head
         let s2, tailTy = synth ctorEnv recEnv (InConsTail span :: ctx) (applyEnv s1 env) tail
         let s3 = unifyWithContext ctx [] span tailTy (TList (apply s2 headTy))
-        (compose s3 (compose s2 s1), apply s3 tailTy)
+        let finalTy = apply s3 tailTy
+        recordTy span finalTy
+        (compose s3 (compose s2 s1), finalTy)
 
     // === Match expression ===
     | Match (scrutinee, clauses, span) ->
@@ -589,7 +662,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         if isGadtMatch ctorEnv clauses then
             let freshTy = freshVar()
             let s = check ctorEnv recEnv (InCheckMode (freshTy, "gadt-match", span) :: ctx) env expr freshTy
-            (s, apply s freshTy)
+            let finalTy = apply s freshTy
+            recordTy span finalTy
+            (s, finalTy)
         else
         let s1, scrutTy = synth ctorEnv recEnv (InMatch span :: ctx) env scrutinee
         let resultTy = freshVar()
@@ -615,7 +690,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s''' = unifyWithContext ctx [] span (apply s'' resultTy) exprTy
             (compose s''' (compose s'' (compose sGuard (compose s' s))), idx + 1)
         let finalS, _ = List.fold folder (s1, 0) clauses
-        (finalS, apply finalS resultTy)
+        let finalTy = apply finalS resultTy
+        recordTy span finalTy
+        (finalS, finalTy)
 
     // === Phase 6: Raise expression ===
     // raise expr: argument must be TExn, result is a fresh type variable (diverges)
@@ -623,6 +700,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s1, argTy = synth ctorEnv recEnv ctx env arg
         let s2 = unifyWithContext ctx [] span (apply s1 argTy) TExn
         let resultTy = freshVar()
+        recordTy span resultTy
         (compose s2 s1, resultTy)
 
     // === Phase 6: Try-with expression ===
@@ -651,7 +729,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                             (apply s'' exprTy)
             (compose sUnify (compose s'' (compose sGuard (compose s' s))), idx + 1)
         let finalS, _ = List.fold folder (s1, 0) handlers
-        (finalS, apply finalS bodyTy)
+        let finalTy = apply finalS bodyTy
+        recordTy span finalTy
+        (finalS, finalTy)
 
     // === Phase 9: Pipe and composition operators ===
     | PipeRight (left, right, span) ->
@@ -660,7 +740,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s2, rightTy = synth ctorEnv recEnv ctx (applyEnv s1 env) right
         let resultTy = freshVar()
         let s3 = unifyWithContext ctx [] span (apply s2 rightTy) (TArrow(apply s2 leftTy, resultTy))
-        (compose s3 (compose s2 s1), apply s3 resultTy)
+        let finalTy = apply s3 resultTy
+        recordTy span finalTy
+        (compose s3 (compose s2 s1), finalTy)
 
     | ComposeRight (left, right, span) ->
         // f >> g : ('a -> 'b) -> ('b -> 'c) -> ('a -> 'c)
@@ -672,7 +754,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s3 = unifyWithContext ctx [] span (apply s2 leftTy) (TArrow(a, b))
         let s4 = unifyWithContext ctx [] span (apply s3 rightTy) (TArrow(apply s3 b, c))
         let finalS = compose s4 (compose s3 (compose s2 s1))
-        (finalS, TArrow(apply finalS a, apply s4 c))
+        let finalTy = TArrow(apply finalS a, apply s4 c)
+        recordTy span finalTy
+        (finalS, finalTy)
 
     | ComposeLeft (left, right, span) ->
         // f << g : ('b -> 'c) -> ('a -> 'b) -> ('a -> 'c)
@@ -684,7 +768,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let s3 = unifyWithContext ctx [] span (apply s2 leftTy) (TArrow(b, c))
         let s4 = unifyWithContext ctx [] span (apply s3 rightTy) (TArrow(a, apply s3 b))
         let finalS = compose s4 (compose s3 (compose s2 s1))
-        (finalS, TArrow(apply s4 a, apply finalS c))
+        let finalTy = TArrow(apply s4 a, apply finalS c)
+        recordTy span finalTy
+        (finalS, finalTy)
 
     // === Record expressions (Phase 3) ===
     | RecordExpr (_, fields, span) ->
@@ -710,6 +796,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 compose s2 (compose s1 s)
             let finalS = List.fold folder empty fields
             let resultTy = apply (compose finalS paramSubst) recInfo.ResultType
+            recordTy span resultTy
             (finalS, resultTy)
         | [] ->
             let fieldNameStr = fields |> List.map fst |> String.concat ", "
@@ -735,6 +822,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 | Some fieldInfo ->
                     let subst = List.zip recInfo.TypeParams typeArgs |> Map.ofList
                     let fieldTy = apply subst fieldInfo.FieldType
+                    recordTy span fieldTy
                     (s1, fieldTy)
                 | None ->
                     raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
@@ -762,7 +850,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     | None ->
                         raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
                 let finalS = List.fold folder s1 updates
-                (finalS, apply finalS resolvedSrcTy)
+                let finalTy = apply finalS resolvedSrcTy
+                recordTy span finalTy
+                (finalS, finalTy)
             | None ->
                 raise (TypeException { Kind = NotARecord typeName; Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
         | _ ->
@@ -784,6 +874,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                     let fieldTy = apply subst fieldInfo.FieldType
                     let s2, valTy = synth ctorEnv recEnv ctx (applyEnv s1 env) value
                     let s3 = unifyWithContext ctx [] span fieldTy valTy
+                    recordTy span (TTuple [])
                     (compose s3 (compose s2 s1), TTuple [])
                 | None ->
                     raise (TypeException { Kind = UnboundField(typeName, fieldName); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
@@ -800,15 +891,20 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         | TArray elemTy ->
             let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
-            (compose s3 (compose s2 s1), apply (compose s3 s2) elemTy)
+            let finalTy = apply (compose s3 s2) elemTy
+            recordTy span finalTy
+            (compose s3 (compose s2 s1), finalTy)
         | THashtable (keyTy, valTy) ->
             let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) keyTy
-            (compose s3 (compose s2 s1), apply s3 valTy)
+            let finalTy = apply s3 valTy
+            recordTy span finalTy
+            (compose s3 (compose s2 s1), finalTy)
         | TData("MutableList", []) ->
             let tv = freshVar()
             let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            recordTy span tv
             (compose s3 (compose s2 s1), tv)
         | ty ->
             raise (TypeException {
@@ -828,6 +924,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let env2 = applyEnv (compose s3 s2) env1
             let s4, valTy = synth ctorEnv recEnv ctx env2 valExpr
             let s5 = unifyWithContext ctx [] span (apply s4 valTy) (apply (compose s4 (compose s3 s2)) elemTy)
+            recordTy span (TTuple [])
             (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
         | THashtable (keyTy, valTy) ->
             let env1 = applyEnv s1 env
@@ -836,11 +933,13 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let env2 = applyEnv (compose s3 s2) env1
             let s4, valTy' = synth ctorEnv recEnv ctx env2 valExpr
             let s5 = unifyWithContext ctx [] span (apply s4 valTy') (apply (compose s4 s3) valTy)
+            recordTy span (TTuple [])
             (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
         | TData("MutableList", []) ->
             let env1 = applyEnv s1 env
             let s2, idxTy = synth ctorEnv recEnv ctx env1 idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            recordTy span (TTuple [])
             (compose s3 (compose s2 s1), TTuple [])
         | ty ->
             raise (TypeException {
@@ -863,6 +962,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 let s5, stopTy = synth ctorEnv recEnv ctx (applyEnv s123 env) stopExpr
                 let s6 = unifyWithContext ctx [] span (apply s5 stopTy) TInt
                 compose s6 (compose s5 s123)
+        recordTy span TString
         (sFinal, TString)
 
     // === Phase 58: List comprehension type checking ===
@@ -883,7 +983,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 (s12, apply s12 elemTv)
         let loopEnv = Map.add var (Scheme([], [], elemTy)) (applyEnv s12 env)
         let s3, bodyTy = synth ctorEnv recEnv ctx loopEnv bodyExpr
-        (compose s3 s12, TList (apply s3 bodyTy))
+        let finalTy = TList (apply s3 bodyTy)
+        recordTy span finalTy
+        (compose s3 s12, finalTy)
 
     // === Phase 18: Range expression ===
     // [start..stop] or [start..step..stop] — all components must be int, result is int list
@@ -902,6 +1004,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 compose s6 s5
             | None -> empty
         let finalS = compose sStep (compose s34 s12)
+        recordTy span (TList TInt)
         (finalS, TList TInt)
 
     // === LetPat ===
@@ -920,6 +1023,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 generalize env' ty')
         let bodyEnv = Map.fold (fun acc k v -> Map.add k v acc) env' generalizedPatEnv
         let s3, bodyTy = synth ctorEnv recEnv ctx bodyEnv body
+        recordTy span bodyTy
         (compose s3 s, bodyTy)
 
 /// Check expression against expected type (checking mode)
@@ -1097,6 +1201,8 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
                 (compose bodyS (compose sGuard (compose s' s)), idx + 1)
 
         let finalS, _ = List.fold folder (s1, 0) clauses
+        // Record the outer Match node's type (the expected type after substitution)
+        TypeAnnotationMap.record annotationMap span (apply finalS expected)
         finalS
 
     // === Fallback subsumption (BIDIR-06) ===
