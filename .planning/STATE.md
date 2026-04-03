@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Milestone: v11.0 Typed AST Export
 Phase: 81 of 82 (Export API)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-03 — Phase 80 complete (Type Environment Export)
+Plan: 1 of 1 complete
+Status: Phase complete
+Last activity: 2026-04-03 — Completed 81-01-PLAN.md (Export API)
 
-Progress: [██████████░░░░░░░░░░] v11.0 (2/4 phases)
+Progress: [███████████████░░░░░] v11.0 (3/4 phases)
 
 ## Performance Metrics
 
@@ -30,6 +30,7 @@ Progress: [██████████░░░░░░░░░░] v11.0 (
 ### Decisions
 
 Key cross-milestone context carried forward:
+- ExportApi.typeCheckFile (Phase 81) uses position-tracked parseModuleFromString to preserve accurate Span data; AnnotationMap snapshot taken immediately after typeCheckModuleWithPrelude to avoid races
 - BindingEnv = TypeEnv type alias (identity wrapper exportBindingEnv) in TypeCheck.fs — Phase 81 uses this for ExportApi surface
 - typeCheckModule returns (warnings, recEnv, modules, typeEnv) — typeEnv includes initialTypeEnv builtins + user bindings
 - pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars) — v11.0 uses same pattern for annotation map (now implemented)
@@ -58,6 +59,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Phase 80 complete, ready to plan Phase 81
+Stopped at: Phase 81 complete (81-01-PLAN.md executed)
 Resume file: None
-Next action: /gsd:plan-phase 81
+Next action: /gsd:plan-phase 82
