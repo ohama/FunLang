@@ -116,6 +116,9 @@
     <!-- 13. Prelude loading (uses Eval) -->
     <Compile Include="Prelude.fs" />
 
+    <!-- 13.5. Export API (public surface for typed AST export — Phase 81) -->
+    <Compile Include="ExportApi.fs" />
+
     <!-- 14. REPL implementation (uses Eval) -->
     <Compile Include="Repl.fs" />
 
