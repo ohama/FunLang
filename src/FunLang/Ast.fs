@@ -40,6 +40,15 @@ let formatSpan (span: Span) : string =
     else
         sprintf "%s:%d:%d-%d:%d" span.FileName span.StartLine span.StartColumn span.EndLine span.EndColumn
 
+/// Operator associativity for fixity attributes
+/// Phase 84 (Attribute Infrastructure)
+type Assoc = Left | Right
+
+/// Attribute attached to declarations
+/// Phase 84 (Attribute Infrastructure)
+type Attribute =
+    | FixityAttr of Assoc * int
+
 /// Expression AST for arithmetic operations
 /// Phase 2: Arithmetic expressions with precedence
 /// Phase 3: Variables and let binding
@@ -368,6 +377,8 @@ type Decl =
     | InstanceDecl of className: string * instanceType: TypeExpr * methods: (string * Expr) list * constraints: (string * TypeExpr) list * Span
     // v12.0: Automatic deriving declaration
     | DerivingDecl of typeName: string * classNames: string list * Span
+    // Phase 84 (Attributes): Attributed operator declaration with fixity
+    | InfixDecl of attrs: Attribute list * name: string * body: Expr * Span
 
 /// Module: Top-level container for declarations
 /// Phase 1 (INDENT-05): Module structure for multi-declaration files
@@ -393,6 +404,7 @@ let declSpanOf (decl: Decl) : Span =
     | TypeClassDecl(_, _, _, _, s) -> s
     | InstanceDecl(_, _, _, _, s) -> s
     | DerivingDecl(_, _, s) -> s
+    | InfixDecl(_, _, _, s) -> s
 
 /// Extract span from Module
 let moduleSpanOf (m: Module) : Span =
