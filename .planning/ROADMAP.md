@@ -45,10 +45,10 @@ Plans:
   1. Top-level `let` bindings expose a name → `TypeScheme` map after type-checking a file
   2. Builtin and Prelude binding schemes are included in the same map (no gaps for standard library names)
   3. The exported map is queryable by binding name from outside the type-checker module
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 80-01: Extract top-level binding env and include builtins/prelude (TE-01, TE-02)
+- [ ] 80-01-PLAN.md — Add BindingEnv alias + exportBindingEnv helper, TypeEnvTests for TE-01/TE-02
 
 #### Phase 81: Export API
 
