@@ -1,0 +1,11 @@
+// Test: right-associative fixity attribute on operator definition
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+#[right 6]
+let (<$) f x = f x
+
+let double x = x * 2
+let result = double <$ 5
+let _ = println (to_string result)
+// --- Output:
+10

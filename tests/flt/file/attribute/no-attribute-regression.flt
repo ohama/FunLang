@@ -1,0 +1,8 @@
+// Test: operator definition without attribute still works (regression check)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let (^^) a b = a + b + 1
+let result = 3 ^^ 4
+let _ = println (to_string result)
+// --- Output:
+8
