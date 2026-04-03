@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Milestone: v11.0 Typed AST Export
 Phase: 80 of 82 (Type Environment Export)
-Plan: —
-Status: Ready to plan
-Last activity: 2026-04-03 — Phase 79 complete (Type Annotation Infrastructure)
+Plan: 01 of ? complete
+Status: In progress
+Last activity: 2026-04-03 — Completed 80-01-PLAN.md (BindingEnv alias + TypeEnvTests)
 
-Progress: [█████░░░░░░░░░░░░░░░] v11.0 (1/4 phases)
+Progress: [██████░░░░░░░░░░░░░░] v11.0 (2/4 phases in progress)
 
 ## Performance Metrics
 
@@ -30,6 +30,8 @@ Progress: [█████░░░░░░░░░░░░░░░] v11.0 (
 ### Decisions
 
 Key cross-milestone context carried forward:
+- BindingEnv = TypeEnv type alias (identity wrapper exportBindingEnv) in TypeCheck.fs — Phase 81 uses this for ExportApi surface
+- typeCheckModule returns (warnings, recEnv, modules, typeEnv) — typeEnv includes initialTypeEnv builtins + user bindings
 - pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars) — v11.0 uses same pattern for annotation map (now implemented)
 - annotationMap is ConcurrentDictionary<Span, Type> (upgraded from Dictionary for parallel test safety in 79-02)
 - TypeAnnotationMap.record skips unknownSpan (synthetic elaboration nodes must not pollute map)
@@ -56,6 +58,6 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Phase 79 complete, ready to plan Phase 80
+Stopped at: Completed 80-01-PLAN.md (BindingEnv alias, exportBindingEnv, TypeEnvTests)
 Resume file: None
-Next action: /gsd:plan-phase 80
+Next action: Continue Phase 80 planning or execute next plan
