@@ -1,0 +1,31 @@
+// Test: |> pipe works correctly after Prelude migration (VER-02)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let inc x = x + 1
+let double x = x * 2
+let square x = x * x
+
+// Chained pipes
+let r1 = 3 |> inc |> double |> square
+let _ = println (to_string r1)
+
+// Pipe with compose
+let r2 = 5 |> (double >> inc)
+let _ = println (to_string r2)
+
+// Multi-line pipe
+let r3 =
+    10
+    |> inc
+    |> double
+    |> inc
+let _ = println (to_string r3)
+
+// Deep-ish pipe chain (not stack-dependent)
+let r4 = 1 |> inc |> inc |> inc |> inc |> inc |> inc |> inc |> inc |> inc |> inc
+let _ = println (to_string r4)
+// --- Output:
+64
+11
+23
+11
