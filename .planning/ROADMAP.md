@@ -23,7 +23,7 @@ Reform FunLang's hardcoded infix operator handling by introducing a `#[left N]` 
 **Plans**: 1 plan
 
 Plans:
-- [ ] 84-01-PLAN.md — Lexer ATTR_OPEN token + Parser attribute grammar + AST InfixDecl + flt tests
+- [x] 84-01-PLAN.md — Lexer ATTR_OPEN token + Parser attribute grammar + AST InfixDecl + flt tests
 
 ---
 
@@ -86,7 +86,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 84. Attribute Infrastructure | v12.0 | 0/1 | Planned | - |
+| 84. Attribute Infrastructure | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
 | 85. Fixity System | v12.0 | 0/2 | Not started | - |
 | 86. Operator Migration | v12.0 | 0/3 | Not started | - |
 | 87. Verification | v12.0 | 0/1 | Not started | - |

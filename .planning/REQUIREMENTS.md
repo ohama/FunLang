@@ -46,8 +46,8 @@
 
 | Requirement | Phase | Verified |
 |-------------|-------|----------|
-| ATTR-01     | 84    |          |
-| ATTR-02     | 84    |          |
+| ATTR-01     | 84    | Complete |
+| ATTR-02     | 84    | Complete |
 | FIX-01      | 85    |          |
 | FIX-02      | 85    |          |
 | FIX-03      | 85    |          |
