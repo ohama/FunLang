@@ -106,9 +106,15 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - ExportApi.typeCheckFile → TypedModule record (AnnotationMap + BindingEnv + BuiltinSchemes) — v11.0
 - `--emit-typed-ast` CLI flag — JSON 형식 타입 정보 출력 (annotations + bindings) — v11.0
 
-### Active
+## Current Milestone: v11.1 Builtin Compatibility
 
-(None — planning next milestone)
+**Goal:** FunLangCompiler Prelude 호환을 위한 누락 빌트인 타입 시그니처 + 런타임 구현 추가 (issue #5)
+
+**Target features:**
+- String-key hashtable 빌트인 7개 (hashtable_*_str)
+- dbg 디버그 빌트인 1개
+
+### Active
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))

@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Milestone: v11.0 complete — next milestone TBD
-Phase: —
+Milestone: v11.1 Builtin Compatibility
+Phase: Not started (defining requirements)
 Plan: —
-Status: Between milestones
-Last activity: 2026-04-03 — v11.0 Typed AST Export milestone complete
+Status: Defining requirements
+Last activity: 2026-04-03 — Milestone v11.1 started
 
-Progress: N/A (between milestones)
+Progress: [░░░░░░░░░░░░░░░░░░░░] v11.1 planning
 
 ## Performance Metrics
 
