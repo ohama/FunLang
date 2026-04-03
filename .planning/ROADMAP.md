@@ -62,7 +62,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 81-01-PLAN.md — Implement ExportApi.fs with TypedModule record, typeCheckFile entry point, and Expecto tests
+- [x] 81-01-PLAN.md — Implement ExportApi.fs with TypedModule record, typeCheckFile entry point, and Expecto tests
 
 #### Phase 82: CLI Integration
 
@@ -84,5 +84,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 79. Type Annotation Infrastructure | v11.0 | 2/2 | ✓ Complete | 2026-04-03 |
 | 80. Type Environment Export | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
-| 81. Export API | v11.0 | 0/1 | Not started | - |
+| 81. Export API | v11.0 | 1/1 | ✓ Complete | 2026-04-03 |
 | 82. CLI Integration | v11.0 | 0/1 | Not started | - |

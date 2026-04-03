@@ -20,8 +20,8 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 
 ### Export API
 
-- [ ] **API-01**: ExportApi.fs — `typeCheckFile` 진입점 (TypedModule record 반환)
-- [ ] **API-02**: TypedModule에 annotation map + binding env + builtin schemes 번들링
+- [x] **API-01**: ExportApi.fs — `typeCheckFile` 진입점 (TypedModule record 반환)
+- [x] **API-02**: TypedModule에 annotation map + binding env + builtin schemes 번들링
 
 ### CLI Integration
 
@@ -47,6 +47,6 @@ FunLangCompiler는 현재 FunLang의 타입 추론 결과를 사용하지 않고
 | TA-02       | 79    | ✓ 2026-04-03 |
 | TE-01       | 80    | ✓ 2026-04-03 |
 | TE-02       | 80    | ✓ 2026-04-03 |
-| API-01      | 81    |          |
-| API-02      | 81    |          |
+| API-01      | 81    | ✓ 2026-04-03 |
+| API-02      | 81    | ✓ 2026-04-03 |
 | CLI-01      | 82    |          |
