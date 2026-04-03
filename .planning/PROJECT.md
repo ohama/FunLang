@@ -105,16 +105,12 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - Top-level binding 타입 환경 export (BindingEnv = TypeEnv, builtins + prelude + user) — v11.0
 - ExportApi.typeCheckFile → TypedModule record (AnnotationMap + BindingEnv + BuiltinSchemes) — v11.0
 - `--emit-typed-ast` CLI flag — JSON 형식 타입 정보 출력 (annotations + bindings) — v11.0
-
-## Current Milestone: v11.1 Builtin Compatibility
-
-**Goal:** FunLangCompiler Prelude 호환을 위한 누락 빌트인 타입 시그니처 + 런타임 구현 추가 (issue #5)
-
-**Target features:**
-- String-key hashtable 빌트인 7개 (hashtable_*_str)
-- dbg 디버그 빌트인 1개
+- String-key hashtable 빌트인 7개 (hashtable_create_str/get_str/set_str/containsKey_str/keys_str/remove_str/trygetvalue_str) — v11.1
+- dbg 빌트인 ('a -> 'a, stderr 출력 + identity) — v11.1
 
 ### Active
+
+(None — planning next milestone)
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -136,6 +132,13 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - IDE 통합 / LSP — 언어 기능 완성 후
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
+
+## Previous Milestone: v11.1 Builtin Compatibility (2026-04-03)
+
+**Delivered:** FunLangCompiler Prelude 호환 빌트인 8개 (hashtable_*_str 7개 + dbg)
+- 9 files changed, +439 LOC in v11.1
+- 713 flt tests, 244 unit tests
+- 83 phases, 169+ plans executed across v1.0-v11.1
 
 ## Previous Milestone: v11.0 Typed AST Export (2026-04-03)
 
@@ -264,4 +267,4 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 | funproj.toml paths relative to project dir | Cargo 관례 준수, CWD 독립적 | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after v11.0 milestone archived*
+*Last updated: 2026-04-03 after v11.1 milestone archived*

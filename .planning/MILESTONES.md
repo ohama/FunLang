@@ -1,5 +1,27 @@
 # Project Milestones: FunLang
 
+## v11.1 Builtin Compatibility (Shipped: 2026-04-03)
+
+**Delivered:** FunLangCompiler Prelude 호환을 위한 8개 빌트인 추가 — hashtable_*_str 7개 (string-key 전용) + dbg 1개 (identity debug)
+
+**Phases completed:** 83 (1 plan total)
+
+**Key accomplishments:**
+- 7 string-key hashtable 빌트인 (create/get/set/containsKey/keys/remove/tryGetValue) — monomorphic string key
+- dbg 빌트인 ('a -> 'a, stderr 출력 + identity 반환)
+- FunLangCompiler typeCheckFile 호환성 확보 (E0303 Unbound variable 해결)
+
+**Stats:**
+- 9 files changed, +439 LOC
+- ~16,616 lines of F# source
+- 1 phase, 1 plan
+- 1 day (2026-04-03)
+- 244 F# unit tests + 713 flt tests passing
+
+**Git range:** `00dc90f` → `fbb3bc7`
+
+---
+
 ## v11.0 Typed AST Export (Shipped: 2026-04-03)
 
 **Delivered:** HM 타입 추론 결과를 per-expression annotation map + top-level binding environment로 export — FunLangCompiler의 ~250줄 heuristic 타입 추측 코드 대체 기반
