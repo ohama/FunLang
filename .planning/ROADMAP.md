@@ -37,11 +37,10 @@ Plans:
   2. An infix chain `a |> f |> g` is restructured into the correct left-associative tree by the Pratt post-processor
   3. Operators with no attribute fall back to the existing first-character precedence rules (INFIXOP0-4 behavior preserved)
   4. A custom user-defined infix operator with `#[right 5]` binds right-to-left at precedence 5
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 85-01: FixityEnv.fs — Map<string, (Assoc * int)>, populate from Prelude attributes (FIX-01)
-- [ ] 85-02: Pratt post-processor — InfixChain flat collection and precedence-climbing rewrite (FIX-02, FIX-03)
+- [ ] 85-01-PLAN.md — FixityEnv module + pipeline threading + post-parse rewrite + flt tests (FIX-01, FIX-02, FIX-03)
 
 ---
 
@@ -86,7 +85,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 84. Attribute Infrastructure | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
-| 85. Fixity System | v12.0 | 0/2 | Not started | - |
+| 84. Attribute Infrastructure | v12.0 | 1/1 | Complete | 2026-04-03 |
+| 85. Fixity System | v12.0 | 0/1 | Not started | - |
 | 86. Operator Migration | v12.0 | 0/3 | Not started | - |
 | 87. Verification | v12.0 | 0/1 | Not started | - |
