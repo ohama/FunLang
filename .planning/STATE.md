@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-01)
+See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** 현대적인 타입 시스템(ADT, GADT, Records, Type Classes)과 F# 스타일 문법을 갖춘 실용 함수형 언어
-**Current focus:** Planning next milestone
+**Current focus:** Phase 79 — Type Annotation Infrastructure
 
 ## Current Position
 
 Milestone: v11.0 Typed AST Export
-Phase: Not started (defining requirements)
+Phase: 79 of 82 (Type Annotation Infrastructure)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-03 — Milestone v11.0 started
+Status: Ready to plan
+Last activity: 2026-04-02 — v11.0 roadmap created (phases 79-82)
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 planning
+Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 (0/4 phases)
 
 ## Performance Metrics
 
@@ -30,16 +30,10 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] v11.0 p
 ### Decisions
 
 Key cross-milestone context carried forward:
-- Dictionary passing strategy: constraints elaborated to RecordValue dict args; evaluator type-class-unaware
-- Scheme shape: Scheme(vars, constraints, ty) with mkScheme/schemeType helpers
-- pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars)
-- Constraint now carries SourceSpan for error location (v10.1)
-- ModuleExports includes ClassEnv/InstanceEnv (v10.1)
-- Instance methods promoted to outer scope from ModuleDecl during elaboration (v10.1)
-- TEName for user-defined ADTs resolves to TData in instance processing (v10.1)
-- TEConstrained annotations validated against ClassEnv in Bidir.synth (v10.1)
-- AND_KW added to IndentFilter isContinuationStart + offside suppression (v10.1)
-- Polymorphic instances need unification-based resolution (deferred to future)
+- pendingConstraints mutable ref in Bidir.fs (same pattern as mutableVars) — v11.0 will use same pattern for annotation map
+- Constraint now carries SourceSpan for error location (v10.1) — Span is already threaded through synth
+- ModuleExports includes ClassEnv/InstanceEnv (v10.1) — TypeEnv already available at typeCheckModuleWithPrelude return
+- Pre/post-elaboration AST mismatch is key risk: elaborateTypeclasses rewrites AST before Bidir runs
 
 ### Pending Todos
 
@@ -54,11 +48,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-01
-Stopped at: v10.1 milestone complete
+Last session: 2026-04-02
+Stopped at: v11.0 roadmap created, ready to plan Phase 79
 Resume file: None
-Next action: /gsd:new-milestone
-
----
-*State initialized: 2026-02-25*
-*Last updated: 2026-04-01 (v10.1 milestone archived)*
+Next action: /gsd:plan-phase 79
