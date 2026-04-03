@@ -8,6 +8,7 @@
     1. Ast.fs         - AST type definitions (Discriminated Unions)
     2. Type.fs        - Type system definitions (Type, Scheme, TypeEnv)
     3. Elaborate.fs   - Type expression elaboration (converts TypeExpr to Type)
+    2.6. TypeAnnotationMap.fs - Per-expression Span -> Type map (Phase 79)
     4. Diagnostic.fs  - Error representation types (depends on Type.fs, Ast.fs)
     5. Unify.fs       - Unification algorithm (depends on Type.fs, Diagnostic.fs)
     6. Infer.fs       - Inference helpers (depends on Type.fs, Unify.fs, Diagnostic.fs)
@@ -61,6 +62,9 @@
 
     <!-- 2.5. Elaboration module (converts TypeExpr to Type) -->
     <Compile Include="Elaborate.fs" />
+
+    <!-- 2.6. Type annotation map (Phase 79: per-expression Span -> Type) -->
+    <Compile Include="TypeAnnotationMap.fs" />
 
     <!-- 3. Diagnostic types (manually written, depends on Type.fs and Ast.fs) -->
     <Compile Include="Diagnostic.fs" />
