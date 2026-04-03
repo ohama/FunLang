@@ -71,6 +71,7 @@ type ReplState = {
     InstEnv: InstanceEnv
     Modules: Map<string, TypeCheck.ModuleExports>
     ModuleValueEnv: Map<string, ModuleValueEnv>
+    FixityEnv: FixityEnv.FixityEnv
 }
 
 /// Try to evaluate as a module-level declaration (let, type, etc.)
@@ -83,6 +84,13 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
             | EmptyModule _ -> []
         if List.isEmpty decls then None
         else
+            // Collect fixity from these decls and rewrite the module
+            let updatedFixityEnv = FixityEnv.collectFixity state.FixityEnv decls
+            let m = FixityEnv.rewriteFixity updatedFixityEnv m
+            let decls =
+                match m with
+                | Module(decls, _) | NamedModule(_, decls, _) -> decls
+                | EmptyModule _ -> []
             // Type check
             Bidir.mutableVars <- Set.empty
             Bidir.currentClassEnv <- state.ClassEnv
@@ -125,6 +133,7 @@ let private tryEvalDecl (state: ReplState) (input: string) : ReplState option =
                 InstEnv = instEnv
                 Modules = modules
                 ModuleValueEnv = moduleEnv
+                FixityEnv = updatedFixityEnv
             }
     with _ -> None
 
@@ -223,6 +232,7 @@ let startRepl () : int =
         InstEnv = prelude.InstEnv
         Modules = prelude.Modules
         ModuleValueEnv = prelude.ModuleValueEnv
+        FixityEnv = prelude.FixityEnv
     }
     replLoop state
     0

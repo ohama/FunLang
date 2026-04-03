@@ -1,0 +1,16 @@
+// Test: two operators with different fixity-assigned precedences interact correctly
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+#[left 6]
+let ($+) x y = x + y
+
+#[left 7]
+let ($*) x y = x * y
+
+// $* (prec 7) should bind tighter than $+ (prec 6)
+// Both default to INFIXOP0 (left, prec 4), so LALR parses as: ((2 $+ 3) $* 4) = 5 * 4 = 20
+// After fixity rewrite: 2 $+ (3 $* 4) = 2 + 12 = 14
+let result = 2 $+ 3 $* 4
+let _ = println (to_string result)
+// --- Output:
+14

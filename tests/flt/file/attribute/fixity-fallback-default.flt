@@ -1,0 +1,11 @@
+// Test: operators without fixity attributes use default INFIXOP rules (no regression)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let ($?) x y = x + y
+
+// $? starts with $ -> INFIXOP0 (left, prec 4) by default
+// Left-assoc: (1 $? 2) $? 3 = 3 $? 3 = 6
+let result = 1 $? 2 $? 3
+let _ = println (to_string result)
+// --- Output:
+6

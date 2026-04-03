@@ -1,0 +1,12 @@
+// Test: left-to-right associativity override via #[right] attribute
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+#[right 6]
+let (+++) x y = x * 10 + y
+
+// With right-assoc: 1 +++ (2 +++ 3) = 1 +++ 23 = 33
+// With left-assoc: (1 +++ 2) +++ 3 = 12 +++ 3 = 123
+let result = 1 +++ 2 +++ 3
+let _ = println (to_string result)
+// --- Output:
+33

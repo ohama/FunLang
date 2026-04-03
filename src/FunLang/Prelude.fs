@@ -19,9 +19,10 @@ type PreludeResult = {
     InstEnv: InstanceEnv
     Modules: Map<string, ModuleExports>
     ModuleValueEnv: Map<string, ModuleValueEnv>
+    FixityEnv: FixityEnv.FixityEnv
 }
 
-let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; ClassEnv = Map.empty; InstEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty }
+let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; ClassEnv = Map.empty; InstEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty; FixityEnv = Map.empty }
 
 /// Parse a string as module with IndentFilter
 let parseModuleFromString (input: string) (filename: string) : Module =
@@ -276,6 +277,11 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
                     let source = File.ReadAllText file
                     let m = parseModuleFromString source file
 
+                    // Collect fixity from this file's declarations and rewrite module before type-check
+                    let decls = getDecls m
+                    let updatedFixityEnv = FixityEnv.collectFixity result.FixityEnv decls
+                    let m = FixityEnv.rewriteFixity updatedFixityEnv m
+
                     // Type check with accumulated prelude environments (including accumulated modules)
                     match typeCheckModuleWithPrelude result.CtorEnv result.RecEnv result.ClassEnv result.InstEnv result.TypeEnv result.Modules m with
                     | Ok (_warnings, ctorEnv, recEnv, classEnv, instEnv, modules, typeEnv) ->
@@ -305,7 +311,7 @@ let loadPrelude (explicitPath: string option) (projPrelude: string option) : Pre
                         let mergedEnv = Map.fold (fun acc k v -> Map.add k v acc) result.Env newValues
                         let mergedModuleValueEnv = Map.fold (fun acc k v -> Map.add k v acc) result.ModuleValueEnv fileModuleEnv
 
-                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; ClassEnv = mergedClassEnv; InstEnv = mergedInstEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv }
+                        result <- { Env = mergedEnv; TypeEnv = mergedTypeEnv; CtorEnv = mergedCtorEnv; RecEnv = mergedRecEnv; ClassEnv = mergedClassEnv; InstEnv = mergedInstEnv; Modules = mergedModules; ModuleValueEnv = mergedModuleValueEnv; FixityEnv = updatedFixityEnv }
 
                     | Error diags ->
                         eprintfn "Warning: Type error in %s: %s" file (diags |> List.map formatDiagnostic |> String.concat "\n")

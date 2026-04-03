@@ -175,6 +175,9 @@ let main argv =
                                     let input = System.IO.File.ReadAllText target.Main
                                     TypeCheck.currentTypeCheckingFile <- target.Main
                                     let m = parseModuleFromString input target.Main
+                                    let mDecls = match m with | Module(ds,_) | NamedModule(_,ds,_) -> ds | EmptyModule _ -> []
+                                    let combinedFix = FixityEnv.collectFixity prelude.FixityEnv mDecls
+                                    let m = FixityEnv.rewriteFixity combinedFix m
                                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
                                     | Ok (warnings, _, _, _, _, _, _) ->
                                         for w in warnings do
@@ -225,6 +228,9 @@ let main argv =
                                     Eval.currentEvalFile <- target.Main
                                     Eval.scriptArgs <- []
                                     let m = parseModuleFromString input target.Main
+                                    let mDecls2 = match m with | Module(ds,_) | NamedModule(_,ds,_) -> ds | EmptyModule _ -> []
+                                    let combinedFix2 = FixityEnv.collectFixity prelude.FixityEnv mDecls2
+                                    let m = FixityEnv.rewriteFixity combinedFix2 m
                                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
                                     | Error diags ->
                                         for d in diags do eprintfn "Error in %s: %s" target.Name (formatDiagnostic d)
@@ -306,6 +312,10 @@ let main argv =
                     let input = File.ReadAllText filename
                     TypeCheck.currentTypeCheckingFile <- System.IO.Path.GetFullPath filename
                     let m = parseModuleFromString input filename
+                    // Apply fixity rewrite before type-check
+                    let chkDecls = match m with | Module(ds,_) | NamedModule(_,ds,_) -> ds | EmptyModule _ -> []
+                    let chkFix = FixityEnv.collectFixity prelude.FixityEnv chkDecls
+                    let m = FixityEnv.rewriteFixity chkFix m
                     // Filter out modules declared in this file to avoid duplicate errors
                     // when --check is run on a Prelude file that was already loaded
                     let declaredNames =
@@ -486,6 +496,10 @@ let main argv =
                         | Some i -> rawArgv |> Array.skip (i + 1) |> Array.toList
                         | None -> []
                     let m = parseModuleFromString input filename
+                    // Apply fixity rewrite before type-check
+                    let fileDecls = match m with | Module(ds,_) | NamedModule(_,ds,_) -> ds | EmptyModule _ -> []
+                    let combinedFixityEnv = FixityEnv.collectFixity prelude.FixityEnv fileDecls
+                    let m = FixityEnv.rewriteFixity combinedFixityEnv m
                     match TypeCheck.typeCheckModuleWithPrelude prelude.CtorEnv prelude.RecEnv prelude.ClassEnv prelude.InstEnv prelude.TypeEnv prelude.Modules m with
                     | Error diags ->
                         for d in diags do eprintfn "%s" (formatDiagnostic d)

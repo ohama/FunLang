@@ -1,0 +1,12 @@
+// Test: fixity attribute makes dollar-operator right-associative for cons-like use
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+#[right 5]
+let ($>) x xs = x :: xs
+
+// Right-assoc: 1 $> (2 $> (3 $> [])) = [1; 2; 3]
+// Left-assoc would give type error: ((1 $> 2) $> 3) $> [] fails since 1$>2 is int, not a list
+let result = 1 $> 2 $> 3 $> []
+let _ = println (to_string result)
+// --- Output:
+[1; 2; 3]
