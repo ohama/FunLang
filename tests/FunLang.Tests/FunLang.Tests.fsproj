@@ -14,6 +14,7 @@
     <Compile Include="MatchCompileTests.fs" />
     <Compile Include="TypeAnnotationTests.fs" />
     <Compile Include="TypeEnvTests.fs" />
+    <Compile Include="ExportApiTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
