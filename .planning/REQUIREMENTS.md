@@ -48,9 +48,9 @@
 |-------------|-------|----------|
 | ATTR-01     | 84    | Complete |
 | ATTR-02     | 84    | Complete |
-| FIX-01      | 85    |          |
-| FIX-02      | 85    |          |
-| FIX-03      | 85    |          |
+| FIX-01      | 85    | Complete |
+| FIX-02      | 85    | Complete |
+| FIX-03      | 85    | Complete |
 | MIG-01      | 86    |          |
 | MIG-02      | 86    |          |
 | MIG-03      | 86    |          |

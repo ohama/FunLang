@@ -40,7 +40,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 85-01-PLAN.md — FixityEnv module + pipeline threading + post-parse rewrite + flt tests (FIX-01, FIX-02, FIX-03)
+- [x] 85-01-PLAN.md — FixityEnv module + pipeline threading + post-parse rewrite + flt tests (FIX-01, FIX-02, FIX-03)
 
 ---
 
@@ -86,6 +86,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 84. Attribute Infrastructure | v12.0 | 1/1 | Complete | 2026-04-03 |
-| 85. Fixity System | v12.0 | 0/1 | Not started | - |
+| 85. Fixity System | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
 | 86. Operator Migration | v12.0 | 0/3 | Not started | - |
 | 87. Verification | v12.0 | 0/1 | Not started | - |
