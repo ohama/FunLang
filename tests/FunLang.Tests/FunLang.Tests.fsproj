@@ -13,6 +13,7 @@
     <Compile Include="ExceptionTests.fs" />
     <Compile Include="MatchCompileTests.fs" />
     <Compile Include="TypeAnnotationTests.fs" />
+    <Compile Include="TypeEnvTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
