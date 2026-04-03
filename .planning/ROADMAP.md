@@ -59,10 +59,10 @@ Plans:
   1. `ExportApi.typeCheckFile` accepts a file path and returns a `TypedModule` record without error
   2. `TypedModule` contains the annotation map, binding environment, and builtin schemes in one value
   3. The API compiles and is accessible from outside `FunLang.fsproj` (e.g., a test or consumer project)
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 81-01: Implement ExportApi.fs and TypedModule record (API-01, API-02)
+- [ ] 81-01-PLAN.md — Implement ExportApi.fs with TypedModule record, typeCheckFile entry point, and Expecto tests
 
 #### Phase 82: CLI Integration
 
