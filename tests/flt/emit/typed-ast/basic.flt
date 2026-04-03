@@ -1,0 +1,6 @@
+// Test: --emit-typed-ast emits JSON with span annotations and user bindings
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-typed-ast %input
+// --- Input:
+let x = 42
+// --- Output:
+{"annotations":[{"span":{"startLine":1,"startCol":6,"endLine":1,"endCol":10},"type":"int"}],"bindings":{"x":"int"}}

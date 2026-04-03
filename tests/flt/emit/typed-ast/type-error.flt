@@ -1,0 +1,7 @@
+// Test: --emit-typed-ast on a file with a type error exits non-zero with error on stderr
+// --- Command: src/FunLang/bin/Release/net10.0/fn --emit-typed-ast %input
+// --- Input:
+let x = 1 + true
+// --- ExitCode: 1
+// --- StderrContains:
+error[E0301]: Type mismatch: expected int but got bool
