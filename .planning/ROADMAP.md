@@ -54,12 +54,10 @@ Plans:
   2. The compiler builds with no reference to PipeRight, ComposeRight, or ComposeLeft AST nodes
   3. PIPE_RIGHT, COMPOSE_RIGHT, COMPOSE_LEFT tokens are absent from the Lexer and IndentFilter
   4. Existing programs using `|>`, `>>`, `<<` produce identical output to before the migration
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 86-01: Prelude/Core.fun — add `#[...]` operator definitions for `|>`, `>>`, `<<` (MIG-01)
-- [ ] 86-02: Remove PipeRight/ComposeRight/ComposeLeft AST nodes from Ast, Eval, Bidir, Infer, TypeCheck, Format (MIG-02)
-- [ ] 86-03: Remove PIPE_RIGHT/COMPOSE_RIGHT/COMPOSE_LEFT tokens from Lexer and IndentFilter (MIG-03)
+- [ ] 86-01-PLAN.md — Add Prelude defs, remove tokens/AST/grammar/handlers from 10 files (MIG-01, MIG-02, MIG-03)
 
 ---
 
@@ -86,6 +84,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 84. Attribute Infrastructure | v12.0 | 1/1 | Complete | 2026-04-03 |
-| 85. Fixity System | v12.0 | 1/1 | ✅ Complete | 2026-04-03 |
-| 86. Operator Migration | v12.0 | 0/3 | Not started | - |
+| 85. Fixity System | v12.0 | 1/1 | Complete | 2026-04-03 |
+| 86. Operator Migration | v12.0 | 0/1 | Not started | - |
 | 87. Verification | v12.0 | 0/1 | Not started | - |
