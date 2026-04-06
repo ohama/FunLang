@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6f985edc.js";
+            window.path_to_searchindex_js = "searchindex-30150977.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -222,6 +222,22 @@ $ fn compose_fwd.l3
 </code></pre>
 <p><code>f 5</code>는 <code>inc (double 5)</code> = <code>inc 10</code> = <code>11</code>을 계산합니다.</p>
 <p>수학에서의 함수 합성 <code>g ∘ f</code>와 비교해보세요. 수학적 표기법은 오른쪽에서 왼쪽으로 읽지만, <code>&gt;&gt;</code> 연산자는 왼쪽에서 오른쪽으로 읽을 수 있어 더 직관적입니다. <code>double &gt;&gt; inc</code>는 “먼저 두 배로 만들고, 그 다음 1을 더한다“고 소리 내어 읽을 수 있습니다.</p>
+<h2 id="역방향-파이프"><a class="header" href="#역방향-파이프">역방향 파이프</a></h2>
+<p><code>&lt;|</code> 연산자는 <code>|&gt;</code>의 반대 방향입니다. 오른쪽의 값을 왼쪽의 함수에 전달합니다. Haskell의 <code>$</code> 연산자와 같은 역할을 합니다.</p>
+<pre><code>fn&gt; (fun x -&gt; x + 1) &lt;| 5
+6
+</code></pre>
+<p><code>&lt;|</code>는 우결합(right-associative)이므로, 중첩된 함수 적용에서 괄호를 줄일 수 있습니다:</p>
+<pre><code>$ cat backward_pipe.l3
+let double x = x * 2
+let inc x = x + 1
+let result = println &lt;| to_string &lt;| inc &lt;| double 5
+
+$ fn backward_pipe.l3
+11
+()
+</code></pre>
+<p><code>println (to_string (inc (double 5)))</code>와 같은 결과이지만, 괄호 중첩 없이 읽을 수 있습니다. 왼쪽에서 오른쪽으로 읽히는 <code>|&gt;</code>와 달리 <code>&lt;|</code>는 오른쪽에서 왼쪽으로 읽힙니다. 두 스타일을 섞어 쓰면 혼란스러울 수 있으니, 팀 내에서 일관된 방향을 택하는 것이 좋습니다.</p>
 <h2 id="역방향-합성"><a class="header" href="#역방향-합성">역방향 합성</a></h2>
 <p><code>&lt;&lt;</code> 연산자는 오른쪽에서 왼쪽으로 합성합니다. <code>g &lt;&lt; f</code>는 “<code>f</code>를 먼저 적용한 다음 <code>g</code>를 적용한다“는 의미로, <code>f &gt;&gt; g</code>와 동일합니다:</p>
 <pre><code>$ cat compose_bwd.l3
@@ -340,7 +356,7 @@ $ fn mixed_pipeline.l3
 <tr><th>연산자</th><th>우선순위</th></tr>
 </thead>
 <tbody>
-<tr><td><code>|&gt;</code></td><td>가장 낮음</td></tr>
+<tr><td><code>|&gt;</code>, <code>&lt;|</code></td><td>가장 낮음</td></tr>
 <tr><td><code>&gt;&gt;</code>, <code>&lt;&lt;</code></td><td>낮음</td></tr>
 <tr><td><code>||</code></td><td>…</td></tr>
 <tr><td><code>&amp;&amp;</code></td><td>…</td></tr>
@@ -350,6 +366,12 @@ $ fn mixed_pipeline.l3
 </table>
 </div>
 <p>우선순위 때문에 예상치 못한 동작이 생긴다면, 괄호를 추가해 의도를 명확히 하는 것이 최선입니다. “괄호를 아낀다“는 미학보다 “코드를 오해 없이 읽는다“는 실용성이 중요합니다.</p>
+<h2 id="구현-참고"><a class="header" href="#구현-참고">구현 참고</a></h2>
+<p><code>|&gt;</code>, <code>&lt;|</code>, <code>&gt;&gt;</code>, <code>&lt;&lt;</code>는 컴파일러에 내장된 특수 연산자가 아니라, <code>Prelude/Core.fun</code>에 일반 함수로 정의되어 있습니다. 예를 들어 <code>|&gt;</code>의 정의는 단 한 줄입니다:</p>
+<pre><code>#[left 1]
+let (|&gt;) x f = f x
+</code></pre>
+<p><code>#[left 1]</code>은 fixity 속성으로, 이 연산자가 좌결합이며 우선순위 레벨 1(가장 낮음)임을 선언합니다. 이 메커니즘 덕분에 사용자도 동일한 방식으로 자신만의 연산자에 원하는 우선순위와 결합성을 부여할 수 있습니다. 자세한 내용은 <a href="13-user-defined-operators.html">13장: 사용자 정의 연산자</a>를 참조하세요.</p>
 
                     </main>
 

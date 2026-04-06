@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6f985edc.js";
+            window.path_to_searchindex_js = "searchindex-30150977.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -195,16 +195,16 @@ fn&gt; '\t'
 '\t'
 </code></pre>
 <h2 id="문자-변환"><a class="header" href="#문자-변환">문자 변환</a></h2>
-<p><code>char_to_int</code>와 <code>int_to_char</code>로 문자와 ASCII 코드 사이를 변환합니다:</p>
+<p><code>Char.toInt</code>와 <code>Char.ofInt</code>로 문자와 ASCII 코드 사이를 변환합니다 (빌트인 <code>char_to_int</code>/<code>int_to_char</code>도 사용 가능):</p>
 <pre><code>$ cat char_conv.l3
-let code = char_to_int 'A'
-let back = int_to_char 65
+let code = Char.toInt 'A'
+let back = Char.ofInt 65
 let result = code
 
 $ fn char_conv.l3
 65
 </code></pre>
-<p><code>int_to_char</code>는 0~127 범위의 ASCII 코드만 지원합니다. 범위를 벗어나면 오류가 발생합니다.</p>
+<p><code>Char.ofInt</code>는 0~127 범위의 ASCII 코드만 지원합니다. 범위를 벗어나면 오류가 발생합니다.</p>
 <p>이 함수들은 문자 기반 알고리즘에 유용합니다. 예를 들어, 대문자를 소문자로 변환하려면:</p>
 <pre><code>$ cat to_lower.l3
 let toLower c =
@@ -246,10 +246,10 @@ $ fn char_match.l3
 <h2 id="char-모듈-함수"><a class="header" href="#char-모듈-함수">Char 모듈 함수</a></h2>
 <p>Prelude의 <code>Char</code> 모듈은 문자 판별 및 변환 함수를 제공합니다. 위에서 <code>char_to_int</code>로 직접 구현한 <code>toLower</code> 같은 변환을 더 간단하게 할 수 있습니다:</p>
 <pre><code>$ cat char_module.l3
-let _ = println (to_string (Char.IsDigit '3'))
-let _ = println (to_string (Char.IsDigit 'a'))
-let _ = println (to_string (Char.IsLetter 'z'))
-let _ = println (to_string (Char.ToUpper 'a'))
+let _ = println (to_string (Char.isDigit '3'))
+let _ = println (to_string (Char.isDigit 'a'))
+let _ = println (to_string (Char.isLetter 'z'))
+let _ = println (to_string (Char.toUpper 'a'))
 
 $ fn char_module.l3
 true
@@ -260,9 +260,9 @@ true
 </code></pre>
 <p>대소문자 판별과 변환도 제공됩니다:</p>
 <pre><code>$ cat char_case.l3
-let _ = println (to_string (Char.IsUpper 'A'))
-let _ = println (to_string (Char.IsLower 'a'))
-let _ = println (to_string (Char.ToLower 'Z'))
+let _ = println (to_string (Char.isUpper 'A'))
+let _ = println (to_string (Char.isLower 'a'))
+let _ = println (to_string (Char.toLower 'Z'))
 
 $ fn char_case.l3
 true
@@ -276,12 +276,14 @@ true
 <tr><th>함수</th><th>설명</th></tr>
 </thead>
 <tbody>
-<tr><td><code>Char.IsDigit c</code></td><td>숫자 문자(‘0’~‘9’)인지 확인</td></tr>
-<tr><td><code>Char.IsLetter c</code></td><td>알파벳 문자인지 확인</td></tr>
-<tr><td><code>Char.IsUpper c</code></td><td>대문자인지 확인</td></tr>
-<tr><td><code>Char.IsLower c</code></td><td>소문자인지 확인</td></tr>
-<tr><td><code>Char.ToUpper c</code></td><td>대문자로 변환</td></tr>
-<tr><td><code>Char.ToLower c</code></td><td>소문자로 변환</td></tr>
+<tr><td><code>Char.isDigit c</code></td><td>숫자 문자(‘0’~‘9’)인지 확인</td></tr>
+<tr><td><code>Char.isLetter c</code></td><td>알파벳 문자인지 확인</td></tr>
+<tr><td><code>Char.isUpper c</code></td><td>대문자인지 확인</td></tr>
+<tr><td><code>Char.isLower c</code></td><td>소문자인지 확인</td></tr>
+<tr><td><code>Char.toUpper c</code></td><td>대문자로 변환</td></tr>
+<tr><td><code>Char.toLower c</code></td><td>소문자로 변환</td></tr>
+<tr><td><code>Char.toInt c</code></td><td>문자 → ASCII 코드 (int)</td></tr>
+<tr><td><code>Char.ofInt n</code></td><td>ASCII 코드 → 문자 (0~127)</td></tr>
 </tbody>
 </table>
 </div>
@@ -290,8 +292,8 @@ true
 <ul>
 <li><strong>문자 리터럴:</strong> <code>'a'</code>, <code>'\n'</code> (작은따옴표)</li>
 <li><strong>문자열 리터럴:</strong> <code>"hello"</code> (큰따옴표) — 서로 다른 타입</li>
-<li><strong><code>char_to_int</code>:</strong> 문자 → ASCII 코드 (int)</li>
-<li><strong><code>int_to_char</code>:</strong> ASCII 코드 → 문자 (0~127만)</li>
+<li><strong><code>Char.toInt</code></strong> (<code>char_to_int</code>): 문자 → ASCII 코드 (int)</li>
+<li><strong><code>Char.ofInt</code></strong> (<code>int_to_char</code>): ASCII 코드 → 문자 (0~127만)</li>
 <li><strong>비교:</strong> <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>=</code> 모두 지원</li>
 </ul>
 <p>문자열과 문자를 다루는 방법을 알았으니, 다음 장에서는 파이프 연산자와 함수 합성으로 데이터 처리 파이프라인을 구성하는 방법을 알아봅니다.</p>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6f985edc.js";
+            window.path_to_searchindex_js = "searchindex-30150977.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-b938acb2.js"></script>
@@ -184,10 +184,11 @@
 <ul>
 <li><code>Prelude/Option.fun</code> – Option 타입과 함수 (<code>optionMap</code>, <code>optionBind</code>, <code>optionDefault</code>, <code>isSome</code>, <code>isNone</code> 등)</li>
 <li><code>Prelude/Array.fun</code> – 배열 모듈 (<code>Array.create</code>, <code>Array.get</code>, <code>Array.set</code>, <code>Array.sort</code>, <code>Array.ofSeq</code> 등)</li>
-<li><code>Prelude/Char.fun</code> – 문자 모듈 (<code>Char.IsDigit</code>, <code>Char.IsLetter</code>, <code>Char.ToUpper</code>, <code>Char.ToLower</code> 등)</li>
-<li><code>Prelude/Core.fun</code> – 핵심 고차 함수 (<code>id</code>, <code>const</code>, <code>compose</code>)</li>
+<li><code>Prelude/Char.fun</code> – 문자 모듈 (<code>Char.isDigit</code>, <code>Char.isLetter</code>, <code>Char.toUpper</code>, <code>Char.toLower</code> 등)</li>
+<li><code>Prelude/Core.fun</code> – ���심 ��차 함수 (<code>id</code>, <code>const</code>, <code>compose</code>) + 파이프/합성 연���자 (<code>|&gt;</code>, <code>&lt;|</code>, <code>&gt;&gt;</code>, <code>&lt;&lt;</code>)</li>
 <li><code>Prelude/HashSet.fun</code> – HashSet 모듈 (<code>HashSet.create</code>, <code>HashSet.add</code>, <code>HashSet.contains</code>, <code>HashSet.count</code>)</li>
 <li><code>Prelude/Hashtable.fun</code> – Hashtable 모듈</li>
+<li><code>Prelude/Int.fun</code> – Int 모듈 (<code>Int.parse</code>, <code>Int.toString</code>)</li>
 <li><code>Prelude/List.fun</code> – 리스트 처리 함수 (<code>map</code>, <code>filter</code>, <code>fold</code>, <code>sort</code>, <code>tryFind</code>, <code>choose</code> 등)</li>
 <li><code>Prelude/MutableList.fun</code> – MutableList 모듈</li>
 <li><code>Prelude/Queue.fun</code> – Queue 모듈</li>
@@ -521,7 +522,22 @@ $ fn pipeline.l3
 <p>“1부터 10까지의 수 중 짝수만 골라서, 각각 제곱한 결과” — 코드가 이 설명을 그대로 표현합니다. SQL의 <code>WHERE</code>와 <code>SELECT</code>처럼, 파이프라인의 각 단계가 한 가지 일만 담당합니다. 단계를 추가하거나 순서를 바꾸기도 쉽습니다.</p>
 <h2 id="prelude-연산자"><a class="header" href="#prelude-연산자">Prelude 연산자</a></h2>
 <p>Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다. 연산자는 중위 표기(infix)를 쓸 수 있어서, 일부 표현은 함수 형태보다 연산자 형태가 훨씬 자연스럽습니다.</p>
-<h3 id="--리스트-연결"><a class="header" href="#--리스트-연결"><code>++</code> — 리스트 연결</a></h3>
+<h3 id="---파이프-연산자"><a class="header" href="#---파이프-연산자"><code>|&gt;</code>, <code>&lt;|</code> — 파이프 연산자</a></h3>
+<p><code>|&gt;</code>(순방향 파이프)와 <code>&lt;|</code>(��방향 파이프)도 Core.fun에 정의된 Prelude 연산자입니다. <code>|&gt;</code>는 왼쪽 값을 오른쪽 함수에 전달하고, <code>&lt;|</code>는 오른쪽 값을 왼쪽 함수에 전달합니다:</p>
+<pre><code>fn&gt; 5 |&gt; (fun x -&gt; x + 1)
+6
+
+fn&gt; (fun x -&gt; x + 1) &lt;| 5
+6
+</code></pre>
+<p><code>|&gt;</code>는 좌결합, <code>&lt;|</code>��� 우결합이며, 둘 다 가장 낮은 우선순위(레벨 1)를 가집니다. 자세한 사용법은 <a href="08-pipes-and-composition.html">8장: 파이프와 합성</a>에서 다룹니다.</p>
+<h3 id="---합성-연산자"><a class="header" href="#---합성-연산자"><code>&gt;&gt;</code>, <code>&lt;&lt;</code> — 합성 연산자</a></h3>
+<p><code>&gt;&gt;</code>(순방향 합성)과 <code>&lt;&lt;</code>(역방향 합성)도 Core.fun에서 정의됩��다:</p>
+<pre><code>fn&gt; let f = (fun x -&gt; x * 2) &gt;&gt; (fun x -&gt; x + 1) in f 5
+11
+</code></pre>
+<p>이 연산자들은 우선순위 레벨 2로, 파이프보다 높고 논리 연산자보다 낮습니다.</p>
+<h3 id="--스트-연결"><a class="header" href="#--스트-연결"><code>++</code> — ��스트 연결</a></h3>
 <p><code>append</code>의 중위 연산자 버전입니다:</p>
 <pre><code>fn&gt; [1; 2] ++ [3; 4; 5]
 [1; 2; 3; 4; 5]
@@ -617,7 +633,7 @@ fn&gt; to_string (Some [1; 2; 3])
 <tbody>
 <tr><td>Prelude 타입+함수</td><td><code>Prelude/*.fun</code> 파일</td><td><code>Option</code>, <code>Result</code>, <code>map</code>, <code>filter</code>, <code>fold</code>, <code>sort</code>, <code>tryFind</code>, <code>choose</code>, <code>id</code>, <code>compose</code>, <code>not</code>, <code>min</code>, <code>max</code>, <code>abs</code>, <code>fst</code>, <code>snd</code>, <code>ignore</code> 등</td></tr>
 <tr><td>Prelude 타입 클래스</td><td><code>Prelude/Typeclass.fun</code></td><td><code>show</code>, <code>eq</code> — 타입 클래스와 기본 타입 인스턴스 (<a href="23-typeclasses.html">23장</a> 참조)</td></tr>
-<tr><td>Prelude 모듈</td><td><code>Prelude/*.fun</code> 파일</td><td><code>String.trim</code>, <code>Char.IsDigit</code>, <code>Array.sort</code>, <code>HashSet.create</code>, <code>Queue.create</code>, <code>MutableList.create</code>, <code>StringBuilder.create</code> 등</td></tr>
+<tr><td>Prelude 모듈</td><td><code>Prelude/*.fun</code> 파일</td><td><code>String.trim</code>, <code>Char.isDigit</code>, <code>Array.sort</code>, <code>HashSet.create</code>, <code>Queue.create</code>, <code>MutableList.create</code>, <code>StringBuilder.create</code> 등</td></tr>
 <tr><td>Prelude 연산자</td><td><code>Prelude/*.fun</code> 파일</td><td><code>++</code> (리스트 연결), <code>&lt;|&gt;</code> (Option 대안), <code>^^</code> (문자열 연결)</td></tr>
 <tr><td>런타임 내장 함수</td><td><code>initialBuiltinEnv</code></td><td><code>string_length</code>, <code>string_concat</code>, <code>string_sub</code>, <code>string_contains</code>, <code>print</code>, <code>println</code>, <code>printf</code>, <code>sprintf</code>, <code>printfn</code> 등</td></tr>
 <tr><td>산술 연산자</td><td>내장</td><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (모듈로)</td></tr>

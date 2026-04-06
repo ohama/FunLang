@@ -83,6 +83,11 @@ decl ::= 'let' IDENT '=' expr
              ('let' IDENT param+ '=' expr)+
        | 'deriving' IDENT IDENT                                  -- 자동 도출 (v12.0)
 
+       -- 속성 연산자 선언 (v12.0)
+       | attribute* 'let' '(' op_name ')' param+ '=' expr       -- fixity 속성 포함 연산자
+
+attribute ::= '#[' IDENT INT ']'                                 -- e.g., #[left 6], #[right 1]
+
 param    ::= IDENT
 op_name  ::= INFIXOP0 | INFIXOP1 | INFIXOP2 | INFIXOP3 | INFIXOP4
 type_var ::= TYPE_VAR
@@ -149,10 +154,11 @@ expr ::= -- 바인딩 형식
        | 'for' IDENT 'in' expr 'do' expr               -- 컬렉션 순회 (var: Pattern)
        | 'for' tuple_pattern 'in' expr 'do' expr       -- 튜플 분해 순회 (v7.1)
 
-         -- 파이프 및 합성 (좌에서 우 우선순위)
-       | expr '|>' expr                             -- 파이프 오른쪽
-       | expr '>>' expr                             -- 함수 합성 오른쪽
-       | expr '<<' expr                             -- 함수 합성 왼쪽
+         -- 파이프 및 합성 (Prelude/Core.fun 정의, fixity 속성으로 우선순위 제어)
+       | expr '|>' expr                             -- 순방향 파이프 (#[left 1])
+       | expr '<|' expr                             -- 역방향 파이프 (#[right 1], v12.0)
+       | expr '>>' expr                             -- 순방향 합성 (#[left 2])
+       | expr '<<' expr                             -- 역방향 합성 (#[right 2])
 
          -- 논리 연산
        | expr '||' expr

@@ -10,9 +10,7 @@ type token =
   | INFIXOP2 of (string)
   | INFIXOP3 of (string)
   | INFIXOP4 of (string)
-  | PIPE_RIGHT
-  | COMPOSE_RIGHT
-  | COMPOSE_LEFT
+  | ATTR_OPEN
   | TYPECLASS
   | INSTANCE
   | FATARROW
@@ -94,9 +92,7 @@ type tokenId =
     | TOKEN_INFIXOP2
     | TOKEN_INFIXOP3
     | TOKEN_INFIXOP4
-    | TOKEN_PIPE_RIGHT
-    | TOKEN_COMPOSE_RIGHT
-    | TOKEN_COMPOSE_LEFT
+    | TOKEN_ATTR_OPEN
     | TOKEN_TYPECLASS
     | TOKEN_INSTANCE
     | TOKEN_FATARROW
@@ -230,6 +226,8 @@ type nonTerminalId =
     | NONTERM_LetRecDeclaration
     | NONTERM_LetRecContinuation
     | NONTERM_OpName
+    | NONTERM_Attribute
+    | NONTERM_AttributeList
     | NONTERM_QualifiedIdent
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int

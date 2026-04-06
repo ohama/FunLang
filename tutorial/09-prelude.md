@@ -15,9 +15,10 @@ Prelude는 FunLang 바이너리와 같은 위치의 `Prelude/` 디렉토리에 �
 - `Prelude/Option.fun` -- Option 타입과 함수 (`optionMap`, `optionBind`, `optionDefault`, `isSome`, `isNone` 등)
 - `Prelude/Array.fun` -- 배열 모듈 (`Array.create`, `Array.get`, `Array.set`, `Array.sort`, `Array.ofSeq` 등)
 - `Prelude/Char.fun` -- 문자 모듈 (`Char.isDigit`, `Char.isLetter`, `Char.toUpper`, `Char.toLower` 등)
-- `Prelude/Core.fun` -- 핵심 고차 함수 (`id`, `const`, `compose`)
+- `Prelude/Core.fun` -- ���심 ��차 함수 (`id`, `const`, `compose`) + 파이프/합성 연���자 (`|>`, `<|`, `>>`, `<<`)
 - `Prelude/HashSet.fun` -- HashSet 모듈 (`HashSet.create`, `HashSet.add`, `HashSet.contains`, `HashSet.count`)
 - `Prelude/Hashtable.fun` -- Hashtable 모듈
+- `Prelude/Int.fun` -- Int 모듈 (`Int.parse`, `Int.toString`)
 - `Prelude/List.fun` -- 리스트 처리 함수 (`map`, `filter`, `fold`, `sort`, `tryFind`, `choose` 등)
 - `Prelude/MutableList.fun` -- MutableList 모듈
 - `Prelude/Queue.fun` -- Queue 모듈
@@ -465,7 +466,32 @@ $ fn pipeline.l3
 
 Prelude는 자주 사용하는 패턴을 위한 연산자도 제공합니다. 연산자는 중위 표기(infix)를 쓸 수 있어서, 일부 표현은 함수 형태보다 연산자 형태가 훨씬 자연스럽습니다.
 
-### `++` — 리스트 연결
+### `|>`, `<|` — 파이프 연산자
+
+`|>`(순방향 파이프)와 `<|`(��방향 파이프)도 Core.fun에 정의된 Prelude 연산자입니다. `|>`는 왼쪽 값을 오른쪽 함수에 전달하고, `<|`는 오른쪽 값을 왼쪽 함수에 전달합니다:
+
+```
+fn> 5 |> (fun x -> x + 1)
+6
+
+fn> (fun x -> x + 1) <| 5
+6
+```
+
+`|>`는 좌결합, `<|`��� 우결합이며, 둘 다 가장 낮은 우선순위(레벨 1)를 가집니다. 자세한 사용법은 [8장: 파이프와 합성](08-pipes-and-composition.md)에서 다룹니다.
+
+### `>>`, `<<` — 합성 연산자
+
+`>>`(순방향 합성)과 `<<`(역방향 합성)도 Core.fun에서 정의됩��다:
+
+```
+fn> let f = (fun x -> x * 2) >> (fun x -> x + 1) in f 5
+11
+```
+
+이 연산자들은 우선순위 레벨 2로, 파이프보다 높고 논리 연산자보다 낮습니다.
+
+### `++` — ��스트 연결
 
 `append`의 중위 연산자 버전입니다:
 

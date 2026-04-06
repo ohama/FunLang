@@ -2,7 +2,7 @@
 
 FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그래밍 언어.
 
-F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, Haskell 스타일 타입 클래스(typeclass/instance, 제약 추론), 모듈, 예외 처리, 파이프/합성 연산자, 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자, 다형적 GADT 반환 타입, 파일 임포트(open), char 타입, 파일 I/O 시스템 내장 함수, 가변 배열/해시테이블(`arr.[i]` 인덱싱 구문), 가변 변수(`let mut`/`<-`), 표현식 시퀀싱(`e1; e2`), while/for 루프, else 없는 if, 컬렉션 for-in 루프, 리스트 컴프리헨션, 문자열 슬라이싱, 네이티브 컬렉션(StringBuilder/HashSet/Queue/MutableList), Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
+F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, Haskell 스타일 타입 클래스(typeclass/instance, 제약 추론), 모듈, 예외 처리, 파이프/합성 연산자(`|>`, `<|`, `>>`, `<<`), 문자열 내장 함수, printf 포맷 출력, 사용자 정의 연산자(fixity 속성 지원), 다형적 GADT 반환 타입, 파일 임포트(open), char 타입, 파일 I/O 시스템 내장 함수, 가변 배열/해시테이블(`arr.[i]` 인덱싱 구문), 가변 변수(`let mut`/`<-`), 표현식 시퀀싱(`e1; e2`), while/for 루프, else 없는 if, 컬렉션 for-in 루프, 리스트 컴프리헨션, 문자열 슬라이싱, 네이티브 컬렉션(StringBuilder/HashSet/Queue/MutableList), Prelude 표준 라이브러리를 갖춘 완전한 인터프리터.
 
 ## Documentation
 
@@ -25,16 +25,16 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Modules** | `module`, `open`, qualified names, nested modules | v1.0 |
 | **Exceptions** | try...with, when guards, custom exception types | v1.0 |
 | **Pattern Compilation** | Decision tree compilation (Jules Jacobs algorithm) | v1.0 |
-| **Pipe & Composition** | `\|>`, `>>`, `<<` operators | v1.2 |
+| **Pipe & Composition** | `\|>`, `<\|`, `>>`, `<<` operators (Prelude-defined with fixity attributes) | v1.2+v12.0 |
 | **Unit Type** | `()` literal, `unit` type, side-effect sequencing | v1.2 |
 | **String Operations** | `String.length`, `String.substring`, `^^`, `to_string` 등 | v1.2 |
 | **Printf Output** | print, println, printf, printfn, sprintf | v1.2+v1.5 |
-| **Prelude** | Option, Result, List, Core, Operators (Prelude/*.fun) | v1.2 |
+| **Prelude** | Option, Result, List, Core, Int, Operators (Prelude/*.fun) | v1.2 |
 | **Tail Call Optimization** | Trampoline-based TCO | v1.4 |
 | **Or-Patterns** | `\| 1 \| 2 \| 3 ->` in match | v1.4 |
 | **List Ranges** | `[1..10]`, `[0..2..20]` | v1.4 |
 | **Mutual Recursion** | `let rec f = ... and g = ...` (module + expression level, multiline) | v1.4+v10.1 |
-| **User-Defined Operators** | `let (op)`, INFIXOP0-4, `(op)` function form | v1.5 |
+| **User-Defined Operators** | `let (op)`, INFIXOP0-4, `(op)` function form, `#[left N]`/`#[right N]` fixity attributes | v1.5+v12.0 |
 | **Implicit `in`** | F#-style offside rule — `let x = 1 / let y = 2 / x + y` | v1.7 |
 | **Semicolon Lists** | F# convention: `[1; 2; 3]` (tuples keep commas) | v1.7 |
 | **Polymorphic GADT** | `eval : 'a Expr -> 'a` — per-branch independent type refinement | v1.8 |
@@ -71,6 +71,10 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Automatic Deriving** | `deriving Show Color`, `deriving Eq Direction` — code generation from ADT constructors | v12.0 |
 | **Extended Stdlib** | String.split/indexOf/replace/toUpper/toLower + 17 new List functions (init/find/partition/groupBy/scan/sum/contains...) | v13.0 |
 | **Multi-Param Lambda** | `fun x y z -> body` desugars to nested lambdas | v13.0 |
+| **Attribute Syntax** | `#[attr]` declaration attributes, fixity attributes (`#[left N]`, `#[right N]`) | v12.0 |
+| **Fixity System** | `FixityEnv` post-parse AST rewrite, operator precedence/associativity override | v12.0 |
+| **Operator Migration** | `\|>`, `>>`, `<<` moved from compiler AST to Prelude functions | v12.0 |
+| **Backward Pipe** | `<\|` operator — reverse of `\|>`, right-associative | v12.0 |
 | **Enhanced REPL** | Persistent bindings, `:type`/`:load`/`:help` commands, type+value display | v14.0 |
 
 ## Quick Start
@@ -301,18 +305,18 @@ and stateB xs =
 
 ```
 FunLang/
-├── src/FunLang/       # Interpreter source (~16,200 LOC F#)
+├── src/FunLang/       # Interpreter source (~16,800 LOC F#)
 ├── tests/
-│   ├── FunLang.Tests/ # F# unit tests (223 tests)
-│   └── flt/             # fslit integration tests (696 tests)
-│       ├── expr/        # Expression-mode tests (119 tests)
-│       ├── file/        # File-mode tests (475 tests, 34 subdirs)
-│       ├── emit/        # AST/type emission tests (100 tests)
-│       └── error/       # Error case tests (4 tests)
+│   ├── FunLang.Tests/ # F# unit tests (244 tests)
+│   └── flt/             # fslit integration tests (723 tests)
+│       ├── expr/        # Expression-mode tests
+│       ├── file/        # File-mode tests
+│       ├── emit/        # AST/type emission tests
+│       └── error/       # Error case tests
 ├── tools/fslit/         # fslit test runner (git submodule)
 ├── scripts/fslit        # Wrapper script (auto-init + auto-build + run)
 ├── tutorial/            # mdBook tutorial (23 chapters, Korean)
-├── Prelude/             # Standard library (13 modules: Core, List, Option, Result, Array, Hashtable, String, Char, HashSet, Queue, MutableList, StringBuilder, Typeclass)
+├── Prelude/             # Standard library (14 modules: Core, Int, List, Option, Result, Array, Hashtable, String, Char, HashSet, Queue, MutableList, StringBuilder, Typeclass)
 ├── howto/               # Developer knowledge base
 ├── docs/                # Built tutorial site (GitHub Pages)
 └── .planning/           # GSD project management
@@ -329,13 +333,13 @@ FunLang/
 ## Tests
 
 ```bash
-# F# unit tests (224)
+# F# unit tests (244)
 dotnet test tests/FunLang.Tests/FunLang.Tests.fsproj
 
-# fslit integration tests (699) — auto-builds on first run
+# fslit integration tests (723) — auto-builds on first run
 scripts/fslit tests/flt/
 
-# Total: 919 tests
+# Total: 967 tests
 ```
 
 ## Milestones
@@ -362,9 +366,9 @@ scripts/fslit tests/flt/
 | v10.1 | Typeclass Module Integration | 75-78 | — | 2026-04-01 |
 | v10.2 | Module Error Quality | 79-80 | — | 2026-04-01 |
 | v10.3 | Blank Line Tolerance | 81-82 | — | 2026-04-01 |
-| v11.0 | Error Reporting Enhancement | 83-88 | — | 2026-04-01 |
+| v11.0 | Error Reporting Enhancement | 83 | — | 2026-04-01 |
 | v11.1 | Poison Type Multi-Error | — | — | 2026-04-01 |
-| v12.0 | Type Class Extensions | 89-92 | — | 2026-04-01 |
+| v12.0 | Type Class Extensions + Fixity System | 84-92 | — | 2026-04-03 |
 | v13.0 | Standard Library Extension | 93-95 | — | 2026-04-01 |
 | v14.0 | Enhanced REPL | 96 | — | 2026-04-01 |
 

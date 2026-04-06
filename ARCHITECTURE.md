@@ -23,6 +23,11 @@ Source Code
 └──────────────┘
     │
     ▼
+┌──────────────┐     Fixity-rewritten AST
+│ FixityEnv.fs  │ ──────────────────────►  InfixDecl attrs → AST rewrite
+└───────────���──┘
+    │
+    ▼
 ┌──────────────┐     Elaborated types
 │ Elaborate.fs  │ ──────────────────────►  TypeExpr → Type
 └──────────────┘       + elaborateTypeclasses
@@ -56,6 +61,7 @@ Source Code
 - `.[` → `DOTLBRACKET` 단일 토큰 (v5.0, `.IDENT` 필드접근과 LALR 충돌 회피)
 - `while`, `for`, `to`, `downto`, `do` 키워드 추가 (v5.0)
 - `typeclass`, `instance` 키워드 추가 (v10.0)
+- `#[` → `ATTR_OPEN` 토큰 (v12.0, 속성 구문)
 
 **중요 패턴:**
 - `NEWLINE(col)`: 줄바꿈 후 다음 줄의 첫 비공백 문자 column
@@ -104,6 +110,7 @@ type SyntaxContext =
 - 연산자 우선순위: `%left`, `%right`, `%nonassoc` 선언
 - 함수 적용: 좌결합 juxtaposition (가장 높은 우선순위)
 - 사용자 정의 연산자: `App(App(Var(op), lhs), rhs)` 로 디슈거
+- `InfixDecl`: `#[attr]` 속성이 붙은 연산자 정의 (v12.0) — fixity 정보를 AST에 보존
 
 **문법 계층:**
 ```
@@ -128,7 +135,22 @@ let f x y z = body
 - `INDENT Expr DEDENT` 규칙으로 인한 41개 추가 충돌 포함
 - `TryWithClauses`: `try`/`with` 블록에서 파이프 없이 인라인으로 예외 핸들러를 작성하는 문법 지원
 
-### 2.4 Elaborate (Elaborate.fs)
+### 2.4 FixityEnv (FixityEnv.fs)
+
+**역할:** `InfixDecl` 속성으로부터 fixity 정보 수집 → AST 재작성
+
+**핵심 설계:**
+- `#[left N]` / `#[right N]` 속성에서 결합성(associativity)과 우선순위(precedence) 추출
+- LALR 파서가 기본 좌결합으로 파싱한 연산자 체인을 선언된 fixity에 따라 재작성
+- 같은 LALR 레벨의 연산자 체인을 평탄화(flatten)한 뒤, precedence climbing으로 올바른 트리 구조 재구축
+- Prelude 로드 시에도 동일하게 적용 — `|>`, `<|`, `>>`, `<<` 등 Prelude 연산자의 fixity 처리
+
+**파이프라인 통합:**
+- `Prelude.fs`: Prelude 파일 로드 시 `collectFixity` → `rewriteFixity` 적용
+- `Program.fs`: 사용자 파일에서도 Prelude fixityEnv와 병합하여 적용
+- `Repl.fs`: REPL 세션에서 fixityEnv를 영속적으로 유지
+
+### 2.5 Elaborate (Elaborate.fs)
 
 **역할:** `TypeExpr` (파서 AST) → `Type` (내부 타입) + 타입 클래스 정교화
 
@@ -144,7 +166,7 @@ let f x y z = body
 - `TypeClassDecl`은 환경에 클래스 정보를 등록하고 제거
 - Prelude 로딩 시에도 동일한 정교화 적용 (`Prelude.fs`)
 
-### 2.5 Type Checker (Bidir.fs + TypeCheck.fs)
+### 2.6 Type Checker (Bidir.fs + TypeCheck.fs)
 
 **역할:** AST + 타입 환경 → 타입 검증된 AST
 
@@ -195,7 +217,7 @@ check 모드에서:
 - `expected`가 TVar (polymorphic): 각 분기가 독립적으로 정제, cross-branch substitution 격리 (`isPolyExpected`)
 - `expected`가 concrete: 기존 동작 (모든 분기가 같은 타입)
 
-### 2.6 Evaluator (Eval.fs)
+### 2.7 Evaluator (Eval.fs)
 
 **역할:** 타입 검증된 AST → 런타임 값
 
@@ -265,6 +287,7 @@ src/FunLang/
 ├── IndentFilter.fs    # NEWLINE → INDENT/DEDENT/IN
 ├── Type.fs            # Type definitions, unification
 ├── Infer.fs           # Fresh variables, instantiation, generalization
+├── FixityEnv.fs       # Fixity collection + AST rewrite (v12.0)
 ├── Elaborate.fs       # TypeExpr → Type
 ├── Bidir.fs           # Bidirectional type checking (synth/check)
 ├── TypeCheck.fs       # Top-level type checking orchestration

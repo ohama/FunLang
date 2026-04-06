@@ -75,7 +75,7 @@ op_char     = ['!' '$' '%' '&' '*' '+' '-' '.' '/' '<' '=' '>' '?' '@' '^' '|' '
 | OR | `\|\|` | CONS | `::` |
 | ARROW | `->` | LARROW | `<-` |
 | DOTDOT | `..` | DOTLBRACKET | `.[` |
-| FATARROW | `=>` | | |
+| FATARROW | `=>` | ATTR_OPEN | `#[` |
 | PIPE_RIGHT | `\|>` | | |
 | COMPOSE_RIGHT | `>>` | COMPOSE_LEFT | `<<` |
 
@@ -130,9 +130,8 @@ Single-character operators (`+`, `-`, `*`, `/`, `%`, `<`, `>`, `=`) are always l
 
 | Level | Operators | Associativity |
 |-------|-----------|---------------|
-| 1 | `\|>` | left |
-| 2 | `>>` | left |
-| 3 | `<<` | right |
+| 1 | `\|>`, `<\|` | left / right | Prelude-defined with fixity attributes |
+| 2 | `>>`, `<<` | left / right | Prelude-defined with fixity attributes |
 | 4 | `\|\|` | left |
 | 5 | `&&` | left |
 | 6 | `=` `<` `>` `<=` `>=` `<>` | nonassoc |
@@ -165,6 +164,7 @@ Decl        ::= LetDecl | TypeDecl | RecordDecl | TypeAliasDecl
               | LetRecDecl | LetMutDecl | ModuleDecl | OpenDecl | ExceptionDecl
               | LetPatDecl | FileImportDecl
               | TypeClassDecl | InstanceDecl
+              | InfixDecl
 
 LetDecl     ::= 'let' IDENT '=' Expr
               | 'let' IDENT ParamList '=' Expr
@@ -200,6 +200,11 @@ InstanceDecl  ::= 'instance' IDENT AtomicType '=' InstanceMethods
                 | 'instance' ConstraintList '=>' IDENT AtomicType '=' InstanceMethods  // constrained (v12.0)
 
 DerivingDecl  ::= 'deriving' IDENT IDENT                                               // v12.0
+
+InfixDecl     ::= Attribute* 'let' OpName ParamList '=' Expr                           // v12.0
+
+Attribute     ::= '#[' IDENT NUMBER ']'                                                 // v12.0
+                // e.g., #[left 6], #[right 1]
 
 TypeClassMethods ::= ('|' IDENT ':' TypeExpr)+
 
@@ -244,9 +249,10 @@ Expr    ::= 'let' IDENT '=' Expr 'in' Expr
           | 'for' IDENT 'in' Expr 'do' Expr
           | 'for' '(' Pattern ',' Pattern ')' 'in' Expr 'do' Expr   // tuple destructuring (v7.1)
 
-          | Expr '|>' Expr
-          | Expr '>>' Expr
-          | Expr '<<' Expr
+          | Expr '|>' Expr                    // Prelude-defined (Core.fun), fixity: left 1
+          | Expr '<|' Expr                    // Prelude-defined (Core.fun), fixity: right 1
+          | Expr '>>' Expr                    // Prelude-defined (Core.fun), fixity: left 2
+          | Expr '<<' Expr                    // Prelude-defined (Core.fun), fixity: right 2
           | Expr '||' Expr
           | Expr '&&' Expr
           | Expr CompOp Expr
@@ -591,7 +597,9 @@ let eval e =
 
 **Result functions:** `resultMap`, `resultBind`, `resultMapError`, `resultDefault`, `resultDefaultValue`, `resultIter`, `resultToOption`, `isOk`, `isError`
 
-**Operators:** `++` (list append), `<|>` (Option fallback), `^^` (string concat)
+**Operators:** `|>` (forward pipe), `<|` (backward pipe), `>>` (forward compose), `<<` (backward compose), `++` (list append), `<|>` (Option fallback), `^^` (string concat)
+
+**Int functions (qualified):** `Int.parse`, `Int.toString`
 
 **Array functions (qualified):** `Array.create`, `Array.get`, `Array.set`, `Array.length`, `Array.ofList`, `Array.toList`, `Array.iter`, `Array.map`, `Array.fold`, `Array.init`, `Array.sort`, `Array.ofSeq`
 
