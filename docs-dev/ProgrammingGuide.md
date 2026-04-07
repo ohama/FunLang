@@ -424,12 +424,127 @@ let xs = [1; -2; 3; -4; 5]
 let count = xs |> List.filter (fun x -> x > 0) |> List.length
 ```
 
+## 13. `List.map` / `List.iter` Over Manual Recursion
+
+Accumulator-style recursion with `acc ++ [x]` is a common anti-pattern. Use `List.map` instead.
+
+```
+// Bad: manual accumulator recursion
+let rec processAll items acc =
+    match items with
+    | [] -> acc
+    | x :: rest -> processAll rest (acc ++ [transform x])
+
+// Good: one-liner
+let results = List.map transform items
+```
+
+Use `List.iter` for side effects instead of `List.map` + ignore:
+
+```
+// Bad: map then discard
+let _ = List.map (fun x -> println (to_string x)) xs
+
+// Good: iter for side effects
+let _ = List.iter (fun x -> println (to_string x)) xs
+```
+
+Use `List.mapi` when you need the index:
+
+```
+// Bad: manual index tracking
+let rec go items i acc =
+    match items with
+    | [] -> acc
+    | x :: rest -> go rest (i + 1) (acc ++ [format i x])
+
+// Good
+let results = List.mapi (fun i x -> format i x) items
+```
+
+## 14. Result Chaining with `resultBind`
+
+Avoid nested match cascades for Result types. Use `resultBind` to chain.
+
+```
+// Bad: nested match pyramid
+let result =
+    match step1 input with
+    | Error e -> Error e
+    | Ok v1 ->
+        match step2 v1 with
+        | Error e -> Error e
+        | Ok v2 ->
+            match step3 v2 with
+            | Error e -> Error e
+            | Ok v3 -> Ok (finish v3)
+
+// Good: flat chain
+let result =
+    step1 input
+    |> resultBind step2
+    |> resultBind step3
+    |> resultMap finish
+```
+
+## 15. Block Sequencing for Side Effects
+
+Inside a `let _ =` block, newline sequencing chains expressions. All expressions
+in a block must have the same type (usually `unit`):
+
+```
+// Good: all println return unit → block sequencing works
+let _ =
+    println "step 1"
+    println "step 2"
+    println "done"
+```
+
+When expressions return different types, use separate `let _ =`:
+
+```
+// Different return types → separate bindings
+let _ = HashSet.add visited s
+let _ = MutableList.add items s
+let _ = Queue.enqueue wl s
+```
+
+For mutable imperative code, `while`/`for` inside a block are idiomatic:
+
+```
+let xs = [1; 2; 3; 4; 5]
+let mutable total = 0
+let _ =
+    for x in xs do
+        total <- total + x
+let result = total
+```
+
+## 16. Hashtable Lookup Helpers
+
+Wrap verbose `tryGetValue` tuple destructuring in a helper:
+
+```
+// Verbose: repeated everywhere
+let v =
+    match Hashtable.tryGetValue ht key with
+    | (true, x) -> x
+    | _ -> defaultVal
+
+// Better: define once, reuse
+let getOrDefault ht key def =
+    let (found, v) = Hashtable.tryGetValue ht key
+    if found then v else def
+```
+
 ## Quick Reference: Style Checklist
 
 - [ ] No `in` unless truly single-line
 - [ ] Match arms on separate lines
 - [ ] Pipelines over nested calls
-- [ ] Prelude functions over hand-rolled recursion
+- [ ] `List.map`/`List.iter`/`List.mapi` over manual recursion
+- [ ] `resultBind` chain over nested match pyramid
+- [ ] Block sequencing over repeated `let _ =`
 - [ ] No unnecessary parentheses around arguments
 - [ ] `Option`/`Result` over exceptions for expected cases
 - [ ] Type annotations at module boundaries only
