@@ -18,6 +18,13 @@ OCaml-style LSB 1-bit tagging을 도입하여 모든 값을 i64 하나로 unifor
 
 **Requirements:** TAG-01, TAG-02, TAG-03, ARITH-01, ARITH-02, ARITH-03, ARITH-04
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 88-01-PLAN.md — IR infrastructure (ArithShRSIOp, ArithShLIOp, ArithOrIOp + helpers)
+- [ ] 88-02-PLAN.md — Core tagging (literals, arithmetic ops, truthiness, @main return)
+- [ ] 88-03-PLAN.md — C boundary untag/retag + full test verification
+
 **Success Criteria:**
 
 1. `fnc` 로 컴파일한 프로그램에서 정수 리터럴 42가 LLVM IR에서 85 (2*42+1)로 출력된다
