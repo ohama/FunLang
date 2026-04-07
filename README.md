@@ -38,7 +38,7 @@ F# 스타일의 들여쓰기 기반 문법, ADT/GADT/Records 타입 시스템, H
 | **Implicit `in`** | F#-style offside rule — `let x = 1 / let y = 2 / x + y` | v1.7 |
 | **Semicolon Lists** | F# convention: `[1; 2; 3]` (tuples keep commas) | v1.7 |
 | **Polymorphic GADT** | `eval : 'a Expr -> 'a` — per-branch independent type refinement | v1.8 |
-| **File Import** | `open "file.fun"` — 임포트 파일 기준 상대 경로, 순환 감지 | v2.0 |
+| **File Import** | `import "file.fun"` — 임포트 파일 기준 상대 경로, 순환 감지 | v2.0 |
 | **Char Type** | char 리터럴, char_to_int/int_to_char, 비교 확장 | v2.0 |
 | **N-Tuples** | 3개 이상 요소 튜플, 모듈 레벨 구조 분해 | v2.0 |
 | **File I/O** | read_file, write_file, get_env, get_args + 10개 추가 내장 함수 | v2.0 |

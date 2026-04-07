@@ -232,27 +232,27 @@ let mul x y = x * y
 
 ```fsharp
 // main.fun
-open "lib.fun"
+import "lib.fun"
 let result = add 3 (mul 2 5)    // 13
 ```
 
-`open "path.fun"` 구문으로 외부 파일을 임포트한다.
+`import "path.fun"` 구문으로 외부 파일을 임포트한다.
 
 ### Path Resolution
 
 | 경로 형태 | 해석 | 예시 |
 |-----------|------|------|
-| 상대 경로 | **임포트하는 파일** 기준 | `open "lib.fun"` |
-| 절대 경로 | 그대로 사용 | `open "/usr/lib/utils.fun"` |
-| 중첩 상대 | 임포트 체인 각각 기준 | `open "subdir/inner.fun"` |
+| 상대 경로 | **임포트하는 파일** 기준 | `import "lib.fun"` |
+| 절대 경로 | 그대로 사용 | `import "/usr/lib/utils.fun"` |
+| 중첩 상대 | 임포트 체인 각각 기준 | `import "subdir/inner.fun"` |
 
 **중요:** 상대 경로는 CWD가 아닌 **임포트하는 파일의 디렉토리** 기준이다.
 
 ```
 project/
-├── main.fun          # open "lib/utils.fun"
+├── main.fun          # import "lib/utils.fun"
 └── lib/
-    ├── utils.fun     # open "helper.fun"  ← lib/ 기준
+    ├── utils.fun     # import "helper.fun"  ← lib/ 기준
     └── helper.fun
 ```
 
@@ -268,7 +268,7 @@ module Math =
 
 ```fsharp
 // main.fun
-open "math.fun"
+import "math.fun"
 let result = Math.square 7    // 49
 ```
 
@@ -292,11 +292,11 @@ let result = Math.square 7    // 49
 
 ```fsharp
 // a.fun
-open "b.fun"
+import "b.fun"
 let x = 1
 
 // b.fun
-open "a.fun"    // ← Error: Circular module dependency
+import "a.fun"    // ← Error: Circular module dependency
 let y = 2
 ```
 
@@ -498,7 +498,7 @@ module Geometry =
 
 ```fsharp
 // main.fun
-open "geometry.fun"
+import "geometry.fun"
 open Geometry
 
 let shapes = [Circle 5; Rect (3, 4)]

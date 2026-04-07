@@ -78,7 +78,7 @@ let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
 // Phase 3 (Records-06): Mutable field tokens
 %token MUTABLE LARROW
 // Phase 5 (Modules): Module system tokens
-%token MODULE OPEN
+%token MODULE OPEN IMPORT
 // Phase 6 (Exceptions): Exception tokens
 %token EXCEPTION RAISE TRY WHEN
 // Phase 46 (Loop Constructs): Loop keywords
@@ -700,6 +700,12 @@ Decls:
     | OPEN QualifiedIdent Decls
         { OpenDecl($2, ruleSpan parseState 1 2) :: $3 }
     // Phase 31 (Module System): File import directive
+    // v13.0: import keyword (preferred)
+    | IMPORT STRING
+        { [FileImportDecl($2, ruleSpan parseState 1 2)] }
+    | IMPORT STRING Decls
+        { FileImportDecl($2, ruleSpan parseState 1 2) :: $3 }
+    // Backward compat: open "file" still accepted
     | OPEN STRING
         { [FileImportDecl($2, ruleSpan parseState 1 2)] }
     | OPEN STRING Decls

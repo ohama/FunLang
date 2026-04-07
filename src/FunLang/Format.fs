@@ -105,6 +105,7 @@ let formatToken (token: Parser.token) : string =
     // Phase 5 (Modules): Module system tokens
     | Parser.MODULE -> "MODULE"
     | Parser.OPEN -> "OPEN"
+    | Parser.IMPORT -> "IMPORT"
     | Parser.INDENT -> "INDENT"
     | Parser.DEDENT -> "DEDENT"
     | Parser.NEWLINE n -> sprintf "NEWLINE(%d)" n

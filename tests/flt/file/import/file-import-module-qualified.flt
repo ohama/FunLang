@@ -1,7 +1,7 @@
-// Test: open file import then qualified module access (Module.func)
+// Test: import file then qualified module access (Module.func)
 // --- Command: bash -c 'printf "module Math =\n    let square x = x * x\n" > /tmp/flt-math-qual.fun && src/FunLang/bin/Release/net10.0/fn %input'
 // --- Input:
-open "/tmp/flt-math-qual.fun"
+import "/tmp/flt-math-qual.fun"
 let result = Math.square 7
 // --- Output:
 49

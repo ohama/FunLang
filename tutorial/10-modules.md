@@ -180,7 +180,7 @@ $ fn layers.l3
 
 ## 파일 임포트
 
-`open "파일경로.fun"`으로 외부 파일을 임포트할 수 있습니다. 임포트된 파일의 모든 바인딩(값, 함수, 타입, 모듈)이 현재 스코프에 추가됩니다:
+`import "파일경로.fun"`으로 외부 파일을 임포트할 수 있습니다. 임포트된 파일의 모든 바인딩(값, 함수, 타입, 모듈)이 현재 스코프에 추가됩니다:
 
 ```
 $ cat lib.fun
@@ -188,7 +188,7 @@ let add x y = x + y
 let double x = x * 2
 
 $ cat main.l3
-open "lib.fun"
+import "lib.fun"
 let result = add 3 (double 4)
 
 $ fn main.l3
@@ -216,23 +216,23 @@ $ cat lib/helpers.fun
 let double x = x * 2
 
 $ cat lib/math.fun
-open "helpers.fun"
+import "helpers.fun"
 let square x = x * x
 let squareDouble x = square (double x)
 
 $ cat utils/format.fun
-open "../lib/math.fun"
+import "../lib/math.fun"
 let formatSquare x = to_string (square x)
 
 $ cat main.l3
-open "utils/format.fun"
+import "utils/format.fun"
 let result = formatSquare 7
 
 $ fn main.l3
 "49"
 ```
 
-`lib/math.fun` 안의 `open "helpers.fun"`은 `lib/` 디렉토리에서 `helpers.fun`을 찾습니다. `utils/format.fun` 안의 `open "../lib/math.fun"`은 `utils/`에서 한 단계 올라가 `lib/math.fun`을 찾습니다. 이 방식은 Rust의 모듈 해석과 동일한 원칙으로, 실행 디렉토리에 무관하게 일관된 결과를 보장합니다.
+`lib/math.fun` 안의 `import "helpers.fun"`은 `lib/` 디렉토리에서 `helpers.fun`을 찾습니다. `utils/format.fun` 안의 `import "../lib/math.fun"`은 `utils/`에서 한 단계 올라가 `lib/math.fun`을 찾습니다. 이 방식은 Rust의 모듈 해석과 동일한 원칙으로, 실행 디렉토리에 무관하게 일관된 결과를 보장합니다.
 
 ### 임포트된 모듈의 한정된 접근
 
@@ -245,7 +245,7 @@ module Math =
     let cube x = x * x * x
 
 $ cat main.l3
-open "mathlib.fun"
+import "mathlib.fun"
 let result = Math.square 5 + Math.cube 2
 
 $ fn main.l3
@@ -318,6 +318,6 @@ $ fn mod_tc.l3
 - **`module M =`** 은 중첩 모듈에 `=`을 사용; 최상위 `module M`은 `=`이 없음
 - **타입 클래스 인스턴스:** 모듈 안에 선언해도 전역적으로 동작 ([23장](23-typeclasses.md) 참조)
 - **한정된 접근**은 값, 함수, 생성자에 대해 동작함
-- **`open "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능 (경로는 임포트하는 파일 기준)
+- **`import "file.fun"`** 으로 외부 파일의 바인딩과 모듈을 임포트 가능 (경로는 임포트하는 파일 기준)
 
 코드를 모듈로 구조화하고 외부 파일을 임포트할 수 있게 되었으니, 다음으로는 파일 시스템과 운영체제와 상호작용하는 방법을 알아봅니다.

@@ -244,7 +244,7 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
             let libPath = System.IO.Path.Combine(tmpDir, "lib.fun")
             let mainPath = System.IO.Path.Combine(tmpDir, "main.fun")
             System.IO.File.WriteAllText(libPath, "let greeting = \"hello\"\nlet add x y = x + y\n")
-            System.IO.File.WriteAllText(mainPath, sprintf "open \"%s\"\nlet result = add 3 4\n" libPath)
+            System.IO.File.WriteAllText(mainPath, sprintf "import \"%s\"\nlet result = add 3 4\n" libPath)
             let result = evalFileModule mainPath
             Expect.equal result (Ast.IntValue 7) "imported add function returns 7"
         finally
@@ -259,7 +259,7 @@ let fileImportTests = testSequenced (testList "File Import Tests" [
             let utilsPath = System.IO.Path.Combine(tmpDir, "utils.fun")
             let progPath = System.IO.Path.Combine(tmpDir, "prog.fun")
             System.IO.File.WriteAllText(utilsPath, "let double x = x * 2\n")
-            System.IO.File.WriteAllText(progPath, sprintf "open \"%s\"\nlet result = double 5\n" utilsPath)
+            System.IO.File.WriteAllText(progPath, sprintf "import \"%s\"\nlet result = double 5\n" utilsPath)
             let result = evalFileModule progPath
             Expect.equal result (Ast.IntValue 10) "imported double function returns 10"
         finally
@@ -332,7 +332,7 @@ let moduleBugFixTests = testList "SC-MOD-BUG: Module access bug fixes (Phase 36)
         test "module function accessible via qualified access after open" {
             let tmpPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".fun")
             System.IO.File.WriteAllText(tmpPath, "module Math =\n    let square x = x * x\n")
-            let code = sprintf "open \"%s\"\nlet result = Math.square 5" tmpPath
+            let code = sprintf "import \"%s\"\nlet result = Math.square 5" tmpPath
             let result = evalWithPrelude code
             System.IO.File.Delete(tmpPath)
             Expect.equal result (Ast.IntValue 25) "Math.square 5 should return 25"
@@ -340,7 +340,7 @@ let moduleBugFixTests = testList "SC-MOD-BUG: Module access bug fixes (Phase 36)
         test "multiple module functions accessible after open" {
             let tmpPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".fun")
             System.IO.File.WriteAllText(tmpPath, "module Util =\n    let double x = x * 2\n    let triple x = x * 3\n")
-            let code = sprintf "open \"%s\"\nlet result = Util.double 4 + Util.triple 2" tmpPath
+            let code = sprintf "import \"%s\"\nlet result = Util.double 4 + Util.triple 2" tmpPath
             let result = evalWithPrelude code
             System.IO.File.Delete(tmpPath)
             Expect.equal result (Ast.IntValue 14) "Util.double 4 + Util.triple 2 should be 14"

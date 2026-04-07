@@ -74,6 +74,8 @@ rule tokenize = parse
     // Phase 5 (Modules): Module system keywords
     | "module"      { MODULE }
     | "open"        { OPEN }
+    // v13.0: import keyword for file imports (open reserved for module open)
+    | "import"      { IMPORT }
     // v6.0: Type keywords for type annotations
     | "int"         { TYPE_INT }
     | "bool"        { TYPE_BOOL }

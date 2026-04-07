@@ -26,6 +26,7 @@ type token =
   | WHEN
   | MODULE
   | OPEN
+  | IMPORT
   | MUTABLE
   | LARROW
   | DOTLBRACKET
@@ -108,6 +109,7 @@ type tokenId =
     | TOKEN_WHEN
     | TOKEN_MODULE
     | TOKEN_OPEN
+    | TOKEN_IMPORT
     | TOKEN_MUTABLE
     | TOKEN_LARROW
     | TOKEN_DOTLBRACKET
