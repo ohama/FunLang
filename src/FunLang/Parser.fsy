@@ -700,15 +700,10 @@ Decls:
     | OPEN QualifiedIdent Decls
         { OpenDecl($2, ruleSpan parseState 1 2) :: $3 }
     // Phase 31 (Module System): File import directive
-    // v13.0: import keyword (preferred)
+    // v13.0: import keyword (open "file" removed)
     | IMPORT STRING
         { [FileImportDecl($2, ruleSpan parseState 1 2)] }
     | IMPORT STRING Decls
-        { FileImportDecl($2, ruleSpan parseState 1 2) :: $3 }
-    // Backward compat: open "file" still accepted
-    | OPEN STRING
-        { [FileImportDecl($2, ruleSpan parseState 1 2)] }
-    | OPEN STRING Decls
         { FileImportDecl($2, ruleSpan parseState 1 2) :: $3 }
     // Phase 71 (Type Classes): typeclass declaration
     | TYPECLASS IDENT TYPE_VAR EQUALS INDENT TypeClassMethodList DEDENT
