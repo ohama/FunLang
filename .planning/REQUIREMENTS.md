@@ -42,19 +42,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TAG-01 | — | Pending |
-| TAG-02 | — | Pending |
-| TAG-03 | — | Pending |
-| ARITH-01 | — | Pending |
-| ARITH-02 | — | Pending |
-| ARITH-03 | — | Pending |
-| ARITH-04 | — | Pending |
-| RT-01 | — | Pending |
-| RT-02 | — | Pending |
-| RT-03 | — | Pending |
-| RT-04 | — | Pending |
-| COMPAT-01 | — | Pending |
-| COMPAT-02 | — | Pending |
+| TAG-01 | Phase 88 | Pending |
+| TAG-02 | Phase 88 | Pending |
+| TAG-03 | Phase 88 | Pending |
+| ARITH-01 | Phase 88 | Pending |
+| ARITH-02 | Phase 88 | Pending |
+| ARITH-03 | Phase 88 | Pending |
+| ARITH-04 | Phase 88 | Pending |
+| RT-01 | Phase 90 | Pending |
+| RT-02 | Phase 89 | Pending |
+| RT-03 | Phase 89 | Pending |
+| RT-04 | Phase 89 | Pending |
+| COMPAT-01 | Phase 90 | Pending |
+| COMPAT-02 | Phase 90 | Pending |
 
 ---
-*Created: 2026-04-07 — 13 requirements across 4 categories*
+*Created: 2026-04-07 -- 13 requirements across 4 categories*
