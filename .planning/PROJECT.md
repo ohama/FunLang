@@ -113,7 +113,11 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 
 ### Active
 
-(None — planning next milestone)
+- Uniform tagged representation (LSB 1-bit tagging: int=2n+1, ptr=LSB 0) — v13.0
+- C 런타임 hashtable int/str 변종 통합 (런타임 LSB dispatch) — v13.0
+- 산술 연산 tag/untag (덧셈/뺄셈 1op, 곱셈/나눗셈 4ops) — v13.0
+- int 관련 C 런타임 함수 untag 추가 (int_to_string, print_int, array index 등) — v13.0
+- Generic equality/hash 기반 구축 (optional bonus) — v13.0
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -126,6 +130,7 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - do binding
 - Seq expressions
 - Interpreter performance optimization (JIT/bytecode)
+- Generic equality, hash, to_string (tagged representation 기반 확장)
 
 ### Out of Scope
 
@@ -135,6 +140,21 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - IDE 통합 / LSP — 언어 기능 완성 후
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
+
+## Current Milestone: v13.0 Uniform Tagged Representation
+
+**Goal:** OCaml 방식의 LSB 1-bit tagging으로 모든 값을 i64 하나로 표현하여 int/string 런타임 자동 dispatch 가능하게 하고, hashtable `*_str` 함수 중복을 제거한다.
+
+**Target features:**
+- LSB 1-bit tagged value representation (int=2n+1, ptr=LSB 0)
+- C 런타임 hashtable int/str 변종 통합
+- 산술 연산 tag/untag 지원
+- int 관련 C 함수 untag (int_to_string, print_int, array index 등)
+- (Bonus) Generic equality/hash 기반
+
+**Motivation:** FunLangCompiler의 Prelude wrapper(func.func)가 모든 파라미터를 i64로 전달하므로, 함수 body 안에서 int/string(I64/Ptr) 구분이 불가능. 현재는 Hashtable에 `*Str` 변종 7개를 노출하여 우회 중. Tagged representation 도입으로 근본 해결.
+
+**Reference:** FunLangCompiler/survey/uniform-tagged-representation.md, GitHub issue #8
 
 ## Previous Milestone: v12.0 Infix Operator Reform (2026-04-03)
 
