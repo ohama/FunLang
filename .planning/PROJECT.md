@@ -41,7 +41,7 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - F#-style offside rule for implicit `in` (CtxtLetDecl + ODECLEND) — v1.6/v1.7
 - List separator semicolon `[1; 2; 3]` (F# convention) — v1.7
 - Polymorphic GADT return types (`eval : 'a Expr -> 'a`, per-branch type refinement) — v1.8
-- File-based module import (`open "path.fun"`) with cycle detection — v2.0
+- File-based module import (`import "path.fun"`) with cycle detection — v2.0
 - Multiple module declarations in single file with qualified access — v2.0
 - N-tuples (3+ elements) + module-level let-destructuring — v2.0
 - Char type with char_to_int/int_to_char + string/char comparison operators — v2.0

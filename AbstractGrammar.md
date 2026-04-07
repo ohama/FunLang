@@ -70,7 +70,7 @@ decl ::= 'let' IDENT '=' expr
        | 'module' IDENT '=' decl+
 
        | 'open' qualified_ident
-       | 'open' STRING
+       | 'import' STRING
 
        -- 타입 클래스 (v10.0, v12.0 확장)
        | 'typeclass' IDENT type_var '='

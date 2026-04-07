@@ -187,7 +187,7 @@ ModuleDecl  ::= 'module' IDENT '=' INDENT Decls DEDENT
 
 OpenDecl    ::= 'open' QualifiedIdent
 
-FileImportDecl ::= 'open' STRING                // file import (relative to importing file's directory)
+FileImportDecl ::= 'import' STRING               // file import (relative to importing file's directory)
 
 LetPatDecl  ::= 'let' '(' Pattern ',' Pattern ')' '=' Expr  // module-level tuple destructuring
 
