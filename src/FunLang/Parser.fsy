@@ -183,7 +183,7 @@ Expr:
     // Phase 10 (Unit): let _ = e1 in e2 wildcard sequencing at expression level
     | LET UNDERSCORE EQUALS Expr IN SeqExpr  { LetPat(WildcardPat(ruleSpan parseState 2 2), $4, $6, ruleSpan parseState 1 6) }
     // If-then-else - low precedence, branches can contain any expression
-    | IF Expr THEN SeqExpr ELSE SeqExpr    { If($2, $4, $6, ruleSpan parseState 1 6) }
+    | IF Expr THEN SeqExpr ELSE Expr        { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 48: If-then without else — desugar to If(cond, then, Tuple([], unit_span), full_span)
     // Use Expr (not SeqExpr) with %prec IFTHEN to prevent the then-branch from greedily
     // consuming continuation statements after a SEMICOLON (issue #18).
