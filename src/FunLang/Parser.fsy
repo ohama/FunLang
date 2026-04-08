@@ -96,6 +96,14 @@ let rec desugarListPat (pats: Ast.Pattern list) (span: Ast.Span) : Ast.Pattern =
 %token EOF
 
 // Precedence declarations (lowest to highest)
+// Issue #18: if-then (without else) scoping.
+// IFTHEN has lower precedence than ELSE so that `if c then e ELSE ...` shifts ELSE
+// (associates else with nearest if).  SEMICOLON has lower precedence than IFTHEN
+// so that `if c then e SEMICOLON ...` reduces (closes the if-then), preventing the
+// then-branch from greedily consuming continuation statements.
+%nonassoc SEMICOLON
+%nonassoc IFTHEN
+%nonassoc ELSE
 // %nonassoc for comparisons prevents "1 < 2 < 3" (parse error - avoids type confusion)
 %left OR
 %left AND
@@ -177,7 +185,9 @@ Expr:
     // If-then-else - low precedence, branches can contain any expression
     | IF Expr THEN SeqExpr ELSE SeqExpr    { If($2, $4, $6, ruleSpan parseState 1 6) }
     // Phase 48: If-then without else — desugar to If(cond, then, Tuple([], unit_span), full_span)
-    | IF Expr THEN SeqExpr                 { If($2, $4, Tuple([], symSpan parseState 4), ruleSpan parseState 1 4) }
+    // Use Expr (not SeqExpr) with %prec IFTHEN to prevent the then-branch from greedily
+    // consuming continuation statements after a SEMICOLON (issue #18).
+    | IF Expr THEN Expr %prec IFTHEN      { If($2, $4, Tuple([], symSpan parseState 4), ruleSpan parseState 1 4) }
     // Phase 64: let rec with mixed annotated+plain params in expression
     | LET REC IDENT MixedParamList EQUALS Expr LetRecContinuation IN SeqExpr
         { let span = ruleSpan parseState 1 9
