@@ -1,14 +1,165 @@
-# Roadmap
+# Roadmap: v15.0 Type Class Maturity
 
-(다음 milestone 미정)
+**Status:** Active
+**Phases:** 96–101 (6 phases)
+**Coverage:** 17/17 requirements mapped
 
-## 완료된 로드맵
+## Overview
 
-- v14.0 Type Annotation Completeness — Phase 91-95 (완료 2026-04-08)
-- v13.0 Standard Library Extension — 완료
-- v12.0 Infix Operator Reform — Phase 84-87 (완료 2026-04-03)
-
-이전 로드맵은 `.planning/milestones/` 에서 확인 가능.
+v15.0 matures FunLang's type class system by fixing correctness bugs in the existing infrastructure, adding superclass entailment, repairing runtime dispatch for constrained instances, introducing the Num type class, improving derive for parameterized ADTs, and polishing error messages. All 724 flt tests must pass at every phase boundary.
 
 ---
-*Updated: 2026-04-09 — v13.0/v14.0 archived*
+
+## Phases
+
+### Phase 96: Correctness Foundations
+
+**Goal:** The existing type class infrastructure is reliable — no silent coherence violations, no constraint leaks, no broken recursive dispatch.
+
+**Dependencies:** None (must come first — bugs corrupt all subsequent work)
+
+**Requirements:** TC-01, TC-02, TC-03, TC-04
+
+**Success Criteria:**
+
+1. Declaring `Show 'a => Show ('a list)` twice produces an E0702 duplicate instance error — the alpha-equivalence check normalizes TVar IDs before comparison.
+2. After type-checking an instance method body, no constraints from that body appear on the next unrelated let-binding (constraint leak eliminated).
+3. An instance method body that calls the same class's method recursively (e.g., `show` calling `show` on a list tail) type-checks and evaluates correctly without E0701.
+4. E0701 "no instance" errors display normalized type variable names (e.g., `'a`) rather than internal TVar IDs (e.g., `'t42`).
+
+---
+
+### Phase 97: Superclass Entailment
+
+**Goal:** Users can declare superclass constraints on type classes, and the type checker automatically satisfies superclass constraints via entailment.
+
+**Dependencies:** Phase 96 (correctness foundations must be solid before extending resolveConstraint)
+
+**Requirements:** SC-01, SC-02, SC-03
+
+**Success Criteria:**
+
+1. `ClassInfo` carries a `Superclasses: string list` field, populated when a `typeclass Eq 'a => Ord 'a` declaration is processed.
+2. When `Ord int` is in scope, `resolveConstraint` for `Eq int` succeeds via superclass entailment without requiring an explicit `instance Eq int` declaration at the call site.
+3. Declaring `instance Ord int` when `instance Eq int` does not exist produces a declaration-time error, not a silent acceptance followed by a confusing call-site error.
+4. `Prelude/Typeclass.fun` contains `typeclass Eq 'a => Ord 'a` with `compare` as its method, and all existing 724 flt tests continue to pass.
+
+---
+
+### Phase 98: Constrained Instance Runtime Dispatch
+
+**Goal:** Calling a class method on a value whose type matches a constrained instance (e.g., `show [1; 2; 3]`) invokes the correct constrained implementation at runtime.
+
+**Dependencies:** Phase 97 (Prelude instances added here use superclass constraints that require Phase 97 infrastructure)
+
+**Requirements:** CD-01, CD-02
+
+**Success Criteria:**
+
+1. `show [1; 2; 3]` evaluates to `"[1; 2; 3]"` — the `Show ('a list)` constrained instance is selected at runtime, not a monomorphic fallback.
+2. Monomorphic instances (`show 42`, `show true`) continue to dispatch to their literal-named methods with no behavior change — name mangling applies only to instances with non-empty `InstanceVars`.
+3. All 724 existing flt tests pass after mangling is introduced (backward-compatibility invariant).
+4. A new flt test for `show` on nested lists (`show [[1;2];[3;4]]`) passes, demonstrating recursive constrained dispatch.
+
+---
+
+### Phase 99: Num Type Class
+
+**Goal:** Users can define numeric type class instances and use generic arithmetic methods for user-defined numeric types; `Eq ('a list)` constrained instance works in the Prelude.
+
+**Dependencies:** Phase 98 (constrained instances added here must dispatch correctly at runtime)
+
+**Requirements:** NUM-01, NUM-02, NUM-03
+
+**Success Criteria:**
+
+1. `typeclass Num 'a` with methods `add`, `sub`, `mul` is declared in `Prelude/Typeclass.fun` and the class is accessible to user programs.
+2. `instance Num int` is registered so user code can call `Num.add 3 4` (or the unqualified form) and receive `7`.
+3. The built-in `+`, `-`, `*` operators continue to use their existing `Add`/`Subtract`/`Multiply` AST dispatch — no operator migration occurs in this phase.
+4. `instance Eq 'a => Eq ('a list)` is registered and `(=) [1;2;3] [1;2;3]` evaluates to `true` using the constrained instance.
+
+---
+
+### Phase 100: Derive for Parameterized ADTs
+
+**Goal:** `deriving Show` and `deriving Eq` work correctly on parameterized ADTs, generating constrained instances with the right type variables and constraints.
+
+**Dependencies:** Phase 98 (generated constrained instances must dispatch correctly), Phase 97 (generated instances may carry superclass constraints)
+
+**Requirements:** DRV-01, DRV-02
+
+**Success Criteria:**
+
+1. `type Tree 'a = Leaf | Node of 'a * Tree 'a * Tree 'a` followed by `deriving Show Tree` generates a `Show 'a => Show (Tree 'a)` instance with `InstanceVars = ["'a"]` and `InstanceConstraints = [Show 'a]`.
+2. `show (Node (1, Leaf, Leaf))` evaluates to the expected string representation using the derived instance.
+3. A recursive ADT (`Tree 'a` containing `Tree 'a` fields) derives correctly and the show method handles recursive values without a runtime crash.
+4. `deriving Eq` on a type containing function-typed fields produces a clear compile-time error rather than a runtime crash.
+
+---
+
+### Phase 101: Error Message Polish
+
+**Goal:** Type class error messages are actionable — they identify the missing subgoal, fire the right error code, and show constraint chain context.
+
+**Dependencies:** Phase 96 (formatTypeNormalized already in place), Phase 99 (Num/Eq instances exist to exercise hints)
+
+**Requirements:** ERR-01, ERR-02, ERR-03
+
+**Success Criteria:**
+
+1. When `show (myRecord)` fails because `Show MyRecord` is missing, E0701 displays "No instance of Show for MyRecord" (the actual missing element-type instance), not "No instance of Show for MyRecord list".
+2. Passing a value with a mismatched method type in an `instance` declaration fires E0704 (not E0301).
+3. A type error that originates from a constraint on a called function displays the constraint chain context — e.g., "required by call to `show` which requires `Show 'a`".
+
+---
+
+## Progress
+
+| Phase | Goal | Requirements | Status |
+|-------|------|--------------|--------|
+| 96 — Correctness Foundations | Reliable type class infrastructure | TC-01, TC-02, TC-03, TC-04 | Pending |
+| 97 — Superclass Entailment | Superclass chain resolution | SC-01, SC-02, SC-03 | Pending |
+| 98 — Constrained Instance Runtime Dispatch | Constrained instances evaluate correctly | CD-01, CD-02 | Pending |
+| 99 — Num Type Class | Num/Eq Prelude additions | NUM-01, NUM-02, NUM-03 | Pending |
+| 100 — Derive for Parameterized ADTs | derive works on `Tree 'a` etc. | DRV-01, DRV-02 | Pending |
+| 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
+
+**Coverage:** 17/17 requirements mapped. No orphans.
+
+---
+
+## Coverage Map
+
+| Requirement | Phase |
+|-------------|-------|
+| TC-01 | 96 |
+| TC-02 | 96 |
+| TC-03 | 96 |
+| TC-04 | 96 |
+| SC-01 | 97 |
+| SC-02 | 97 |
+| SC-03 | 97 |
+| CD-01 | 98 |
+| CD-02 | 98 |
+| NUM-01 | 99 |
+| NUM-02 | 99 |
+| NUM-03 | 99 |
+| DRV-01 | 100 |
+| DRV-02 | 100 |
+| ERR-01 | 101 |
+| ERR-02 | 101 |
+| ERR-03 | 101 |
+
+---
+
+## Key Constraints
+
+- Phase 96 must precede all others — existing bugs corrupt the instance environment and confound every subsequent phase.
+- Phase 98 (name mangling) is highest-risk — monomorphic instances must preserve literal method names; only `InstanceVars != []` instances get mangled names.
+- Phase 99 must NOT migrate `+`/`-`/`*`/`=` operator dispatch through the type class system — `Add`/`Subtract`/`Multiply`/`Equal` AST nodes remain hardcoded.
+- 724 flt tests must pass at every phase boundary before the phase is considered complete.
+
+---
+
+*Roadmap created: 2026-04-09 — v15.0 Type Class Maturity*
+*Phases continue from v14.0 Phase 95*

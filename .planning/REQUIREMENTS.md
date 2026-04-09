@@ -53,28 +53,29 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TC-01 | TBD | Pending |
-| TC-02 | TBD | Pending |
-| TC-03 | TBD | Pending |
-| TC-04 | TBD | Pending |
-| SC-01 | TBD | Pending |
-| SC-02 | TBD | Pending |
-| SC-03 | TBD | Pending |
-| CD-01 | TBD | Pending |
-| CD-02 | TBD | Pending |
-| NUM-01 | TBD | Pending |
-| NUM-02 | TBD | Pending |
-| NUM-03 | TBD | Pending |
-| DRV-01 | TBD | Pending |
-| DRV-02 | TBD | Pending |
-| ERR-01 | TBD | Pending |
-| ERR-02 | TBD | Pending |
-| ERR-03 | TBD | Pending |
+| TC-01 | Phase 96 | Pending |
+| TC-02 | Phase 96 | Pending |
+| TC-03 | Phase 96 | Pending |
+| TC-04 | Phase 96 | Pending |
+| SC-01 | Phase 97 | Pending |
+| SC-02 | Phase 97 | Pending |
+| SC-03 | Phase 97 | Pending |
+| CD-01 | Phase 98 | Pending |
+| CD-02 | Phase 98 | Pending |
+| NUM-01 | Phase 99 | Pending |
+| NUM-02 | Phase 99 | Pending |
+| NUM-03 | Phase 99 | Pending |
+| DRV-01 | Phase 100 | Pending |
+| DRV-02 | Phase 100 | Pending |
+| ERR-01 | Phase 101 | Pending |
+| ERR-02 | Phase 101 | Pending |
+| ERR-03 | Phase 101 | Pending |
 
 **Coverage:**
 - v15.0 requirements: 17 total
-- Mapped to phases: 0 (awaiting roadmap)
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-09*
+*Traceability updated: 2026-04-09 — roadmap phases 96–101 assigned*
