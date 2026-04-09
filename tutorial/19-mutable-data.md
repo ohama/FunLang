@@ -77,19 +77,19 @@ $ fn arr_map.l3
 [|1; 4; 9; 16; 25|]
 ```
 
-**Array.fold** — 배열을 하나의 값으로 축약합니다. 콜백은 반드시 커링된 형태 `fun acc -> fun x -> ...`로 작성합니다:
+**Array.fold** — 배열을 하나의 값으로 축약합니다:
 
 ```
 $ cat arr_fold.l3
 let arr = Array.ofList [1; 2; 3; 4; 5]
-let total = Array.fold (fun acc -> fun x -> acc + x) 0 arr
+let total = Array.fold (fun acc x -> acc + x) 0 arr
 let result = total
 
 $ fn arr_fold.l3
 15
 ```
 
-`(fun acc -> fun x -> acc + x)`는 FunLang에서 두 인자를 받는 콜백을 작성하는 방식입니다. `fun acc x -> ...`는 파싱 에러이므로 반드시 커링 형태를 사용해야 합니다.
+`fun acc x -> acc + x`는 두 인자를 받는 콜백입니다. `fun acc -> fun x -> acc + x`처럼 커링 형태로도 쓸 수 있습니다.
 
 **Array.init** — 인덱스 `i`에 함수 `f i`를 적용한 값으로 배열을 초기화합니다:
 

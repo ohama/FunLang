@@ -67,6 +67,15 @@ let rec unifyWithContext (ctx: InferContext list) (trace: UnifyPath list)
         let s2 = unifyWithContext ctx trace span (apply s1 v1) (apply s1 v2)
         compose s2 s1
 
+    // Phase 94: Mutable collection types
+    | THashSet t1, THashSet t2 ->
+        unifyWithContext ctx trace span t1 t2
+    | TQueue t1, TQueue t2 ->
+        unifyWithContext ctx trace span t1 t2
+    | TMutableList t1, TMutableList t2 ->
+        unifyWithContext ctx trace span t1 t2
+    | TStringBuilder, TStringBuilder -> empty
+
     // Named ADT types: same name, same arity, unify args pairwise
     | TData (n1, args1), TData (n2, args2) when n1 = n2 && List.length args1 = List.length args2 ->
         List.fold2 (fun s a1 a2 ->

@@ -13,6 +13,10 @@ type Type =
     | TList of Type                  // list type 'a list
     | TArray of Type                 // array type 'a array (Phase 38)
     | THashtable of Type * Type      // hashtable type (Phase 39)
+    | THashSet of Type               // hashset type 'a hashset (Phase 94)
+    | TQueue of Type                 // queue type 'a queue (Phase 94)
+    | TMutableList of Type           // mutablelist type 'a mutablelist (Phase 94)
+    | TStringBuilder                 // stringbuilder type (Phase 94)
     | TData of name: string * typeArgs: Type list  // Named ADT type: Option<'a>, Tree, etc.
     | TExn                                        // Exception base type
     | TError                                      // Poison type for error recovery (v11.1)
@@ -108,6 +112,10 @@ let rec formatType = function
     | TList t -> sprintf "%s list" (formatType t)
     | TArray t -> sprintf "%s array" (formatType t)
     | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (formatType k) (formatType v)
+    | THashSet t -> sprintf "%s hashset" (formatType t)
+    | TQueue t -> sprintf "%s queue" (formatType t)
+    | TMutableList t -> sprintf "%s mutablelist" (formatType t)
+    | TStringBuilder -> "stringbuilder"
     | TData (name, []) -> name
     | TData (name, args) ->
         let argStr = args |> List.map formatType |> String.concat ", "
@@ -126,6 +134,10 @@ let formatTypeNormalized (ty: Type) : string =
         | TList t -> collectVars acc t
         | TArray t -> collectVars acc t
         | THashtable (k, v) -> collectVars (collectVars acc k) v
+        | THashSet t -> collectVars acc t
+        | TQueue t -> collectVars acc t
+        | TMutableList t -> collectVars acc t
+        | TStringBuilder -> acc
         | TData (_, args) -> List.fold collectVars acc args
         | TInt | TBool | TString | TChar | TExn | TError -> acc
 
@@ -149,6 +161,10 @@ let formatTypeNormalized (ty: Type) : string =
         | TList t -> sprintf "%s list" (format t)
         | TArray t -> sprintf "%s array" (format t)
         | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (format k) (format v)
+        | THashSet t -> sprintf "%s hashset" (format t)
+        | TQueue t -> sprintf "%s queue" (format t)
+        | TMutableList t -> sprintf "%s mutablelist" (format t)
+        | TStringBuilder -> "stringbuilder"
         | TData (name, []) -> name
         | TData (name, args) ->
             let argStr = args |> List.map format |> String.concat ", "
@@ -170,6 +186,10 @@ let formatSchemeNormalized (Scheme (_vars, constraints, ty)) : string =
         | TList t -> collectVars acc t
         | TArray t -> collectVars acc t
         | THashtable (k, v) -> collectVars (collectVars acc k) v
+        | THashSet t -> collectVars acc t
+        | TQueue t -> collectVars acc t
+        | TMutableList t -> collectVars acc t
+        | TStringBuilder -> acc
         | TData (_, args) -> List.fold collectVars acc args
         | TInt | TBool | TString | TChar | TExn | TError -> acc
     let constraintTypes = constraints |> List.map (fun c -> c.TypeArg)
@@ -193,6 +213,10 @@ let formatSchemeNormalized (Scheme (_vars, constraints, ty)) : string =
         | TList t -> sprintf "%s list" (format t)
         | TArray t -> sprintf "%s array" (format t)
         | THashtable (k, v) -> sprintf "hashtable<%s, %s>" (format k) (format v)
+        | THashSet t -> sprintf "%s hashset" (format t)
+        | TQueue t -> sprintf "%s queue" (format t)
+        | TMutableList t -> sprintf "%s mutablelist" (format t)
+        | TStringBuilder -> "stringbuilder"
         | TData (name, []) -> name
         | TData (name, args) ->
             let argStr = args |> List.map format |> String.concat ", "
@@ -237,6 +261,10 @@ let rec apply (s: Subst) = function
     | TList t -> TList (apply s t)
     | TArray t -> TArray (apply s t)
     | THashtable (k, v) -> THashtable (apply s k, apply s v)
+    | THashSet t -> THashSet (apply s t)
+    | TQueue t -> TQueue (apply s t)
+    | TMutableList t -> TMutableList (apply s t)
+    | TStringBuilder -> TStringBuilder
     | TData (name, args) -> TData (name, List.map (apply s) args)
 
 /// Compose two substitutions: s2 after s1 (like function composition)
@@ -269,6 +297,10 @@ let rec freeVars = function
     | TList t -> freeVars t
     | TArray t -> freeVars t
     | THashtable (k, v) -> Set.union (freeVars k) (freeVars v)
+    | THashSet t -> freeVars t
+    | TQueue t -> freeVars t
+    | TMutableList t -> freeVars t
+    | TStringBuilder -> Set.empty
     | TData (_, args) -> args |> List.map freeVars |> Set.unionMany
 
 /// Free variables in a type scheme (excludes bound variables)

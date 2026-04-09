@@ -245,7 +245,7 @@ $ cat custom_eq.l3
 type Direction = | North | South | East | West
 
 instance Eq Direction =
-    let eq a = fun b ->
+    let eq a b =
         match (a, b) with
         | (North, North) -> true
         | (South, South) -> true
@@ -332,16 +332,16 @@ typeclass Eq 'a =
     | eq : 'a -> 'a -> bool
 
 instance Eq int =
-    let eq x = fun y -> x = y
+    let eq x y = x = y
 
 instance Eq bool =
-    let eq x = fun y -> x = y
+    let eq x y = x = y
 
 instance Eq string =
-    let eq x = fun y -> x = y
+    let eq x y = x = y
 
 instance Eq char =
-    let eq x = fun y -> x = y
+    let eq x y = x = y
 ```
 
 이 파일은 Prelude의 다른 파일과 마찬가지로 자동으로 로드됩니다. 따라서 `show`와 `eq`는 별도의 선언 없이 모든 코드에서 사용할 수 있습니다.

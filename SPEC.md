@@ -605,7 +605,7 @@ let eval e =
 
 **Hashtable functions (qualified):** `Hashtable.create`, `Hashtable.get`, `Hashtable.set`, `Hashtable.containsKey`, `Hashtable.keys`, `Hashtable.remove`
 
-**String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`, `String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.join`, `String.substring`
+**String functions (qualified):** `String.endsWith`, `String.startsWith`, `String.trim`, `String.length`, `String.contains`, `String.concat`, `String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.join`, `String.substring`, `String.toInt`, `String.ofInt`
 
 **Char functions (qualified):** `Char.isDigit`, `Char.isLetter`, `Char.isUpper`, `Char.isLower`, `Char.toUpper`, `Char.toLower`, `Char.toInt`, `Char.ofInt`
 
@@ -613,7 +613,7 @@ let eval e =
 
 **Queue functions (qualified):** `Queue.create`, `Queue.enqueue`, `Queue.dequeue`, `Queue.count`
 
-**MutableList functions (qualified):** `MutableList.create`, `MutableList.add`, `MutableList.count`
+**MutableList functions (qualified):** `MutableList.create`, `MutableList.add`, `MutableList.get`, `MutableList.set`, `MutableList.count`
 
 **StringBuilder functions (qualified):** `StringBuilder.create`, `StringBuilder.add`, `StringBuilder.toString`
 

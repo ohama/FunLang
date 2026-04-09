@@ -79,11 +79,11 @@ fn> [3..3]
 ```
 $ cat range_sum.l3
 let result =
-    let rec fold f = fun acc -> fun xs ->
+    let rec fold f acc xs =
         match xs with
         | [] -> acc
         | h :: t -> fold f (f acc h) t
-    fold (fun acc -> fun x -> acc + x) 0 [1..100]
+    fold (fun acc x -> acc + x) 0 [1..100]
 
 $ fn range_sum.l3
 5050
@@ -165,7 +165,7 @@ fn> map (fun x -> x * 2) [1; 2; 3]
 fn> filter (fun x -> x > 2) [1; 2; 3; 4; 5]
 [3; 4; 5]
 
-fn> fold (fun acc -> fun x -> acc + x) 0 [1..5]
+fn> fold (fun acc x -> acc + x) 0 [1..5]
 15
 
 fn> length [1; 2; 3; 4]
@@ -179,7 +179,7 @@ fn> append [1; 2] [3; 4]
 
 `map`은 변환: 리스트의 모든 원소에 함수를 적용해 새 리스트를 만듭니다. `filter`는 선택: 조건을 만족하는 원소만 남깁니다. `fold`는 축약: 리스트 전체를 하나의 값으로 압축합니다. 이 세 함수를 잘 조합하면 대부분의 리스트 처리 문제를 해결할 수 있습니다.
 
-`fold`의 시그니처가 낯설 수 있습니다. `fun acc -> fun x -> acc + x`처럼 누적값과 현재 원소를 각각 인자로 받는 커링된 함수를 넘기는 것이 FunLang 스타일입니다. 초기값(`0`)과 리스트를 마지막에 넘깁니다.
+`fold`의 시그니처가 낯설 수 있습니다. `fun acc x -> acc + x`처럼 누적값과 현재 원소를 인자로 받는 함수를 넘기고, 초기값(`0`)과 리스트를 마지막에 넘깁니다.
 
 `++` 연산자는 `append`의 별칭입니다. 더 자연스러운 중위 표기를 제공합니다:
 
@@ -242,7 +242,7 @@ $ fn map10.l3
 
 이 두 예제는 리스트 재귀의 기본 패턴을 잘 보여줍니다. 빈 리스트(`[]`)가 기저 사례(base case)이고, `x :: rest`로 분해해 머리(head) `x`를 처리한 뒤 꼬리(tail) `rest`에 재귀 호출하는 것이 귀납 사례(inductive case)입니다. Haskell을 비롯한 모든 함수형 언어에서 리스트 재귀는 이 구조를 따릅니다.
 
-`sum`은 `fold (fun acc -> fun x -> acc + x) 0`으로, `go`는 `map (fun x -> x * 10)`으로 표현할 수 있습니다. 그렇다면 언제 직접 재귀를 써야 할까요? Prelude에 없는 복잡한 변환이 필요하거나, 여러 상태를 동시에 추적해야 하거나, 특수한 종료 조건이 있을 때입니다. 먼저 `map`/`filter`/`fold`로 해결할 수 있는지 확인하고, 안 되면 직접 작성하는 것이 좋은 순서입니다.
+`sum`은 `fold (fun acc x -> acc + x) 0`으로, `go`는 `map (fun x -> x * 10)`으로 표현할 수 있습니다. 그렇다면 언제 직접 재귀를 써야 할까요? Prelude에 없는 복잡한 변환이 필요하거나, 여러 상태를 동시에 추적해야 하거나, 특수한 종료 조건이 있을 때입니다. 먼저 `map`/`filter`/`fold`로 해결할 수 있는지 확인하고, 안 되면 직접 작성하는 것이 좋은 순서입니다.
 
 ## 리스트 컴프리헨션 (List Comprehensions)
 

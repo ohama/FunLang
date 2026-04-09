@@ -297,7 +297,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let appliedFuncTy = apply s2 funcTy
         // Check if we're trying to apply a non-function type
         match appliedFuncTy with
-        | TInt | TBool | TString | TTuple _ | TList _ | TArray _ | THashtable _ | TData _ ->
+        | TInt | TBool | TString | TTuple _ | TList _ | TArray _ | THashtable _ | THashSet _ | TQueue _ | TMutableList _ | TStringBuilder | TData _ ->
             raise (TypeException {
                 Kind = NotAFunction appliedFuncTy
                 Span = spanOf func
@@ -414,12 +414,12 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 (s1, t)
             | TArray t ->
                 (s1, t)
-            | TData("HashSet", []) ->
-                (s1, freshVar())
-            | TData("Queue", []) ->
-                (s1, freshVar())
-            | TData("MutableList", []) ->
-                (s1, freshVar())
+            | THashSet t ->
+                (s1, t)
+            | TQueue t ->
+                (s1, t)
+            | TMutableList t ->
+                (s1, t)
             | THashtable (keyTy, valTy) ->
                 (s1, TTuple [keyTy; valTy])
             | _ ->
@@ -863,7 +863,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let finalTy = apply s3 valTy
             recordTy span finalTy
             (compose s3 (compose s2 s1), finalTy)
-        | TData("MutableList", []) ->
+        | TMutableList _elemTy ->
             let tv = freshVar()
             let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
@@ -898,7 +898,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s5 = unifyWithContext ctx [] span (apply s4 valTy') (apply (compose s4 s3) valTy)
             recordTy span (TTuple [])
             (compose s5 (compose s4 (compose s3 (compose s2 s1))), TTuple [])
-        | TData("MutableList", []) ->
+        | TMutableList _elemTy ->
             let env1 = applyEnv s1 env
             let s2, idxTy = synth ctorEnv recEnv ctx env1 idxExpr
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt

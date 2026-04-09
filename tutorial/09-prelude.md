@@ -23,7 +23,7 @@ Prelude는 FunLang 바이너리와 같은 위치의 `Prelude/` 디렉토리에 �
 - `Prelude/MutableList.fun` -- MutableList 모듈
 - `Prelude/Queue.fun` -- Queue 모듈
 - `Prelude/Result.fun` -- Result 타입과 함수 (`resultMap`, `resultBind`, `resultDefault` 등)
-- `Prelude/String.fun` -- String 모듈 (`String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.trim`, `String.endsWith`, `String.startsWith` 등)
+- `Prelude/String.fun` -- String 모듈 (`String.split`, `String.indexOf`, `String.replace`, `String.toUpper`, `String.toLower`, `String.trim`, `String.endsWith`, `String.startsWith`, `String.toInt`, `String.ofInt` 등)
 - `Prelude/StringBuilder.fun` -- StringBuilder 모듈
 - `Prelude/Typeclass.fun` -- 타입 클래스 (`Show`, `Eq`)와 기본 타입 인스턴스 (`int`, `bool`, `string`, `char`)
 
@@ -257,11 +257,11 @@ fn> filter (fun x -> x > 3) [1..6]
 `fold`는 리스트를 하나의 값으로 축약합니다. 합계, 최댓값, 문자열 합치기 등 리스트를 단일 결과로 만드는 모든 연산이 `fold`로 표현됩니다:
 
 ```
-fn> fold (fun acc -> fun x -> acc + x) 0 [1..10]
+fn> fold (fun acc x -> acc + x) 0 [1..10]
 55
 ```
 
-`fold`는 처음엔 조금 낯설 수 있습니다. 핵심은 "누산기(accumulator)를 초기값에서 시작해 각 원소마다 업데이트해 나간다"는 것입니다. 여기서 `0`이 초기값이고, `fun acc -> fun x -> acc + x`가 매 원소마다 실행되는 업데이트 함수입니다. 1부터 10까지 더하면 55가 됩니다.
+`fold`는 처음엔 조금 낯설 수 있습니다. 핵심은 "누산기(accumulator)를 초기값에서 시작해 각 원소마다 업데이트해 나간다"는 것입니다. 여기서 `0`이 초기값이고, `fun acc x -> acc + x`가 매 원소마다 실행되는 업데이트 함수입니다. 1부터 10까지 더하면 55가 됩니다.
 
 `fold`는 `map`과 `filter`를 포함한 거의 모든 리스트 연산을 직접 구현할 수 있을 만큼 강력합니다. 하지만 그렇다고 항상 `fold`를 쓸 필요는 없습니다. `map`이나 `filter`로 표현되는 코드가 훨씬 읽기 쉬울 때는 그것을 쓰세요.
 
@@ -343,7 +343,7 @@ None
 
 ```
 $ cat list_transform.l3
-let r1 = List.mapi (fun i -> fun x -> i + x) [10; 20; 30]
+let r1 = List.mapi (fun i x -> i + x) [10; 20; 30]
 let _ = println (to_string r1)
 let _ = println (to_string (List.item 1 [10; 20; 30]))
 let _ = println (to_string (List.isEmpty []))

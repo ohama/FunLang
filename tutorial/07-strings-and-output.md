@@ -323,6 +323,8 @@ spaces
 | `String.substring s start len` | 부분 문자열 추출 |
 | `String.contains s needle` | 부분 문자열 포함 여부 |
 | `String.concat sep lst` | 구분자로 문자열 리스트를 연결 |
+| `String.toInt s` | 문자열을 정수로 변환 |
+| `String.ofInt n` | 정수를 문자열로 변환 |
 
 ## StringBuilder
 

@@ -18,7 +18,7 @@ $ cat find_exc.l3
 exception NotFound
 
 // 조건을 만족하는 첫 번째 원소를 찾고, 없으면 예외 발생
-let rec find pred = fun xs ->
+let rec find pred xs =
     match xs with
     | [] -> raise NotFound
     | h :: t -> if pred h then h else find pred t
@@ -34,7 +34,7 @@ $ fn find_exc.l3
 ```
 $ cat find_opt.l3
 // 조건을 만족하는 첫 번째 원소를 Option으로 반환
-let rec find pred = fun xs ->
+let rec find pred xs =
     match xs with
     | [] -> None
     | h :: t -> if pred h then Some h else find pred t
@@ -50,7 +50,7 @@ $ fn find_opt.l3
 ```
 $ cat find_res.l3
 // 조건을 만족하는 첫 번째 원소를 Result로 반환
-let rec find pred = fun xs ->
+let rec find pred xs =
     match xs with
     | [] -> Error "not found"
     | h :: t -> if pred h then Ok h else find pred t
@@ -106,7 +106,7 @@ let parseInt s =
     | "42" -> 42
     | "0" -> 0
     | _ -> raise (ParseError ("invalid: " + s))
-let safeDivide a = fun b -> if b = 0 then raise (DivError "div/0") else a / b
+let safeDivide a b = if b = 0 then raise (DivError "div/0") else a / b
 
 let compute input = try
     let n = parseInt input
@@ -135,7 +135,7 @@ let parseInt s =
     | "42" -> Ok 42
     | "0" -> Ok 0
     | _ -> Error ("invalid: " + s)
-let safeDivide a = fun b -> if b = 0 then Error "div/0" else Ok (a / b)
+let safeDivide a b = if b = 0 then Error "div/0" else Ok (a / b)
 
 let compute input = parseInt input |> resultBind (safeDivide 100) |> resultMap (fun x -> x + 1)
 
@@ -173,7 +173,7 @@ Option/Result를 사용하면 재귀 함수가 `try` 없이 동작하므로 TCO�
 
 ```
 $ cat tco_result.l3
-let rec searchList pred = fun xs -> fun i ->
+let rec searchList pred xs i =
     match xs with
     | [] -> Error "not found"
     | h :: t -> if pred h then Ok i else searchList pred t (i + 1)
@@ -198,7 +198,7 @@ let safeHead xs =
     match xs with
     | [] -> None
     | h :: _ -> Some h
-let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
+let safeDivide a b = if b = 0 then None else Some (a / b)
 
 let result = Some [10; 20; 30] |> optionBind safeHead |> optionBind (safeDivide 100) |> optionDefault 0
 
@@ -220,7 +220,7 @@ let safeHead xs =
     match xs with
     | [] -> None
     | h :: _ -> Some h
-let safeDivide a = fun b -> if b = 0 then None else Some (a / b)
+let safeDivide a b = if b = 0 then None else Some (a / b)
 
 let result = safeDivide 10 0 <|> safeDivide 10 2 <|> Some 0
 
@@ -239,7 +239,7 @@ $ cat result_use.l3
 let validateAge age = if age < 0 then Error "age cannot be negative" else if age > 150 then Error "age too large" else Ok age
 let validateName name = if String.length name = 0 then Error "name cannot be empty" else Ok name
 
-let validate name = fun age -> validateName name |> resultBind (fun _ -> validateAge age |> resultMap (fun a -> name + " (" + to_string a + ")"))
+let validate name age = validateName name |> resultBind (fun _ -> validateAge age |> resultMap (fun a -> name + " (" + to_string a + ")"))
 
 let r1 = validate "Alice" 30
 let r2 = validate "" 25

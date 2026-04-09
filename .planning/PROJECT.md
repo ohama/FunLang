@@ -118,6 +118,11 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - 산술 연산 tag/untag (덧셈/뺄셈 1op, 곱셈/나눗셈 4ops) — v13.0
 - int 관련 C 런타임 함수 untag 추가 (int_to_string, print_int, array index 등) — v13.0
 - Generic equality/hash 기반 구축 (optional bonus) — v13.0
+- Array 타입 어노테이션: Elaborate TEData("array")→TArray 변환 — v14.0
+- 연산자 정의 타입 어노테이션: OpName MixedParamList 파서 규칙 — v14.0
+- Instance 메서드 타입 어노테이션: InstanceMethod MixedParamList 파서 규칙 — v14.0
+- Mutable 컬렉션 타입 등록: THashSet/TQueue/TMutableList/TStringBuilder — v14.0
+- 타입 변수 이름 안정화: freshTypeVarIndex 스코프 관리 — v14.0
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -141,7 +146,20 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
 
-## Current Milestone: v13.0 Uniform Tagged Representation
+## Current Milestone: v14.0 Type Annotation Completeness
+
+**Goal:** Prelude 타입 어노테이션 작업 중 발견된 5가지 타입 시스템/파서 갭을 해결하여, 모든 Prelude 함수에 타입을 명시할 수 있게 한다.
+
+**Target features:**
+- Array 타입 어노테이션 (Elaborate TEData→TArray 변환)
+- 연산자 정의 타입 어노테이션 (OpName MixedParamList)
+- Instance 메서드 타입 어노테이션 (InstanceMethod MixedParamList)
+- Mutable 컬렉션 타입 등록 (HashSet/Queue/MutableList/StringBuilder)
+- 타입 변수 이름 안정화 (freshTypeVarIndex 스코프 관리)
+
+**Motivation:** Prelude/*.fun에 타입 어노테이션을 추가하여 문서화 가치와 타입 안전성을 높이려 했으나, Array/연산자/Instance/Mutable컬렉션에서 어노테이션이 불가능했고 타입 변수 이름이 불안정해지는 문제 발견.
+
+## Pending Milestone: v13.0 Uniform Tagged Representation
 
 **Goal:** OCaml 방식의 LSB 1-bit tagging으로 모든 값을 i64 하나로 표현하여 int/string 런타임 자동 dispatch 가능하게 하고, hashtable `*_str` 함수 중복을 제거한다.
 

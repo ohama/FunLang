@@ -412,8 +412,8 @@ $ fn partial_hof.l3
 
 ```
 $ cat partial_fold.l3
-let sum = fold (fun acc -> fun x -> acc + x) 0
-let product = fold (fun acc -> fun x -> acc * x) 1
+let sum = fold (fun acc x -> acc + x) 0
+let product = fold (fun acc x -> acc * x) 1
 
 let r1 = sum [1; 2; 3; 4; 5]
 let r2 = product [1; 2; 3; 4; 5]
@@ -438,7 +438,7 @@ let result =
     [1; 2; 3; 4; 5; 6; 7; 8; 9; 10]
     |> filter (gt 3)
     |> map (mul 10)
-    |> fold (fun acc -> fun x -> acc + x) 0
+    |> fold (fun acc x -> acc + x) 0
 
 $ fn partial_pipeline.l3
 490
@@ -451,7 +451,7 @@ $ fn partial_pipeline.l3
 ```
     |> filter (fun x -> x > 3)
     |> map (fun x -> x * 10)
-    |> fold (fun acc -> fun x -> acc + x) 0
+    |> fold (fun acc x -> acc + x) 0
 ```
 
 동작은 같지만, 부분 적용 버전이 더 간결하고 의도가 명확합니다. `gt 3`은 "3보다 크다"를, `mul 10`은 "10을 곱한다"를 함수 이름 자체로 말해줍니다.

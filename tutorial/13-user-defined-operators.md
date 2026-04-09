@@ -66,7 +66,7 @@ $ fn op_as_func.l3
 [1; 2; 3; 4; 5]
 ```
 
-`(++)`는 `fun xs -> fun ys -> append xs ys`와 동일합니다.
+`(++)`는 `fun xs ys -> append xs ys`와 동일합니다.
 
 `fold (++) []`는 리스트들의 리스트를 하나의 리스트로 평탄화합니다. `(++)`를 `fold`의 첫 번째 인자로 바로 넘길 수 있다는 것은, 연산자가 1급 값(first-class value)임을 의미합니다. Haskell에서 `foldr (++) []`와 정확히 같은 방식입니다.
 
@@ -113,7 +113,7 @@ $ fn qsort_op.l3
 ```
 $ cat format_op.l3
 // 리스트를 "[1, 2, 3]" 형태의 문자열로 변환
-let formatList xs = "[" ^^ fold (fun acc -> fun x -> if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
+let formatList xs = "[" ^^ fold (fun acc x -> if acc = "" then to_string x else acc ^^ ", " ^^ to_string x) "" xs ^^ "]"
 
 let result = [1..5] |> filter (fun x -> x > 2) |> formatList
 
@@ -231,13 +231,13 @@ Prelude의 `|>`, `<|`, `>>`, `<<` 연산자도 이 fixity 속성으로 정의되
 
 ```
 #[left 1]
-let (|>) x f = f x
+let (|>) (x : 'a) (f : 'a -> 'b) : 'b = f x
 #[right 1]
-let (<|) f x = f x
+let (<|) (f : 'a -> 'b) (x : 'a) : 'b = f x
 #[right 2]
-let (>>) f g = fun x -> g (f x)
+let (>>) (f : 'a -> 'b) (g : 'b -> 'c) (x : 'a) : 'c = g (f x)
 #[left 2]
-let (<<) f g = fun x -> f (g x)
+let (<<) (f : 'b -> 'c) (g : 'a -> 'b) (x : 'a) : 'c = f (g x)
 ```
 
 이처럼 fixity 속성은 특별한 컴파일러 마법이 아니라, 모든 사용자가 동일하게 활용할 수 있는 일반적인 메커니즘입니다.

@@ -2,4 +2,4 @@
 // --- Command: src/FunLang/bin/Release/net10.0/fn --expr "let rec f x = f in f 1"
 // --- ExitCode: 1
 // --- Stderr:
-error[E0302]: Occurs check: cannot construct infinite type 'l = 'k -> 'l
+error[E0302]: Occurs check: cannot construct infinite type 'a = 'b -> 'a

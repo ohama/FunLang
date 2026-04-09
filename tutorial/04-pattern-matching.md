@@ -689,7 +689,7 @@ $ fn list_length.l3
 
 ```
 $ cat list_filter.l3
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
@@ -705,7 +705,7 @@ $ fn list_filter.l3
 ```
 $ cat take_while.l3
 let result =
-    let rec takeWhile pred = fun xs ->
+    let rec takeWhile pred xs =
         match xs with
         | [] -> []
         | h :: t -> if pred h then h :: takeWhile pred t else []
@@ -747,7 +747,7 @@ $ fn expr_eval.l3
 ```
 $ cat lookup.l3
 let result =
-    let rec lookup key = fun xs ->
+    let rec lookup key xs =
         match xs with
         | [] -> None
         | (k, v) :: rest -> if k = key then Some v else lookup key rest
@@ -800,7 +800,7 @@ $ fn tree_ops.l3
 ```
 $ cat isort.l3
 let sorted =
-    let rec insert x = fun xs ->
+    let rec insert x xs =
         match xs with
         | [] -> x :: []
         | h :: t -> if x <= h then x :: h :: t else h :: insert x t

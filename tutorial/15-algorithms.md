@@ -15,10 +15,10 @@ FunLang에서 알고리즘을 구현할 때 자주 사용하는 기능들입니�
 - **상호 재귀**: `let rec f = ... and g = ...`로 서로를 호출하는 함수를 정의합니다.
 - **Or 패턴**: 패턴 매칭에서 여러 패턴을 하나로 묶을 수 있습니다.
 
-모듈 레벨 `let rec`의 제약 사항을 기억하세요:
+모듈 레벨 `let rec`의 특징을 기억하세요:
 
-- 매개변수는 **하나만** 직접 받습니다: `let rec f x = body`
-- 두 번째 매개변수부터는 클로저로 전달합니다: `let rec f x = fun y -> body`
+- 매개변수를 **여러 개** 직접 받을 수 있습니다: `let rec f x y z = body`
+- 타입 어노테이션도 가능합니다: `let rec f (x : int) (y : int) : int = body`
 - `match` 표현식은 한 줄 또는 들여쓰기 기반 여러 줄로 작성할 수 있습니다
 
 이제 이 기능들을 활용한 알고리즘을 하나씩 살펴보겠습니다.
@@ -38,7 +38,7 @@ FunLang에서 알고리즘을 구현할 때 자주 사용하는 기능들입니�
 
 ```
 $ cat map.l3
-let rec map f = fun xs ->
+let rec map f xs =
     match xs with
     | [] -> []
     | h :: t -> f h :: map f t
@@ -49,8 +49,7 @@ $ fn map.l3
 [1; 4; 9; 16; 25]
 ```
 
-`map`은 두 개의 매개변수를 받습니다. 첫 번째 `f`가 `let rec` 매개변수이고,
-두 번째 `xs`는 `fun xs -> ...`를 통해 전달됩니다. 빈 리스트가 기저 사례이며,
+`map`은 두 개의 매개변수 `f`와 `xs`를 직접 받습니다. 빈 리스트가 기저 사례이며,
 비어 있지 않으면 head에 `f`를 적용하고 tail에 대해 재귀합니다.
 
 ### Filter
@@ -59,7 +58,7 @@ $ fn map.l3
 
 ```
 $ cat filter.l3
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
@@ -79,19 +78,18 @@ $ fn filter.l3
 
 ```
 $ cat fold.l3
-let rec fold f = fun acc -> fun xs ->
+let rec fold f acc xs =
     match xs with
     | [] -> acc
     | h :: t -> fold f (f acc h) t
 
-let result = fold (fun acc -> fun x -> acc + x * x) 0 [1; 2; 3; 4; 5]
+let result = fold (fun acc x -> acc + x * x) 0 [1; 2; 3; 4; 5]
 
 $ fn fold.l3
 55
 ```
 
-세 개의 매개변수가 중첩 클로저로 전달됩니다: `f`가 `let rec` 매개변수,
-`acc`가 첫 번째 `fun`, `xs`가 두 번째 `fun`입니다.
+세 개의 매개변수 `f`, `acc`, `xs`를 직접 받습니다.
 계산 과정은 0 + 1 + 4 + 9 + 16 + 25 = 55입니다.
 
 ### Prelude를 활용한 간결한 코드
@@ -140,7 +138,7 @@ $ fn factorial.l3
 ```
 $ cat fibonacci.l3
 let rec fib n = if n <= 1 then n else fib (n - 1) + fib (n - 2)
-let rec map f = fun xs ->
+let rec map f xs =
     match xs with
     | [] -> []
     | h :: t -> f h :: map f t
@@ -160,10 +158,10 @@ $ fn fibonacci.l3
 
 ```
 $ cat gcd_lcm.l3
-let rec gcd a = fun b ->
+let rec gcd a b =
     if b = 0 then a else gcd b (a % b)
 
-let lcm a = fun b ->
+let lcm a b =
     a / gcd a b * b
 
 let result = (gcd 48 36, lcm 12 18)
@@ -184,9 +182,9 @@ GCD와 리스트 범위를 결합하면 주어진 수와 서로소인 수를 구
 
 ```
 $ cat coprimes.l3
-let rec gcd a = fun b ->
+let rec gcd a b =
     if b = 0 then a else gcd b (a % b)
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
@@ -208,11 +206,11 @@ phi(12) = 4의 구체적인 원소들입니다. 리스트 범위 덕분에 `[1..
 
 ```
 $ cat is_prime.l3
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
-let rec checkPrime n = fun d -> if d * d > n then true else if n % d = 0 then false else checkPrime n (d + 1)
+let rec checkPrime n d = if d * d > n then true else if n % d = 0 then false else checkPrime n (d + 1)
 let isPrime n = if n < 2 then false else checkPrime n 2
 
 let result = filter (fun n -> isPrime n) [2..50]
@@ -231,7 +229,7 @@ $ fn is_prime.l3
 
 ```
 $ cat power.l3
-let rec power base = fun exp ->
+let rec power base exp =
     if exp = 0 then 1 else base * power base (exp - 1)
 
 let result = power 2 10
@@ -253,7 +251,7 @@ $ fn power.l3
 
 ```
 $ cat insertion_sort.l3
-let rec insert x = fun xs ->
+let rec insert x xs =
     match xs with
     | [] -> x :: []
     | h :: t -> if x <= h then x :: h :: t else h :: insert x t
@@ -279,12 +277,12 @@ head를 삽입합니다. 최악의 경우 O(n^2)이지만 구현이 단순하고
 
 ```
 $ cat quicksort.l3
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
 
-let rec append xs = fun ys ->
+let rec append xs ys =
     match xs with
     | [] -> ys
     | h :: t -> h :: append t ys
@@ -335,18 +333,18 @@ let rec length xs =
     match xs with
     | [] -> 0
     | _ :: t -> 1 + length t
-let rec take n = fun xs ->
+let rec take n xs =
     if n = 0 then []
     else match xs with
          | [] -> []
          | h :: t -> h :: take (n - 1) t
-let rec drop n = fun xs ->
+let rec drop n xs =
     if n = 0 then xs
     else match xs with
          | [] -> []
          | _ :: t -> drop (n - 1) t
 // 두 정렬된 리스트의 head를 비교하며 병합
-let rec merge xs = fun ys ->
+let rec merge xs ys =
     match xs with
     | [] -> ys
     | x :: xt ->
@@ -385,7 +383,7 @@ type Tree =
     | Node of Tree * int * Tree
 
 // BST 삽입: 값을 비교하여 왼쪽 또는 오른쪽 하위 트리에 재귀 삽입
-let rec treeInsert x = fun t ->
+let rec treeInsert x t =
     match t with
     | Leaf -> Node (Leaf, x, Leaf)
     | Node (l, v, r) -> if x <= v then Node (treeInsert x l, v, r) else Node (l, v, treeInsert x r)
@@ -393,7 +391,7 @@ let rec buildTree xs =
     match xs with
     | [] -> Leaf
     | h :: t -> treeInsert h (buildTree t)
-let rec append xs = fun ys ->
+let rec append xs ys =
     match xs with
     | [] -> ys
     | h :: t -> h :: append t ys
@@ -428,11 +426,11 @@ let rec toInt n =
     match n with
     | Zero -> 0
     | Succ p -> 1 + toInt p
-let rec add a = fun b ->
+let rec add a b =
     match a with
     | Zero -> b
     | Succ p -> Succ (add p b)
-let rec mul a = fun b ->
+let rec mul a b =
     match a with
     | Zero -> Zero
     | Succ p -> add b (mul p b)
@@ -463,7 +461,7 @@ mul (Succ (Succ Zero)) b = add b (add b Zero).
 
 ```
 $ cat sieve.l3
-let rec filter pred = fun xs ->
+let rec filter pred xs =
     match xs with
     | [] -> []
     | h :: t -> if pred h then h :: filter pred t else filter pred t
@@ -492,9 +490,9 @@ $ fn sieve.l3
 
 ```
 $ cat collatz.l3
-let rec collatz n = fun acc ->
+let rec collatz n acc =
     if n = 1 then n :: acc else if n % 2 = 0 then collatz (n / 2) (n :: acc) else collatz (3 * n + 1) (n :: acc)
-let rec rev acc = fun xs ->
+let rec rev acc xs =
     match xs with
     | [] -> acc
     | h :: t -> rev (h :: acc) t
@@ -517,7 +515,7 @@ $ fn collatz.l3
 
 ```
 $ cat fizzbuzz.l3
-let rec map f = fun xs ->
+let rec map f xs =
     match xs with
     | [] -> []
     | h :: t -> f h :: map f t
@@ -583,7 +581,7 @@ $ fn state_machine.l3
 | 패턴 | 문법 |
 |---|---|
 | 모듈 레벨 재귀 | `let rec f x = body` |
-| 다중 매개변수 재귀 | `let rec f x = fun y -> body` |
+| 다중 매개변수 재귀 | `let rec f x y = body` |
 | 리스트 범위 | `[1..100]` |
 | 상호 재귀 | `let rec f x = ... and g y = ...` |
 | ADT + 재귀 | `type T = ... let rec f t = match t with ...` |

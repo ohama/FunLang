@@ -295,10 +295,16 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0301", baseMsg, hint
 
         | OccursCheck (var, ty) ->
+            // Phase 95: Normalize type variables for stable error messages
+            // Build a synthetic type containing both var and ty, then format normalized
+            let synth = TArrow(TVar var, ty)
+            let formatted = formatTypeNormalized synth
+            // formatted is "'a -> <rhs>", extract the var name and rhs
+            let arrowIdx = formatted.IndexOf(" -> ")
+            let varName = formatted.[.. arrowIdx - 1]
+            let rhsFormatted = formatted.[arrowIdx + 4 ..]
             Some "E0302",
-            sprintf "Occurs check: cannot construct infinite type '%c = %s"
-                (char (97 + var % 26))
-                (formatType ty),
+            sprintf "Occurs check: cannot construct infinite type %s = %s" varName rhsFormatted,
             Some "This usually means you're trying to define a recursive type without a base case"
 
         | UnboundVar name ->

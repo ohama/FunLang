@@ -1,5 +1,5 @@
 module HashSet =
-    let create ()     = hashset_create ()
-    let add hs v      = hashset_add hs v
-    let contains hs v = hashset_contains hs v
-    let count hs      = hashset_count hs
+    let create () = hashset_create ()
+    let add (hs : 'a hashset) (v : 'a) : bool = hashset_add hs v
+    let contains (hs : 'a hashset) (v : 'a) : bool = hashset_contains hs v
+    let count (hs : 'a hashset) : int = hashset_count hs

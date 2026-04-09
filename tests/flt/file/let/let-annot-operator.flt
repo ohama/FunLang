@@ -1,0 +1,13 @@
+// Test: Phase 92 — operator definitions with type annotations
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let (+.) (x : int) (y : int) : int = x + y + 1
+let _ = println (to_string (3 +. 4))
+let (=?) (a : 'a) (b : 'a) : bool = a = b
+let _ = println (to_string (42 =? 42))
+let _ = println (to_string (1 =? 2))
+// --- Output:
+8
+true
+false
+()

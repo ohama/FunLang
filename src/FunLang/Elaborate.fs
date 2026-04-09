@@ -53,11 +53,15 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
             let vars' = Map.add name idx vars
             (TVar idx, vars')
 
-    | TEName _name ->
-        // Named type (e.g., Tree, Option) - will be resolved in Phase 2 type checking
-        // For now, treat as a fresh type variable (placeholder)
-        let idx = freshTypeVarIndex()
-        (TVar idx, vars)
+    | TEName name ->
+        // Phase 94: Built-in non-parameterized type names
+        match name with
+        | "stringbuilder" -> (TStringBuilder, vars)
+        | _ ->
+            // Named type (e.g., Tree, Option) - will be resolved in Phase 2 type checking
+            // For now, treat as a fresh type variable (placeholder)
+            let idx = freshTypeVarIndex()
+            (TVar idx, vars)
 
     | TEData (name, args) ->
         // Parameterized named type (e.g., int expr) - Phase 4 GADT
@@ -66,7 +70,15 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
             let (ty, env') = elaborateWithVars env t
             (ty :: acc, env')
         let (revTypes, finalVars) = List.fold folder ([], vars) args
-        (TData(canonical, List.rev revTypes), finalVars)
+        let types = List.rev revTypes
+        // Phase 91/94: Map built-in collection type names to their internal Type representations
+        match canonical, types with
+        | "array", [t] -> (TArray t, finalVars)
+        | "hashtable", [k; v] -> (THashtable(k, v), finalVars)
+        | "hashset", [t] -> (THashSet t, finalVars)
+        | "queue", [t] -> (TQueue t, finalVars)
+        | "mutablelist", [t] -> (TMutableList t, finalVars)
+        | _ -> (TData(canonical, types), finalVars)
 
     | TEConstrained(_, innerTy) ->
         // Constraints are handled at Scheme construction (TypeCheck/Bidir),
@@ -89,8 +101,10 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
         | Some idx -> TVar idx
         | None -> failwithf "Unbound type parameter: %s" v
     | Ast.TEName n ->
-        // Named type reference (e.g., Tree in recursive ADT, or other types)
-        TData(n, [])
+        // Phase 94: Built-in non-parameterized type names
+        match n with
+        | "stringbuilder" -> TStringBuilder
+        | _ -> TData(n, [])
     | Ast.TEInt -> TInt
     | Ast.TEBool -> TBool
     | Ast.TEString -> TString
@@ -100,7 +114,15 @@ let rec substTypeExprWithMap (paramMap: Map<string, int>) (te: Ast.TypeExpr) : T
     | Ast.TETuple ts -> TTuple (List.map (substTypeExprWithMap paramMap) ts)
     | Ast.TEData(name, args) ->
         let canonical = match name with "option" -> "Option" | "result" -> "Result" | n -> n
-        TData(canonical, List.map (substTypeExprWithMap paramMap) args)
+        let types = List.map (substTypeExprWithMap paramMap) args
+        // Phase 91/94: Map built-in collection type names to their internal Type representations
+        match canonical, types with
+        | "array", [t] -> TArray t
+        | "hashtable", [k; v] -> THashtable(k, v)
+        | "hashset", [t] -> THashSet t
+        | "queue", [t] -> TQueue t
+        | "mutablelist", [t] -> TMutableList t
+        | _ -> TData(canonical, types)
 
     | Ast.TEConstrained(_, innerTy) ->
         // Constraints are handled at Scheme construction; just elaborate the inner type.

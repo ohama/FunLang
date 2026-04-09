@@ -186,44 +186,44 @@ let initialTypeEnv: TypeEnv =
         "dbg",                       Scheme([0], [], TArrow(TVar 0, TVar 0))
 
         // Phase 55: StringBuilder builtins
-        // stringbuilder_create : unit -> StringBuilder
-        "stringbuilder_create",   Scheme([], [], TArrow(TTuple [], TData("StringBuilder", [])))
-        // stringbuilder_append : StringBuilder -> string -> StringBuilder
-        "stringbuilder_append",   Scheme([0], [], TArrow(TData("StringBuilder", []), TArrow(TVar 0, TData("StringBuilder", []))))
-        // stringbuilder_tostring : StringBuilder -> string
-        "stringbuilder_tostring", Scheme([], [], TArrow(TData("StringBuilder", []), TString))
+        // stringbuilder_create : unit -> stringbuilder
+        "stringbuilder_create",   Scheme([], [], TArrow(TTuple [], TStringBuilder))
+        // stringbuilder_append : stringbuilder -> 'a -> stringbuilder
+        "stringbuilder_append",   Scheme([0], [], TArrow(TStringBuilder, TArrow(TVar 0, TStringBuilder)))
+        // stringbuilder_tostring : stringbuilder -> string
+        "stringbuilder_tostring", Scheme([], [], TArrow(TStringBuilder, TString))
 
         // Phase 56: HashSet builtins
-        // hashset_create : unit -> HashSet
-        "hashset_create",    Scheme([], [], TArrow(TTuple [], TData("HashSet", [])))
-        // hashset_add : HashSet -> 'a -> bool
-        "hashset_add",       Scheme([0], [], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
-        // hashset_contains : HashSet -> 'a -> bool
-        "hashset_contains",  Scheme([0], [], TArrow(TData("HashSet", []), TArrow(TVar 0, TBool)))
-        // hashset_count : HashSet -> int
-        "hashset_count",     Scheme([], [], TArrow(TData("HashSet", []), TInt))
+        // hashset_create : unit -> 'a hashset
+        "hashset_create",    Scheme([0], [], TArrow(TTuple [], THashSet(TVar 0)))
+        // hashset_add : 'a hashset -> 'a -> bool
+        "hashset_add",       Scheme([0], [], TArrow(THashSet(TVar 0), TArrow(TVar 0, TBool)))
+        // hashset_contains : 'a hashset -> 'a -> bool
+        "hashset_contains",  Scheme([0], [], TArrow(THashSet(TVar 0), TArrow(TVar 0, TBool)))
+        // hashset_count : 'a hashset -> int
+        "hashset_count",     Scheme([0], [], TArrow(THashSet(TVar 0), TInt))
 
         // Phase 56: Queue builtins
-        // queue_create : unit -> Queue
-        "queue_create",    Scheme([], [], TArrow(TTuple [], TData("Queue", [])))
-        // queue_enqueue : Queue -> 'a -> unit
-        "queue_enqueue",   Scheme([0], [], TArrow(TData("Queue", []), TArrow(TVar 0, TTuple [])))
-        // queue_dequeue : Queue -> unit -> 'a
-        "queue_dequeue",   Scheme([0], [], TArrow(TData("Queue", []), TArrow(TTuple [], TVar 0)))
-        // queue_count : Queue -> int
-        "queue_count",     Scheme([], [], TArrow(TData("Queue", []), TInt))
+        // queue_create : unit -> 'a queue
+        "queue_create",    Scheme([0], [], TArrow(TTuple [], TQueue(TVar 0)))
+        // queue_enqueue : 'a queue -> 'a -> unit
+        "queue_enqueue",   Scheme([0], [], TArrow(TQueue(TVar 0), TArrow(TVar 0, TTuple [])))
+        // queue_dequeue : 'a queue -> unit -> 'a
+        "queue_dequeue",   Scheme([0], [], TArrow(TQueue(TVar 0), TArrow(TTuple [], TVar 0)))
+        // queue_count : 'a queue -> int
+        "queue_count",     Scheme([0], [], TArrow(TQueue(TVar 0), TInt))
 
         // Phase 57: MutableList builtins
-        // mutablelist_create : unit -> MutableList
-        "mutablelist_create",  Scheme([], [], TArrow(TTuple [], TData("MutableList", [])))
-        // mutablelist_add : MutableList -> 'a -> unit
-        "mutablelist_add",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TVar 0, TTuple [])))
-        // mutablelist_get : MutableList -> int -> 'a
-        "mutablelist_get",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TInt, TVar 0)))
-        // mutablelist_set : MutableList -> int -> 'a -> unit
-        "mutablelist_set",     Scheme([0], [], TArrow(TData("MutableList", []), TArrow(TInt, TArrow(TVar 0, TTuple []))))
-        // mutablelist_count : MutableList -> int
-        "mutablelist_count",   Scheme([], [], TArrow(TData("MutableList", []), TInt))
+        // mutablelist_create : unit -> 'a mutablelist
+        "mutablelist_create",  Scheme([0], [], TArrow(TTuple [], TMutableList(TVar 0)))
+        // mutablelist_add : 'a mutablelist -> 'a -> unit
+        "mutablelist_add",     Scheme([0], [], TArrow(TMutableList(TVar 0), TArrow(TVar 0, TTuple [])))
+        // mutablelist_get : 'a mutablelist -> int -> 'a
+        "mutablelist_get",     Scheme([0], [], TArrow(TMutableList(TVar 0), TArrow(TInt, TVar 0)))
+        // mutablelist_set : 'a mutablelist -> int -> 'a -> unit
+        "mutablelist_set",     Scheme([0], [], TArrow(TMutableList(TVar 0), TArrow(TInt, TArrow(TVar 0, TTuple []))))
+        // mutablelist_count : 'a mutablelist -> int
+        "mutablelist_count",   Scheme([0], [], TArrow(TMutableList(TVar 0), TInt))
         // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
         "list_sort_by",        Scheme([0; 1], [], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
         // list_of_seq : 'a -> 'b list  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)
