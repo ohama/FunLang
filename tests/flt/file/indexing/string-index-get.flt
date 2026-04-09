@@ -1,0 +1,13 @@
+// Test: Issue #15 — string indexing s.[i] returns int (char code)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let s = "hello"
+let _ = println (to_string s.[0])
+let _ = println (to_string s.[4])
+let f (s : string) : int = s.[0]
+let _ = println (to_string (f "world"))
+// --- Output:
+104
+111
+119
+()

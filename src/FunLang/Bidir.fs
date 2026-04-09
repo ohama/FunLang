@@ -869,6 +869,12 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
             recordTy span tv
             (compose s3 (compose s2 s1), tv)
+        // Issue #15: String indexing s.[i] : int (char code)
+        | TString ->
+            let s2, idxTy = synth ctorEnv recEnv ctx (applyEnv s1 env) idxExpr
+            let s3 = unifyWithContext ctx [] span (apply s2 idxTy) TInt
+            recordTy span TInt
+            (compose s3 (compose s2 s1), TInt)
         | ty ->
             raise (TypeException {
                 Kind = IndexOnNonCollection ty
