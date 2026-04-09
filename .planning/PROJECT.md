@@ -121,14 +121,14 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 
 ### Active
 
-(없음 — 다음 milestone 미정)
+- 제약 조건부 인스턴스 (`Show 'a => Show ('a list)`, `Eq 'a => Eq ('a list)`) — v15.0
+- 슈퍼클래스 제약 (예: `class Eq 'a => Ord 'a`) — v15.0
+- Num 타입 클래스 (`+`, `-`, `*` 연산자 마이그레이션) — v15.0
+- Eq 타입 클래스 (`=` 연산자 마이그레이션) — v15.0
+- derive 자동 인스턴스 유도 (`deriving Show`, `deriving Eq`) — v15.0
+- 타입 에러 메시지 품질 개선 — v15.0
 
 ### Future
-- 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
-- 슈퍼클래스 제약
-- Num 타입 클래스 (+ - * 마이그레이션)
-- = 연산자 Eq 타입 클래스 마이그레이션
-- derive 자동 인스턴스 유도
 - 증분 빌드 (mtime/hash 캐시, 연쇄 무효화)
 - Computation expressions
 - do binding
@@ -146,7 +146,19 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
 
-## Current Milestone: (없음 — 다음 milestone 미정)
+## Current Milestone: v15.0 Type Class Maturity
+
+**Goal:** 타입 클래스 시스템을 성숙시켜 제약 조건부 인스턴스, 슈퍼클래스, Num/Eq 연산자 마이그레이션, derive 유도를 지원하고, 타입 에러 메시지를 개선한다.
+
+**Target features:**
+- 제약 조건부 인스턴스 (`Show 'a => Show ('a list)`)
+- 슈퍼클래스 제약 (`class Eq 'a => Ord 'a`)
+- Num 타입 클래스 (`+`, `-`, `*` 마이그레이션)
+- `=` 연산자 Eq 타입 클래스 마이그레이션
+- derive 자동 인스턴스 유도
+- 타입 에러 메시지 품질 개선
+
+**Motivation:** v10.0에서 도입된 타입 클래스의 기본 기반(typeclass/instance, 제약 추론, Show/Eq)을 완성하여, 산술/비교 연산자가 타입 클래스를 통해 다형적으로 동작하고, ADT에 자동으로 Show/Eq를 유도할 수 있게 한다.
 
 ## Previous Milestone: v14.0 Type Annotation Completeness (2026-04-08)
 
