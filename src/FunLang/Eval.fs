@@ -829,6 +829,12 @@ let initialBuiltinEnv : Env =
             | HashSetValue hs -> IntValue hs.Count
             | _ -> failwith "hashset_count: expected HashSet")
 
+        // Issue #11: hashset_keys : HashSet -> 'a list
+        "hashset_keys", BuiltinValue (fun hsVal ->
+            match hsVal with
+            | HashSetValue hs -> ListValue (hs |> Seq.toList)
+            | _ -> failwith "hashset_keys: expected HashSet")
+
         // Phase 56: Queue builtins
         // queue_create : unit -> Queue
         "queue_create", BuiltinValue (fun _ ->
@@ -896,6 +902,12 @@ let initialBuiltinEnv : Env =
             match mlVal with
             | MutableListValue ml -> IntValue ml.Count
             | _ -> failwith "mutablelist_count: expected MutableList")
+
+        // Issue #11: mutablelist_tolist : MutableList -> 'a list
+        "mutablelist_tolist", BuiltinValue (fun mlVal ->
+            match mlVal with
+            | MutableListValue ml -> ListValue (ml |> Seq.toList)
+            | _ -> failwith "mutablelist_tolist: expected MutableList")
 
         // Phase 59: List/Array seq primitives
 

@@ -202,6 +202,8 @@ let initialTypeEnv: TypeEnv =
         "hashset_contains",  Scheme([0], [], TArrow(THashSet(TVar 0), TArrow(TVar 0, TBool)))
         // hashset_count : 'a hashset -> int
         "hashset_count",     Scheme([0], [], TArrow(THashSet(TVar 0), TInt))
+        // Issue #11: hashset_keys : 'a hashset -> 'a list
+        "hashset_keys",      Scheme([0], [], TArrow(THashSet(TVar 0), TList(TVar 0)))
 
         // Phase 56: Queue builtins
         // queue_create : unit -> 'a queue
@@ -224,6 +226,8 @@ let initialTypeEnv: TypeEnv =
         "mutablelist_set",     Scheme([0], [], TArrow(TMutableList(TVar 0), TArrow(TInt, TArrow(TVar 0, TTuple []))))
         // mutablelist_count : 'a mutablelist -> int
         "mutablelist_count",   Scheme([0], [], TArrow(TMutableList(TVar 0), TInt))
+        // Issue #11: mutablelist_tolist : 'a mutablelist -> 'a list
+        "mutablelist_tolist",  Scheme([0], [], TArrow(TMutableList(TVar 0), TList(TVar 0)))
         // list_sort_by : ('a -> 'b) -> 'a list -> 'a list
         "list_sort_by",        Scheme([0; 1], [], TArrow(TArrow(TVar 0, TVar 1), TArrow(TList (TVar 0), TList (TVar 0))))
         // list_of_seq : 'a -> 'b list  (accepts any seq-like collection: list, array, HashSet, Queue, MutableList)

@@ -195,8 +195,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     | Constructor (name, argOpt, span) ->
         // Phase 55: StringBuilder() type interception
         match name with
+        // Issue #16: Use dedicated Type union cases instead of TData
         | "StringBuilder" ->
-            let resultTy = TData("StringBuilder", [])
+            let resultTy = TStringBuilder
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
@@ -207,7 +208,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 recordTy span resultTy
                 (empty, resultTy)
         | "HashSet" ->
-            let resultTy = TData("HashSet", [])
+            let resultTy = THashSet(freshVar())
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
@@ -218,7 +219,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 recordTy span resultTy
                 (empty, resultTy)
         | "Queue" ->
-            let resultTy = TData("Queue", [])
+            let resultTy = TQueue(freshVar())
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
@@ -229,7 +230,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 recordTy span resultTy
                 (empty, resultTy)
         | "MutableList" ->
-            let resultTy = TData("MutableList", [])
+            let resultTy = TMutableList(freshVar())
             match argOpt with
             | Some argExpr ->
                 let s, argTy = synth ctorEnv recEnv ctx env argExpr
@@ -942,9 +943,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             match resolvedCollTy with
             | TList t   -> (s1, t)
             | TArray t  -> (s1, t)
-            | TData("HashSet", [])     -> (s1, freshVar())
-            | TData("Queue", [])       -> (s1, freshVar())
-            | TData("MutableList", []) -> (s1, freshVar())
+            | THashSet t     -> (s1, t)
+            | TQueue t       -> (s1, t)
+            | TMutableList t -> (s1, t)
             | _ ->
                 let elemTv = freshVar()
                 let s2 = unifyWithContext ctx [] span (apply s1 collTy) (TList elemTv)
