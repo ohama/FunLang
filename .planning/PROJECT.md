@@ -110,19 +110,18 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - `#[left N]`/`#[right N]` attribute 파싱 (ATTR_OPEN 토큰, InfixDecl AST) — v12.0
 - FixityEnv.fs — 연산자 우선순위 테이블 + Pratt precedence climbing post-parse rewrite — v12.0
 - `|>`/`>>`/`<<` Prelude/Core.fun 이동 (PipeRight/ComposeRight/ComposeLeft AST 제거) — v12.0
+- Prelude 함수 타입 어노테이션 + `fun x ->` 직접 인자 전환 — v14.0
+- Array/Hashtable/HashSet/Queue/MutableList/StringBuilder 타입 어노테이션 — v14.0
+- 연산자/instance 메서드 타입 어노테이션 파서 지원 (OpName/InstanceMethod MixedParamList) — v14.0
+- THashSet/TQueue/TMutableList/TStringBuilder 타입 시스템 등록 — v14.0
+- OccursCheck 타입 변수 이름 정규화 (formatTypeNormalized) — v14.0
+- String.toInt, String.ofInt 추가 — v14.0
+- List.init, List.find, List.findIndex, List.partition, List.groupBy, List.scan, List.replicate, List.collect, List.pairwise, List.sumBy, List.sum, List.minBy, List.maxBy, List.contains, List.unzip — v13.0
+- String.split, String.indexOf, String.replace, String.toUpper, String.toLower, String.substring, String.join — v13.0
 
 ### Active
 
-- Uniform tagged representation (LSB 1-bit tagging: int=2n+1, ptr=LSB 0) — v13.0
-- C 런타임 hashtable int/str 변종 통합 (런타임 LSB dispatch) — v13.0
-- 산술 연산 tag/untag (덧셈/뺄셈 1op, 곱셈/나눗셈 4ops) — v13.0
-- int 관련 C 런타임 함수 untag 추가 (int_to_string, print_int, array index 등) — v13.0
-- Generic equality/hash 기반 구축 (optional bonus) — v13.0
-- Array 타입 어노테이션: Elaborate TEData("array")→TArray 변환 — v14.0
-- 연산자 정의 타입 어노테이션: OpName MixedParamList 파서 규칙 — v14.0
-- Instance 메서드 타입 어노테이션: InstanceMethod MixedParamList 파서 규칙 — v14.0
-- Mutable 컬렉션 타입 등록: THashSet/TQueue/TMutableList/TStringBuilder — v14.0
-- 타입 변수 이름 안정화: freshTypeVarIndex 스코프 관리 — v14.0
+(없음 — 다음 milestone 미정)
 
 ### Future
 - 제약 조건부 인스턴스 (Show 'a => Show (list 'a))
@@ -139,6 +138,7 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 
 ### Out of Scope
 
+- Uniform tagged representation (LSB tagging) — FunLangCompiler 저장소 범위, 인터프리터와 무관
 - OCaml 스타일 functor — F# 스타일 모듈만
 - .NET interop 유지 — 네이티브 구현으로 대체
 - LangBackend 컴파일러 구현 — 인터프리터 구현 완료 후 별도 마일스톤
@@ -146,33 +146,19 @@ FunLang v6.0을 기반으로 한 실용적인 ML 스타일 함수형 프로그�
 - Dot notation / OOP 스타일 dispatch — v7.1에서 제거, 순수 함수형 API만 유지
 - Unicode 지원 — ASCII로 충분
 
-## Current Milestone: v14.0 Type Annotation Completeness
+## Current Milestone: (없음 — 다음 milestone 미정)
 
-**Goal:** Prelude 타입 어노테이션 작업 중 발견된 5가지 타입 시스템/파서 갭을 해결하여, 모든 Prelude 함수에 타입을 명시할 수 있게 한다.
+## Previous Milestone: v14.0 Type Annotation Completeness (2026-04-08)
 
-**Target features:**
-- Array 타입 어노테이션 (Elaborate TEData→TArray 변환)
-- 연산자 정의 타입 어노테이션 (OpName MixedParamList)
-- Instance 메서드 타입 어노테이션 (InstanceMethod MixedParamList)
-- Mutable 컬렉션 타입 등록 (HashSet/Queue/MutableList/StringBuilder)
-- 타입 변수 이름 안정화 (freshTypeVarIndex 스코프 관리)
+**Delivered:** Prelude 전체 타입 어노테이션 + fun→직접 인자 전환 + 5가지 타입 시스템/파서 갭 해결
+- 5 phases (91-95), 724 flt tests, 244 unit tests
+- 40 files changed, +1,324 LOC
 
-**Motivation:** Prelude/*.fun에 타입 어노테이션을 추가하여 문서화 가치와 타입 안전성을 높이려 했으나, Array/연산자/Instance/Mutable컬렉션에서 어노테이션이 불가능했고 타입 변수 이름이 불안정해지는 문제 발견.
+## Previous Milestone: v13.0 Standard Library Extension (2026-04-07)
 
-## Pending Milestone: v13.0 Uniform Tagged Representation
-
-**Goal:** OCaml 방식의 LSB 1-bit tagging으로 모든 값을 i64 하나로 표현하여 int/string 런타임 자동 dispatch 가능하게 하고, hashtable `*_str` 함수 중복을 제거한다.
-
-**Target features:**
-- LSB 1-bit tagged value representation (int=2n+1, ptr=LSB 0)
-- C 런타임 hashtable int/str 변종 통합
-- 산술 연산 tag/untag 지원
-- int 관련 C 함수 untag (int_to_string, print_int, array index 등)
-- (Bonus) Generic equality/hash 기반
-
-**Motivation:** FunLangCompiler의 Prelude wrapper(func.func)가 모든 파라미터를 i64로 전달하므로, 함수 body 안에서 int/string(I64/Ptr) 구분이 불가능. 현재는 Hashtable에 `*Str` 변종 7개를 노출하여 우회 중. Tagged representation 도입으로 근본 해결.
-
-**Reference:** FunLangCompiler/survey/uniform-tagged-representation.md, GitHub issue #8
+**Delivered:** List/String/Array 모듈 확장 함수 추가 — List 15개 + String 7개 함수
+- 724 flt tests, 244 unit tests
+- 87+ phases across v1.0-v13.0
 
 ## Previous Milestone: v12.0 Infix Operator Reform (2026-04-03)
 

@@ -1,5 +1,41 @@
 # Project Milestones: FunLang
 
+## v14.0 Type Annotation Completeness (Shipped: 2026-04-08)
+
+**Delivered:** Prelude 전체 타입 어노테이션 + `fun x ->` 직접 인자 전환 + 5가지 타입 시스템/파서 갭 해결
+
+**Phases completed:** 91-95 (5 phases)
+
+**Key accomplishments:**
+- 모든 Prelude 함수에 타입 어노테이션 추가 (Core/List/Option/Result/String/Int/Char/Array/Hashtable/HashSet/Queue/MutableList/StringBuilder/Typeclass)
+- `fun x ->` 클로저 패턴을 직접 인자로 전환 (Prelude 전체)
+- 연산자 파라미터 간소화 (`__pipe_x`/`__comp_lhs` → `x`/`f`/`g`)
+- TEData("array")→TArray, TEData("hashset")→THashSet 등 Elaborate.fs 매핑
+- THashSet/TQueue/TMutableList/TStringBuilder 타입 시스템 등록 + Unify/Bidir 전파
+- OpName MixedParamList — 연산자 정의 타입 어노테이션 파서 지원
+- InstanceMethod MixedParamList — instance 메서드 타입 어노테이션 파서 지원
+- OccursCheck formatTypeNormalized — 타입 변수 이름 안정화
+- String.toInt, String.ofInt 추가
+
+**Stats:**
+- 40 files changed, +1,324 LOC
+- 724 flt tests + 244 F# unit tests passing
+- 5 phases, 1 day (2026-04-08)
+
+**Git range:** `f9472c0` → `8da0af2`
+
+---
+
+## v13.0 Standard Library Extension (Shipped: 2026-04-07)
+
+**Delivered:** List/String 모듈 확장 함수 — List 15개 + String 7개 함수 추가
+
+**Key accomplishments:**
+- List: init, find, findIndex, partition, groupBy, scan, replicate, collect, pairwise, sumBy, sum, minBy, maxBy, contains, unzip
+- String: split, indexOf, replace, toUpper, toLower, substring, join
+
+---
+
 ## v12.0 Infix Operator Reform (Shipped: 2026-04-03)
 
 **Delivered:** `#[left N]`/`#[right N]` attribute 시스템 + FixityEnv/Pratt post-processor + `|>`/`>>`/`<<` Prelude 이동 — PipeRight/ComposeRight/ComposeLeft AST 노드 및 전용 토큰 완전 제거
