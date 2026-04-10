@@ -135,8 +135,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 103-01-PLAN.md — Extend LetRec/LetRecDecl 5-tuple to 6-tuple, update Parser.fsy + all pattern matches, add recordTy calls
-- [ ] 103-02-PLAN.md — TA-09 unit test + flt regression test for let rec first-param annotationMap
+- [x] 103-01-PLAN.md — Extend LetRec/LetRecDecl 5-tuple to 6-tuple, update Parser.fsy + all pattern matches, add recordTy calls
+- [x] 103-02-PLAN.md — TA-09 unit test + flt regression test for let rec first-param annotationMap
 
 **Details:**
 Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs does not use those spans when populating annotationMap. All inner LambdaAnnot entries return None on lookup. Fix Bidir.fs to record arrow types keyed by each LambdaAnnot node's own span.
@@ -154,7 +154,7 @@ Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs 
 | 100 — Derive for Parameterized ADTs | derive works on `Tree 'a` etc. | DRV-01, DRV-02 | Pending |
 | 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
 | 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | ✓ Complete |
-| 103 — Fix Bidir.fs annotationMap for LambdaAnnot | annotationMap populated with per-param span (Issue #19) | — | Pending |
+| 103 — Fix Bidir.fs annotationMap for LambdaAnnot | annotationMap populated with per-param span (Issue #19) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
