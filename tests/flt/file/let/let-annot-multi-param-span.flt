@@ -1,0 +1,9 @@
+// Test: Issue #18 regression — multi-param annotated function compiles and evaluates correctly
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let add (x : int) (y : int) (z : int) : int = x + y + z
+let result = add 10 20 30
+let _ = println (to_string result)
+// --- Output:
+60
+()
