@@ -18,20 +18,20 @@ let symSpan (parseState: IParseState) (n: int) : Span =
     mkSpan (parseState.InputStartPosition n) (parseState.InputEndPosition n)
 
 /// Desugar curried annotated parameters into nested LambdaAnnot nodes
-let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (span: Span) : Expr =
+let rec desugarAnnotParams (paramList: (string * TypeExpr * Span) list) (body: Expr) : Expr =
     match paramList with
     | [] -> failwith "desugarAnnotParams: empty param list"
-    | [(name, ty)] -> LambdaAnnot(name, ty, body, span)
-    | (name, ty) :: rest -> LambdaAnnot(name, ty, desugarAnnotParams rest body span, span)
+    | [(name, ty, sp)] -> LambdaAnnot(name, ty, body, sp)
+    | (name, ty, sp) :: rest -> LambdaAnnot(name, ty, desugarAnnotParams rest body, sp)
 
 /// Desugar mixed parameter list (plain + annotated) into nested Lambda/LambdaAnnot chain
-let rec desugarMixedParams (paramList: Choice<string, string * TypeExpr> list) (body: Expr) (span: Span) : Expr =
+let rec desugarMixedParams (paramList: Choice<string * Span, string * TypeExpr * Span> list) (body: Expr) : Expr =
     match paramList with
     | [] -> body
-    | Choice1Of2 name :: rest ->
-        Lambda(name, desugarMixedParams rest body span, span)
-    | Choice2Of2 (name, ty) :: rest ->
-        LambdaAnnot(name, ty, desugarMixedParams rest body span, span)
+    | Choice1Of2 (name, sp) :: rest ->
+        Lambda(name, desugarMixedParams rest body, sp)
+    | Choice2Of2 (name, ty, sp) :: rest ->
+        LambdaAnnot(name, ty, desugarMixedParams rest body, sp)
 
 /// Desugar multi-param lambda: fun x y z -> body  =>  fun x -> fun y -> fun z -> body
 let rec desugarMultiParamLambda (names: string list) (body: Expr) (span: Span) : Expr =
@@ -1095,7 +1095,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 157 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _5 (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 _5
                                Let(_2, lambda, _7, ruleSpan parseState 1 7) 
                    )
 # 157 "Parser.fsy"
@@ -1110,7 +1110,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 160 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _6 (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 _6
                                Let(_2, lambda, _9, ruleSpan parseState 1 9) 
                    )
 # 160 "Parser.fsy"
@@ -1127,7 +1127,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 164 "Parser.fsy"
                                let body = Annot(_7, _5, ruleSpan parseState 1 9)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 body
                                Let(_2, lambda, _9, ruleSpan parseState 1 9) 
                    )
 # 164 "Parser.fsy"
@@ -1144,7 +1144,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 168 "Parser.fsy"
                                let body = Annot(_8, _5, ruleSpan parseState 1 11)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 11)
+                               let lambda = desugarMixedParams _3 body
                                Let(_2, lambda, _11, ruleSpan parseState 1 11) 
                    )
 # 168 "Parser.fsy"
@@ -1253,7 +1253,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 193 "Parser.fsy"
                                let span = ruleSpan parseState 1 9
-                               let lambda = desugarMixedParams _4 _6 span
+                               let lambda = desugarMixedParams _4 _6
                                match lambda with
                                | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 6) :: _7, _9, span)
                                | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, _9, span)
@@ -1273,7 +1273,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 200 "Parser.fsy"
                                let span = ruleSpan parseState 1 11
-                               let lambda = desugarMixedParams _4 _7 span
+                               let lambda = desugarMixedParams _4 _7
                                match lambda with
                                | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
                                | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, _11, span)
@@ -1295,7 +1295,7 @@ let _fsyacc_reductions = lazy [|
 # 208 "Parser.fsy"
                                let span = ruleSpan parseState 1 11
                                let body = Annot(_8, _6, span)
-                               let lambda = desugarMixedParams _4 body span
+                               let lambda = desugarMixedParams _4 body
                                match lambda with
                                | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
                                | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, _11, span)
@@ -1317,7 +1317,7 @@ let _fsyacc_reductions = lazy [|
 # 216 "Parser.fsy"
                                let span = ruleSpan parseState 1 13
                                let body = Annot(_9, _6, span)
-                               let lambda = desugarMixedParams _4 body span
+                               let lambda = desugarMixedParams _4 body
                                match lambda with
                                | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 10) :: _11, _13, span)
                                | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 10) :: _11, _13, span)
@@ -1433,7 +1433,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 244 "Parser.fsy"
-                               desugarAnnotParams _2 _4 (ruleSpan parseState 1 4) 
+                               desugarAnnotParams _2 _4 
                    )
 # 244 "Parser.fsy"
                  : 'gentype_Expr));
@@ -1445,7 +1445,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 246 "Parser.fsy"
-                               desugarAnnotParams _2 _5 (ruleSpan parseState 1 6) 
+                               desugarAnnotParams _2 _5 
                    )
 # 246 "Parser.fsy"
                  : 'gentype_Expr));
@@ -2855,7 +2855,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 528 "Parser.fsy"
-                                                                   (_2, _4) 
+                                                                   (_2, _4, ruleSpan parseState 1 5) 
                    )
 # 528 "Parser.fsy"
                  : 'gentype_AnnotParam));
@@ -3920,7 +3920,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 765 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _5 (ruleSpan parseState 1 5)
+                               let lambda = desugarMixedParams _3 _5
                                LetDecl(_2, lambda, ruleSpan parseState 1 5) 
                    )
 # 765 "Parser.fsy"
@@ -3934,7 +3934,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 768 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _6 (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 _6
                                LetDecl(_2, lambda, ruleSpan parseState 1 7) 
                    )
 # 768 "Parser.fsy"
@@ -3976,7 +3976,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 777 "Parser.fsy"
                                let body = Annot(_7, _5, ruleSpan parseState 1 7)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 body
                                LetDecl(_2, lambda, ruleSpan parseState 1 7) 
                    )
 # 777 "Parser.fsy"
@@ -3992,7 +3992,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 781 "Parser.fsy"
                                let body = Annot(_8, _5, ruleSpan parseState 1 9)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 body
                                LetDecl(_2, lambda, ruleSpan parseState 1 9) 
                    )
 # 781 "Parser.fsy"
@@ -4070,7 +4070,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 804 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _5 (ruleSpan parseState 1 5)
+                               let lambda = desugarMixedParams _3 _5
                                LetDecl(_2, lambda, ruleSpan parseState 1 5) 
                    )
 # 804 "Parser.fsy"
@@ -4084,7 +4084,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 807 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _6 (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 _6
                                LetDecl(_2, lambda, ruleSpan parseState 1 7) 
                    )
 # 807 "Parser.fsy"
@@ -4100,7 +4100,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 811 "Parser.fsy"
                                let body = Annot(_7, _5, ruleSpan parseState 1 7)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 body
                                LetDecl(_2, lambda, ruleSpan parseState 1 7) 
                    )
 # 811 "Parser.fsy"
@@ -4116,7 +4116,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 815 "Parser.fsy"
                                let body = Annot(_8, _5, ruleSpan parseState 1 9)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 body
                                LetDecl(_2, lambda, ruleSpan parseState 1 9) 
                    )
 # 815 "Parser.fsy"
@@ -4131,7 +4131,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 821 "Parser.fsy"
-                               let lambda = desugarMixedParams _4 _6 (ruleSpan parseState 1 6)
+                               let lambda = desugarMixedParams _4 _6
                                InfixDecl(_1, _3, lambda, ruleSpan parseState 1 6) 
                    )
 # 821 "Parser.fsy"
@@ -4146,7 +4146,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 824 "Parser.fsy"
-                               let lambda = desugarMixedParams _4 _7 (ruleSpan parseState 1 8)
+                               let lambda = desugarMixedParams _4 _7
                                InfixDecl(_1, _3, lambda, ruleSpan parseState 1 8) 
                    )
 # 824 "Parser.fsy"
@@ -4163,7 +4163,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 828 "Parser.fsy"
                                let body = Annot(_8, _6, ruleSpan parseState 1 8)
-                               let lambda = desugarMixedParams _4 body (ruleSpan parseState 1 8)
+                               let lambda = desugarMixedParams _4 body
                                InfixDecl(_1, _3, lambda, ruleSpan parseState 1 8) 
                    )
 # 828 "Parser.fsy"
@@ -4180,7 +4180,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 832 "Parser.fsy"
                                let body = Annot(_9, _6, ruleSpan parseState 1 10)
-                               let lambda = desugarMixedParams _4 body (ruleSpan parseState 1 10)
+                               let lambda = desugarMixedParams _4 body
                                InfixDecl(_1, _3, lambda, ruleSpan parseState 1 10) 
                    )
 # 832 "Parser.fsy"
@@ -4238,7 +4238,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 847 "Parser.fsy"
-                                                                       Choice1Of2 _1 
+                                                                       Choice1Of2 (_1, symSpan parseState 1) 
                    )
 # 847 "Parser.fsy"
                  : 'gentype_MixedParam));
@@ -4250,7 +4250,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 848 "Parser.fsy"
-                                                                       Choice2Of2 (_2, _4) 
+                                                                       Choice2Of2 (_2, _4, ruleSpan parseState 1 5) 
                    )
 # 848 "Parser.fsy"
                  : 'gentype_MixedParam));
@@ -4321,7 +4321,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 868 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _5 (ruleSpan parseState 1 5)
+                               let lambda = desugarMixedParams _3 _5
                                (_2, lambda) 
                    )
 # 868 "Parser.fsy"
@@ -4335,7 +4335,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 871 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _6 (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 _6
                                (_2, lambda) 
                    )
 # 871 "Parser.fsy"
@@ -4351,7 +4351,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 875 "Parser.fsy"
                                let body = Annot(_7, _5, ruleSpan parseState 1 7)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 body
                                (_2, lambda) 
                    )
 # 875 "Parser.fsy"
@@ -4367,7 +4367,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 879 "Parser.fsy"
                                let body = Annot(_8, _5, ruleSpan parseState 1 9)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 body
                                (_2, lambda) 
                    )
 # 879 "Parser.fsy"
@@ -4754,7 +4754,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 966 "Parser.fsy"
                                let span = ruleSpan parseState 1 6
-                               let lambda = desugarMixedParams _4 _6 span
+                               let lambda = desugarMixedParams _4 _6
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
@@ -4773,7 +4773,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 973 "Parser.fsy"
                                let span = ruleSpan parseState 1 8
-                               let lambda = desugarMixedParams _4 _7 span
+                               let lambda = desugarMixedParams _4 _7
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
@@ -4794,7 +4794,7 @@ let _fsyacc_reductions = lazy [|
 # 981 "Parser.fsy"
                                let span = ruleSpan parseState 1 8
                                let body = Annot(_8, _6, span)
-                               let lambda = desugarMixedParams _4 body span
+                               let lambda = desugarMixedParams _4 body
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, span)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, span)]
@@ -4815,7 +4815,7 @@ let _fsyacc_reductions = lazy [|
 # 989 "Parser.fsy"
                                let span = ruleSpan parseState 1 10
                                let body = Annot(_9, _6, span)
-                               let lambda = desugarMixedParams _4 body span
+                               let lambda = desugarMixedParams _4 body
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 10) :: _11, span)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 10) :: _11, span)]
@@ -4833,7 +4833,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 998 "Parser.fsy"
-                               let lambda = desugarMixedParams _4 _6 (ruleSpan parseState 1 6)
+                               let lambda = desugarMixedParams _4 _6
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
@@ -4851,7 +4851,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 1004 "Parser.fsy"
-                               let lambda = desugarMixedParams _4 _7 (ruleSpan parseState 1 8)
+                               let lambda = desugarMixedParams _4 _7
                                match lambda with
                                | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
                                | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
@@ -4879,7 +4879,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 1015 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _5 (ruleSpan parseState 1 5)
+                               let lambda = desugarMixedParams _3 _5
                                match lambda with
                                | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 5) :: _6
                                | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 5) :: _6
@@ -4897,7 +4897,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 1021 "Parser.fsy"
-                               let lambda = desugarMixedParams _3 _6 (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 _6
                                match lambda with
                                | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 7) :: _8
                                | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 7) :: _8
@@ -4917,7 +4917,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 1028 "Parser.fsy"
                                let body = Annot(_7, _5, ruleSpan parseState 1 7)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 7)
+                               let lambda = desugarMixedParams _3 body
                                match lambda with
                                | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 7) :: _8
                                | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 7) :: _8
@@ -4937,7 +4937,7 @@ let _fsyacc_reductions = lazy [|
                    (
 # 1035 "Parser.fsy"
                                let body = Annot(_8, _5, ruleSpan parseState 1 9)
-                               let lambda = desugarMixedParams _3 body (ruleSpan parseState 1 9)
+                               let lambda = desugarMixedParams _3 body
                                match lambda with
                                | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 9) :: _10
                                | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 9) :: _10
