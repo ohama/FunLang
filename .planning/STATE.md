@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-04-09)
 ## Current Position
 
 Milestone: v15.0 Type Class Maturity
-Phase: 96 — Correctness Foundations (not started)
-Plan: —
-Status: Roadmap defined, ready for Phase 96
-Last activity: 2026-04-09 — Roadmap created, phases 96–101 defined
+Phase: 102 — Fix LambdaAnnot Span Collision (complete)
+Plan: 01 of 01
+Status: Phase 102 complete; ready for Phase 96
+Last activity: 2026-04-10 — Completed 102-01-PLAN.md (LambdaAnnot span fix)
 
-Progress: [..........] 0% (0/6 phases complete)
+Progress: [█.........] 14% (1/7 phases complete)
 
 ## Phase Summary
 
@@ -27,6 +27,7 @@ Progress: [..........] 0% (0/6 phases complete)
 | 99 — Num Type Class | Num/Eq Prelude additions (NUM-01–03) | Pending |
 | 100 — Derive for Parameterized ADTs | derive works on parameterized types (DRV-01–02) | Pending |
 | 101 — Error Message Polish | Actionable type class errors (ERR-01–03) | Pending |
+| 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | Complete |
 
 ## Performance Metrics
 
@@ -66,6 +67,11 @@ From v15.0 research (2026-04-08):
 - Bug 9: E0701 shows internal type variable — addressed in TC-04 (Phase 96) and ERR-01 (Phase 101)
 - Bug 10: E0704 never fires — addressed in ERR-02 (Phase 101)
 
+### Roadmap Evolution
+
+- Phase 102 added (2026-04-10): Fix LambdaAnnot span collision — desugarAnnotParams assigns unique spans per param (Issue #18)
+- Phase 102 complete (2026-04-10): Per-param span injection in AnnotParam/MixedParam grammar rules; all 33+ callsites updated; 725 flt + 244 unit tests pass
+
 ### Blockers/Concerns
 
 - Phase 98 design gap: exact Eval.fs dispatch mechanism for mangled names at call sites needs a concrete decision before Phase 98 planning. The TypeAnnotationMap approach (Elaborate.fs rewriting call sites before evaluation) is the proposed direction.
@@ -73,7 +79,7 @@ From v15.0 research (2026-04-08):
 
 ## Session Continuity
 
-Last session: 2026-04-09
-Stopped at: v15.0 roadmap created — phases 96–101 defined, ready to plan Phase 96
+Last session: 2026-04-10
+Stopped at: Completed 102-01-PLAN.md — LambdaAnnot span collision fixed (Issue #18)
 Resume file: None
 Next action: `/gsd:plan-phase 96`
