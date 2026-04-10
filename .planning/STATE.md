@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-04-09)
 
 Milestone: v15.0 Type Class Maturity
 Phase: 102 — Fix LambdaAnnot Span Collision (complete)
-Plan: 01 of 01
-Status: Phase 102 complete; ready for Phase 96
-Last activity: 2026-04-10 — Completed 102-01-PLAN.md (LambdaAnnot span fix)
+Plan: 02 of 02
+Status: Phase 102 fully complete (fix + tests); ready for Phase 96
+Last activity: 2026-04-10 — Completed 102-02-PLAN.md (LambdaAnnot span tests)
 
 Progress: [█.........] 14% (1/7 phases complete)
 
@@ -39,6 +39,10 @@ Progress: [█.........] 14% (1/7 phases complete)
 **Test baseline (start of v15.0):**
 - 724 flt tests passing
 - 244 F# unit tests passing
+
+**Current test baseline (after Phase 102):**
+- 726 flt tests passing
+- 245 F# unit tests passing
 
 ## Accumulated Context
 
@@ -71,6 +75,7 @@ From v15.0 research (2026-04-08):
 
 - Phase 102 added (2026-04-10): Fix LambdaAnnot span collision — desugarAnnotParams assigns unique spans per param (Issue #18)
 - Phase 102 complete (2026-04-10): Per-param span injection in AnnotParam/MixedParam grammar rules; all 33+ callsites updated; 725 flt + 244 unit tests pass
+- Phase 102-02 complete (2026-04-10): TA-08 unit test + flt regression test added; parseModuleWithPositions helper added to TypeAnnotationTests.fs for span-aware testing; 726 flt + 245 unit tests pass
 
 ### Blockers/Concerns
 
@@ -80,6 +85,6 @@ From v15.0 research (2026-04-08):
 ## Session Continuity
 
 Last session: 2026-04-10
-Stopped at: Completed 102-01-PLAN.md — LambdaAnnot span collision fixed (Issue #18)
+Stopped at: Completed 102-02-PLAN.md — LambdaAnnot span tests (Issue #18 regression tests)
 Resume file: None
 Next action: `/gsd:plan-phase 96`
