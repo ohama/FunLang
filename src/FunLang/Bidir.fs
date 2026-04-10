@@ -509,6 +509,12 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let env' = applyEnv bodySubst env
         // Apply substitution to pending constraints so TVar refs are resolved (Phase 72)
         applySubstToConstraints bodySubst
+        // Record arrow type at firstParamAnnotSpan for annotationMap (Issue #19)
+        List.iter2 (fun (_, _, _, firstSpOpt, _, _) (_, _, funcTy, _) ->
+            match firstSpOpt with
+            | Some sp -> recordTy sp (apply bodySubst funcTy)
+            | None -> ()
+        ) bindings funcTypes
         let exprEnv =
             funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
                 let scheme = generalize env' (apply bodySubst funcTy)

@@ -103,7 +103,7 @@ let rec collectSpans (expr: Ast.Expr) : Ast.Span list =
         | Ast.ForExpr(_, s, _, e, b, _) -> collectSpans s @ collectSpans e @ collectSpans b
         | Ast.Assign(_, v, _) -> collectSpans v
         | Ast.LetRec(bs, body, _) ->
-            List.collect (fun (_, _, _, e, _) -> collectSpans e) bs @ collectSpans body
+            List.collect (fun (_, _, _, _, e, _) -> collectSpans e) bs @ collectSpans body
         | Ast.RecordExpr(_, fs, _) -> List.collect (snd >> collectSpans) fs
         | Ast.FieldAccess(e, _, _) | Ast.RecordUpdate(e, _, _) -> collectSpans e
         | Ast.SetField(e, _, v, _) | Ast.IndexGet(e, v, _) -> collectSpans e @ collectSpans v

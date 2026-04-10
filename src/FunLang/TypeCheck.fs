@@ -953,6 +953,14 @@ let rec typeCheckDecls
                 let env' = applyEnv finalSubst env
                 // Apply final substitution to pending constraints so TVar refs are resolved (Phase 72)
                 Bidir.applySubstToConstraints finalSubst
+                // Record arrow type at firstParamAnnotSpan for annotationMap (Issue #19)
+                List.iter2 (fun (_, _, _, firstSpOpt, _, _) (_, _, funcTy, _) ->
+                    match firstSpOpt with
+                    | Some sp ->
+                        let resolvedTy = apply finalSubst funcTy
+                        TypeAnnotationMap.record Bidir.annotationMap sp resolvedTy
+                    | None -> ()
+                ) bindings funcTypes
                 let env'' =
                     funcTypes |> List.fold (fun acc (name, _, funcTy, _) ->
                         let resolvedTy = apply finalSubst funcTy
