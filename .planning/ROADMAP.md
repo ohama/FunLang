@@ -1,8 +1,8 @@
 # Roadmap: v15.0 Type Class Maturity
 
 **Status:** Active
-**Phases:** 96–102 (7 phases)
-**Coverage:** 17/17 requirements mapped + 1 bug fix phase
+**Phases:** 96–103 (8 phases)
+**Coverage:** 17/17 requirements mapped + 2 bug fix phases
 
 ## Overview
 
@@ -126,6 +126,21 @@ Plans:
 **Details:**
 `desugarAnnotParams` generates nested LambdaAnnot nodes sharing the same span, causing annotationMap collision. Inner parameters receive the outermost arrow type instead of their own. Fix by assigning each LambdaAnnot a unique span based on the parameter's source position.
 
+### Phase 103: Fix Bidir.fs annotationMap Population for LambdaAnnot Spans (Issue #19)
+
+**Goal:** Type checker (Bidir.fs) records arrow type in annotationMap using each LambdaAnnot's own per-parameter span, so FunLangCompiler lookups return the correct type instead of None.
+
+**Dependencies:** Phase 102
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 103-01-PLAN.md — Extend LetRec/LetRecDecl 5-tuple to 6-tuple, update Parser.fsy + all pattern matches, add recordTy calls
+- [ ] 103-02-PLAN.md — TA-09 unit test + flt regression test for let rec first-param annotationMap
+
+**Details:**
+Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs does not use those spans when populating annotationMap. All inner LambdaAnnot entries return None on lookup. Fix Bidir.fs to record arrow types keyed by each LambdaAnnot node's own span.
+
 ---
 
 ## Progress
@@ -139,6 +154,7 @@ Plans:
 | 100 — Derive for Parameterized ADTs | derive works on `Tree 'a` etc. | DRV-01, DRV-02 | Pending |
 | 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
 | 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | ✓ Complete |
+| 103 — Fix Bidir.fs annotationMap for LambdaAnnot | annotationMap populated with per-param span (Issue #19) | — | Pending |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -180,3 +196,4 @@ Plans:
 *Roadmap created: 2026-04-09 — v15.0 Type Class Maturity*
 *Phases continue from v14.0 Phase 95*
 *Phase 102 added: 2026-04-10 — Fix LambdaAnnot span collision (Issue #18)*
+*Phase 103 added: 2026-04-10 — Fix Bidir.fs annotationMap population for LambdaAnnot spans (Issue #19)*
