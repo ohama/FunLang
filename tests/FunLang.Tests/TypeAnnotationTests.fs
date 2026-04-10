@@ -255,4 +255,48 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
             "All TArrow spans should be distinct (no span collisions)"
     }
 
+    // TA-09: let rec with multiple annotated params records ALL LambdaAnnot spans in annotationMap
+    // Regression test for Issue #19: Bidir.fs must record TArrow at each param's own span,
+    // not just the body span. Uses parseModuleWithPositions for position-aware parsing.
+    test "TA-09: let rec multi-param annotated records all LambdaAnnot spans" {
+        let input = "let rec f (x : int) (y : string) (z : bool) = 42"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+        let arrowEntries =
+            Bidir.annotationMap
+            |> Seq.map (fun kv -> (kv.Key, kv.Value))
+            |> Seq.filter (fun (_, ty) -> match ty with | Type.TArrow _ -> true | _ -> false)
+            |> Seq.toList
+        Expect.isTrue (arrowEntries.Length >= 3)
+            (sprintf "Expected >= 3 TArrow for let rec with 3 annotated params, got %d" arrowEntries.Length)
+        let spans = arrowEntries |> List.map fst
+        let distinctSpans = spans |> List.distinct
+        Expect.equal distinctSpans.Length spans.Length
+            "All TArrow spans should be distinct"
+    }
+
+    // TA-09b: let rec mutual recursion with annotated params records first-param spans
+    // Regression test for Issue #19: both `f` and `g` in a mutual rec block must have
+    // their first annotated param recorded in annotationMap.
+    test "TA-09b: let rec mutual with annotated params records first-param spans" {
+        let input = "let rec f (x : int) = g (x > 0)\nand g (y : bool) = 0"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+        let arrowEntries =
+            Bidir.annotationMap
+            |> Seq.map (fun kv -> (kv.Key, kv.Value))
+            |> Seq.filter (fun (_, ty) -> match ty with | Type.TArrow _ -> true | _ -> false)
+            |> Seq.toList
+        Expect.isTrue (arrowEntries.Length >= 2)
+            (sprintf "Expected >= 2 TArrow for mutual rec with 2 annotated params, got %d" arrowEntries.Length)
+    }
+
 ]

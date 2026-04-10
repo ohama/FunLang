@@ -1,0 +1,8 @@
+// Test: let rec with multiple annotated params (Issue #19 regression)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let rec f (x : int) (y : int) (z : int) = x + y + z
+let _ = println (to_string (f 100 20 0))
+// --- Output:
+120
+()
