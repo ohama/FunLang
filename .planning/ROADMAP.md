@@ -120,8 +120,8 @@ v15.0 matures FunLang's type class system by fixing correctness bugs in the exis
 **Plans:** 2 plans
 
 Plans:
-- [ ] 102-01-PLAN.md — Per-parameter span assignment in Parser.fsy (desugarAnnotParams, desugarMixedParams, all callsites)
-- [ ] 102-02-PLAN.md — Unit test (TA-08) and flt regression tests for span uniqueness
+- [x] 102-01-PLAN.md — Per-parameter span assignment in Parser.fsy (desugarAnnotParams, desugarMixedParams, all callsites)
+- [x] 102-02-PLAN.md — Unit test (TA-08) and flt regression tests for span uniqueness
 
 **Details:**
 `desugarAnnotParams` generates nested LambdaAnnot nodes sharing the same span, causing annotationMap collision. Inner parameters receive the outermost arrow type instead of their own. Fix by assigning each LambdaAnnot a unique span based on the parameter's source position.
@@ -138,7 +138,7 @@ Plans:
 | 99 — Num Type Class | Num/Eq Prelude additions | NUM-01, NUM-02, NUM-03 | Pending |
 | 100 — Derive for Parameterized ADTs | derive works on `Tree 'a` etc. | DRV-01, DRV-02 | Pending |
 | 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
-| 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | Pending |
+| 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
