@@ -1255,8 +1255,8 @@ let _fsyacc_reductions = lazy [|
                                let span = ruleSpan parseState 1 9
                                let lambda = desugarMixedParams _4 _6
                                match lambda with
-                               | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 6) :: _7, _9, span)
-                               | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, _9, span)
+                               | Lambda(p, b, _) -> LetRec((_3, p, None, None, b, ruleSpan parseState 3 6) :: _7, _9, span)
+                               | LambdaAnnot(p, ty, b, paramSp) -> LetRec((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 6) :: _7, _9, span)
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 193 "Parser.fsy"
@@ -1275,8 +1275,8 @@ let _fsyacc_reductions = lazy [|
                                let span = ruleSpan parseState 1 11
                                let lambda = desugarMixedParams _4 _7
                                match lambda with
-                               | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
-                               | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, _11, span)
+                               | Lambda(p, b, _) -> LetRec((_3, p, None, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
+                               | LambdaAnnot(p, ty, b, paramSp) -> LetRec((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 8) :: _9, _11, span)
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 200 "Parser.fsy"
@@ -1297,8 +1297,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_8, _6, span)
                                let lambda = desugarMixedParams _4 body
                                match lambda with
-                               | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
-                               | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, _11, span)
+                               | Lambda(p, b, _) -> LetRec((_3, p, None, None, b, ruleSpan parseState 3 8) :: _9, _11, span)
+                               | LambdaAnnot(p, ty, b, paramSp) -> LetRec((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 8) :: _9, _11, span)
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 208 "Parser.fsy"
@@ -1319,8 +1319,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_9, _6, span)
                                let lambda = desugarMixedParams _4 body
                                match lambda with
-                               | Lambda(p, b, _) -> LetRec((_3, p, None, b, ruleSpan parseState 3 10) :: _11, _13, span)
-                               | LambdaAnnot(p, ty, b, _) -> LetRec((_3, p, Some ty, b, ruleSpan parseState 3 10) :: _11, _13, span)
+                               | Lambda(p, b, _) -> LetRec((_3, p, None, None, b, ruleSpan parseState 3 10) :: _11, _13, span)
+                               | LambdaAnnot(p, ty, b, paramSp) -> LetRec((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 10) :: _11, _13, span)
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 216 "Parser.fsy"
@@ -4756,8 +4756,8 @@ let _fsyacc_reductions = lazy [|
                                let span = ruleSpan parseState 1 6
                                let lambda = desugarMixedParams _4 _6
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 966 "Parser.fsy"
@@ -4775,8 +4775,8 @@ let _fsyacc_reductions = lazy [|
                                let span = ruleSpan parseState 1 8
                                let lambda = desugarMixedParams _4 _7
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 973 "Parser.fsy"
@@ -4796,8 +4796,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_8, _6, span)
                                let lambda = desugarMixedParams _4 body
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, span)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, span)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 8) :: _9, span)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 8) :: _9, span)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 981 "Parser.fsy"
@@ -4817,8 +4817,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_9, _6, span)
                                let lambda = desugarMixedParams _4 body
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 10) :: _11, span)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 10) :: _11, span)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 10) :: _11, span)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 10) :: _11, span)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 989 "Parser.fsy"
@@ -4835,8 +4835,8 @@ let _fsyacc_reductions = lazy [|
 # 998 "Parser.fsy"
                                let lambda = desugarMixedParams _4 _6
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 6) :: _7, ruleSpan parseState 1 6)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 998 "Parser.fsy"
@@ -4853,8 +4853,8 @@ let _fsyacc_reductions = lazy [|
 # 1004 "Parser.fsy"
                                let lambda = desugarMixedParams _4 _7
                                match lambda with
-                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
-                               | LambdaAnnot(p, ty, b, _) -> [LetRecDecl((_3, p, Some ty, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
+                               | Lambda(p, b, _) -> [LetRecDecl((_3, p, None, None, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
+                               | LambdaAnnot(p, ty, b, paramSp) -> [LetRecDecl((_3, p, Some ty, Some paramSp, b, ruleSpan parseState 3 8) :: _9, ruleSpan parseState 1 8)]
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 1004 "Parser.fsy"
@@ -4881,8 +4881,8 @@ let _fsyacc_reductions = lazy [|
 # 1015 "Parser.fsy"
                                let lambda = desugarMixedParams _3 _5
                                match lambda with
-                               | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 5) :: _6
-                               | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 5) :: _6
+                               | Lambda(p, b, _) -> (_2, p, None, None, b, ruleSpan parseState 2 5) :: _6
+                               | LambdaAnnot(p, ty, b, paramSp) -> (_2, p, Some ty, Some paramSp, b, ruleSpan parseState 2 5) :: _6
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 1015 "Parser.fsy"
@@ -4899,8 +4899,8 @@ let _fsyacc_reductions = lazy [|
 # 1021 "Parser.fsy"
                                let lambda = desugarMixedParams _3 _6
                                match lambda with
-                               | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 7) :: _8
-                               | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 7) :: _8
+                               | Lambda(p, b, _) -> (_2, p, None, None, b, ruleSpan parseState 2 7) :: _8
+                               | LambdaAnnot(p, ty, b, paramSp) -> (_2, p, Some ty, Some paramSp, b, ruleSpan parseState 2 7) :: _8
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 1021 "Parser.fsy"
@@ -4919,8 +4919,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_7, _5, ruleSpan parseState 1 7)
                                let lambda = desugarMixedParams _3 body
                                match lambda with
-                               | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 7) :: _8
-                               | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 7) :: _8
+                               | Lambda(p, b, _) -> (_2, p, None, None, b, ruleSpan parseState 2 7) :: _8
+                               | LambdaAnnot(p, ty, b, paramSp) -> (_2, p, Some ty, Some paramSp, b, ruleSpan parseState 2 7) :: _8
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 1028 "Parser.fsy"
@@ -4939,8 +4939,8 @@ let _fsyacc_reductions = lazy [|
                                let body = Annot(_8, _5, ruleSpan parseState 1 9)
                                let lambda = desugarMixedParams _3 body
                                match lambda with
-                               | Lambda(p, b, _) -> (_2, p, None, b, ruleSpan parseState 2 9) :: _10
-                               | LambdaAnnot(p, ty, b, _) -> (_2, p, Some ty, b, ruleSpan parseState 2 9) :: _10
+                               | Lambda(p, b, _) -> (_2, p, None, None, b, ruleSpan parseState 2 9) :: _10
+                               | LambdaAnnot(p, ty, b, paramSp) -> (_2, p, Some ty, Some paramSp, b, ruleSpan parseState 2 9) :: _10
                                | _ -> failwith "impossible: MixedParamList must produce at least one param" 
                    )
 # 1035 "Parser.fsy"
