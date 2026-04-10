@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-04-10
+
+### Fixed
+- FieldAccess가 accessExpr span에 resolved record 타입(TData)을 annotationMap에 기록하도록 수정 (Issue #20)
+
 ## [0.1.0] - 2026-04-10
 
 ### Added
