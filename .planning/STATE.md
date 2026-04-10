@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-04-09)
 
 Milestone: v15.0 Type Class Maturity
 Phase: 103 — Fix Bidir.fs annotationMap for LambdaAnnot (complete)
-Plan: 01 of 01
-Status: Phase 103 fully complete (Issue #19 closed); ready for Phase 96
-Last activity: 2026-04-10 — Completed 103-01-PLAN.md (annotationMap for let rec first params)
+Plan: 02 of 02
+Status: Phase 103 fully complete (Issues #18 and #19 closed with regression tests); ready for Phase 96
+Last activity: 2026-04-10 — Completed 103-02-PLAN.md (TA-09/TA-09b unit tests + flt regression test)
 
 Progress: [██........] 25% (2/8 phases complete)
 
@@ -41,9 +41,9 @@ Progress: [██........] 25% (2/8 phases complete)
 - 724 flt tests passing
 - 244 F# unit tests passing
 
-**Current test baseline (after Phase 102):**
-- 726 flt tests passing
-- 245 F# unit tests passing
+**Current test baseline (after Phase 103):**
+- 727 flt tests passing
+- 247 F# unit tests passing
 
 ## Accumulated Context
 
@@ -79,6 +79,7 @@ From v15.0 research (2026-04-08):
 - Phase 102-02 complete (2026-04-10): TA-08 unit test + flt regression test added; parseModuleWithPositions helper added to TypeAnnotationTests.fs for span-aware testing; 726 flt + 245 unit tests pass
 - Phase 103 added (2026-04-10): Fix Bidir.fs annotationMap population — type checker must record arrow type using each LambdaAnnot's own span (Issue #19)
 - Phase 103-01 complete (2026-04-10): 6-tuple LetRec/LetRecDecl binding with Span option; Parser.fsy captures LambdaAnnot paramSp; Bidir.fs/TypeCheck.fs record TArrow at firstSpOpt; 726 flt + 245 unit tests pass
+- Phase 103-02 complete (2026-04-10): TA-09/TA-09b regression tests + letrec-annot-first-param-map.flt added; 727 flt + 247 unit tests pass; Phase 103 fully complete
 
 ### Blockers/Concerns
 
@@ -88,6 +89,6 @@ From v15.0 research (2026-04-08):
 ## Session Continuity
 
 Last session: 2026-04-10
-Stopped at: Completed 103-01-PLAN.md — annotationMap for let rec first params (Issue #19)
+Stopped at: Completed 103-02-PLAN.md — TA-09/TA-09b regression tests for annotationMap let rec fix
 Resume file: None
 Next action: `/gsd:plan-phase 96`
