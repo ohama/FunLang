@@ -3,7 +3,7 @@ module FunLang.Tests.TypeAnnotationTests
 open Expecto
 open FunLang.IndentFilter
 
-// Helper to lex and filter through IndentFilter
+// Helper to lex and filter through IndentFilter (without position info)
 let lexAndFilter (input: string) =
     let lexbuf = FSharp.Text.Lexing.LexBuffer<_>.FromString input
     Lexer.setInitialPos lexbuf "test"
@@ -14,7 +14,20 @@ let lexAndFilter (input: string) =
     let rawTokens = collect ()
     filter defaultConfig rawTokens |> Seq.toList
 
-// Helper to parse a module
+// Helper to lex and filter through IndentFilter, preserving position info
+let lexAndFilterPositioned (input: string) : PositionedToken list =
+    let lexbuf = FSharp.Text.Lexing.LexBuffer<_>.FromString input
+    Lexer.setInitialPos lexbuf "test"
+    let rec collect () =
+        let startPos = lexbuf.StartPos
+        let tok = Lexer.tokenize lexbuf
+        let endPos = lexbuf.EndPos
+        if tok = Parser.EOF then [{ Token = Parser.EOF; StartPos = startPos; EndPos = endPos }]
+        else { Token = tok; StartPos = startPos; EndPos = endPos } :: collect ()
+    let rawTokens = collect ()
+    filterPositioned defaultConfig rawTokens
+
+// Helper to parse a module (without position info — used by TA-01..TA-07)
 let parseModule (input: string) : Ast.Module =
     let lexbuf = FSharp.Text.Lexing.LexBuffer<_>.FromString input
     Lexer.setInitialPos lexbuf "test"
@@ -25,6 +38,23 @@ let parseModule (input: string) : Ast.Module =
             let tok = filteredTokens.[index]
             index <- index + 1
             tok
+        else
+            Parser.EOF
+    Parser.parseModule tokenizer lexbuf
+
+// Helper to parse a module with full position info (preserves spans for annotationMap testing)
+let parseModuleWithPositions (input: string) : Ast.Module =
+    let filteredTokens = lexAndFilterPositioned input
+    let lexbuf = FSharp.Text.Lexing.LexBuffer<_>.FromString input
+    Lexer.setInitialPos lexbuf "test"
+    let mutable index = 0
+    let tokenizer (lb: FSharp.Text.Lexing.LexBuffer<_>) =
+        if index < filteredTokens.Length then
+            let pt = filteredTokens.[index]
+            index <- index + 1
+            lb.StartPos <- pt.StartPos
+            lb.EndPos <- pt.EndPos
+            pt.Token
         else
             Parser.EOF
     Parser.parseModule tokenizer lexbuf
@@ -186,6 +216,43 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
         let hasStr =
             annots |> Map.toSeq |> Seq.exists (fun (_, ty) -> ty = Type.TString)
         Expect.isTrue hasStr "\"hello\" should be annotated as TString"
+    }
+
+    // TA-08: Multi-param annotated let has distinct spans per LambdaAnnot
+    // Uses parseModuleWithPositions to preserve token position info so that
+    // ruleSpan/symSpan in the parser produce distinct spans for each parameter.
+    test "TA-08: multi-param annotated let has distinct spans per LambdaAnnot" {
+        let input = "let f (x : int) (y : string) (z : bool) : int = 42"
+        // Parse with full position info so each LambdaAnnot node gets a distinct span
+        let m = parseModuleWithPositions input
+        let result = TypeCheck.typeCheckModule m
+        let annots =
+            Bidir.annotationMap
+            |> Seq.map (fun kv -> (kv.Key, kv.Value))
+            |> Map.ofSeq
+        match result with
+        | Error errs -> failwith (sprintf "Type checking failed: %A" errs)
+        | Ok _ -> ()
+        // Each LambdaAnnot should produce a distinct annotationMap entry with TArrow type
+        // Outermost: int -> string -> bool -> int
+        // Middle: string -> bool -> int
+        // Innermost: bool -> int
+        let arrowEntries =
+            annots
+            |> Map.toSeq
+            |> Seq.filter (fun (_, ty) ->
+                match ty with
+                | Type.TArrow _ -> true
+                | _ -> false)
+            |> Seq.toList
+        // There should be at least 3 distinct TArrow entries (one per annotated param)
+        Expect.isTrue (arrowEntries.Length >= 3)
+            (sprintf "Should have at least 3 TArrow entries for 3 annotated params, got %d" arrowEntries.Length)
+        // All spans should be distinct (no collisions)
+        let spans = arrowEntries |> List.map fst
+        let distinctSpans = spans |> List.distinct
+        Expect.equal distinctSpans.Length spans.Length
+            "All TArrow spans should be distinct (no span collisions)"
     }
 
 ]
