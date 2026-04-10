@@ -12,20 +12,20 @@ let symSpan (parseState: IParseState) (n: int) : Span =
     mkSpan (parseState.InputStartPosition n) (parseState.InputEndPosition n)
 
 /// Desugar curried annotated parameters into nested LambdaAnnot nodes
-let rec desugarAnnotParams (paramList: (string * TypeExpr) list) (body: Expr) (span: Span) : Expr =
+let rec desugarAnnotParams (paramList: (string * TypeExpr * Span) list) (body: Expr) : Expr =
     match paramList with
     | [] -> failwith "desugarAnnotParams: empty param list"
-    | [(name, ty)] -> LambdaAnnot(name, ty, body, span)
-    | (name, ty) :: rest -> LambdaAnnot(name, ty, desugarAnnotParams rest body span, span)
+    | [(name, ty, sp)] -> LambdaAnnot(name, ty, body, sp)
+    | (name, ty, sp) :: rest -> LambdaAnnot(name, ty, desugarAnnotParams rest body, sp)
 
 /// Desugar mixed parameter list (plain + annotated) into nested Lambda/LambdaAnnot chain
-let rec desugarMixedParams (paramList: Choice<string, string * TypeExpr> list) (body: Expr) (span: Span) : Expr =
+let rec desugarMixedParams (paramList: Choice<string * Span, string * TypeExpr * Span> list) (body: Expr) : Expr =
     match paramList with
     | [] -> body
-    | Choice1Of2 name :: rest ->
-        Lambda(name, desugarMixedParams rest body span, span)
-    | Choice2Of2 (name, ty) :: rest ->
-        LambdaAnnot(name, ty, desugarMixedParams rest body span, span)
+    | Choice1Of2 (name, sp) :: rest ->
+        Lambda(name, desugarMixedParams rest body, sp)
+    | Choice2Of2 (name, ty, sp) :: rest ->
+        LambdaAnnot(name, ty, desugarMixedParams rest body, sp)
 
 /// Desugar multi-param lambda: fun x y z -> body  =>  fun x -> fun y -> fun z -> body
 let rec desugarMultiParamLambda (names: string list) (body: Expr) (span: Span) : Expr =
@@ -154,19 +154,19 @@ Expr:
     | LET IDENT EQUALS INDENT Expr DEDENT IN SeqExpr  { Let($2, $5, $8, ruleSpan parseState 1 8) }
     // Phase 64: Multi-param let in expression with mixed annotated+plain params (subsumes plain ParamList)
     | LET IDENT MixedParamList EQUALS Expr IN SeqExpr
-        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 7)
+        { let lambda = desugarMixedParams $3 $5
           Let($2, lambda, $7, ruleSpan parseState 1 7) }
     | LET IDENT MixedParamList EQUALS INDENT Expr DEDENT IN SeqExpr
-        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 9)
+        { let lambda = desugarMixedParams $3 $6
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
     // Phase 64: expression let with mixed params + return type: let f x : int = e in e2
     | LET IDENT MixedParamList COLON TypeExpr EQUALS Expr IN SeqExpr
         { let body = Annot($7, $5, ruleSpan parseState 1 9)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body
           Let($2, lambda, $9, ruleSpan parseState 1 9) }
     | LET IDENT MixedParamList COLON TypeExpr EQUALS INDENT Expr DEDENT IN SeqExpr
         { let body = Annot($8, $5, ruleSpan parseState 1 11)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 11)
+          let lambda = desugarMixedParams $3 body
           Let($2, lambda, $11, ruleSpan parseState 1 11) }
     // Phase 64: expression let with return type only (no params): let x : int = 5 in ...
     | LET IDENT COLON TypeExpr EQUALS Expr IN SeqExpr
@@ -191,14 +191,14 @@ Expr:
     // Phase 64: let rec with mixed annotated+plain params in expression
     | LET REC IDENT MixedParamList EQUALS Expr LetRecContinuation IN SeqExpr
         { let span = ruleSpan parseState 1 9
-          let lambda = desugarMixedParams $4 $6 span
+          let lambda = desugarMixedParams $4 $6
           match lambda with
           | Lambda(p, b, _) -> LetRec(($3, p, None, b, ruleSpan parseState 3 6) :: $7, $9, span)
           | LambdaAnnot(p, ty, b, _) -> LetRec(($3, p, Some ty, b, ruleSpan parseState 3 6) :: $7, $9, span)
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | LET REC IDENT MixedParamList EQUALS INDENT Expr DEDENT LetRecContinuation IN SeqExpr
         { let span = ruleSpan parseState 1 11
-          let lambda = desugarMixedParams $4 $7 span
+          let lambda = desugarMixedParams $4 $7
           match lambda with
           | Lambda(p, b, _) -> LetRec(($3, p, None, b, ruleSpan parseState 3 8) :: $9, $11, span)
           | LambdaAnnot(p, ty, b, _) -> LetRec(($3, p, Some ty, b, ruleSpan parseState 3 8) :: $9, $11, span)
@@ -207,7 +207,7 @@ Expr:
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS Expr LetRecContinuation IN SeqExpr
         { let span = ruleSpan parseState 1 11
           let body = Annot($8, $6, span)
-          let lambda = desugarMixedParams $4 body span
+          let lambda = desugarMixedParams $4 body
           match lambda with
           | Lambda(p, b, _) -> LetRec(($3, p, None, b, ruleSpan parseState 3 8) :: $9, $11, span)
           | LambdaAnnot(p, ty, b, _) -> LetRec(($3, p, Some ty, b, ruleSpan parseState 3 8) :: $9, $11, span)
@@ -215,7 +215,7 @@ Expr:
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS INDENT Expr DEDENT LetRecContinuation IN SeqExpr
         { let span = ruleSpan parseState 1 13
           let body = Annot($9, $6, span)
-          let lambda = desugarMixedParams $4 body span
+          let lambda = desugarMixedParams $4 body
           match lambda with
           | Lambda(p, b, _) -> LetRec(($3, p, None, b, ruleSpan parseState 3 10) :: $11, $13, span)
           | LambdaAnnot(p, ty, b, _) -> LetRec(($3, p, Some ty, b, ruleSpan parseState 3 10) :: $11, $13, span)
@@ -241,9 +241,9 @@ Expr:
     // v6.0: Curried annotated lambda - fun (x: T) (y: U) -> e
     // Multiple parameters via AnnotParamList
     | FUN AnnotParamList ARROW SeqExpr
-        { desugarAnnotParams $2 $4 (ruleSpan parseState 1 4) }
+        { desugarAnnotParams $2 $4 }
     | FUN AnnotParamList ARROW INDENT SeqExpr DEDENT
-        { desugarAnnotParams $2 $5 (ruleSpan parseState 1 6) }
+        { desugarAnnotParams $2 $5 }
     // Phase 22: Tuple parameter lambda - fun (x, y) -> body
     | FUN TuplePattern ARROW SeqExpr
         { Lambda("__tuple_arg", LetPat($2, Var("__tuple_arg", symSpan parseState 1), $4, ruleSpan parseState 1 4), ruleSpan parseState 1 4) }
@@ -525,7 +525,7 @@ AnnotParamList:
     | AnnotParam                    { [$1] }
 
 AnnotParam:
-    | LPAREN IDENT COLON TypeExpr RPAREN    { ($2, $4) }
+    | LPAREN IDENT COLON TypeExpr RPAREN    { ($2, $4, ruleSpan parseState 1 5) }
 
 // v13.0: Additional plain params for multi-param lambda (fun x y z -> ...)
 LambdaParams:
@@ -762,10 +762,10 @@ Decl:
         { LetDecl($2, $5, ruleSpan parseState 1 6) }
     // Phase 64: Function declaration with mixed annotated+plain params (subsumes plain ParamList)
     | LET IDENT MixedParamList EQUALS SeqExpr
-        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
+        { let lambda = desugarMixedParams $3 $5
           LetDecl($2, lambda, ruleSpan parseState 1 5) }
     | LET IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT
-        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
+        { let lambda = desugarMixedParams $3 $6
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     // Phase 64: let with return type annotation (no params): let x : T = expr
     | LET IDENT COLON TypeExpr EQUALS SeqExpr
@@ -775,11 +775,11 @@ Decl:
     // Phase 64: let with mixed params + return type: let f (x : int) y : bool = ...
     | LET IDENT MixedParamList COLON TypeExpr EQUALS SeqExpr
         { let body = Annot($7, $5, ruleSpan parseState 1 7)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 7)
+          let lambda = desugarMixedParams $3 body
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     | LET IDENT MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
         { let body = Annot($8, $5, ruleSpan parseState 1 9)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body
           LetDecl($2, lambda, ruleSpan parseState 1 9) }
     // SYN-07: Unit param shorthand at module level: let f () = body
     | LET IDENT LPAREN RPAREN EQUALS SeqExpr
@@ -801,36 +801,36 @@ Decl:
 
 // Phase 19 (User-Defined Operators): Operator definition - let (op) params = body
     | LET OpName MixedParamList EQUALS SeqExpr
-        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
+        { let lambda = desugarMixedParams $3 $5
           LetDecl($2, lambda, ruleSpan parseState 1 5) }
     | LET OpName MixedParamList EQUALS INDENT SeqExpr DEDENT
-        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
+        { let lambda = desugarMixedParams $3 $6
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     // Phase 92: Operator with return type annotation
     | LET OpName MixedParamList COLON TypeExpr EQUALS SeqExpr
         { let body = Annot($7, $5, ruleSpan parseState 1 7)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 7)
+          let lambda = desugarMixedParams $3 body
           LetDecl($2, lambda, ruleSpan parseState 1 7) }
     | LET OpName MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
         { let body = Annot($8, $5, ruleSpan parseState 1 9)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body
           LetDecl($2, lambda, ruleSpan parseState 1 9) }
 
 // Phase 84 (Attributes): Attributed operator declaration
     | AttributeList LET OpName MixedParamList EQUALS SeqExpr
-        { let lambda = desugarMixedParams $4 $6 (ruleSpan parseState 1 6)
+        { let lambda = desugarMixedParams $4 $6
           InfixDecl($1, $3, lambda, ruleSpan parseState 1 6) }
     | AttributeList LET OpName MixedParamList EQUALS INDENT SeqExpr DEDENT
-        { let lambda = desugarMixedParams $4 $7 (ruleSpan parseState 1 8)
+        { let lambda = desugarMixedParams $4 $7
           InfixDecl($1, $3, lambda, ruleSpan parseState 1 8) }
     // Phase 92: Attributed operator with return type annotation
     | AttributeList LET OpName MixedParamList COLON TypeExpr EQUALS SeqExpr
         { let body = Annot($8, $6, ruleSpan parseState 1 8)
-          let lambda = desugarMixedParams $4 body (ruleSpan parseState 1 8)
+          let lambda = desugarMixedParams $4 body
           InfixDecl($1, $3, lambda, ruleSpan parseState 1 8) }
     | AttributeList LET OpName MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
         { let body = Annot($9, $6, ruleSpan parseState 1 10)
-          let lambda = desugarMixedParams $4 body (ruleSpan parseState 1 10)
+          let lambda = desugarMixedParams $4 body
           InfixDecl($1, $3, lambda, ruleSpan parseState 1 10) }
 
 // ParamList: One or more parameters for function declarations
@@ -844,8 +844,8 @@ MixedParamList:
     | MixedParam MixedParamList     { $1 :: $2 }
 
 MixedParam:
-    | IDENT                                     { Choice1Of2 $1 }
-    | LPAREN IDENT COLON TypeExpr RPAREN        { Choice2Of2 ($2, $4) }
+    | IDENT                                     { Choice1Of2 ($1, symSpan parseState 1) }
+    | LPAREN IDENT COLON TypeExpr RPAREN        { Choice2Of2 ($2, $4, ruleSpan parseState 1 5) }
 
 // Phase 71 (Type Classes): typeclass method signatures
 // Leading PIPE on each method makes parsing unambiguous (IDENT after TypeExpr is ambiguous
@@ -865,19 +865,19 @@ InstanceMethodList:
 InstanceMethod:
     // Phase 93: Instance methods with mixed annotated+plain params
     | LET IDENT MixedParamList EQUALS SeqExpr
-        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
+        { let lambda = desugarMixedParams $3 $5
           ($2, lambda) }
     | LET IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT
-        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
+        { let lambda = desugarMixedParams $3 $6
           ($2, lambda) }
     // Phase 93: Instance methods with return type annotation
     | LET IDENT MixedParamList COLON TypeExpr EQUALS SeqExpr
         { let body = Annot($7, $5, ruleSpan parseState 1 7)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 7)
+          let lambda = desugarMixedParams $3 body
           ($2, lambda) }
     | LET IDENT MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT
         { let body = Annot($8, $5, ruleSpan parseState 1 9)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body
           ($2, lambda) }
 
 // Phase 3 (Records): Record type declaration
@@ -964,14 +964,14 @@ LetRecDeclaration:
     // Phase 64: let rec with mixed annotated+plain params
     | LET REC IDENT MixedParamList EQUALS SeqExpr LetRecContinuation
         { let span = ruleSpan parseState 1 6
-          let lambda = desugarMixedParams $4 $6 span
+          let lambda = desugarMixedParams $4 $6
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | LET REC IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let span = ruleSpan parseState 1 8
-          let lambda = desugarMixedParams $4 $7 span
+          let lambda = desugarMixedParams $4 $7
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
@@ -980,7 +980,7 @@ LetRecDeclaration:
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS SeqExpr LetRecContinuation
         { let span = ruleSpan parseState 1 8
           let body = Annot($8, $6, span)
-          let lambda = desugarMixedParams $4 body span
+          let lambda = desugarMixedParams $4 body
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 8) :: $9, span)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 8) :: $9, span)]
@@ -988,20 +988,20 @@ LetRecDeclaration:
     | LET REC IDENT MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let span = ruleSpan parseState 1 10
           let body = Annot($9, $6, span)
-          let lambda = desugarMixedParams $4 body span
+          let lambda = desugarMixedParams $4 body
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 10) :: $11, span)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 10) :: $11, span)]
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     // Phase 19: let rec (op) params = body
     | LET REC OpName MixedParamList EQUALS SeqExpr LetRecContinuation
-        { let lambda = desugarMixedParams $4 $6 (ruleSpan parseState 1 6)
+        { let lambda = desugarMixedParams $4 $6
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 6) :: $7, ruleSpan parseState 1 6)]
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | LET REC OpName MixedParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
-        { let lambda = desugarMixedParams $4 $7 (ruleSpan parseState 1 8)
+        { let lambda = desugarMixedParams $4 $7
           match lambda with
           | Lambda(p, b, _) -> [LetRecDecl(($3, p, None, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
           | LambdaAnnot(p, ty, b, _) -> [LetRecDecl(($3, p, Some ty, b, ruleSpan parseState 3 8) :: $9, ruleSpan parseState 1 8)]
@@ -1012,13 +1012,13 @@ LetRecContinuation:
     |                                   { [] }
     // Phase 64: and with mixed annotated+plain params
     | AND_KW IDENT MixedParamList EQUALS SeqExpr LetRecContinuation
-        { let lambda = desugarMixedParams $3 $5 (ruleSpan parseState 1 5)
+        { let lambda = desugarMixedParams $3 $5
           match lambda with
           | Lambda(p, b, _) -> ($2, p, None, b, ruleSpan parseState 2 5) :: $6
           | LambdaAnnot(p, ty, b, _) -> ($2, p, Some ty, b, ruleSpan parseState 2 5) :: $6
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | AND_KW IDENT MixedParamList EQUALS INDENT SeqExpr DEDENT LetRecContinuation
-        { let lambda = desugarMixedParams $3 $6 (ruleSpan parseState 1 7)
+        { let lambda = desugarMixedParams $3 $6
           match lambda with
           | Lambda(p, b, _) -> ($2, p, None, b, ruleSpan parseState 2 7) :: $8
           | LambdaAnnot(p, ty, b, _) -> ($2, p, Some ty, b, ruleSpan parseState 2 7) :: $8
@@ -1026,14 +1026,14 @@ LetRecContinuation:
     // Phase 64: and with mixed params + return type
     | AND_KW IDENT MixedParamList COLON TypeExpr EQUALS SeqExpr LetRecContinuation
         { let body = Annot($7, $5, ruleSpan parseState 1 7)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 7)
+          let lambda = desugarMixedParams $3 body
           match lambda with
           | Lambda(p, b, _) -> ($2, p, None, b, ruleSpan parseState 2 7) :: $8
           | LambdaAnnot(p, ty, b, _) -> ($2, p, Some ty, b, ruleSpan parseState 2 7) :: $8
           | _ -> failwith "impossible: MixedParamList must produce at least one param" }
     | AND_KW IDENT MixedParamList COLON TypeExpr EQUALS INDENT SeqExpr DEDENT LetRecContinuation
         { let body = Annot($8, $5, ruleSpan parseState 1 9)
-          let lambda = desugarMixedParams $3 body (ruleSpan parseState 1 9)
+          let lambda = desugarMixedParams $3 body
           match lambda with
           | Lambda(p, b, _) -> ($2, p, None, b, ruleSpan parseState 2 9) :: $10
           | LambdaAnnot(p, ty, b, _) -> ($2, p, Some ty, b, ruleSpan parseState 2 9) :: $10
