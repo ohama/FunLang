@@ -786,6 +786,9 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
         let resolvedTy = apply s1 exprTy
         match resolvedTy with
         | TData (typeName, typeArgs) ->
+            // Issue #20: Record the resolved record type at accessExpr's span
+            // so FunLangCompiler can disambiguate same-named fields across record types.
+            recordTy (Ast.spanOf accessExpr) resolvedTy
             match Map.tryFind typeName recEnv with
             | Some recInfo ->
                 match recInfo.Fields |> List.tryFind (fun f -> f.Name = fieldName) with

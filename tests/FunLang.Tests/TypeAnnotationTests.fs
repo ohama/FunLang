@@ -299,4 +299,34 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
             (sprintf "Expected >= 2 TArrow for mutual rec with 2 annotated params, got %d" arrowEntries.Length)
     }
 
+    // TA-10: FieldAccess records record type at accessExpr span (Issue #20)
+    // FunLangCompiler needs TData at the sub-expression span to disambiguate
+    // same-named fields across record types.
+    test "TA-10: FieldAccess records TData at accessExpr span" {
+        let input = "type Foo = { x : int; y : string }\nlet _ =\n    let f = { x = 42; y = \"hello\" }\n    f.x"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+        // Find the TData("Foo", []) entry that corresponds to the Var "f" in "f.x"
+        // The Var "f" in "f.x" is on line 4, and should have TData("Foo", []) recorded
+        let fooEntries =
+            Bidir.annotationMap
+            |> Seq.map (fun kv -> (kv.Key, kv.Value))
+            |> Seq.filter (fun (_, ty) ->
+                match ty with
+                | Type.TData("Foo", _) -> true
+                | _ -> false)
+            |> Seq.toList
+        // Should have TData("Foo") at the Var span (for FunLangCompiler field disambiguation)
+        Expect.isTrue (fooEntries.Length >= 1)
+            (sprintf "Expected TData(\"Foo\", []) at accessExpr span, got %d TData entries" fooEntries.Length)
+        // The Var "f" span (line 4) must be among TData entries
+        let hasVarSpan = fooEntries |> List.exists (fun (span, _) -> span.StartLine = 4)
+        Expect.isTrue hasVarSpan
+            "TData(\"Foo\", []) should be recorded at the Var 'f' span on line 4"
+    }
+
 ]
