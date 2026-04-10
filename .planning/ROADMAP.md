@@ -1,8 +1,8 @@
 # Roadmap: v15.0 Type Class Maturity
 
 **Status:** Active
-**Phases:** 96–101 (6 phases)
-**Coverage:** 17/17 requirements mapped
+**Phases:** 96–102 (7 phases)
+**Coverage:** 17/17 requirements mapped + 1 bug fix phase
 
 ## Overview
 
@@ -111,6 +111,21 @@ v15.0 matures FunLang's type class system by fixing correctness bugs in the exis
 2. Passing a value with a mismatched method type in an `instance` declaration fires E0704 (not E0301).
 3. A type error that originates from a constraint on a called function displays the constraint chain context — e.g., "required by call to `show` which requires `Show 'a`".
 
+### Phase 102: Fix LambdaAnnot Span Collision (Issue #18)
+
+**Goal:** Each nested LambdaAnnot node gets a unique span so annotationMap lookups return the correct arrow type for each parameter.
+
+**Dependencies:** Phase 101
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 102-01-PLAN.md — Per-parameter span assignment in Parser.fsy (desugarAnnotParams, desugarMixedParams, all callsites)
+- [ ] 102-02-PLAN.md — Unit test (TA-08) and flt regression tests for span uniqueness
+
+**Details:**
+`desugarAnnotParams` generates nested LambdaAnnot nodes sharing the same span, causing annotationMap collision. Inner parameters receive the outermost arrow type instead of their own. Fix by assigning each LambdaAnnot a unique span based on the parameter's source position.
+
 ---
 
 ## Progress
@@ -123,6 +138,7 @@ v15.0 matures FunLang's type class system by fixing correctness bugs in the exis
 | 99 — Num Type Class | Num/Eq Prelude additions | NUM-01, NUM-02, NUM-03 | Pending |
 | 100 — Derive for Parameterized ADTs | derive works on `Tree 'a` etc. | DRV-01, DRV-02 | Pending |
 | 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
+| 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | Pending |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -163,3 +179,4 @@ v15.0 matures FunLang's type class system by fixing correctness bugs in the exis
 
 *Roadmap created: 2026-04-09 — v15.0 Type Class Maturity*
 *Phases continue from v14.0 Phase 95*
+*Phase 102 added: 2026-04-10 — Fix LambdaAnnot span collision (Issue #18)*
