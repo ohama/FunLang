@@ -85,7 +85,7 @@ type Expr =
     // Phase 5: Functions
     | Lambda of param: string * body: Expr * span: Span      // fun param -> body
     | App of func: Expr * arg: Expr * span: Span             // func arg (function application)
-    | LetRec of bindings: (string * string * TypeExpr option * Expr * Span) list * inExpr: Expr * span: Span
+    | LetRec of bindings: (string * string * TypeExpr option * Span option * Expr * Span) list * inExpr: Expr * span: Span
     // let rec name param = body in inExpr
     // Phase 1 (v3.0): Tuples
     | Tuple of Expr list * span: Span               // Tuple expression: (e1, e2, ...)
@@ -362,7 +362,7 @@ type Decl =
     // Phase 17 (Type Aliases): Type alias declaration
     | TypeAliasDecl of name: string * typeParams: string list * body: TypeExpr * Span
     // Phase 18 (Mutual Recursion): Module-level let rec (single and mutual)
-    | LetRecDecl of bindings: (string * string * TypeExpr option * Expr * Span) list * Span
+    | LetRecDecl of bindings: (string * string * TypeExpr option * Span option * Expr * Span) list * Span
     // Phase 31 (Module System): File-based import declaration
     | FileImportDecl of path: string * Span
     // Phase 42 (Mutable Variables): Module-level mutable variable declaration

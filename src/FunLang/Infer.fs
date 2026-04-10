@@ -269,7 +269,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
     | LetRec (bindings, inExpr, span) ->
         // 1. Create fresh type variables for each function
         let funcTypes =
-            bindings |> List.map (fun (name, param, paramTyOpt, _, _) ->
+            bindings |> List.map (fun (name, param, paramTyOpt, _, _, _) ->
                 let paramTy =
                     match paramTyOpt with
                     | Some tyExpr -> elaborateTypeExpr tyExpr
@@ -282,7 +282,7 @@ let rec inferWithContext (ctx: InferContext list) (env: TypeEnv) (expr: Expr): S
                 Map.add name (Scheme([], [], funcTy)) acc) env
         // 3. Infer each body in the extended env, unify with expected return type
         let bodySubst =
-            List.map2 (fun (bindName, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
+            List.map2 (fun (bindName, _, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
                 let bodyEnv = Map.add param (Scheme([], [], paramTy)) recEnv
                 let s, bodyTy = inferWithContext (InLetRecBody (bindName, bindSpan) :: ctx) bodyEnv body
                 let expectedRetTy =

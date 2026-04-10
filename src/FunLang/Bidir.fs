@@ -481,7 +481,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
     | LetRec (bindings, inExpr, span) ->
         // 1. Create fresh type variables for each function
         let funcTypes =
-            bindings |> List.map (fun (name, param, paramTyOpt, _, _) ->
+            bindings |> List.map (fun (name, param, paramTyOpt, _, _, _) ->
                 let paramTy =
                     match paramTyOpt with
                     | Some tyExpr -> elaborateTypeExpr tyExpr
@@ -494,7 +494,7 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 Map.add name (Scheme([], [], funcTy)) acc) env
         // 3. Type-check each body in the extended env, unify with expected return type
         let bodySubst =
-            List.map2 (fun (bindName, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
+            List.map2 (fun (bindName, _, _, _, body, bindSpan) (_, param, funcTy, paramTy) ->
                 let bodyEnv = Map.add param (Scheme([], [], paramTy)) recTypeEnv
                 let s, bodyTy = synth ctorEnv recEnv (InLetRecBody (bindName, bindSpan) :: ctx) bodyEnv body
                 let expectedRetTy =

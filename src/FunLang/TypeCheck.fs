@@ -398,7 +398,7 @@ let rec collectMatches (expr: Expr) : (Pattern list * Expr * Span) list =
     | Let(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
     | LetPat(_, rhs, body, _) -> collectMatches rhs @ collectMatches body
     | LetRec(bindings, body, _) ->
-        (bindings |> List.collect (fun (_, _, _, rhs, _) -> collectMatches rhs)) @ collectMatches body
+        (bindings |> List.collect (fun (_, _, _, _, rhs, _) -> collectMatches rhs)) @ collectMatches body
     | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectMatches body
     | App(f, arg, _) -> collectMatches f @ collectMatches arg
     | If(cond, thenE, elseE, _) -> collectMatches cond @ collectMatches thenE @ collectMatches elseE
@@ -530,7 +530,7 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
             | Let(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | LetPat(_, rhs, body, _) -> collectTryWiths rhs @ collectTryWiths body
             | LetRec(bindings, body, _) ->
-                (bindings |> List.collect (fun (_, _, _, rhs, _) -> collectTryWiths rhs)) @ collectTryWiths body
+                (bindings |> List.collect (fun (_, _, _, _, rhs, _) -> collectTryWiths rhs)) @ collectTryWiths body
             | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectTryWiths body
             | App(f, arg, _) -> collectTryWiths f @ collectTryWiths arg
             | If(c, t, e, _) -> collectTryWiths c @ collectTryWiths t @ collectTryWiths e
@@ -615,7 +615,7 @@ let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : S
     | Let(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
     | LetPat(_, rhs, body, _) -> Set.union (collectModuleRefs modules rhs) (collectModuleRefs modules body)
     | LetRec(bindings, body, _) ->
-        let bindingRefs = bindings |> List.map (fun (_, _, _, rhs, _) -> collectModuleRefs modules rhs) |> Set.unionMany
+        let bindingRefs = bindings |> List.map (fun (_, _, _, _, rhs, _) -> collectModuleRefs modules rhs) |> Set.unionMany
         Set.union bindingRefs (collectModuleRefs modules body)
     | Lambda(_, body, _) | LambdaAnnot(_, _, body, _) -> collectModuleRefs modules body
     | App(f, arg, _) -> Set.union (collectModuleRefs modules f) (collectModuleRefs modules arg)
@@ -695,7 +695,7 @@ let rec rewriteModuleAccess (modules: Map<string, ModuleExports>) (expr: Expr) :
     // Recurse into subexpressions
     | Let(n, rhs, body, s) -> Let(n, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
     | LetPat(p, rhs, body, s) -> LetPat(p, rewriteModuleAccess modules rhs, rewriteModuleAccess modules body, s)
-    | LetRec(bindings, body, s) -> LetRec(bindings |> List.map (fun (n, p, pty, rhs, bs) -> (n, p, pty, rewriteModuleAccess modules rhs, bs)), rewriteModuleAccess modules body, s)
+    | LetRec(bindings, body, s) -> LetRec(bindings |> List.map (fun (n, p, pty, spOpt, rhs, bs) -> (n, p, pty, spOpt, rewriteModuleAccess modules rhs, bs)), rewriteModuleAccess modules body, s)
     | Lambda(p, body, s) -> Lambda(p, rewriteModuleAccess modules body, s)
     | LambdaAnnot(p, t, body, s) -> LambdaAnnot(p, t, rewriteModuleAccess modules body, s)
     | App(f, arg, s) -> App(rewriteModuleAccess modules f, rewriteModuleAccess modules arg, s)
@@ -914,7 +914,7 @@ let rec typeCheckDecls
                 // Phase 18: Mutual recursive function type checking
                 // 1. Create fresh type variables for each function
                 let funcTypes =
-                    bindings |> List.map (fun (name, param, paramTyOpt, _body, _) ->
+                    bindings |> List.map (fun (name, param, paramTyOpt, _, _body, _) ->
                         let paramTy =
                             match paramTyOpt with
                             | Some tyExpr -> elaborateTypeExpr tyExpr
@@ -929,7 +929,7 @@ let rec typeCheckDecls
 
                 // 3. Type-check each body in the extended env and unify
                 let finalSubst =
-                    List.map2 (fun (_, _, _, body, _) (_, param, funcTy, paramTy) ->
+                    List.map2 (fun (_, _, _, _, body, _) (_, param, funcTy, paramTy) ->
                         // Add param to env
                         let bodyEnv = Map.add param (Scheme([], [], paramTy)) recEnvTC
                         // Resolve qualified module access
@@ -961,7 +961,7 @@ let rec typeCheckDecls
 
                 // Collect match warnings from all bodies
                 let matchWarnings =
-                    bindings |> List.collect (fun (_, _, _, body, _) -> checkMatchWarnings cEnv body)
+                    bindings |> List.collect (fun (_, _, _, _, body, _) -> checkMatchWarnings cEnv body)
 
                 (env'', cEnv, rEnv, clsEnv, iEnv, mods, warns @ matchWarnings)
 

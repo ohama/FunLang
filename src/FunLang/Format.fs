@@ -152,7 +152,7 @@ let rec formatAst (expr: Ast.Expr) : string =
     | Ast.LetRec (bindings, inExpr, _) ->
         let bindingsStr =
             bindings
-            |> List.map (fun (name, param, paramTyOpt, body, _) ->
+            |> List.map (fun (name, param, paramTyOpt, _, body, _) ->
                 match paramTyOpt with
                 | Some ty -> sprintf "%s (%s : %s) = %s" name param (formatTypeExpr ty) (formatAst body)
                 | None -> sprintf "%s %s = %s" name param (formatAst body))
@@ -330,7 +330,7 @@ let rec formatDecl (decl: Ast.Decl) : string =
     | Ast.LetRecDecl(bindings, _) ->
         let bindingsStr =
             bindings
-            |> List.map (fun (name, param, paramTyOpt, body, _) ->
+            |> List.map (fun (name, param, paramTyOpt, _, body, _) ->
                 match paramTyOpt with
                 | Some ty -> sprintf "%s (%s : %s) = %s" name param (formatTypeExpr ty) (formatAst body)
                 | None -> sprintf "%s %s = %s" name param (formatAst body))

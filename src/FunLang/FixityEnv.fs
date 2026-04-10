@@ -184,7 +184,7 @@ let private mapExprChildren (f: Expr -> Expr) (expr: Expr) : Expr =
     | Let(n, e1, e2, s) -> Let(n, f e1, f e2, s)
     | LetPat(p, e1, e2, s) -> LetPat(p, f e1, f e2, s)
     | LetRec(bindings, body, s) ->
-        let newBindings = bindings |> List.map (fun (n, param, ty, e, bs) -> (n, param, ty, f e, bs))
+        let newBindings = bindings |> List.map (fun (n, param, ty, spOpt, e, bs) -> (n, param, ty, spOpt, f e, bs))
         LetRec(newBindings, f body, s)
     | If(cond, t, e, s) -> If(f cond, f t, f e, s)
     | Equal(a, b, s) -> Equal(f a, f b, s)
@@ -247,7 +247,7 @@ let rewriteFixity (env: FixityEnv) (m: Module) : Module =
         | LetPatDecl(pat, body, s) -> LetPatDecl(pat, rewriteExpr body, s)
         | InfixDecl(attrs, name, body, s) -> InfixDecl(attrs, name, rewriteExpr body, s)
         | LetRecDecl(bindings, s) ->
-            let newBindings = bindings |> List.map (fun (n, param, ty, e, bs) -> (n, param, ty, rewriteExpr e, bs))
+            let newBindings = bindings |> List.map (fun (n, param, ty, spOpt, e, bs) -> (n, param, ty, spOpt, rewriteExpr e, bs))
             LetRecDecl(newBindings, s)
         | LetMutDecl(name, body, s) -> LetMutDecl(name, rewriteExpr body, s)
         | ModuleDecl(name, decls, s) -> ModuleDecl(name, List.map rewriteDecl decls, s)

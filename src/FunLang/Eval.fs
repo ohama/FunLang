@@ -1477,7 +1477,7 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
     | LetRec (bindings, inExpr, _) ->
         let sharedEnvRef = ref env
         let funcValues =
-            bindings |> List.map (fun (name, param, _, body, _) ->
+            bindings |> List.map (fun (name, param, _, _, body, _) ->
                 let wrapper = BuiltinValue (fun argVal ->
                     let callEnv = Map.add param argVal !sharedEnvRef
                     eval recEnv moduleEnv callEnv true body)
@@ -1720,7 +1720,7 @@ let rec evalModuleDecls
             let sharedEnvRef = ref env
             // Create BuiltinValue wrappers for each function
             let funcValues =
-                bindings |> List.map (fun (name, param, _, body, _) ->
+                bindings |> List.map (fun (name, param, _, _, body, _) ->
                     let wrapper = BuiltinValue (fun argVal ->
                         let currentEnv = !sharedEnvRef
                         let callEnv = Map.add param argVal currentEnv
