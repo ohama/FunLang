@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-04-13
+
+### Fixed
+- `TEName` annotation이 fresh TVar 대신 alias/ADT/record로 올바르게 resolve (Issue #22). `let f (p : SrcLoc) = p.field` 같은 annotated parameter + field access 패턴이 정상 동작.
+
+### Added
+- 타입 alias 실제 구현: `AliasInfo`/`AliasEnv` 타입, `Elaborate.currentAliasEnv` state, first-pass에서 `TypeAliasDecl` 등록. 지금까지 완전 no-op였던 `type Name = string` 등의 alias가 실제로 확장됨 (parameterized alias 포함).
+
 ## [0.1.2] - 2026-04-13
 
 ### Removed
