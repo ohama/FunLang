@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-04-13
+
+### Changed
+- **Breaking (pre-1.0):** `s.[i]`가 `int`가 아닌 `char`를 반환하도록 변경 (Issue #23, Issue #15 결정 반전). char 리터럴(`' '`, `'\t'`)과 타입이 일치하여 `if c = ' '` 같은 자연스러운 비교가 가능해짐. ASCII code가 필요하면 `char_to_int s.[i]` 사용.
+
 ## [0.1.3] - 2026-04-13
 
 ### Fixed
