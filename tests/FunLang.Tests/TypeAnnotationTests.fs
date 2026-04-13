@@ -329,4 +329,39 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
             "TData(\"Foo\", []) should be recorded at the Var 'f' span on line 4"
     }
 
+    // TA-11: TEName annotation resolves to TData for record types (Issue #22)
+    // Previously `(p : SrcLoc) -> p.field` failed because TEName elaborated to fresh TVar.
+    test "TA-11: TEName record annotation resolves so field access typechecks" {
+        let input = "type SrcLoc = { file : string; line : int; col : int }\nlet formatLoc (loc : SrcLoc) : string = loc.file"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+    }
+
+    // TA-12: Type alias annotation expands to the aliased type (Issue #22)
+    // `type Name = string; let f (n : Name) : string = n` — Name resolves to TString.
+    test "TA-12: Type alias annotation expands to aliased type" {
+        let input = "type Name = string\nlet greet (n : Name) : string = n"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+    }
+
+    // TA-13: Type alias with parameters expands properly
+    test "TA-13: Parameterized type alias (type Pair = int * int) expands to TTuple" {
+        let input = "type Pair = int * int\nlet swap (p : Pair) : Pair =\n    let (a, b) = p\n    (b, a)"
+        let m = parseModuleWithPositions input
+        Bidir.annotationMap.Clear()
+        let result = TypeCheck.typeCheckModule m
+        match result with
+        | Error errs -> failwith (sprintf "Type check error: %A" errs)
+        | Ok _ -> ()
+    }
+
 ]

@@ -16,6 +16,30 @@ let freshTypeVarIndex =
         counter := n + 1
         n
 
+/// Current alias environment, set by TypeCheck before elaboration (Phase 105 — Issue #22).
+/// TEName/TEData elaboration consults this to expand aliases before producing TData.
+/// Reset at typeCheckModuleWithPrelude entry (same pattern as Bidir.currentClassEnv).
+let mutable currentAliasEnv : AliasEnv = Map.empty
+
+/// Substitute TVar indices in a Type using a substitution map.
+/// Used for alias body expansion (Phase 105).
+let rec substTVars (subst: Map<int, Type>) (ty: Type) : Type =
+    match ty with
+    | TVar i ->
+        match Map.tryFind i subst with
+        | Some t -> t
+        | None -> TVar i
+    | TArrow(a, b) -> TArrow(substTVars subst a, substTVars subst b)
+    | TTuple ts -> TTuple(List.map (substTVars subst) ts)
+    | TList t -> TList(substTVars subst t)
+    | TArray t -> TArray(substTVars subst t)
+    | THashtable(k, v) -> THashtable(substTVars subst k, substTVars subst v)
+    | THashSet t -> THashSet(substTVars subst t)
+    | TQueue t -> TQueue(substTVars subst t)
+    | TMutableList t -> TMutableList(substTVars subst t)
+    | TData(name, args) -> TData(name, List.map (substTVars subst) args)
+    | _ -> ty
+
 /// Elaborate type expression to type, threading type variable environment
 /// Returns: (elaborated type, updated environment)
 let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
@@ -58,10 +82,20 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
         match name with
         | "stringbuilder" -> (TStringBuilder, vars)
         | _ ->
-            // Named type (e.g., Tree, Option) - will be resolved in Phase 2 type checking
-            // For now, treat as a fresh type variable (placeholder)
-            let idx = freshTypeVarIndex()
-            (TVar idx, vars)
+            // Issue #22: Resolve TEName via alias env; otherwise produce TData for
+            // record/ADT lookup at field-access / pattern-match sites.
+            match Map.tryFind name currentAliasEnv with
+            | Some alias when List.isEmpty alias.TypeParams ->
+                (alias.Body, vars)
+            | Some alias ->
+                // Parameterized alias used without args: instantiate with fresh TVars
+                let freshSubst =
+                    alias.TypeParams
+                    |> List.map (fun p -> (p, TVar(freshTypeVarIndex())))
+                    |> Map.ofList
+                (substTVars freshSubst alias.Body, vars)
+            | None ->
+                (TData(name, []), vars)
 
     | TEData (name, args) ->
         // Parameterized named type (e.g., int expr) - Phase 4 GADT
@@ -78,7 +112,16 @@ let rec elaborateWithVars (vars: TypeVarEnv) (te: TypeExpr): Type * TypeVarEnv =
         | "hashset", [t] -> (THashSet t, finalVars)
         | "queue", [t] -> (TQueue t, finalVars)
         | "mutablelist", [t] -> (TMutableList t, finalVars)
-        | _ -> (TData(canonical, types), finalVars)
+        | _ ->
+            // Issue #22: Expand parameterized aliases
+            match Map.tryFind canonical currentAliasEnv with
+            | Some alias when List.length alias.TypeParams = List.length types ->
+                let subst =
+                    List.zip alias.TypeParams types
+                    |> Map.ofList
+                (substTVars subst alias.Body, finalVars)
+            | _ ->
+                (TData(canonical, types), finalVars)
 
     | TEConstrained(_, innerTy) ->
         // Constraints are handled at Scheme construction (TypeCheck/Bidir),
@@ -141,6 +184,20 @@ let rec collectTypeExprVars (te: Ast.TypeExpr) : Set<string> =
         // Phase 71 (Type Classes): collect vars from constrained type
         let constraintVars = constraints |> List.map (fun (_, tv) -> collectTypeExprVars tv) |> Set.unionMany
         Set.union constraintVars (collectTypeExprVars ty)
+
+/// Elaborate a type alias declaration into (name, AliasInfo) (Phase 105 — Issue #22).
+/// Example: `type Pair 'a = 'a * 'a`
+///   -> ("Pair", { TypeParams = [0]; Body = TTuple [TVar 0; TVar 0] })
+let elaborateAliasDecl (name: string) (typeParams: string list) (body: Ast.TypeExpr) : string * AliasInfo =
+    let paramMap =
+        typeParams
+        |> List.mapi (fun i p ->
+            let varName = if p.StartsWith("'") then p else "'" + p
+            (varName, i))
+        |> Map.ofList
+    let typeParamVars = typeParams |> List.mapi (fun i _ -> i)
+    let bodyType = substTypeExprWithMap paramMap body
+    (name, { TypeParams = typeParamVars; Body = bodyType })
 
 /// Elaborate a type declaration into ConstructorEnv entries
 /// Example: type Option 'a = None | Some of 'a

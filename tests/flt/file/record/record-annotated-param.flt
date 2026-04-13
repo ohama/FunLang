@@ -1,0 +1,16 @@
+// Test: record type annotation on parameter resolves for field access (Issue #22)
+// Previously `let f (p : RecordType) = p.field` failed with "non-record type 'q"
+// because TEName elaborated to fresh TVar. Fixed in Phase 105.
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+type SrcLoc = { file : string; line : int; col : int }
+
+let formatLoc (loc : SrcLoc) : string =
+    loc.file
+
+let _ =
+    let l = { file = "test.fun"; line = 42; col = 7 }
+    printfn "%s" (formatLoc l)
+// --- Output:
+test.fun
+()

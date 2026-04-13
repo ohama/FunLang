@@ -73,6 +73,16 @@ type RecordTypeInfo = {
 /// Record environment: record type name -> type information
 type RecordEnv = Map<string, RecordTypeInfo>
 
+/// Type alias info (Phase 105 — Issue #22)
+/// `type Pair 'a = 'a * 'a` -> { TypeParams = [0]; Body = TTuple [TVar 0; TVar 0] }
+type AliasInfo = {
+    TypeParams: int list
+    Body: Type
+}
+
+/// Type alias environment: alias name -> alias info
+type AliasEnv = Map<string, AliasInfo>
+
 /// Type class declaration info (Phase 70 — class body populated in Phase 71)
 type ClassInfo = {
     Name: string

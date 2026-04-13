@@ -799,6 +799,15 @@ let rec typeCheckDecls
         |> List.map elaborateRecordDecl
         |> List.fold (fun acc (name, info) -> Map.add name info acc) recEnv
 
+    // Phase 105 (Issue #22): Register type aliases so TEName annotations resolve
+    // properly (not as fresh TVar). Updates mutable Elaborate.currentAliasEnv.
+    decls
+    |> List.iter (function
+        | Decl.TypeAliasDecl(name, typeParams, body, _) ->
+            let (aliasName, aliasInfo) = Elaborate.elaborateAliasDecl name typeParams body
+            Elaborate.currentAliasEnv <- Map.add aliasName aliasInfo Elaborate.currentAliasEnv
+        | _ -> ())
+
     // First pass: collect exception declarations into ctorEnv and typeEnv
     let ctorEnv, typeEnv =
         decls
@@ -1267,6 +1276,8 @@ let typeCheckModuleWithPrelude
         Bidir.pendingConstraints <- []
         // Phase 79: Reset per-expression type annotation map
         Bidir.annotationMap <- TypeAnnotationMap.create()
+        // Phase 105 (Issue #22): Reset alias env (repopulated by first-pass in typeCheckDecls)
+        Elaborate.currentAliasEnv <- Map.empty
         match m with
         | EmptyModule _ -> Ok ([], Map.empty, Map.empty, Map.empty, Map.empty, Map.empty, Map.empty)
         | Module (decls, _) | NamedModule(_, decls, _) ->

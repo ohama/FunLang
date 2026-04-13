@@ -1,0 +1,22 @@
+// Test: type alias used in parameter annotation expands to aliased type (Issue #22)
+// Previously aliases in annotations worked by accident (fresh TVar unifying with anything).
+// Phase 105 makes aliases actually expand to their defined type.
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+type Name = string
+type Pair = int * int
+
+let greet (n : Name) : string = n
+
+let swap (p : Pair) : Pair =
+    let (a, b) = p
+    (b, a)
+
+let _ =
+    printfn "%s" (greet "World")
+    let (x, y) = swap (1, 2)
+    printfn "%d %d" x y
+// --- Output:
+World
+2 1
+()

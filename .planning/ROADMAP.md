@@ -153,6 +153,56 @@ Plans:
 **Details:**
 `TypeCheck.fs`의 `checkDuplicateRecordFields` (L590-604)가 서로 다른 record 타입에서 동일 필드명을 사용하는 경우를 E0311 에러로 처리. ML 계열(OCaml, F#)의 정상 패턴이며, 이 에러로 타입 체크가 중단되어 Issue #20의 FieldAccess TData 기록이 무효화됨. FunLangCompiler#24 (가비지 값) 해결의 블로커. E0311 제거 또는 경고로 강등하여 동일 필드명 record 타입들을 허용.
 
+### Phase 105: Fix TEName Elaboration to Resolve Named Types (Issue #22)
+
+**Goal:** [To be planned]
+**Depends on:** Phase 104
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 105 to break down)
+
+**Details:**
+
+**Issue #22 실제 근본 원인 (분석 결과):** 보고된 "import chain에서 타입 인식 실패"는 증상이며, 실제 버그는 `Elaborate.fs:56-64`의 `elaborateWithVars` 함수에서 발견됨. `TEName name` (예: `SrcLoc`, `Point`) annotation이 fresh `TVar`로 elaborate되어, parameter annotation을 통해 record/ADT 타입을 지정해도 `FieldAccess`가 "non-record type" 에러로 실패.
+
+```fsharp
+// src/FunLang/Elaborate.fs:56-64 (BUG)
+| TEName name ->
+    match name with
+    | "stringbuilder" -> (TStringBuilder, vars)
+    | _ ->
+        // "will be resolved in Phase 2 type checking" ← 실제로는 resolve 안 됨
+        let idx = freshTypeVarIndex()
+        (TVar idx, vars)
+```
+
+반면 같은 파일의 `substTypeExprWithMap` (L103-107)은 올바르게 `TData(n, [])`로 elaborate함.
+
+**재현 (import 없이 단일 파일로도 발생):**
+```fun
+type SrcLoc = { file : string; line : int; col : int }
+let formatLoc (loc : SrcLoc) : string = loc.file
+// error[E0313]: Cannot access field on non-record type 'q
+```
+
+**파싱 분석 (Parser.fsy:576-577):**
+- `TYPE_VAR` (`'a`) → `TEVar` (진짜 타입 변수)
+- `IDENT` (`SrcLoc`) → `TEName` (named type — 버그 대상)
+
+따라서 `TEName`은 항상 named type을 가리키며, TVar로 elaborate하는 것이 잘못됨.
+
+**수정 방향:**
+- `Elaborate.elaborateWithVars`의 `TEName` 분기를 `(TData(name, []), vars)`로 변경 (단, `stringbuilder` 같은 built-in 특수 처리 유지)
+- `elaborateTypeExpr`를 사용하는 모든 경로(Bidir.fs LambdaAnnot/Annot, TypeCheck.fs instance/typeclass elaboration) 영향 확인
+- `let f (p : SomeType) = p.field` 패턴이 정상 동작하는 단위 테스트 추가
+- FunLexYacc 빌드 재현 케이스 검증
+
+**영향:**
+- Issue #22 (import chain 타입 인식) 해결 — 원인은 import 체인이 아니라 annotation resolution
+- Issue #20/#21의 수정이 실제로 효과를 발휘 가능
+- FunLangCompiler#24 (가비지 값) 최종 해결 경로 확보
+
 ---
 
 ## Progress
@@ -168,6 +218,7 @@ Plans:
 | 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | ✓ Complete |
 | 103 — Fix Bidir.fs annotationMap for LambdaAnnot | annotationMap populated with per-param span (Issue #19) | — | ✓ Complete |
 | 104 — Remove DuplicateRecordField(E0311) Check | Allow same field name across record types (Issue #21) | — | ✓ Complete |
+| 105 — Fix TEName Elaboration to Resolve Named Types | `(p : SrcLoc) → p.field` annotation이 fresh TVar 대신 TData로 resolve (Issue #22) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -211,3 +262,4 @@ Plans:
 *Phase 102 added: 2026-04-10 — Fix LambdaAnnot span collision (Issue #18)*
 *Phase 103 added: 2026-04-10 — Fix Bidir.fs annotationMap population for LambdaAnnot spans (Issue #19)*
 *Phase 104 added: 2026-04-13 — Remove DuplicateRecordField(E0311) check to allow same field name across record types (Issue #21)*
+*Phase 105 added: 2026-04-13 — Fix TEName elaboration to resolve named types (Issue #22 — 실제 원인은 Elaborate.fs의 TEName→TVar 처리)*
