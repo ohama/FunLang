@@ -1193,11 +1193,11 @@ and eval (recEnv: RecordEnv) (moduleEnv: Map<string, ModuleValueEnv>) (env: Env)
             if i < 0 || i >= ml.Count then
                 raise (FunLangException (StringValue (sprintf "MutableList index %d out of bounds (length %d)" i ml.Count)))
             ml.[i]
-        // Issue #15: String indexing s.[i] returns char code as int
+        // Issue #23: String indexing s.[i] returns char (reverts #15's int decision).
         | StringValue s, IntValue i ->
             if i < 0 || i >= s.Length then
                 raise (FunLangException (StringValue (sprintf "String index %d out of bounds (length %d)" i s.Length)))
-            IntValue (int s.[i])
+            CharValue s.[i]
         | _ -> failwith "IndexGet: expected array, hashtable, MutableList, or string"
 
     // Phase 47: Array/hashtable index write

@@ -1,11 +1,12 @@
-// Test: Issue #15 — string indexing s.[i] returns int (char code)
+// Test: Issue #23 — string indexing s.[i] returns char (reverts #15).
+// Use char_to_int to get the ASCII code.
 // --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let s = "hello"
-let _ = println (to_string s.[0])
-let _ = println (to_string s.[4])
-let f (s : string) : int = s.[0]
-let _ = println (to_string (f "world"))
+let _ = println (to_string (char_to_int s.[0]))
+let _ = println (to_string (char_to_int s.[4]))
+let f (s : string) : char = s.[0]
+let _ = println (to_string (char_to_int (f "world")))
 // --- Output:
 104
 111

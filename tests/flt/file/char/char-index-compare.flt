@@ -1,0 +1,19 @@
+// Test: Issue #23 — string indexing s.[i] : char composes with char literal comparison
+// Whitespace skipping pattern that previously failed due to #15's s.[i] : int decision.
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let peek (s : string) (i : int) : char =
+    if i >= String.length s then ' '
+    else s.[i]
+
+let rec skipWS (s : string) (i : int) : int =
+    let c = peek s i
+    if c = ' ' || c = '\t' || c = '\n' then skipWS s (i + 1)
+    else i
+
+let _ = printfn "%d" (skipWS "  \t hello" 0)
+let _ = printfn "%d" (skipWS "abc" 0)
+// --- Output:
+4
+0
+()
