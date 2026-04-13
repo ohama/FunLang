@@ -1,9 +1,0 @@
-// Test: E0311 Duplicate record field — same field in two record types
-// --- Command: src/FunLang/bin/Release/net10.0/fn %input
-// --- ExitCode: 1
-// --- Stderr:
-error[E0311]: Field 'name' is defined in both record types A and B
-// --- Input:
-type A = { name: string }
-type B = { name: string }
-let x = { name = "hello" }

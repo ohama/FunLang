@@ -141,6 +141,18 @@ Plans:
 **Details:**
 Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs does not use those spans when populating annotationMap. All inner LambdaAnnot entries return None on lookup. Fix Bidir.fs to record arrow types keyed by each LambdaAnnot node's own span.
 
+### Phase 104: Remove DuplicateRecordField(E0311) Check (Issue #21)
+
+**Goal:** [To be planned]
+**Depends on:** Phase 103
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 104 to break down)
+
+**Details:**
+`TypeCheck.fs`의 `checkDuplicateRecordFields` (L590-604)가 서로 다른 record 타입에서 동일 필드명을 사용하는 경우를 E0311 에러로 처리. ML 계열(OCaml, F#)의 정상 패턴이며, 이 에러로 타입 체크가 중단되어 Issue #20의 FieldAccess TData 기록이 무효화됨. FunLangCompiler#24 (가비지 값) 해결의 블로커. E0311 제거 또는 경고로 강등하여 동일 필드명 record 타입들을 허용.
+
 ---
 
 ## Progress
@@ -155,6 +167,7 @@ Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs 
 | 101 — Error Message Polish | Actionable type class errors | ERR-01, ERR-02, ERR-03 | Pending |
 | 102 — Fix LambdaAnnot Span Collision | Unique spans for nested LambdaAnnot (Issue #18) | — | ✓ Complete |
 | 103 — Fix Bidir.fs annotationMap for LambdaAnnot | annotationMap populated with per-param span (Issue #19) | — | ✓ Complete |
+| 104 — Remove DuplicateRecordField(E0311) Check | Allow same field name across record types (Issue #21) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -197,3 +210,4 @@ Phase 102 fixed the parser to assign unique spans per LambdaAnnot, but Bidir.fs 
 *Phases continue from v14.0 Phase 95*
 *Phase 102 added: 2026-04-10 — Fix LambdaAnnot span collision (Issue #18)*
 *Phase 103 added: 2026-04-10 — Fix Bidir.fs annotationMap population for LambdaAnnot spans (Issue #19)*
+*Phase 104 added: 2026-04-13 — Remove DuplicateRecordField(E0311) check to allow same field name across record types (Issue #21)*

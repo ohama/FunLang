@@ -279,14 +279,6 @@ let recordTests = testList "Records" [
     // =====================================================
 
     testList "Error cases" [
-        test "duplicate field names across types produces error" {
-            let input = "type A = { x: int }\n\ntype B = { x: int; y: int }\n"
-            let result = parseAndTypeCheck input
-            match result with
-            | Error _ -> ()
-            | Ok _ -> failtest "Expected error for duplicate field names across types"
-        }
-
         test "wrong field name in record expression produces error" {
             let input = "type Point = { x: int; y: int }\n\nlet p = { x = 1; z = 2 }\n"
             let result = parseAndTypeCheck input

@@ -129,7 +129,6 @@ type TypeErrorKind =
     | DuplicateFieldName of fieldName: string
     | MissingFields of recordType: string * missing: string list
     | ImmutableFieldAssignment of recordType: string * fieldName: string
-    | DuplicateRecordField of fieldName: string * type1: string * type2: string
     | NotARecord of typeName: string
     | FieldAccessOnNonRecord of ty: Type
     // Phase 4 (GADT): GADT-specific error kinds
@@ -357,11 +356,6 @@ let typeErrorToDiagnostic (err: TypeError) : Diagnostic =
             Some "E0310",
             sprintf "Field '%s' of record type %s is immutable and cannot be assigned" fieldName recordType,
             Some "Mark the field as mutable in the type declaration to allow assignment"
-
-        | DuplicateRecordField (fieldName, type1, type2) ->
-            Some "E0311",
-            sprintf "Field '%s' is defined in both record types %s and %s" fieldName type1 type2,
-            Some "Use explicit type annotation to disambiguate"
 
         | NotARecord typeName ->
             Some "E0312",

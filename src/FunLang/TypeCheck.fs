@@ -579,31 +579,6 @@ let checkMatchWarnings (ctorEnv: ConstructorEnv) (body: Expr) : Diagnostic list 
 
     matchWarnings @ tryWithWarnings
 
-/// Validate globally unique field names across all record types in a decl list
-let validateUniqueRecordFields (decls: Decl list) =
-    let allFieldsWithSpans =
-        decls
-        |> List.choose (function
-            | Decl.RecordTypeDecl (Ast.RecordDecl(typeName, _, fields, _)) ->
-                Some (typeName, fields)
-            | _ -> None)
-        |> List.collect (fun (typeName, fields) ->
-            fields |> List.map (fun (Ast.RecordFieldDecl(fname, _, _, fieldSpan)) ->
-                (fname, typeName, fieldSpan)))
-    let fieldCounts =
-        allFieldsWithSpans
-        |> List.groupBy (fun (fname, _, _) -> fname)
-        |> List.filter (fun (_, occurrences) -> List.length occurrences > 1)
-    match fieldCounts with
-    | (fieldName, occurrences) :: _ ->
-        let (_, type1, _) = occurrences.[0]
-        let (_, type2, span2) = occurrences.[1]
-        raise (TypeException {
-            Kind = DuplicateRecordField(fieldName, type1, type2)
-            Span = span2
-            Term = None; ContextStack = []; Trace = []; Scope = [] })
-    | [] -> ()
-
 /// Collect all module names referenced via qualified access in an expression.
 /// Returns set of module names that are accessed as Module.member.
 let rec collectModuleRefs (modules: Map<string, ModuleExports>) (expr: Expr) : Set<string> =
@@ -841,9 +816,6 @@ let rec typeCheckDecls
                 (cEnv', tEnv')
             | _ -> (cEnv, tEnv)
         ) (ctorEnv, typeEnv)
-
-    // Validate globally unique field names
-    validateUniqueRecordFields decls
 
     // Second pass: process declarations sequentially
     // Each declaration is wrapped in try-catch for multi-error reporting (v11.1).
