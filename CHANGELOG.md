@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-04-13
+
+### Removed
+- `DuplicateRecordField(E0311)` 체크 제거 — 서로 다른 record 타입에서 동일 필드명 허용 (Issue #21). ML 계열(OCaml, F#)의 정상 패턴이며, 이 체크가 Issue #20의 FieldAccess TData annotation을 무효화하고 있었음.
+
+### Fixed
+- 동일 필드명을 가진 여러 record 타입의 FieldAccess가 정상 동작 (예: `type Foo = { start: int }` + `type Bar = { start: int; name: string }` → `f.start`, `b.start` 각각 올바른 값 반환)
+
 ## [0.1.1] - 2026-04-10
 
 ### Fixed
