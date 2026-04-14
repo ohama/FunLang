@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.6] - 2026-04-14
+
+### Fixed
+- `typeCheckFile`이 import된 파일의 AST span을 `AnnotationMap`에 포함하도록 수정 (Issue #26). 근본 원인은 `Prelude.parseModuleFromString`가 position-tracking 없는 tokenizer를 사용하여 import된 파일의 모든 span이 초기 위치(1:0)에 머물고 annotationMap 엔트리가 서로 overwrite되던 것. `Program.parseModuleFromString` 패턴으로 `PositionedToken` 사용하도록 통일.
+
 ## [0.1.5] - 2026-04-14
 
 ### Fixed
