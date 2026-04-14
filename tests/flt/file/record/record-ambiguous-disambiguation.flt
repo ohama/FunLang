@@ -1,0 +1,23 @@
+// Test: Issue #25 — RecordExpr disambiguation via outer type annotation
+// Two record types with identical field sets. LHS annotation must select the right one.
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+type Ps = { file : string; line : int }
+type Sl = { file : string; line : int }
+
+let getPsLine (p : Ps) : int = p.line
+let getSlFile (s : Sl) : string = s.file
+
+let _ =
+    let p : Ps = { file = "a.fun"; line = 5 }
+    let s : Sl = { file = "b.fun"; line = 10 }
+    printfn "%d" (getPsLine p)
+    printfn "%s" (getSlFile s)
+    printfn "%d" p.line
+    printfn "%s" s.file
+// --- Output:
+5
+b.fun
+5
+b.fun
+()

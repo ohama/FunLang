@@ -744,7 +744,8 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
 
     // === Record expressions (Phase 3) ===
     | RecordExpr (_, fields, span) ->
-        // Resolve record type from field names (globally unique field names)
+        // Resolve record type from field names (Issue #25: disambiguate via
+        // outer expected type when multiple record types share the field set).
         let fieldNames = fields |> List.map fst |> Set.ofList
         let matchingTypes =
             recEnv
@@ -752,8 +753,21 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
                 let declFields = info.Fields |> List.map (fun f -> f.Name) |> Set.ofList
                 fieldNames = declFields)
             |> Map.toList
-        match matchingTypes with
-        | [(_, recInfo)] ->
+        // Issue #25: If ambiguous by fields alone, try outer expected type from ctx.
+        let chosenRec =
+            match matchingTypes with
+            | [one] -> Some one
+            | [] -> None
+            | many ->
+                let expectedTypeName =
+                    ctx |> List.tryPick (function
+                        | InCheckMode (TData(tn, _), _, _) -> Some tn
+                        | _ -> None)
+                match expectedTypeName with
+                | Some tn -> many |> List.tryFind (fun (n, _) -> n = tn)
+                | None -> None
+        match chosenRec, matchingTypes with
+        | Some (_, recInfo), _ ->
             // Instantiate type params
             let freshVars = recInfo.TypeParams |> List.map (fun _ -> freshVar())
             let paramSubst = List.zip recInfo.TypeParams freshVars |> Map.ofList
@@ -768,10 +782,10 @@ let rec synth (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext l
             let resultTy = apply (compose finalS paramSubst) recInfo.ResultType
             recordTy span resultTy
             (finalS, resultTy)
-        | [] ->
+        | None, [] ->
             let fieldNameStr = fields |> List.map fst |> String.concat ", "
             raise (TypeException { Kind = UnboundField(sprintf "{%s}" fieldNameStr, List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
-        | _ ->
+        | None, _ ->
             raise (TypeException { Kind = DuplicateFieldName(List.head fields |> fst); Span = span; Term = Some expr; ContextStack = ctx; Trace = []; Scope = [] })
 
     | FieldAccess (accessExpr, fieldName, span) ->
@@ -1187,7 +1201,10 @@ and check (ctorEnv: ConstructorEnv) (recEnv: RecordEnv) (ctx: InferContext list)
 
     // === Fallback subsumption (BIDIR-06) ===
     | _ ->
-        let s, actual = synth ctorEnv recEnv ctx env expr
+        // Issue #25: Push InCheckMode so synth (e.g. RecordExpr) can consult
+        // the outer expected type for disambiguation.
+        let ctx' = InCheckMode (expected, "check", spanOf expr) :: ctx
+        let s, actual = synth ctorEnv recEnv ctx' env expr
         let s' = unifyWithContext ctx [] (spanOf expr) (apply s expected) actual
         compose s' s
 
