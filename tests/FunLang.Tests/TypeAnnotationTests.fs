@@ -388,4 +388,35 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
             (sprintf "Expected >=10 main.fun spans, got %d" mainSpans.Count)
     }
 
+    // TA-15: Issue #27 — multiple imports all survive in AnnotationMap.
+    // Previously only the last-imported file's spans (plus main) survived,
+    // because each recursive typeCheckModuleWithPrelude reset Bidir.annotationMap
+    // and overwrote entries from earlier imports.
+    test "TA-15: typeCheckFile AnnotationMap contains spans from ALL imported files" {
+        let tmpDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "funlang-issue27")
+        System.IO.Directory.CreateDirectory(tmpDir) |> ignore
+        let aPath = System.IO.Path.Combine(tmpDir, "a.fun")
+        let bPath = System.IO.Path.Combine(tmpDir, "b.fun")
+        let cPath = System.IO.Path.Combine(tmpDir, "c.fun")
+        let mainPath = System.IO.Path.Combine(tmpDir, "main.fun")
+        System.IO.File.WriteAllText(aPath, "type AA = { a1 : int; a2 : string }\nlet getA1 (x : AA) : int = x.a1\n")
+        System.IO.File.WriteAllText(bPath, "type BB = { b1 : int }\nlet getB1 (x : BB) : int = x.b1\n")
+        System.IO.File.WriteAllText(cPath, "type CC = { c1 : string }\nlet getC1 (x : CC) : string = x.c1\n")
+        System.IO.File.WriteAllText(mainPath, "import \"a.fun\"\nimport \"b.fun\"\nimport \"c.fun\"\n\nlet _ =\n    let a : AA = { a1 = 1; a2 = \"x\" }\n    let b : BB = { b1 = 2 }\n    let c : CC = { c1 = \"y\" }\n    printfn \"%d %d %s\" (getA1 a) (getB1 b) (getC1 c)\n")
+        let tm = ExportApi.typeCheckFile mainPath
+        let absA = System.IO.Path.GetFullPath(aPath)
+        let absB = System.IO.Path.GetFullPath(bPath)
+        let absC = System.IO.Path.GetFullPath(cPath)
+        let absMain = System.IO.Path.GetFullPath(mainPath)
+        let countFor path = tm.AnnotationMap |> Map.filter (fun k _ -> k.FileName = path) |> Map.count
+        let nA = countFor absA
+        let nB = countFor absB
+        let nC = countFor absC
+        let nMain = countFor absMain
+        Expect.isTrue (nA >= 3) (sprintf "a.fun: expected >=3 spans, got %d" nA)
+        Expect.isTrue (nB >= 3) (sprintf "b.fun: expected >=3 spans, got %d" nB)
+        Expect.isTrue (nC >= 3) (sprintf "c.fun: expected >=3 spans, got %d" nC)
+        Expect.isTrue (nMain >= 10) (sprintf "main.fun: expected >=10 spans, got %d" nMain)
+    }
+
 ]

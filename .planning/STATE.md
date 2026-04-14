@@ -34,6 +34,7 @@ Progress: [██........] 25% (2/8 phases complete)
 | 106 — Revert s.[i] : int to s.[i] : char | char 리터럴과 string indexing 결과 타입 통일 (Issue #23) | Complete |
 | 107 — RecordExpr disambiguation via outer annotation | 동일 필드 집합의 여러 record 타입을 outer expected type으로 구분 (Issue #25) | Complete |
 | 108 — Imported file spans in AnnotationMap | Prelude parser position tracking 수정 (Issue #26) | Complete |
+| 109 — Multi-import AnnotationMap preservation | import 체인 재귀 호출에서 annotationMap reset으로 중간 파일 유실 수정 (Issue #27) | Complete |
 
 ## Performance Metrics
 
@@ -92,6 +93,7 @@ From v15.0 research (2026-04-08):
 - Phase 106 complete (2026-04-13): Issue #15의 `s.[i] : int` 결정을 반전 — `s.[i] : char`로 변경 (Bidir.fs:883-887 TInt→TChar, Eval.fs:1200 IntValue→CharValue). char 리터럴(' ', '\t' 등)과 string indexing 결과가 동일한 char 타입이 되어 `c = ' '` 같은 자연스러운 비교가 동작. string-index-get.flt 테스트 갱신 (char_to_int 사용), char-index-compare.flt 회귀 테스트 추가. 728 flt + 250 unit 통과.
 - Phase 107 complete (2026-04-14): Issue #25 해결 — RecordExpr이 동일 필드 집합의 여러 record 타입에서 ambiguous할 때 `ctx` 스택의 `InCheckMode(TData, ...)`로 disambiguate. `check` fall-through에서 `InCheckMode` push하도록 개선하여 `Annot`뿐 아니라 함수 파라미터 등 모든 check 경로에서 outer expected type이 synth로 전달됨. record-ambiguous-disambiguation.flt 회귀 테스트 추가. 729 flt + 250 unit 통과.
 - Phase 108 complete (2026-04-14): Issue #26 근본 해결 — `Prelude.parseModuleFromString`가 position-tracking 없는 plain tokenizer를 사용하여 import된 파일의 AST span이 모두 초기 위치(1:0)에 머물러 annotationMap에서 충돌/overwrite되던 문제. `Program.parseModuleFromString` 패턴을 차용해 `PositionedToken`으로 parse 시 `lb.StartPos`/`lb.EndPos`를 per-token 갱신. FunLangCompiler의 strict field disambiguation이 import된 라이브러리 함수 내부의 FieldAccess에서도 정상 동작. TA-14 unit test 추가, 730 flt + 251 unit 통과.
+- Phase 109 complete (2026-04-14): Issue #27 근본 해결 — `typeCheckModuleWithPrelude`가 재귀 호출마다 `Bidir.annotationMap`을 reset하여 N개 import 시 중간 파일들의 span이 모두 유실되고 main+마지막 import만 남던 문제. `Prelude.loadAndTypeCheckFileImpl`에서 **save/merge** 패턴 도입: 재귀 호출 전 caller의 annotationMap 참조 저장, typeCheck 완료 후 imported file's annotations를 snapshot → restore caller map → merge inner entries. `tcAnnotCache`로 per-file 엔트리 캐싱하여 cache hit 시에도 merge. finally 블록에 safety-net restore 추가 (에러 경로). TA-15 unit test 추가 (3개 import 파일 각 ≥3 spans + main ≥10 spans 검증). 730 flt + 252 unit 통과.
 
 ### Blockers/Concerns
 

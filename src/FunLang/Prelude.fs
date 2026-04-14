@@ -100,6 +100,12 @@ let private tcCache = System.Collections.Generic.Dictionary<string, ConstructorE
 /// Stores file's OWN exports only (not merged with caller), so diamond deps are safe.
 let private evalCache = System.Collections.Generic.Dictionary<string, Env * Map<string, ModuleValueEnv>>()
 
+/// Issue #27: Cache per-file Bidir.annotationMap entries so nested imports can merge
+/// their span→type annotations back into the parent's map. Without this, each recursive
+/// typeCheckModuleWithPrelude call resets Bidir.annotationMap and the caller only sees
+/// annotations from the last imported file plus the main file.
+let private tcAnnotCache = System.Collections.Generic.Dictionary<string, (Ast.Span * Type.Type) array>()
+
 /// Load, parse, type-check, and evaluate a .fun file, merging its environments.
 /// Used as the implementation of TypeCheck.fileImportTypeChecker.
 let rec loadAndTypeCheckFileImpl
@@ -116,6 +122,13 @@ let rec loadAndTypeCheckFileImpl
     // 2. Cache check (after cycle detection)
     match tcCache.TryGetValue(resolvedPath) with
     | true, (fileCEnv, fileREnv, fileMods, fileTypeEnv) ->
+        // Issue #27: Even on cache hit, merge cached annotationMap entries into the
+        // caller's active Bidir.annotationMap so the caller sees this file's spans.
+        match tcAnnotCache.TryGetValue(resolvedPath) with
+        | true, entries ->
+            for (span, ty) in entries do
+                Bidir.annotationMap.[span] <- ty
+        | _ -> ()
         // Return caller's env merged with cached file's own exports
         let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
         let mergedREnv = Map.fold (fun acc k v -> Map.add k v acc) rEnv fileREnv
@@ -130,12 +143,26 @@ let rec loadAndTypeCheckFileImpl
             Span = unknownSpan; Term = None; ContextStack = []; Trace = []; Scope = [] })
     fileLoadingStack.Add resolvedPath |> ignore
     let prevFile = TypeCheck.currentTypeCheckingFile
+    // Issue #27: Save caller's annotationMap; typeCheckModuleWithPrelude will replace
+    // it with a fresh one and populate it with the imported file's spans.
+    let callerAnnotMap = Bidir.annotationMap
     try
         TypeCheck.currentTypeCheckingFile <- resolvedPath
         let source = File.ReadAllText resolvedPath
         let m = parseModuleFromString source resolvedPath
         match typeCheckModuleWithPrelude cEnv rEnv Map.empty Map.empty typeEnv mods m with
         | Ok (_warnings, fileCEnv, fileREnv, _fileClassEnv, _fileInstEnv, fileMods, fileTypeEnv) ->
+            // Issue #27: Snapshot imported file's annotations, restore caller's map,
+            // then merge the imported file's entries into it. Also cache for future
+            // reloads (cache-hit path above).
+            let fileAnnotEntries =
+                Bidir.annotationMap
+                |> Seq.map (fun kv -> (kv.Key, kv.Value))
+                |> Seq.toArray
+            tcAnnotCache.[resolvedPath] <- fileAnnotEntries
+            Bidir.annotationMap <- callerAnnotMap
+            for (span, ty) in fileAnnotEntries do
+                Bidir.annotationMap.[span] <- ty
             // Cache the file's own exports BEFORE merging with caller env
             tcCache.[resolvedPath] <- (fileCEnv, fileREnv, fileMods, fileTypeEnv)
             let mergedCEnv = Map.fold (fun acc k v -> Map.add k v acc) cEnv fileCEnv
@@ -148,6 +175,11 @@ let rec loadAndTypeCheckFileImpl
     finally
         TypeCheck.currentTypeCheckingFile <- prevFile
         fileLoadingStack.Remove resolvedPath |> ignore
+        // Issue #27: Safety net — if typeCheckModuleWithPrelude threw before we
+        // restored the caller's annotationMap, restore it now so subsequent work
+        // (sibling imports, main file body) keeps accumulating into the right map.
+        if not (System.Object.ReferenceEquals(Bidir.annotationMap, callerAnnotMap)) then
+            Bidir.annotationMap <- callerAnnotMap
 
 /// Load, parse, and evaluate a .fun file, merging its value environment.
 /// Used as the implementation of Eval.fileImportEvaluator.
