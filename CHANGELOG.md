@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.7] - 2026-04-14
+
+### Fixed
+- `typeCheckFile` AnnotationMap이 **모든** import된 파일의 span을 보존하도록 수정 (Issue #27). 근본 원인은 `typeCheckModuleWithPrelude`가 재귀 호출마다 `Bidir.annotationMap`을 reset하여 N개 import 시 main + 마지막 import만 남던 것. `loadAndTypeCheckFileImpl`에서 save/merge 패턴 + `tcAnnotCache`로 cache hit 경로도 처리.
+
 ## [0.1.6] - 2026-04-14
 
 ### Fixed
