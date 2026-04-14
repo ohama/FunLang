@@ -5,5 +5,5 @@ module Hashtable =
     let containsKey (ht : hashtable<'k, 'v>) (key : 'k) : bool = hashtable_containsKey ht key
     let keys (ht : hashtable<'k, 'v>) : 'k list = hashtable_keys ht
     let remove (ht : hashtable<'k, 'v>) (key : 'k) : unit = hashtable_remove ht key
-    let tryGetValue (ht : hashtable<'k, 'v>) (key : 'k) : (bool * 'v) = hashtable_trygetvalue ht key
+    let tryGetValue (ht : hashtable<'k, 'v>) (key : 'k) : 'v option = hashtable_trygetvalue ht key
     let count (ht : hashtable<'k, 'v>) : int = hashtable_count ht

@@ -1,0 +1,28 @@
+// Test: Issue #28 — Hashtable.tryGetValue returns 'v option, not (bool * 'v).
+// Pattern-match on Some/None is the canonical usage.
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let ht = Hashtable.create ()
+let _ = Hashtable.set ht "a" 10
+let _ = Hashtable.set ht "b" 20
+
+let _ =
+    match Hashtable.tryGetValue ht "a" with
+    | Some v -> printfn "a=%d" v
+    | None -> printfn "a missing"
+
+let _ =
+    match Hashtable.tryGetValue ht "z" with
+    | Some v -> printfn "z=%d" v
+    | None -> printfn "z missing"
+
+// Option module combinators still work
+let v = Hashtable.tryGetValue ht "b"
+let _ = printfn "isSome=%s" (to_string (Option.isSome v))
+let _ = printfn "default=%d" (Option.optionDefault 0 (Hashtable.tryGetValue ht "missing"))
+// --- Output:
+a=10
+z missing
+isSome=true
+default=0
+()

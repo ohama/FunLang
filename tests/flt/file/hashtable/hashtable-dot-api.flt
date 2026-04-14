@@ -12,8 +12,8 @@ let _ = println (to_string (Hashtable.count ht))
 let ks = Hashtable.keys ht
 let _ = println (to_string (List.length ks))
 // --- Output:
-(true, 42)
-(false, ())
+Some 42
+None
 2
 2
 ()

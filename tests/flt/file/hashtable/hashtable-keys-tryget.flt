@@ -1,4 +1,5 @@
 // Test: Hashtable keys + tryGetValue on missing key (COLL-05, PROP-03)
+// Issue #28: tryGetValue returns 'v option (Some/None).
 // --- Command: src/FunLang/bin/Release/net10.0/fn %input
 // --- Input:
 let ht = Hashtable.create ()
@@ -13,7 +14,7 @@ let _ = println (to_string r2)
 let _ = println (to_string (Hashtable.count ht))
 // --- Output:
 ["a"; "b"]
-(true, 1)
-(false, ())
+Some 1
+None
 2
 ()

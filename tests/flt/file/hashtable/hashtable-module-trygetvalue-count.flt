@@ -7,7 +7,7 @@ let _ = println (to_string (Hashtable.tryGetValue ht "a"))
 let _ = println (to_string (Hashtable.tryGetValue ht "z"))
 let _ = println (to_string (Hashtable.count ht))
 // --- Output:
-(true, 1)
-(false, ())
+Some 1
+None
 2
 ()

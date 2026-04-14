@@ -223,6 +223,7 @@ let formatLoc (loc : SrcLoc) : string = loc.file
 | 107 — RecordExpr disambiguation via outer annotation | 동일 필드 집합의 여러 record 타입을 outer expected type으로 구분 (Issue #25) | — | ✓ Complete |
 | 108 — Imported file spans in AnnotationMap | `Prelude.parseModuleFromString`가 PositionedToken 사용하도록 수정 (Issue #26) | — | ✓ Complete |
 | 109 — Multi-import AnnotationMap preservation | import 체인 재귀 호출 시 `Bidir.annotationMap` reset으로 중간 파일 span 유실되던 것을 save/merge 패턴으로 수정 (Issue #27) | — | ✓ Complete |
+| 110 — hashtable_trygetvalue returns 'v option | `(bool * 'v)` tuple → `'v option`으로 변경, FunLangCompiler 런타임과 일치 (Issue #28, breaking pre-1.0) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -271,3 +272,4 @@ let formatLoc (loc : SrcLoc) : string = loc.file
 *Phase 107 added: 2026-04-14 — RecordExpr disambiguation via outer expected type (Issue #25)*
 *Phase 108 added: 2026-04-14 — Imported file spans in AnnotationMap — Prelude parser position tracking (Issue #26)*
 *Phase 109 added: 2026-04-14 — Multi-import AnnotationMap preservation via save/merge in loadAndTypeCheckFileImpl (Issue #27)*
+*Phase 110 added: 2026-04-14 — hashtable_trygetvalue returns 'v option (Issue #28, breaking pre-1.0)*

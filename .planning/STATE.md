@@ -35,6 +35,7 @@ Progress: [██........] 25% (2/8 phases complete)
 | 107 — RecordExpr disambiguation via outer annotation | 동일 필드 집합의 여러 record 타입을 outer expected type으로 구분 (Issue #25) | Complete |
 | 108 — Imported file spans in AnnotationMap | Prelude parser position tracking 수정 (Issue #26) | Complete |
 | 109 — Multi-import AnnotationMap preservation | import 체인 재귀 호출에서 annotationMap reset으로 중간 파일 유실 수정 (Issue #27) | Complete |
+| 110 — hashtable_trygetvalue returns 'v option | 반환 타입 tuple → option 통일 (Issue #28) | Complete |
 
 ## Performance Metrics
 
@@ -94,6 +95,7 @@ From v15.0 research (2026-04-08):
 - Phase 107 complete (2026-04-14): Issue #25 해결 — RecordExpr이 동일 필드 집합의 여러 record 타입에서 ambiguous할 때 `ctx` 스택의 `InCheckMode(TData, ...)`로 disambiguate. `check` fall-through에서 `InCheckMode` push하도록 개선하여 `Annot`뿐 아니라 함수 파라미터 등 모든 check 경로에서 outer expected type이 synth로 전달됨. record-ambiguous-disambiguation.flt 회귀 테스트 추가. 729 flt + 250 unit 통과.
 - Phase 108 complete (2026-04-14): Issue #26 근본 해결 — `Prelude.parseModuleFromString`가 position-tracking 없는 plain tokenizer를 사용하여 import된 파일의 AST span이 모두 초기 위치(1:0)에 머물러 annotationMap에서 충돌/overwrite되던 문제. `Program.parseModuleFromString` 패턴을 차용해 `PositionedToken`으로 parse 시 `lb.StartPos`/`lb.EndPos`를 per-token 갱신. FunLangCompiler의 strict field disambiguation이 import된 라이브러리 함수 내부의 FieldAccess에서도 정상 동작. TA-14 unit test 추가, 730 flt + 251 unit 통과.
 - Phase 109 complete (2026-04-14): Issue #27 근본 해결 — `typeCheckModuleWithPrelude`가 재귀 호출마다 `Bidir.annotationMap`을 reset하여 N개 import 시 중간 파일들의 span이 모두 유실되고 main+마지막 import만 남던 문제. `Prelude.loadAndTypeCheckFileImpl`에서 **save/merge** 패턴 도입: 재귀 호출 전 caller의 annotationMap 참조 저장, typeCheck 완료 후 imported file's annotations를 snapshot → restore caller map → merge inner entries. `tcAnnotCache`로 per-file 엔트리 캐싱하여 cache hit 시에도 merge. finally 블록에 safety-net restore 추가 (에러 경로). TA-15 unit test 추가 (3개 import 파일 각 ≥3 spans + main ≥10 spans 검증). 730 flt + 252 unit 통과.
+- Phase 110 complete (2026-04-14): Issue #28 해결 — `hashtable_trygetvalue`(+_str variant) builtin의 반환 타입을 `(bool * 'v)` tuple에서 `'v option`으로 변경, FunLangCompiler 런타임(Option ADT 반환)과 일치하도록 통일. `TypeCheck.fs` 스킴 2곳, `Eval.fs` 런타임 구현 2곳(`TupleValue`→`DataValue("Some"/"None", ...)`), `Prelude/Hashtable.fun` annotation, 기존 flt 테스트 4개 (hashtable-keys-tryget, hashtable-dot-api, hashtable-module-trygetvalue-count, hashtable-str-builtins) 업데이트. 신규 hashtable-trygetvalue-option.flt 추가 (match + Option.isSome/optionDefault 검증). 730 flt + 252 unit 통과. **Breaking change** (pre-1.0): 기존 `let (found, v) = ...` 또는 `snd (...)` 패턴 사용자는 `match ... with | Some v -> ... | None -> ...`로 migrate 필요.
 
 ### Blockers/Concerns
 

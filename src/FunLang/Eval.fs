@@ -702,14 +702,14 @@ let initialBuiltinEnv : Env =
                     TupleValue []
                 | _ -> failwith "Hashtable.remove: expected hashtable"))
 
-        // Phase 60: hashtable_trygetvalue : hashtable<'k, 'v> -> 'k -> (bool * 'v)  (BLT-04)
+        // Issue #28: hashtable_trygetvalue : hashtable<'k, 'v> -> 'k -> 'v option  (BLT-04)
         "hashtable_trygetvalue", BuiltinValue (fun htVal ->
             BuiltinValue (fun keyVal ->
                 match htVal with
                 | HashtableValue ht ->
                     match ht.TryGetValue(keyVal) with
-                    | true, v  -> TupleValue [BoolValue true;  v]
-                    | false, _ -> TupleValue [BoolValue false; TupleValue []]
+                    | true, v  -> DataValue ("Some", Some v)
+                    | false, _ -> DataValue ("None", None)
                 | _ -> failwith "hashtable_trygetvalue: expected hashtable"))
 
         // Phase 60: hashtable_count : hashtable<'k, 'v> -> int  (BLT-05)
@@ -767,14 +767,14 @@ let initialBuiltinEnv : Env =
                     TupleValue []
                 | _ -> failwith "hashtable_remove_str: expected hashtable"))
 
-        // hashtable_trygetvalue_str : hashtable<string, 'v> -> string -> (bool * 'v)
+        // Issue #28: hashtable_trygetvalue_str : hashtable<string, 'v> -> string -> 'v option
         "hashtable_trygetvalue_str", BuiltinValue (fun htVal ->
             BuiltinValue (fun keyVal ->
                 match htVal with
                 | HashtableValue ht ->
                     match ht.TryGetValue(keyVal) with
-                    | true, v  -> TupleValue [BoolValue true;  v]
-                    | false, _ -> TupleValue [BoolValue false; TupleValue []]
+                    | true, v  -> DataValue ("Some", Some v)
+                    | false, _ -> DataValue ("None", None)
                 | _ -> failwith "hashtable_trygetvalue_str: expected hashtable"))
 
         // dbg : 'a -> 'a  (prints value to stderr, returns unchanged)
