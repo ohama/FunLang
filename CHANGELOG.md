@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.8] - 2026-04-14
+
+### Changed
+- **Breaking (pre-1.0):** `Hashtable.tryGetValue` (및 `hashtable_trygetvalue_str`)의 반환 타입을 `(bool * 'v)` tuple에서 `'v option`으로 변경 (Issue #28). FunLangCompiler 런타임과 일치. 마이그레이션: `let (found, v) = ...` / `snd (...)` → `match ... with | Some v -> ... | None -> ...`.
+
 ## [0.1.7] - 2026-04-14
 
 ### Fixed
