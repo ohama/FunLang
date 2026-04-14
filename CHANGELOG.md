@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.5] - 2026-04-14
+
+### Fixed
+- RecordExpr이 동일 필드 집합의 여러 record 타입에서 ambiguous할 때 outer type annotation으로 구분 (Issue #25). `let p : Ps = { file; line }` 같은 패턴이 false `DuplicateFieldName` 에러 없이 동작. `check` fall-through에서 `InCheckMode`를 push하여 함수 인자 등 모든 check 경로에서 expected type이 synth로 전달됨.
+
 ## [0.1.4] - 2026-04-13
 
 ### Changed
