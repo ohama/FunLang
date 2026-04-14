@@ -221,6 +221,7 @@ let formatLoc (loc : SrcLoc) : string = loc.file
 | 105 — Fix TEName Elaboration to Resolve Named Types | `(p : SrcLoc) → p.field` annotation이 fresh TVar 대신 TData로 resolve (Issue #22) | — | ✓ Complete |
 | 106 — Revert s.[i] : int to s.[i] : char | char 리터럴과 string indexing 결과 타입 통일 (Issue #23, #15 결정 반전) | — | ✓ Complete |
 | 107 — RecordExpr disambiguation via outer annotation | 동일 필드 집합의 여러 record 타입을 outer expected type으로 구분 (Issue #25) | — | ✓ Complete |
+| 108 — Imported file spans in AnnotationMap | `Prelude.parseModuleFromString`가 PositionedToken 사용하도록 수정 (Issue #26) | — | ✓ Complete |
 
 **Coverage:** 17/17 requirements mapped. No orphans.
 
@@ -267,3 +268,4 @@ let formatLoc (loc : SrcLoc) : string = loc.file
 *Phase 105 added: 2026-04-13 — Fix TEName elaboration to resolve named types (Issue #22 — 실제 원인은 Elaborate.fs의 TEName→TVar 처리)*
 *Phase 106 added: 2026-04-13 — Revert s.[i] to char type (Issue #23 — #15의 TInt 결정 반전, char 리터럴과 일치)*
 *Phase 107 added: 2026-04-14 — RecordExpr disambiguation via outer expected type (Issue #25)*
+*Phase 108 added: 2026-04-14 — Imported file spans in AnnotationMap — Prelude parser position tracking (Issue #26)*

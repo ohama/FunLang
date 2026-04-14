@@ -33,6 +33,7 @@ Progress: [██........] 25% (2/8 phases complete)
 | 105 — Fix TEName Elaboration to Resolve Named Types | `(p : SrcLoc) → p.field` annotation이 fresh TVar 대신 TData로 resolve (Issue #22) | Complete |
 | 106 — Revert s.[i] : int to s.[i] : char | char 리터럴과 string indexing 결과 타입 통일 (Issue #23) | Complete |
 | 107 — RecordExpr disambiguation via outer annotation | 동일 필드 집합의 여러 record 타입을 outer expected type으로 구분 (Issue #25) | Complete |
+| 108 — Imported file spans in AnnotationMap | Prelude parser position tracking 수정 (Issue #26) | Complete |
 
 ## Performance Metrics
 
@@ -90,6 +91,7 @@ From v15.0 research (2026-04-08):
 - Phase 105 complete (2026-04-13): 근본적 해결 — `AliasInfo`/`AliasEnv` 타입 도입, `Elaborate.currentAliasEnv` mutable state 추가, `elaborateAliasDecl` 헬퍼 추가, `typeCheckDecls` first-pass에서 `TypeAliasDecl` 등록 (지금까지 no-op였음), `elaborateWithVars`의 `TEName`/`TEData` 분기에서 alias expansion 후 `TData` 생성. TA-11/12/13 unit test + record-annotated-param.flt + alias-annotated-param.flt 추가. 728 flt + 247 unit 통과. Issue #22의 FunLexYacc-style import chain + 단일 파일 annotated record param 재현 케이스 모두 정상 동작. 타입 alias가 드디어 실제로 구현됨.
 - Phase 106 complete (2026-04-13): Issue #15의 `s.[i] : int` 결정을 반전 — `s.[i] : char`로 변경 (Bidir.fs:883-887 TInt→TChar, Eval.fs:1200 IntValue→CharValue). char 리터럴(' ', '\t' 등)과 string indexing 결과가 동일한 char 타입이 되어 `c = ' '` 같은 자연스러운 비교가 동작. string-index-get.flt 테스트 갱신 (char_to_int 사용), char-index-compare.flt 회귀 테스트 추가. 728 flt + 250 unit 통과.
 - Phase 107 complete (2026-04-14): Issue #25 해결 — RecordExpr이 동일 필드 집합의 여러 record 타입에서 ambiguous할 때 `ctx` 스택의 `InCheckMode(TData, ...)`로 disambiguate. `check` fall-through에서 `InCheckMode` push하도록 개선하여 `Annot`뿐 아니라 함수 파라미터 등 모든 check 경로에서 outer expected type이 synth로 전달됨. record-ambiguous-disambiguation.flt 회귀 테스트 추가. 729 flt + 250 unit 통과.
+- Phase 108 complete (2026-04-14): Issue #26 근본 해결 — `Prelude.parseModuleFromString`가 position-tracking 없는 plain tokenizer를 사용하여 import된 파일의 AST span이 모두 초기 위치(1:0)에 머물러 annotationMap에서 충돌/overwrite되던 문제. `Program.parseModuleFromString` 패턴을 차용해 `PositionedToken`으로 parse 시 `lb.StartPos`/`lb.EndPos`를 per-token 갱신. FunLangCompiler의 strict field disambiguation이 import된 라이브러리 함수 내부의 FieldAccess에서도 정상 동작. TA-14 unit test 추가, 730 flt + 251 unit 통과.
 
 ### Blockers/Concerns
 

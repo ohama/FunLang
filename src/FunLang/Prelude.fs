@@ -24,24 +24,35 @@ type PreludeResult = {
 
 let emptyPrelude = { Env = Map.empty; TypeEnv = Map.empty; CtorEnv = Map.empty; RecEnv = Map.empty; ClassEnv = Map.empty; InstEnv = Map.empty; Modules = Map.empty; ModuleValueEnv = Map.empty; FixityEnv = Map.empty }
 
-/// Parse a string as module with IndentFilter
+/// Parse a string as module with IndentFilter.
+/// Issue #26: Uses PositionedToken so that lexbuf positions advance per token,
+/// giving AST nodes correct spans (filename + line + column). Without this,
+/// all spans stay at initial position and annotationMap entries collide/overwrite.
 let parseModuleFromString (input: string) (filename: string) : Module =
+    // Stage 1: tokenize with positions
     let lexbuf = LexBuffer<char>.FromString input
     Lexer.setInitialPos lexbuf filename
     let rec collect () =
+        let startPos = lexbuf.StartPos
         let tok = Lexer.tokenize lexbuf
-        if tok = Parser.EOF then [Parser.EOF]
-        else tok :: collect ()
+        let endPos = lexbuf.EndPos
+        if tok = Parser.EOF then
+            [{ Token = Parser.EOF; StartPos = startPos; EndPos = endPos }]
+        else
+            { Token = tok; StartPos = startPos; EndPos = endPos } :: collect ()
     let rawTokens = collect ()
-    let filteredTokens = filter defaultConfig rawTokens |> Seq.toList
+    let filteredTokens = filterPositioned defaultConfig rawTokens
+    // Stage 2: parse with position-tracking tokenizer
     let lexbuf2 = LexBuffer<char>.FromString input
     Lexer.setInitialPos lexbuf2 filename
     let mutable index = 0
-    let tokenizer (_: LexBuffer<_>) =
+    let tokenizer (lb: LexBuffer<_>) =
         if index < filteredTokens.Length then
-            let tok = filteredTokens.[index]
+            let pt = filteredTokens.[index]
             index <- index + 1
-            tok
+            lb.StartPos <- pt.StartPos
+            lb.EndPos <- pt.EndPos
+            pt.Token
         else
             Parser.EOF
     Parser.parseModule tokenizer lexbuf2

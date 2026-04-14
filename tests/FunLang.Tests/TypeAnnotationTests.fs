@@ -364,4 +364,28 @@ let typeAnnotationTests = testSequenced <| testList "TypeAnnotation" [
         | Ok _ -> ()
     }
 
+    // TA-14: Issue #26 — typeCheckFile includes imported file spans in AnnotationMap.
+    // Previously Prelude.parseModuleFromString used a non-positional tokenizer,
+    // leaving imported file AST spans at initial position and annotationMap entries
+    // colliding/overwriting.
+    test "TA-14: typeCheckFile AnnotationMap contains spans from imported files" {
+        let tmpDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "funlang-issue26")
+        System.IO.Directory.CreateDirectory(tmpDir) |> ignore
+        let libPath = System.IO.Path.Combine(tmpDir, "lib.fun")
+        let mainPath = System.IO.Path.Combine(tmpDir, "main.fun")
+        let libSrc = "type Foo = { items : int list; start : int }\nlet getFooStart (f : Foo) : int = f.start\n"
+        let mainSrc = "import \"lib.fun\"\n\nlet _ =\n    let f : Foo = { items = [1]; start = 42 }\n    printfn \"%d\" (getFooStart f)\n"
+        System.IO.File.WriteAllText(libPath, libSrc)
+        System.IO.File.WriteAllText(mainPath, mainSrc)
+        let tm = ExportApi.typeCheckFile mainPath
+        let absLib = System.IO.Path.GetFullPath(libPath)
+        let absMain = System.IO.Path.GetFullPath(mainPath)
+        let libSpans = tm.AnnotationMap |> Map.filter (fun k _ -> k.FileName = absLib)
+        let mainSpans = tm.AnnotationMap |> Map.filter (fun k _ -> k.FileName = absMain)
+        Expect.isTrue (libSpans.Count >= 4)
+            (sprintf "Expected >=4 lib.fun spans, got %d (total %d)" libSpans.Count tm.AnnotationMap.Count)
+        Expect.isTrue (mainSpans.Count >= 10)
+            (sprintf "Expected >=10 main.fun spans, got %d" mainSpans.Count)
+    }
+
 ]
