@@ -364,6 +364,22 @@ let initialBuiltinEnv : Env =
                 applyEprintfnArgs fmt specifiers []
             | _ -> failwith "eprintfn: first argument must be a format string")
 
+        // log : string -> unit  (debug log to stderr; downstream fnc may elide via --log flag)
+        "log", BuiltinValue (fun v ->
+            match v with
+            | StringValue s ->
+                eprintfn "%s" s
+                TupleValue []
+            | _ -> failwith "log: expected string argument")
+
+        // logf : string -> ...  (like eprintfn; downstream fnc may elide via --log flag)
+        "logf", BuiltinValue (fun fmtVal ->
+            match fmtVal with
+            | StringValue fmt ->
+                let specifiers = parsePrintfSpecifiers fmt
+                applyEprintfnArgs fmt specifiers []
+            | _ -> failwith "logf: first argument must be a format string")
+
         // failwith : string -> 'a  (raises FunLangException so try-with can catch it)
         "failwith", BuiltinValue (fun v ->
             match v with

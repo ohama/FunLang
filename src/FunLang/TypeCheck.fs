@@ -67,6 +67,12 @@ let initialTypeEnv: TypeEnv =
         // eprintfn : string -> 'a  (like printfn but writes to stderr)
         "eprintfn", Scheme([0], [], TArrow(TString, TVar 0))
 
+        // log : string -> unit  (downstream fnc: conditional intrinsic via --log flag; no-op in release)
+        "log",  Scheme([], [], TArrow(TString, TTuple []))
+
+        // logf : string -> 'a  (variadic-polymorphic, same scheme as printfn; runtime/downstream enforces arity)
+        "logf", Scheme([0], [], TArrow(TString, TVar 0))
+
         // failwith : string -> 'a  (polymorphic return — unifies with any expected type, like raise)
         "failwith", Scheme([0], [], TArrow(TString, TVar 0))
 

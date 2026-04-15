@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.9] - 2026-04-15
+
+### Fixed
+- `log` / `logf` builtin을 `TypeCheck.fs` builtinEnv에 등록 (Issue #29). 누락으로 인해 `log`/`logf` 포함 파일이 `E0303 Unbound variable`로 typecheck 실패하여 downstream `fnc --check`가 깨지고, 비-strict 빌드에서도 annotationMap이 비워져 **무관한 파일의 필드 디스앰비규에이션이 cascading으로 손상**되던 문제 해결. `log: string -> unit`, `logf: string -> 'a` 스킴으로 등록하고 FunLang 독립 인터프리터용 런타임 핸들러도 `Eval.fs`에 추가 (stderr 출력; downstream fnc는 `--log` intrinsic으로 override).
+
 ## [0.1.8] - 2026-04-14
 
 ### Changed

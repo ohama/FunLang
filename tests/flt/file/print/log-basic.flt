@@ -1,0 +1,11 @@
+// Test: log/logf builtins registered in typecheck env (issue #29)
+// --- Command: src/FunLang/bin/Release/net10.0/fn %input
+// --- Input:
+let _ = log "hello"
+let _ = logf "n=%d" 42
+let result = 0
+// --- Output:
+0
+// --- Stderr:
+hello
+n=42
